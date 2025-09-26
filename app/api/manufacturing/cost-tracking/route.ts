@@ -128,7 +128,11 @@ async function getProductionOrderCosts(companyId: string, productionOrderId: str
 
   // Calculate estimated costs
   const estimatedMaterialCost = productionOrder.billOfMaterials?.reduce(
-    (sum: number, bom: { totalCost: number | string }) => sum + Number(bom.totalCost), 0
+    (sum: number, bom: { totalCost: any }) =>
+      sum + (typeof bom.totalCost === 'object' && bom.totalCost !== null && typeof bom.totalCost.toNumber === 'function'
+        ? bom.totalCost.toNumber()
+        : Number(bom.totalCost)),
+    0
   ) || 0;
 
   const estimatedLaborCost = productionOrder.workOrders?.reduce(
