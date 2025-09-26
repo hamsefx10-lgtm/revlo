@@ -34,7 +34,7 @@ export async function GET(request: Request) {
       },
     });
     // Calculate outstandingDebt for each customer
-    const processedCustomers = customers.map(cust => {
+  const processedCustomers = customers.map((cust: any) => {
       let debtTaken = 0;
       let debtRepaid = 0;
       for (const t of cust.transactions) {

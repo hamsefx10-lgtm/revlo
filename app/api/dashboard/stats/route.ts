@@ -7,7 +7,14 @@ import { getSessionCompanyUser } from '@/lib/auth';
 export async function GET(request: Request) {
   try {
     // Get companyId from session (fallbacks can be added if needed)
-    const { companyId } = await getSessionCompanyUser();
+    const sessionData = await getSessionCompanyUser();
+    if (!sessionData) {
+      return NextResponse.json(
+        { message: 'Awood uma lihid. Fadlan soo gal.' },
+        { status: 401 }
+      );
+    }
+    const { companyId } = sessionData;
 
     // Financial stats filtered by companyId
     const [incomeAgg, expensesAgg, projectsAgg, bankAgg, mobileAgg, cashAgg, lowStockAgg, overdueAgg, completedAgg, activeAgg] = await Promise.all([

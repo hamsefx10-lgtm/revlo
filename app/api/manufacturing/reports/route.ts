@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
+import { Session } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
 
 // GET - Generate manufacturing reports
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions) as Session | null;
     if (!session?.user?.companyId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -113,7 +114,7 @@ async function generateOverviewReport(companyId: string, startDate?: string | nu
 
   // Calculate average completion time
   const avgCompletionTime = averageCompletionTime.length > 0 
-    ? averageCompletionTime.reduce((sum, order) => {
+    ? averageCompletionTime.reduce((sum: number, order: any) => {
         if (order.startDate && order.completedDate) {
           const diff = new Date(order.completedDate).getTime() - new Date(order.startDate).getTime();
           return sum + (diff / (1000 * 60 * 60 * 24)); // Convert to days
@@ -152,9 +153,9 @@ async function generateProductionPerformanceReport(companyId: string, startDate?
     orderBy: { createdAt: 'desc' }
   });
 
-  const performanceMetrics = performanceData.map(order => {
-    const totalMaterialCost = order.billOfMaterials?.reduce((sum, bom) => sum + Number(bom.totalCost), 0) || 0;
-    const totalLaborHours = order.workOrders?.reduce((sum, wo) => sum + wo.estimatedHours, 0) || 0;
+  const performanceMetrics = performanceData.map((order: any) => {
+    const totalMaterialCost = order.billOfMaterials?.reduce((sum: number, bom: any) => sum + Number(bom.totalCost), 0) || 0;
+    const totalLaborHours = order.workOrders?.reduce((sum: number, wo: any) => sum + wo.estimatedHours, 0) || 0;
     const totalLaborCost = totalLaborHours * 25; // $25/hour
     const totalCost = totalMaterialCost + totalLaborCost;
     
@@ -218,8 +219,8 @@ async function generateMaterialUsageReport(companyId: string, startDate?: string
   });
 
   // Combine usage and purchases data
-  const materialData = materialUsage.map(usage => {
-    const purchase = materialPurchases.find(p => p.materialName === usage.materialName);
+  const materialData = materialUsage.map((usage: any) => {
+    const purchase = materialPurchases.find((p: any) => p.materialName === usage.materialName);
     return {
       materialName: usage.materialName,
       totalUsed: usage._sum.quantity || 0,
@@ -254,7 +255,7 @@ async function generateLaborProductivityReport(companyId: string, startDate?: st
     }
   });
 
-  const productivityMetrics = laborData.reduce((acc, workOrder) => {
+  const productivityMetrics = laborData.reduce((acc: any, workOrder: any) => {
     const employeeName = workOrder.assignedTo?.fullName || 'Unassigned';
     
     if (!acc[employeeName]) {
@@ -301,10 +302,10 @@ async function generateCostAnalysisReport(companyId: string, startDate?: string 
     }
   });
 
-  const analysis = costData.map(order => {
-    const materialCost = order.billOfMaterials?.reduce((sum, bom) => sum + Number(bom.totalCost), 0) || 0;
-    const laborCost = order.workOrders?.reduce((sum, wo) => sum + wo.estimatedHours, 0) * 25 || 0;
-    const purchaseCost = order.materialPurchases?.reduce((sum, mp) => sum + Number(mp.totalPrice), 0) || 0;
+  const analysis = costData.map((order: any) => {
+    const materialCost = order.billOfMaterials?.reduce((sum: number, bom: any) => sum + Number(bom.totalCost), 0) || 0;
+    const laborCost = order.workOrders?.reduce((sum: number, wo: any) => sum + wo.estimatedHours, 0) * 25 || 0;
+    const purchaseCost = order.materialPurchases?.reduce((sum: number, mp: any) => sum + Number(mp.totalPrice), 0) || 0;
     const totalCost = materialCost + laborCost + purchaseCost;
     
     return {
@@ -325,7 +326,7 @@ async function generateCostAnalysisReport(companyId: string, startDate?: string 
   });
 
   // Calculate totals
-  const totals = analysis.reduce((acc, order) => ({
+  const totals = analysis.reduce((acc: any, order: any) => ({
     totalMaterialCost: acc.totalMaterialCost + order.materialCost,
     totalLaborCost: acc.totalLaborCost + order.laborCost,
     totalPurchaseCost: acc.totalPurchaseCost + order.purchaseCost,

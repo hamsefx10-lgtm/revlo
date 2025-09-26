@@ -7,7 +7,14 @@ import { Decimal } from '@prisma/client/runtime/library';
 // POST /api/customers/payments - Record customer payment
 export async function POST(request: Request) {
   try {
-    const { companyId, userId } = await getSessionCompanyUser();
+    const sessionData = await getSessionCompanyUser();
+    if (!sessionData) {
+      return NextResponse.json(
+        { message: 'Awood uma lihid. Fadlan soo gal.' },
+        { status: 401 }
+      );
+    }
+    const { companyId, userId } = sessionData;
     const {
       customerId,
       projectId,
@@ -153,8 +160,8 @@ export async function POST(request: Request) {
       }
     });
     
-    const totalDebt = customerDebts.reduce((sum, debt) => sum + Number(debt.amount), 0);
-    const totalPaid = customerPayments.reduce((sum, payment) => sum + Number(payment.amount), 0);
+  const totalDebt = customerDebts.reduce((sum: number, debt: any) => sum + Number(debt.amount), 0);
+  const totalPaid = customerPayments.reduce((sum: number, payment: any) => sum + Number(payment.amount), 0);
     const remainingDebt = totalDebt - totalPaid;
 
     return NextResponse.json({
@@ -183,7 +190,14 @@ export async function POST(request: Request) {
 // GET /api/customers/payments - Get customer payment history
 export async function GET(request: Request) {
   try {
-    const { companyId } = await getSessionCompanyUser();
+    const sessionData = await getSessionCompanyUser();
+    if (!sessionData) {
+      return NextResponse.json(
+        { message: 'Awood uma lihid. Fadlan soo gal.' },
+        { status: 401 }
+      );
+    }
+    const { companyId } = sessionData;
     const { searchParams } = new URL(request.url);
     const customerId = searchParams.get('customerId');
     const projectId = searchParams.get('projectId');
@@ -234,8 +248,8 @@ export async function GET(request: Request) {
       }
     });
     
-    const totalDebt = customerDebts.reduce((sum, debt) => sum + Number(debt.amount), 0);
-    const totalPaid = customerPayments.reduce((sum, payment) => sum + Number(payment.amount), 0);
+  const totalDebt = customerDebts.reduce((sum: number, debt: any) => sum + Number(debt.amount), 0);
+  const totalPaid = customerPayments.reduce((sum: number, payment: any) => sum + Number(payment.amount), 0);
     const remainingDebt = totalDebt - totalPaid;
 
     return NextResponse.json({

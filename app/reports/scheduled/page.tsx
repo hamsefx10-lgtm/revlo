@@ -26,11 +26,17 @@ export default function ScheduledReportsPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingReport, setEditingReport] = useState<ScheduledReport | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    type: ScheduledReport['type'];
+    reportType: ScheduledReport['reportType'];
+    emailRecipients: string[];
+    enabled: boolean;
+  }>({
     name: '',
-    type: 'daily' as const,
-    reportType: 'overview' as const,
-    emailRecipients: [] as string[],
+    type: 'daily',
+    reportType: 'overview',
+    emailRecipients: [],
     enabled: true
   });
 

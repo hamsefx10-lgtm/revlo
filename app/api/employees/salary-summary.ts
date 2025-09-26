@@ -36,15 +36,15 @@ export async function GET(request: Request) {
     });
 
     // Build summary per employee
-    const summary = employees.map(emp => {
+  const summary = employees.map((emp: any) => {
       // All approved expenses for this employee this month
-      const empExpenses = expenses.filter(e => e.employeeId === emp.id);
+  const empExpenses = expenses.filter((e: any) => e.employeeId === emp.id);
       // All transactions for this employee this month
-      const empTransactions = transactions.filter(t => t.employeeId === emp.id);
+  const empTransactions = transactions.filter((t: any) => t.employeeId === emp.id);
       // Combine all
       const allTrx = [
-        ...empExpenses.map(e => ({ amount: Number(e.amount), date: e.expenseDate })),
-        ...empTransactions.map(t => ({ amount: Math.abs(Number(t.amount)), date: t.transactionDate })),
+        ...empExpenses.map((e: any) => ({ amount: Number(e.amount), date: e.expenseDate })),
+        ...empTransactions.map((t: any) => ({ amount: Math.abs(Number(t.amount)), date: t.transactionDate })),
       ];
       // Sum paid this month
       const paidThisMonth = allTrx.reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);

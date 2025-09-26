@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
+import { Session } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
 
 // GET - Get cost tracking data for production orders
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = (await getServerSession(authOptions)) as Session | null;
     if (!session?.user?.companyId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
 // POST - Update cost tracking for a production order
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = (await getServerSession(authOptions)) as Session | null;
     if (!session?.user?.companyId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -127,15 +128,15 @@ async function getProductionOrderCosts(companyId: string, productionOrderId: str
 
   // Calculate estimated costs
   const estimatedMaterialCost = productionOrder.billOfMaterials?.reduce(
-    (sum, bom) => sum + Number(bom.totalCost), 0
+    (sum: number, bom: { totalCost: number | string }) => sum + Number(bom.totalCost), 0
   ) || 0;
 
   const estimatedLaborCost = productionOrder.workOrders?.reduce(
-    (sum, wo) => sum + (wo.estimatedHours * 25), 0 // $25/hour
+    (sum: number, wo: { estimatedHours: number }) => sum + (wo.estimatedHours * 25), 0 // $25/hour
   ) || 0;
 
   const actualPurchaseCost = productionOrder.materialPurchases?.reduce(
-    (sum, mp) => sum + Number(mp.totalPrice), 0
+    (sum: number, mp: { totalPrice: number | string }) => sum + Number(mp.totalPrice), 0
   ) || 0;
 
   // Get actual costs from cost tracking
@@ -233,13 +234,13 @@ async function getAllProductionCosts(companyId: string, startDate?: string | nul
     orderBy: { createdAt: 'desc' }
   });
 
-  const costSummary = productionOrders.map(order => {
+  const costSummary = productionOrders.map((order: any) => {
     const estimatedMaterialCost = order.billOfMaterials?.reduce(
-      (sum, bom) => sum + Number(bom.totalCost), 0
+      (sum: number, bom: { totalCost: number | string }) => sum + Number(bom.totalCost), 0
     ) || 0;
 
     const estimatedLaborCost = order.workOrders?.reduce(
-      (sum, wo) => sum + (wo.estimatedHours * 25), 0
+      (sum: number, wo: { estimatedHours: number }) => sum + (wo.estimatedHours * 25), 0
     ) || 0;
 
     const actualCosts = order.costTracking?.[0] || {
@@ -267,7 +268,17 @@ async function getAllProductionCosts(companyId: string, startDate?: string | nul
   });
 
   // Calculate totals
-  const totals = costSummary.reduce((acc, order) => ({
+  const totals = costSummary.reduce((acc: {
+    totalEstimatedCost: number;
+    totalActualCost: number;
+    totalVariance: number;
+    totalQuantity: number;
+  }, order: {
+    estimatedCost: number;
+    actualCost: number;
+    variance: number;
+    quantity: number;
+  }) => ({
     totalEstimatedCost: acc.totalEstimatedCost + order.estimatedCost,
     totalActualCost: acc.totalActualCost + order.actualCost,
     totalVariance: acc.totalVariance + order.variance,

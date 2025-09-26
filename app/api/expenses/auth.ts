@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
 export async function getSessionCompanyId(): Promise<string> {
-  const session = await getServerSession(authOptions);
+  const session = (await getServerSession(authOptions)) as import('next-auth').Session | null;
   
   if (!session?.user?.companyId) {
     throw new Error('Awood uma lihid. Fadlan soo gal.');
@@ -13,7 +13,7 @@ export async function getSessionCompanyId(): Promise<string> {
 }
 
 export async function getSessionCompanyUser() {
-  const session = await getServerSession(authOptions);
+  const session = (await getServerSession(authOptions)) as import('next-auth').Session | null;
   
   if (!session?.user) {
     throw new Error('Awood uma lihid. Fadlan soo gal.');

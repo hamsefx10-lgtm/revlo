@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     const today = new Date();
     const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
     const currentDayOfMonth = today.getDate();
-    const processedEmployees = employees.map(emp => {
+  const processedEmployees = employees.map((emp: any) => {
       // monthlySalary can be null
       const monthlySalaryNum = emp.monthlySalary ? emp.monthlySalary.toNumber() : null;
       const salaryPaidThisMonthNum = emp.salaryPaidThisMonth ? emp.salaryPaidThisMonth.toNumber() : null;

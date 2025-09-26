@@ -6,7 +6,14 @@ import { getSessionCompanyUser } from '@/lib/auth';
 // GET /api/expenses/company - List all company expenses
 export async function GET(request: Request) {
   try {
-    const { companyId } = await getSessionCompanyUser();
+    const sessionData = await getSessionCompanyUser();
+    if (!sessionData) {
+      return NextResponse.json(
+        { message: 'Awood uma lihid. Fadlan soo gal.' },
+        { status: 401 }
+      );
+    }
+    const { companyId } = sessionData;
     const expenses = await prisma.expense.findMany({
       where: { companyId, projectId: null },
       orderBy: { expenseDate: 'desc' },
@@ -20,7 +27,14 @@ export async function GET(request: Request) {
 // POST /api/expenses/company - Add new company expense
 export async function POST(request: Request) {
   try {
-    const { companyId, userId } = await getSessionCompanyUser();
+    const sessionData = await getSessionCompanyUser();
+    if (!sessionData) {
+      return NextResponse.json(
+        { message: 'Awood uma lihid. Fadlan soo gal.' },
+        { status: 401 }
+      );
+    }
+    const { companyId, userId } = sessionData;
     const { description, amount, category, subCategory, paidFrom, expenseDate, note, employeeId } = await request.json();
     if (!category || typeof amount !== 'number' || amount <= 0 || !paidFrom || !expenseDate) {
       return NextResponse.json({ message: 'Fadlan buuxi dhammaan beeraha waajibka ah: Category, Amount, PaidFrom, ExpenseDate.' }, { status: 400 });

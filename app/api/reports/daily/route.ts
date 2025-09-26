@@ -4,7 +4,11 @@ import { getSessionCompanyUser } from '@/lib/auth';
 
 export async function GET(request: Request) {
   try {
-    const { companyId } = await getSessionCompanyUser();
+    const sessionUser = await getSessionCompanyUser();
+    if (!sessionUser || !sessionUser.companyId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const { companyId } = sessionUser;
     const now = new Date();
     const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
@@ -20,7 +24,7 @@ export async function GET(request: Request) {
         project: { select: { name: true } },
       },
     });
-    const debtsCollected = debtsTx.map(tx => ({
+    const debtsCollected = debtsTx.map((tx: any) => ({
       project: tx.project?.name || String(tx.projectId) || 'Unknown',
       amount: Number(tx.amount),
     }));
@@ -39,8 +43,8 @@ export async function GET(request: Request) {
       });
 
       // Split expenses into project and company
-      const projectExpenses = expenses.filter(exp => exp.projectId !== null);
-      const companyExpenses = expenses.filter(exp => exp.projectId === null);
+  const projectExpenses = expenses.filter((exp: any) => exp.projectId !== null);
+  const companyExpenses = expenses.filter((exp: any) => exp.projectId === null);
 
       // Map for frontend
       const mapExpense = (exp: any) => ({
@@ -52,8 +56,8 @@ export async function GET(request: Request) {
       });
       const mappedProjectExpenses = projectExpenses.map(mapExpense);
       const mappedCompanyExpenses = companyExpenses.map(mapExpense);
-      const totalProjectExpenses = mappedProjectExpenses.reduce((sum, e) => sum + e.amount, 0);
-      const totalCompanyExpenses = mappedCompanyExpenses.reduce((sum, e) => sum + e.amount, 0);
+  const totalProjectExpenses = mappedProjectExpenses.reduce((sum: number, e: any) => sum + e.amount, 0);
+  const totalCompanyExpenses = mappedCompanyExpenses.reduce((sum: number, e: any) => sum + e.amount, 0);
       const totalExpenses = totalProjectExpenses + totalCompanyExpenses;
 
     // Income for last 24 hours (assume income is positive transactions)
@@ -65,7 +69,7 @@ export async function GET(request: Request) {
       },
       orderBy: { transactionDate: 'desc' },
     });
-    const income = incomeTx.reduce((sum, tx) => sum + Number(tx.amount), 0);
+  const income = incomeTx.reduce((sum: number, tx: any) => sum + Number(tx.amount), 0);
 
     // Fetch live account balances for the company
     const accounts = await prisma.account.findMany({
@@ -83,14 +87,14 @@ export async function GET(request: Request) {
         previous: {},
         today: {},
       };
-      accounts.forEach(acc => {
+      accounts.forEach((acc: any) => {
         if (balances) {
           const balanceValue = Number(acc.balance);
           balances.previous[acc.name] = balanceValue;
           balances.today[acc.name] = balanceValue;
         }
       });
-      totalPrev = accounts.reduce((sum, acc) => {
+      totalPrev = accounts.reduce((sum: number, acc: any) => {
         return sum + Number(acc.balance);
       }, 0);
       totalToday = totalPrev;

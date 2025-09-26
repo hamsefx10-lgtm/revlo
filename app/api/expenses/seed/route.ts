@@ -6,7 +6,14 @@ import { getSessionCompanyUser } from '@/lib/auth';
 // POST /api/expenses/seed - Create sample expenses for testing
 export async function POST(request: Request) {
   try {
-    const { companyId, userId } = await getSessionCompanyUser();
+    const sessionData = await getSessionCompanyUser();
+    if (!sessionData) {
+      return NextResponse.json(
+        { message: 'Awood uma lihid. Fadlan soo gal.' },
+        { status: 401 }
+      );
+    }
+    const { companyId, userId } = sessionData;
     
     // Sample expenses data
     const sampleExpenses = [

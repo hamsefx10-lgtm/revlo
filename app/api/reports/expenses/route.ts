@@ -5,7 +5,11 @@ import { getSessionCompanyUser } from '@/lib/auth';
 
 export async function GET(request: Request) {
 	try {
-		const { companyId } = await getSessionCompanyUser();
+		const sessionUser = await getSessionCompanyUser();
+		if (!sessionUser || !sessionUser.companyId) {
+			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+		}
+		const { companyId } = sessionUser;
 		// Fetch all expenses for the company
 			const expenses = await prisma.expense.findMany({
 				where: { companyId },

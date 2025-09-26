@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
+import { Session } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
 
 // GET - Get production schedule and capacity planning
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions) as Session | null;
     if (!session?.user?.companyId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
 // POST - Update production schedule
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions) as Session | null;
     if (!session?.user?.companyId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -152,7 +153,7 @@ async function getDailySchedule(companyId: string, startDate?: string | null, en
     orderBy: { priority: 'desc' }
   });
 
-  const schedule = dailyOrders.map(order => ({
+  const schedule = dailyOrders.map((order: any) => ({
     id: order.id,
     orderNumber: order.orderNumber,
     productName: order.productName,
@@ -162,14 +163,14 @@ async function getDailySchedule(companyId: string, startDate?: string | null, en
     startDate: order.startDate,
     dueDate: order.dueDate,
     customer: order.customer?.name || 'N/A',
-    workOrders: order.workOrders.map(wo => ({
+  workOrders: order.workOrders.map((wo: any) => ({
       id: wo.id,
       stage: wo.stage,
       estimatedHours: wo.estimatedHours,
       assignedTo: wo.assignedTo?.fullName || 'Unassigned',
       status: wo.status
     })),
-    totalEstimatedHours: order.workOrders.reduce((sum, wo) => sum + wo.estimatedHours, 0)
+  totalEstimatedHours: order.workOrders.reduce((sum: number, wo: any) => sum + wo.estimatedHours, 0)
   }));
 
   return NextResponse.json({
@@ -178,9 +179,9 @@ async function getDailySchedule(companyId: string, startDate?: string | null, en
     schedule,
     summary: {
       totalOrders: schedule.length,
-      totalHours: schedule.reduce((sum, order) => sum + order.totalEstimatedHours, 0),
-      inProgress: schedule.filter(o => o.status === 'IN_PROGRESS').length,
-      planned: schedule.filter(o => o.status === 'PLANNED').length
+  totalHours: schedule.reduce((sum: number, order: any) => sum + order.totalEstimatedHours, 0),
+  inProgress: schedule.filter((o: any) => o.status === 'IN_PROGRESS').length,
+  planned: schedule.filter((o: any) => o.status === 'PLANNED').length
     }
   });
 }
@@ -229,7 +230,7 @@ async function getWeeklySchedule(companyId: string, startDate?: string | null, e
     const day = new Date(weekStart);
     day.setDate(weekStart.getDate() + i);
     
-    const dayOrders = weeklyOrders.filter(order => {
+  const dayOrders = weeklyOrders.filter((order: any) => {
       const orderStart = order.startDate ? new Date(order.startDate) : null;
       const orderDue = order.dueDate ? new Date(order.dueDate) : null;
       
@@ -241,7 +242,7 @@ async function getWeeklySchedule(companyId: string, startDate?: string | null, e
     return {
       date: day.toISOString().split('T')[0],
       dayName: day.toLocaleDateString('en-US', { weekday: 'long' }),
-      orders: dayOrders.map(order => ({
+  orders: dayOrders.map((order: any) => ({
         id: order.id,
         orderNumber: order.orderNumber,
         productName: order.productName,
@@ -249,10 +250,10 @@ async function getWeeklySchedule(companyId: string, startDate?: string | null, e
         status: order.status,
         priority: order.priority,
         customer: order.customer?.name || 'N/A',
-        totalHours: order.workOrders.reduce((sum, wo) => sum + wo.estimatedHours, 0)
+  totalHours: order.workOrders.reduce((sum: number, wo: any) => sum + wo.estimatedHours, 0)
       })),
-      totalHours: dayOrders.reduce((sum, order) => 
-        sum + order.workOrders.reduce((woSum, wo) => woSum + wo.estimatedHours, 0), 0
+      totalHours: dayOrders.reduce((sum: number, order: any) => 
+        sum + order.workOrders.reduce((woSum: number, wo: any) => woSum + wo.estimatedHours, 0), 0
       )
     };
   });
@@ -264,8 +265,8 @@ async function getWeeklySchedule(companyId: string, startDate?: string | null, e
     schedule: weeklySchedule,
     summary: {
       totalOrders: weeklyOrders.length,
-      totalHours: weeklySchedule.reduce((sum, day) => sum + day.totalHours, 0),
-      averageHoursPerDay: weeklySchedule.reduce((sum, day) => sum + day.totalHours, 0) / 7
+  totalHours: weeklySchedule.reduce((sum: number, day: any) => sum + day.totalHours, 0),
+  averageHoursPerDay: weeklySchedule.reduce((sum: number, day: any) => sum + day.totalHours, 0) / 7
     }
   });
 }
@@ -312,7 +313,7 @@ async function getMonthlySchedule(companyId: string, startDate?: string | null, 
     const weekEnd = new Date(currentWeek);
     weekEnd.setDate(currentWeek.getDate() + 6);
     
-    const weekOrders = monthlyOrders.filter(order => {
+  const weekOrders = monthlyOrders.filter((order: any) => {
       const orderStart = order.startDate ? new Date(order.startDate) : null;
       const orderDue = order.dueDate ? new Date(order.dueDate) : null;
       
@@ -325,8 +326,8 @@ async function getMonthlySchedule(companyId: string, startDate?: string | null, 
       weekStart: currentWeek.toISOString().split('T')[0],
       weekEnd: weekEnd.toISOString().split('T')[0],
       orders: weekOrders.length,
-      totalHours: weekOrders.reduce((sum, order) => 
-        sum + order.workOrders.reduce((woSum, wo) => woSum + wo.estimatedHours, 0), 0
+      totalHours: weekOrders.reduce((sum: number, order: any) => 
+        sum + order.workOrders.reduce((woSum: number, wo: any) => woSum + wo.estimatedHours, 0), 0
       )
     });
 
@@ -340,8 +341,8 @@ async function getMonthlySchedule(companyId: string, startDate?: string | null, 
     weeklyBreakdown: weeklyGroups,
     summary: {
       totalOrders: monthlyOrders.length,
-      totalHours: weeklyGroups.reduce((sum, week) => sum + week.totalHours, 0),
-      averageHoursPerWeek: weeklyGroups.reduce((sum, week) => sum + week.totalHours, 0) / weeklyGroups.length
+  totalHours: weeklyGroups.reduce((sum: number, week: any) => sum + week.totalHours, 0),
+  averageHoursPerWeek: weeklyGroups.reduce((sum: number, week: any) => sum + week.totalHours, 0) / weeklyGroups.length
     }
   });
 }
@@ -374,8 +375,8 @@ async function getCapacityPlanning(companyId: string) {
     }
   });
 
-  const employeeCapacity = employees.map(employee => {
-    const currentWorkload = employee.workOrders.reduce((sum, wo) => sum + wo.estimatedHours, 0);
+  const employeeCapacity = employees.map((employee: any) => {
+    const currentWorkload = employee.workOrders.reduce((sum: number, wo: any) => sum + wo.estimatedHours, 0);
     const maxCapacity = 40; // 40 hours per week
     const availableCapacity = Math.max(0, maxCapacity - currentWorkload);
     
@@ -387,7 +388,7 @@ async function getCapacityPlanning(companyId: string) {
       maxCapacity,
       availableCapacity,
       utilizationPercentage: (currentWorkload / maxCapacity) * 100,
-      assignedOrders: employee.workOrders.map(wo => ({
+  assignedOrders: employee.workOrders.map((wo: any) => ({
         orderNumber: wo.productionOrder?.orderNumber,
         productName: wo.productionOrder?.productName,
         stage: wo.stage,
@@ -396,12 +397,12 @@ async function getCapacityPlanning(companyId: string) {
     };
   });
 
-  const totalCapacity = employeeCapacity.reduce((sum, emp) => sum + emp.maxCapacity, 0);
-  const totalWorkload = employeeCapacity.reduce((sum, emp) => sum + emp.currentWorkload, 0);
+  const totalCapacity = employeeCapacity.reduce((sum: number, emp: any) => sum + emp.maxCapacity, 0);
+  const totalWorkload = employeeCapacity.reduce((sum: number, emp: any) => sum + emp.currentWorkload, 0);
   const totalAvailable = totalCapacity - totalWorkload;
 
-  const pendingWorkload = pendingOrders.reduce((sum, order) => 
-    sum + order.workOrders.reduce((woSum, wo) => woSum + wo.estimatedHours, 0), 0
+  const pendingWorkload = pendingOrders.reduce((sum: number, order: any) => 
+    sum + order.workOrders.reduce((woSum: number, wo: any) => woSum + wo.estimatedHours, 0), 0
   );
 
   return NextResponse.json({
@@ -418,7 +419,7 @@ async function getCapacityPlanning(companyId: string) {
     recommendations: {
       needsMoreStaff: totalAvailable < pendingWorkload,
       optimalStaffing: Math.ceil(pendingWorkload / 40), // 40 hours per employee
-      bottleneckEmployees: employeeCapacity.filter(emp => emp.utilizationPercentage > 90)
+  bottleneckEmployees: employeeCapacity.filter((emp: any) => emp.utilizationPercentage > 90)
     }
   });
 }

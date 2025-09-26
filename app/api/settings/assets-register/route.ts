@@ -16,7 +16,7 @@ export async function GET() {
     });
 
     // Calculate depreciation and book values
-    const assetsWithDepreciation = assets.map(asset => {
+  const assetsWithDepreciation = assets.map((asset: any) => {
       const depreciationRate = 0.15; // Default 15% annual depreciation
       const yearsSincePurchase = (new Date().getFullYear() - new Date(asset.purchaseDate).getFullYear());
       const depreciationAmount = asset.value * depreciationRate * yearsSincePurchase;

@@ -11,7 +11,7 @@ export async function GET(request: Request) {
       where: { companyId },
       select: { id: true, name: true },
     });
-    const projectIds = projects.map(p => p.id);
+  const projectIds = projects.map((p: any) => p.id);
     // Get all ProjectLabor records for these projects
     const projectLabors = await prisma.projectLabor.findMany({
       where: { projectId: { in: projectIds } },

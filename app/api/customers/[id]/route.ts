@@ -131,21 +131,21 @@ export async function GET(request: Request, { params }: { params: { id: string }
       customerName: customer.name,
       outstandingDebt,
       expenses: expenses.filter(exp => exp.category === 'Company Expense' && exp.subCategory === 'Debt'),
-      debtTransactions: transactions.filter(trx => trx.type === 'DEBT_TAKEN' || trx.type === 'DEBT_REPAID'),
-      incomeTransactions: transactions.filter(trx => trx.type === 'INCOME' && !trx.projectId)
+  debtTransactions: transactions.filter((trx: any) => trx.type === 'DEBT_TAKEN' || trx.type === 'DEBT_REPAID'),
+  incomeTransactions: transactions.filter((trx: any) => trx.type === 'INCOME' && !trx.projectId)
     });
 
     // 4. Projects uu leeyahay iyo lacagta ku dhiman (using accounting transactions)
-    const projectDebts = (customer.projects || []).map(proj => {
+  const projectDebts = (customer.projects || []).map((proj: any) => {
       const agreement = Number(proj.agreementAmount || 0);
       
       // Calculate total payments from accounting transactions for this project
-      const projectTransactions = transactions.filter(trx => 
+  const projectTransactions = transactions.filter((trx: any) => 
         trx.projectId === proj.id && 
         (trx.type === 'INCOME' || trx.type === 'DEBT_REPAID')
       );
       
-      const totalPaidFromTransactions = projectTransactions.reduce((sum, trx) => 
+      const totalPaidFromTransactions = projectTransactions.reduce((sum: number, trx: any) => 
         sum + Math.abs(Number(trx.amount)), 0
       );
       
@@ -166,7 +166,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     // 4b. Update project balances in database if there are discrepancies
     for (const proj of customer.projects || []) {
-      const projectDebt = projectDebts.find(pd => pd.id === proj.id);
+  const projectDebt = projectDebts.find((pd: any) => pd.id === proj.id);
       if (projectDebt && Math.abs(Number(proj.remainingAmount) - projectDebt.remainingAmount) > 0.01) {
         await prisma.project.update({
           where: { id: proj.id },
@@ -179,7 +179,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     }
 
     // 5. Payments uu bixiyay (lacagaha la helay)
-    const payments = customer.payments.map(pay => ({
+  const payments = customer.payments.map((pay: any) => ({
       ...pay,
       amount: Number(pay.amount),
     }));
@@ -196,7 +196,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     });
     
     // Create a map for quick lookup
-    const accountMap = new Map(accounts.map(acc => [acc.id, acc.name]));
+  const accountMap = new Map(accounts.map((acc: any) => [acc.id, acc.name]));
 
     // 9. Map expenses with account names
     const expensesWithAccountNames = expenses.map(exp => ({

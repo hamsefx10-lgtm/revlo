@@ -788,7 +788,7 @@ const CustomerDetailsPage: React.FC = () => {
                     {expensesWithReceipts.map((expense) => (
                       <div key={expense.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
                         <div className="mb-3">
-                          <h4 className="font-semibold text-darkGray dark:text-gray-100">{expense.description}</h4>
+                          <h4 className="font-semibold text-darkGray dark:text-gray-100">{expense.note || '-'}</h4>
                           <p className="text-sm text-mediumGray dark:text-gray-400">${expense.amount.toLocaleString()}</p>
                           <p className="text-xs text-gray-500 dark:text-gray-500">
                             {new Date(expense.expenseDate).toLocaleDateString()}
@@ -802,7 +802,7 @@ const CustomerDetailsPage: React.FC = () => {
                           <div className="mb-3">
                             <img 
                               src={expense.receiptUrl} 
-                              alt={`Receipt for ${expense.description}`}
+                              alt={`Receipt for ${expense.note || '-'}`}
                               className="w-full h-32 object-cover rounded-lg border border-lightGray dark:border-gray-700"
                               onClick={() => window.open(expense.receiptUrl, '_blank')}
                               style={{ cursor: 'pointer' }}

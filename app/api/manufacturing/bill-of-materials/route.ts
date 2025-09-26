@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
 
 // GET - Fetch all bill of materials for the company
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+  const session = (await getServerSession(authOptions)) as import('next-auth').Session | null;
     if (!session?.user?.companyId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
 // POST - Create a new bill of material
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+  const session = (await getServerSession(authOptions)) as import('next-auth').Session | null;
     if (!session?.user?.companyId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

@@ -61,17 +61,17 @@ export async function GET(request: Request) {
     });
 
     // Fetch account information for all unique account IDs
-    const accountIds = [...new Set(expenses.map(exp => exp.paidFrom).filter(Boolean))];
+  const accountIds = [...new Set(expenses.map((exp: any) => exp.paidFrom).filter(Boolean))];
     const accounts = await prisma.account.findMany({
       where: { id: { in: accountIds } },
       select: { id: true, name: true },
     });
     
     // Create a map for quick lookup
-    const accountMap = new Map(accounts.map(acc => [acc.id, acc.name]));
+  const accountMap = new Map(accounts.map((acc: any) => [acc.id, acc.name]));
 
     // Map to frontend format: always return amount as number, project name, etc.
-    const mappedExpenses = expenses.map(exp => ({
+  const mappedExpenses = expenses.map((exp: any) => ({
       id: exp.id,
       date: exp.expenseDate,
       project: exp.project ? { id: exp.project.id, name: exp.project.name } : undefined,
@@ -272,23 +272,29 @@ export async function POST(request: Request) {
     let transactionCustomerId = undefined;
     let transactionAccountId = undefined;
     if (category === 'Debt' || (category === 'Company Expense' && subCategory === 'Debt')) {
-      transactionType = 'DEBT_TAKEN';
-      transactionCustomerId = customerId || null;
-      console.log('Creating DEBT_TAKEN transaction:', {
+      if (paymentStatus === 'REPAID') {
+        transactionType = 'DEBT_REPAID';
+        transactionCustomerId = customerId || null;
+      } else {
+        transactionType = 'DEBT_TAKEN';
+        transactionCustomerId = customerId || null;
+      }
+      console.log('Creating debt transaction:', {
         category,
         subCategory,
         customerId,
         amount,
-        description
+        description,
+        transactionType
       });
-    }
-    
-    // NEW: Handle vendor payment logic for Material expenses
-    if (category === 'Material') {
+    } else if (category === 'Material') {
       if (paymentStatus === 'PAID') {
         // If paid, create expense transaction and deduct from account
         transactionType = 'EXPENSE';
         transactionAccountId = paidFrom;
+      } else if (paymentStatus === 'REPAID') {
+        transactionType = 'DEBT_REPAID';
+        transactionCustomerId = vendorId;
       } else {
         // If unpaid, create debt transaction (vendor debt)
         transactionType = 'DEBT_TAKEN';
