@@ -139,7 +139,6 @@ export async function GET() {
       where: {
         companyId,
         OR: [
-          { description: null },
           { description: '' }
         ]
       },
