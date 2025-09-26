@@ -8,7 +8,11 @@ import { getSessionCompanyUser } from '@/lib/auth';
 // POST /api/accounting/transactions/transfer - Wareeji lacag u dhexeysa accounts-ka
 export async function POST(request: Request) {
   try {
-    const { companyId, userId } = await getSessionCompanyUser();
+    const sessionData = await getSessionCompanyUser();
+    if (!sessionData) {
+      return NextResponse.json({ message: 'Awood uma lihid.' }, { status: 401 });
+    }
+    const { companyId, userId } = sessionData;
 
     const { 
       fromAccountId, toAccountId, amount, description, transactionDate, note
