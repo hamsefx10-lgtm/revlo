@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     }
 
     // Hubi in account-ka laga wareejinayo uu leeyahay lacag ku filan
-    if (sourceAccount.balance.toNumber() < amount) {
+  if (sourceAccount.balance < amount) {
       return NextResponse.json(
         { message: `Account-ka '${sourceAccount.name}' ma laha lacag ku filan (${sourceAccount.balance.toLocaleString()} ${sourceAccount.currency}).` },
         { status: 400 }
@@ -57,12 +57,12 @@ export async function POST(request: Request) {
       // 1. Cusboonaysii balance-ka accounts-ka
       await prisma.account.update({
         where: { id: sourceAccount.id },
-        data: { balance: new Decimal(sourceAccount.balance.toNumber() - amount) },
+  data: { balance: new Decimal(sourceAccount.balance - amount) },
       });
 
       await prisma.account.update({
         where: { id: destinationAccount.id },
-        data: { balance: new Decimal(destinationAccount.balance.toNumber() + amount) },
+  data: { balance: new Decimal(destinationAccount.balance + amount) },
       });
 
       // 2. Abuur diiwaanada transactions-ka (labo transaction oo isku xiran)
