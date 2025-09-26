@@ -86,8 +86,8 @@ export async function GET() {
     // Check for projects without customers
     const projectsWithoutCustomers = await prisma.project.findMany({
       where: {
-        companyId,
-        customer: null
+  companyId,
+  customer: { is: null }
       },
       select: { id: true, name: true, projectType: true }
     });
