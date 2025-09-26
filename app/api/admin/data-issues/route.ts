@@ -83,27 +83,6 @@ export async function GET() {
       });
     }
 
-    // Check for projects without customers
-    const projectsWithoutCustomers = await prisma.project.findMany({
-      where: {
-  companyId,
-  customerId: null
-      },
-      select: { id: true, name: true, projectType: true }
-    });
-
-    if (projectsWithoutCustomers.length > 0) {
-      issues.push({
-        id: 'projects-without-customers',
-        type: 'Projects Without Customers',
-        description: 'Projects not linked to any customer',
-        severity: 'high',
-        affectedRecords: projectsWithoutCustomers.length,
-        status: 'pending',
-        createdAt: new Date(),
-        details: projectsWithoutCustomers
-      });
-    }
 
     // Check for expenses without categories
     const expensesWithoutCategories = await prisma.expense.findMany({
