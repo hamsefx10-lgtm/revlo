@@ -120,10 +120,10 @@ export async function POST(
         const updatedExpenses = await prisma.expense.updateMany({
           where: {
             companyId,
-              OR: [
-                { category: '' },
-                { subCategory: '' }
-              ]
+            OR: [
+              { category: '' },
+              { subCategory: '' }
+            ]
           },
           data: {
             category: 'Other',

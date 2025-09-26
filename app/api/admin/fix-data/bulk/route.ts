@@ -126,9 +126,7 @@ export async function POST(request: Request) {
               where: {
                 companyId,
                 OR: [
-                  { category: null },
                   { category: '' },
-                  { subCategory: null },
                   { subCategory: '' }
                 ]
               },
@@ -173,7 +171,6 @@ export async function POST(request: Request) {
               where: {
                 companyId,
                 OR: [
-                  { description: null },
                   { description: '' }
                 ]
               },
