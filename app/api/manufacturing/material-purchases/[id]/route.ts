@@ -154,8 +154,7 @@ export async function PUT(
         purchaseDate: new Date(purchaseDate),
         invoiceNumber,
         notes,
-        productionOrderId: productionOrderId || null,
-        accountId
+        productionOrderId: productionOrderId || null
       },
       include: {
         vendor: {
