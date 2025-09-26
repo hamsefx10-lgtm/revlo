@@ -89,9 +89,7 @@ export async function GET() {
       where: {
         companyId,
         OR: [
-          { category: { equals: null } },
           { category: '' },
-          { subCategory: { equals: null } },
           { subCategory: '' }
         ]
       },
