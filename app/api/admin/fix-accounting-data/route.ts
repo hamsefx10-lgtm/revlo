@@ -5,7 +5,11 @@ import { getSessionCompanyUser } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
-    const { companyId } = await getSessionCompanyUser();
+    const sessionData = await getSessionCompanyUser();
+    if (!sessionData) {
+      return NextResponse.json({ message: 'Awood uma lihid.' }, { status: 401 });
+    }
+    const { companyId } = sessionData;
     
     console.log('🚀 Starting live accounting data fix...');
     

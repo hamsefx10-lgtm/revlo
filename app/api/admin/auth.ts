@@ -1,9 +1,10 @@
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
+import type { Session } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { NextResponse } from 'next/server';
 
 export async function getSessionCompanyId(): Promise<string> {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions) as Session | null;
   
   if (!session?.user?.companyId) {
     throw new Error('Unauthorized: No company ID found in session');
@@ -13,7 +14,7 @@ export async function getSessionCompanyId(): Promise<string> {
 }
 
 export async function requireAdmin(): Promise<void> {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions) as Session | null;
   
   if (!session?.user) {
     throw new Error('Unauthorized: No session found');
@@ -25,7 +26,7 @@ export async function requireAdmin(): Promise<void> {
 }
 
 export async function requireManagerOrAdmin(): Promise<void> {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions) as Session | null;
   
   if (!session?.user) {
     throw new Error('Unauthorized: No session found');

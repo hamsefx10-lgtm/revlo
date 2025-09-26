@@ -124,10 +124,10 @@ export default function HomePage() {
           <div className="text-center animate-fade-in-left">
             <h2 className="text-3xl lg:text-5xl md:text-7xl font-extrabold leading-tight mb-4 lg:mb-7 drop-shadow-xl">
               Maamul Ganacsigaaga,<br />
-              <span className="text-secondary">Kobci Mustaqbalkaaga</span>
+              <span className="text-secondary">Revlo waa nidaam ERP casri ah</span>
             </h2>
             <p className="text-base lg:text-xl md:text-2xl mb-8 lg:mb-12 opacity-90 leading-relaxed max-w-xl">
-              Revlo waa nidaam ERP casri ah oo dhamaystiran, kaas oo ganacsigaaga ka dhigaya mid hufan oo isku xirnaan leh. Ku maamul mashaariicda, Production Orders, Material Purchases, Company Chat, kharashaadka, kaydka, iyo macaamiishaada si fudud, adigoo ka faa'iidaysanaya otomaatig awood leh iyo xog dhab-waqti ah oo kugu hagta go'aanka saxda ah.
+               oo dhamaystiran, kaas oo ganacsigaaga ka dhigaya mid hufan oo isku xirnaan leh. Ku maamul mashaariicda, Production Orders, Material Purchases, Company Chat, kharashaadka, kaydka, iyo macaamiishaada si fudud, adigoo ka faa'iidaysanaya otomaatig awood leh iyo xog dhab ah oo kugu hagta go'aanka saxda ah.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 lg:gap-6">
               <Link href="/signup" className="bg-secondary text-white py-3 lg:py-4 px-6 lg:px-10 rounded-full text-lg lg:text-xl font-extrabold hover:bg-green-600 transition-all duration-300 shadow-xl transform hover:scale-105 flex items-center justify-center">

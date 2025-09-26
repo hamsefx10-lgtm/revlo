@@ -5,7 +5,11 @@ import { getSessionCompanyUser } from '@/lib/auth';
 
 export async function GET(request: Request) {
   try {
-    const { companyId } = await getSessionCompanyUser();
+    const sessionData = await getSessionCompanyUser();
+    if (!sessionData) {
+      return NextResponse.json({ message: 'Awood uma lihid.' }, { status: 401 });
+    }
+    const { companyId } = sessionData;
     
     console.log('🔍 Checking existing transactions...');
     
@@ -53,7 +57,7 @@ export async function GET(request: Request) {
         incomeWithoutProject: incomeWithoutProject.length,
         totalProjects: projects.length
       },
-      transactions: transactions.map(trx => ({
+  transactions: transactions.map((trx: any) => ({
         id: trx.id,
         description: trx.description,
         amount: trx.amount,
@@ -64,14 +68,14 @@ export async function GET(request: Request) {
         customer: trx.customer ? { id: trx.customer.id, name: trx.customer.name } : null,
         hasProjectLink: !!trx.projectId
       })),
-      incomeWithoutProject: incomeWithoutProject.map(trx => ({
+  incomeWithoutProject: incomeWithoutProject.map((trx: any) => ({
         id: trx.id,
         description: trx.description,
         amount: trx.amount,
         customer: trx.customer?.name,
         account: trx.account?.name
       })),
-      projects: projects.map(project => ({
+  projects: projects.map((project: any) => ({
         id: project.id,
         name: project.name,
         customer: project.customer.name,
@@ -79,7 +83,7 @@ export async function GET(request: Request) {
         advancePaid: project.advancePaid,
         remainingAmount: project.remainingAmount,
         incomeTransactions: project.transactions.length,
-        transactions: project.transactions.map(trx => ({
+  transactions: project.transactions.map((trx: any) => ({
           id: trx.id,
           description: trx.description,
           amount: trx.amount,

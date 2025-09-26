@@ -19,7 +19,7 @@ export async function GET() {
     });
 
     // Transform the data for the frontend
-    const liveTransactions = transactions.map(transaction => ({
+  const liveTransactions = transactions.map((transaction: any) => ({
       id: transaction.id,
       type: transaction.type,
       amount: transaction.amount.toNumber(),
