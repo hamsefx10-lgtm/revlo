@@ -19,8 +19,8 @@ export async function POST(
           where: {
             companyId,
             OR: [
-              { projectId: { not: null }, project: null },
-              { customerId: { not: null }, customer: null }
+              { projectId: { not: null }, project: { is: null } },
+              { customerId: { not: null }, customer: { is: null } }
             ]
           }
         });
@@ -168,7 +168,6 @@ export async function POST(
           where: {
             companyId,
             OR: [
-              { description: null },
               { description: '' }
             ]
           },

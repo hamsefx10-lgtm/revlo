@@ -18,7 +18,7 @@ export async function POST(request: Request) {
       where: {
         companyId,
         type: 'INCOME',
-        projectId: null
+        projectId: { equals: null }
       },
       include: {
         customer: { select: { id: true, name: true } }

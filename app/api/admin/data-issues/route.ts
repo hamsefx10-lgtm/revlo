@@ -13,8 +13,8 @@ export async function GET() {
       where: {
         companyId,
         OR: [
-          { projectId: { not: null }, project: null },
-          { customerId: { not: null }, customer: null }
+          { projectId: { not: null }, project: { is: null } },
+          { customerId: { not: null }, customer: { is: null } }
         ]
       },
       select: { id: true, type: true, amount: true, description: true }

@@ -30,7 +30,7 @@ export async function GET(request: Request) {
       where: {
         companyId,
         type: 'INCOME',
-        projectId: null
+        projectId: { equals: null }
       },
       include: {
         customer: { select: { name: true } },
@@ -64,8 +64,8 @@ export async function GET(request: Request) {
         type: trx.type,
         date: trx.transactionDate,
         account: trx.account?.name,
-        project: trx.project ? { id: trx.project.id, name: trx.project.name } : null,
-        customer: trx.customer ? { id: trx.customer.id, name: trx.customer.name } : null,
+        project: trx.project ? { id: trx.project.id, name: trx.project.name } : undefined,
+        customer: trx.customer ? { id: trx.customer.id, name: trx.customer.name } : undefined,
         hasProjectLink: !!trx.projectId
       })),
   incomeWithoutProject: incomeWithoutProject.map((trx: any) => ({
