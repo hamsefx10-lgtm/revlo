@@ -1,12 +1,12 @@
 // app/api/auth/logout/route.ts - User Logout API Route
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
     // Get current session
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions) as any;
     
     if (session) {
       // Log logout activity (optional)
