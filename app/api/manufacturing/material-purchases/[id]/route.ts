@@ -36,14 +36,6 @@ export async function GET(
             productName: true,
             status: true
           }
-        },
-        account: {
-          select: {
-            id: true,
-            name: true,
-            type: true,
-            balance: true
-          }
         }
       }
     });
@@ -181,14 +173,6 @@ export async function PUT(
             orderNumber: true,
             productName: true,
             status: true
-          }
-        },
-        account: {
-          select: {
-            id: true,
-            name: true,
-            type: true,
-            balance: true
           }
         }
       }
