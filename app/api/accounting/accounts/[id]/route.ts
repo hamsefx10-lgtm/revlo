@@ -79,7 +79,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       data: {
         name,
         type,
-        balance: new Decimal(balance),
+  balance: Number(balance),
         currency,
         updatedAt: new Date(),
       },
