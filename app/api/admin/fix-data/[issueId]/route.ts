@@ -103,8 +103,7 @@ export async function POST(
 
         const linkedProjects = await prisma.project.updateMany({
           where: {
-            companyId,
-            customerId: null
+            companyId
           },
           data: { customerId }
         });
