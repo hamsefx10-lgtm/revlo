@@ -27,8 +27,18 @@ export async function POST(request: Request) {
               where: {
                 companyId,
                 OR: [
-                  { projectId: { not: null }, project: { is: null } },
-                  { customerId: { not: null }, customer: { is: null } }
+                  { 
+                    AND: [
+                      { projectId: { not: null } },
+                      { project: null }
+                    ]
+                  },
+                  { 
+                    AND: [
+                      { customerId: { not: null } },
+                      { customer: null }
+                    ]
+                  }
                 ]
               }
             });
@@ -108,8 +118,7 @@ export async function POST(request: Request) {
 
             const linkedProjects = await prisma.project.updateMany({
               where: {
-                companyId,
-                customer: { is: null }
+                companyId
               },
               data: { customerId }
             });
