@@ -247,9 +247,7 @@ export async function DELETE(
         id: params.id,
         companyId: session.user.companyId
       },
-      include: {
-        account: true
-      }
+         // No include needed here, as 'account' is not a valid relation
     });
 
     if (!existingPurchase) {
