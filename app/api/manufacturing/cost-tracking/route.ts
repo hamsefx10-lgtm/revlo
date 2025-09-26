@@ -144,11 +144,9 @@ async function getProductionOrderCosts(companyId: string, productionOrderId: str
   ) || 0;
 
   // Get actual costs from cost tracking
-  const actualCosts = productionOrder.costTracking?.[0] || {
-    actualMaterialCost: 0,
-    actualLaborCost: 0,
-    overheadCost: 0
-  };
+  const actualCosts = Array.isArray(productionOrder.costTracking)
+    ? (productionOrder.costTracking[0] || { actualMaterialCost: 0, actualLaborCost: 0, overheadCost: 0 })
+    : (productionOrder.costTracking || { actualMaterialCost: 0, actualLaborCost: 0, overheadCost: 0 });
 
   // Calculate variances
   const materialVariance = actualCosts.actualMaterialCost - estimatedMaterialCost;
