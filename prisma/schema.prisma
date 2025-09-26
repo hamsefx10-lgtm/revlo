@@ -410,6 +410,8 @@ model Account {
   company      Company       @relation(fields: [companyId], references: [id])
   expenses     Expense[]
   transactions Transaction[]
+  fromTransactions Transaction[] @relation("FromAccount")
+  toTransactions   Transaction[] @relation("ToAccount")
 
   @@unique([name, companyId])
   @@map("accounts")
@@ -425,6 +427,8 @@ model Transaction {
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   accountId       String?
+  fromAccountId   String?
+  toAccountId     String?
   projectId       String?
   expenseId       String?
   customerId      String?
@@ -435,6 +439,8 @@ model Transaction {
   companyId       String
   fiscalYearId    String?
   account         Account?        @relation(fields: [accountId], references: [id])
+  fromAccount     Account?        @relation("FromAccount", fields: [fromAccountId], references: [id])
+  toAccount       Account?        @relation("ToAccount", fields: [toAccountId], references: [id])
   company         Company         @relation(fields: [companyId], references: [id])
   customer        Customer?       @relation(fields: [customerId], references: [id])
   employee        Employee?       @relation(fields: [employeeId], references: [id])
