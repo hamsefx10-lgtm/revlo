@@ -6,7 +6,11 @@ import { getSessionCompanyUser } from '@/lib/auth';
 // GET /api/expenses/project - List all project expenses
 export async function GET(request: Request) {
   try {
-    const { companyId } = await getSessionCompanyUser();
+    const sessionUser = await getSessionCompanyUser() as { companyId: string; userId: string } | null;
+    if (!sessionUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const { companyId } = sessionUser;
     const expenses = await prisma.expense.findMany({
       where: { companyId, projectId: { not: null } },
       orderBy: { expenseDate: 'desc' },
@@ -20,7 +24,11 @@ export async function GET(request: Request) {
 // POST /api/expenses/project - Add new project expense
 export async function POST(request: Request) {
   try {
-    const { companyId, userId } = await getSessionCompanyUser();
+    const sessionUser = await getSessionCompanyUser() as { companyId: string; userId: string } | null;
+    if (!sessionUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const { companyId, userId } = sessionUser;
     const reqBody = await request.json();
   const { description, amount, category, subCategory, paidFrom, expenseDate, note, projectId, employeeId, laborPaidAmount = 0, employeeName, transportType, consultantName, consultancyType, consultancyFee, equipmentName, rentalPeriod, rentalFee, supplierName, bankAccountId } = reqBody;
     // General required fields
