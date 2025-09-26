@@ -89,9 +89,9 @@ export async function GET() {
       where: {
         companyId,
         OR: [
-          { category: null },
+          { category: { equals: null } },
           { category: '' },
-          { subCategory: null },
+          { subCategory: { equals: null } },
           { subCategory: '' }
         ]
       },
