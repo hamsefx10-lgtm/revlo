@@ -241,7 +241,9 @@ export async function getFiscalYearSummary(
     const payments = await prisma.payment.findMany({
       where: {
         fiscalYearId: fiscalYearId,
-        companyId: companyId,
+        project: {
+          companyId: companyId,
+        },
       },
     });
 
