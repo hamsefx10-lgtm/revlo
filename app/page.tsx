@@ -24,23 +24,24 @@ import {
   BarChart3, // New icon for Reports
   Download, // New icon for Download/Install
 } from 'lucide-react'; // Imports all necessary icons from Lucide React
+import LiveReviews from '@/components/LiveReviews';
 
 // --- Custom Components for Reusability and Cleanliness ---
 
-// Feature Card Component (Enhanced with hover effect)
+// Feature Card Component (Mobile Optimized)
 const FeatureCard: React.FC<{ icon: React.ReactNode; title: string; description: string; delay: number }> = ({ icon, title, description, delay }) => (
   <div
-    className="relative bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl border border-lightGray dark:border-gray-700 
+    className="relative bg-white dark:bg-gray-800 p-4 sm:p-6 lg:p-8 rounded-xl shadow-2xl border border-lightGray dark:border-gray-700 
                flex flex-col items-center text-center transform hover:scale-105 transition-all duration-500 group 
                overflow-hidden animate-fade-in-up"
     style={{ animationDelay: `${delay}ms` }}
   >
     <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0"></div>
-    <div className={`relative text-6xl text-primary dark:text-secondary mb-6 group-hover:text-white transition-colors duration-300 z-10`}>
+    <div className={`relative text-3xl sm:text-4xl lg:text-6xl text-primary dark:text-secondary mb-3 sm:mb-4 lg:mb-6 group-hover:text-white transition-colors duration-300 z-10`}>
       {icon}
     </div>
-    <h4 className="relative text-3xl font-extrabold text-darkGray dark:text-gray-100 mb-4 z-10">{title}</h4>
-    <p className="relative text-lg text-mediumGray dark:text-gray-300 leading-relaxed z-10">{description}</p>
+    <h4 className="relative text-lg sm:text-xl lg:text-3xl font-extrabold text-darkGray dark:text-gray-100 mb-2 sm:mb-3 lg:mb-4 z-10">{title}</h4>
+    <p className="relative text-xs sm:text-sm lg:text-lg text-mediumGray dark:text-gray-300 leading-relaxed z-10">{description}</p>
   </div>
 );
 
@@ -59,104 +60,113 @@ const StepCard: React.FC<{ step: number; title: string; description: string; bgC
   </div>
 );
 
-// Testimonial Card Component (Enhanced with subtle hover effect)
+// Testimonial Card Component (Mobile Optimized)
 const TestimonialCard: React.FC<{ text: string; name: string; role: string; delay: number }> = ({ text, name, role, delay }) => (
   <div 
-    className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl border border-lightGray dark:border-gray-700 text-center 
+    className="bg-white dark:bg-gray-800 p-4 sm:p-6 lg:p-8 rounded-xl shadow-2xl border border-lightGray dark:border-gray-700 text-center 
                transform hover:scale-105 transition-all duration-500 animate-fade-in-up"
     style={{ animationDelay: `${delay}ms` }}
   >
-    <p className="text-xl italic text-mediumGray dark:text-gray-300 mb-6 leading-relaxed">
+    <p className="text-sm sm:text-base lg:text-xl italic text-mediumGray dark:text-gray-300 mb-4 sm:mb-6 leading-relaxed">
       "{text}"
     </p>
-    <p className="text-lg font-bold text-darkGray dark:text-gray-100">{name}</p>
-    <p className="text-md text-mediumGray dark:text-gray-300">{role}</p>
+    <p className="text-sm sm:text-base lg:text-lg font-bold text-darkGray dark:text-gray-100">{name}</p>
+    <p className="text-xs sm:text-sm lg:text-md text-mediumGray dark:text-gray-300">{role}</p>
   </div>
 );
 
-// New: Value Proposition Card (for Solutions Section)
+// Value Proposition Card (Mobile Optimized)
 const ValuePropCard: React.FC<{ icon: React.ReactNode; title: string; description: string }> = ({ icon, title, description }) => (
-  <div className="flex items-start space-x-4 p-4 rounded-lg bg-white dark:bg-gray-800 shadow-md transform hover:shadow-lg transition-shadow duration-300">
+  <div className="flex items-start space-x-3 sm:space-x-4 p-3 sm:p-4 rounded-lg bg-white dark:bg-gray-800 shadow-md transform hover:shadow-lg transition-shadow duration-300">
     <div className="text-primary dark:text-secondary flex-shrink-0 mt-1">{icon}</div>
     <div>
-      <h4 className="text-xl font-semibold text-darkGray dark:text-gray-100 mb-1">{title}</h4>
-      <p className="text-mediumGray dark:text-gray-300">{description}</p>
+      <h4 className="text-sm sm:text-base lg:text-xl font-semibold text-darkGray dark:text-gray-100 mb-1">{title}</h4>
+      <p className="text-xs sm:text-sm lg:text-base text-mediumGray dark:text-gray-300">{description}</p>
     </div>
   </div>
 );
+
+
 
 // --- Main Page Component ---
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-lightGray dark:bg-gray-900 text-darkGray dark:text-gray-200 flex flex-col">
-      {/* Header/Navbar */}
-      <header className="bg-white dark:bg-gray-800 shadow-lg py-4 px-4 lg:px-8 flex justify-between items-center sticky top-0 z-20">
-        <h1 className="text-2xl lg:text-4xl font-extrabold tracking-wide text-darkGray dark:text-gray-100">
+      {/* Header/Navbar - Mobile Optimized */}
+      <header className="bg-white dark:bg-gray-800 shadow-lg py-3 px-4 lg:py-4 lg:px-8 flex justify-between items-center sticky top-0 z-20">
+        <h1 className="text-xl sm:text-2xl lg:text-4xl font-extrabold tracking-wide text-darkGray dark:text-gray-100">
           Revl<span className="text-secondary">o</span>
         </h1>
-        <nav className="hidden md:flex space-x-6 items-center justify-center flex-1"> {/* Hidden on mobile, centered */}
+        <nav className="hidden md:flex space-x-4 lg:space-x-6 items-center justify-center flex-1"> {/* Hidden on mobile, centered */}
           {['Astaamaha', 'Sida uu u Shaqeeyo', 'Xalka', 'Install App', 'Qiimaha', 'Aragtiyada', 'Nala Soo Xiriir'].map((text, i) => (
-            <a key={i} href={`#${['features', 'how-it-works', 'solutions', 'pwa-install', 'pricing', 'testimonials', 'contact'][i]}`} className="text-darkGray dark:text-gray-200 hover:text-primary transition-colors duration-200 font-medium text-lg">
+            <a key={i} href={`#${['features', 'how-it-works', 'solutions', 'pwa-install', 'pricing', 'testimonials', 'contact'][i]}`} className="text-darkGray dark:text-gray-200 hover:text-primary transition-colors duration-200 font-medium text-sm lg:text-lg">
               {text}
             </a>
           ))}
         </nav>
-        <div className="hidden md:flex space-x-4 items-center">
-          <Link href="/login" className="bg-primary text-white py-2.5 px-6 rounded-full font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md">
+        <div className="hidden md:flex space-x-2 lg:space-x-4 items-center">
+          <Link href="/login" className="bg-primary text-white py-2 px-4 lg:py-2.5 lg:px-6 rounded-full font-bold text-sm lg:text-lg hover:bg-blue-700 transition duration-200 shadow-md">
             Login
           </Link>
-          <Link href="/signup" className="bg-primary text-white py-2.5 px-6 rounded-full font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md">
+          <Link href="/signup" className="bg-primary text-white py-2 px-4 lg:py-2.5 lg:px-6 rounded-full font-bold text-sm lg:text-lg hover:bg-blue-700 transition duration-200 shadow-md">
             Sign Up
           </Link>
         </div>
-        {/* Mobile Menu Icon (Hamburger) - Responsive */}
-        <div className="md:hidden">
-          <button className="text-darkGray dark:text-gray-100 text-2xl lg:text-3xl hover:text-primary transition-colors duration-200">
+        {/* Mobile Menu Icon (Hamburger) - Enhanced */}
+        <div className="md:hidden flex items-center space-x-2">
+          <Link href="/login" className="bg-primary text-white py-1.5 px-3 rounded-full font-bold text-xs hover:bg-blue-700 transition duration-200 shadow-md">
+            Login
+          </Link>
+          <button className="text-darkGray dark:text-gray-100 text-xl hover:text-primary transition-colors duration-200 p-1">
             ☰
           </button>
         </div>
       </header>
 
-      {/* Hero Section - CENTERED */}
-      <section className="relative flex items-center py-16 lg:py-32 px-4 lg:px-6 md:px-16 bg-gradient-to-br from-primary to-blue-500 text-white overflow-hidden shadow-2xl">
+      {/* Hero Section - Mobile Optimized */}
+      <section className="relative flex items-center py-12 sm:py-16 lg:py-32 px-4 sm:px-6 lg:px-16 bg-gradient-to-br from-primary to-blue-500 text-white overflow-hidden shadow-2xl">
         <div className="max-w-7xl mx-auto z-10 flex flex-col items-center text-center">
-          {/* Text Content - Centered */}
+          {/* Text Content - Mobile Optimized */}
           <div className="text-center animate-fade-in-left">
-            <h2 className="text-3xl lg:text-5xl md:text-7xl font-extrabold leading-tight mb-4 lg:mb-7 drop-shadow-xl">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-7xl font-extrabold leading-tight mb-3 sm:mb-4 lg:mb-7 drop-shadow-xl">
               Maamul Ganacsigaaga,<br />
               <span className="text-secondary">Revlo waa nidaam ERP casri ah</span>
             </h2>
-            <p className="text-base lg:text-xl md:text-2xl mb-8 lg:mb-12 opacity-90 leading-relaxed max-w-xl">
-               oo dhamaystiran, kaas oo ganacsigaaga ka dhigaya mid hufan oo isku xirnaan leh. Ku maamul mashaariicda, Production Orders, Material Purchases, Company Chat, kharashaadka, kaydka, iyo macaamiishaada si fudud, adigoo ka faa'iidaysanaya otomaatig awood leh iyo xog dhab ah oo kugu hagta go'aanka saxda ah.
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl mb-6 sm:mb-8 lg:mb-12 opacity-90 leading-relaxed max-w-xs sm:max-w-lg lg:max-w-xl mx-auto px-2">
+               oo dhamaystiran, kaas oo ganacsigaaga ka dhigaya mid hufan oo isku xirnaan leh. Ku maamul mashaariicda, 
+               <span className="text-secondary font-bold">Production Orders</span>, 
+               <span className="text-accent font-bold">Material Purchases</span>, 
+               <span className="text-white font-bold bg-secondary/20 px-1 py-0.5 sm:px-2 sm:py-1 rounded text-xs sm:text-sm">Company Chat</span>, 
+               kharashaadka, kaydka, iyo macaamiishaada si fudud, adigoo ka faa'iidaysanaya otomaatig awood leh iyo xog dhab ah oo kugu hagta go'aanka saxda ah.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 lg:gap-6">
-              <Link href="/signup" className="bg-secondary text-white py-3 lg:py-4 px-6 lg:px-10 rounded-full text-lg lg:text-xl font-extrabold hover:bg-green-600 transition-all duration-300 shadow-xl transform hover:scale-105 flex items-center justify-center">
-                Bilaaw Bilaash <ChevronRight className="ml-2 w-4 h-4 lg:w-5 lg:h-5" />
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 lg:gap-6 px-4 sm:px-0">
+              <Link href="/signup" className="bg-secondary text-white py-2.5 sm:py-3 lg:py-4 px-4 sm:px-6 lg:px-10 rounded-full text-sm sm:text-lg lg:text-xl font-extrabold hover:bg-green-600 transition-all duration-300 shadow-xl transform hover:scale-105 flex items-center justify-center">
+                Bilaaw Bilaash <ChevronRight className="ml-1 sm:ml-2 w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
               </Link>
-              <Link href="/login" className="border-2 border-white text-white py-3 lg:py-4 px-6 lg:px-10 rounded-full text-lg lg:text-xl font-extrabold hover:bg-white hover:text-primary transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
+              <Link href="/login" className="border-2 border-white text-white py-2.5 sm:py-3 lg:py-4 px-4 sm:px-6 lg:px-10 rounded-full text-sm sm:text-lg lg:text-xl font-extrabold hover:bg-white hover:text-primary transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
                 Gal
               </Link>
             </div>
           </div>
           
         </div>
-        {/* Animated Background Shapes */}
+        {/* Animated Background Shapes - Mobile Optimized */}
         <div className="absolute inset-0 z-0 opacity-20">
-          <div className="absolute top-1/4 left-1/4 w-40 h-40 bg-white rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-bounce-slow"></div>
-          <div className="absolute bottom-1/3 right-1/3 w-60 h-60 bg-secondary rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-bounce-fast"></div>
-          <div className="absolute top-1/2 right-1/4 w-24 h-24 bg-accent rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-bounce-slowest"></div>
+          <div className="absolute top-1/4 left-1/4 w-20 h-20 sm:w-32 sm:h-32 lg:w-40 lg:h-40 bg-white rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-bounce-slow"></div>
+          <div className="absolute bottom-1/3 right-1/3 w-32 h-32 sm:w-48 sm:h-48 lg:w-60 lg:h-60 bg-secondary rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-bounce-fast"></div>
+          <div className="absolute top-1/2 right-1/4 w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-accent rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-bounce-slowest"></div>
         </div>
       </section>
 
-      {/* Core Features Section */}
-      <section id="features" className="py-24 px-6 md:px-16 bg-lightGray dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto text-center mb-16">
-          <h3 className="text-4xl md:text-5xl font-bold mb-4 text-darkGray dark:text-gray-100">Qiimaha Revlo Kuu Siiyo</h3>
-          <p className="text-lg md:text-xl text-mediumGray dark:text-gray-400 max-w-3xl mx-auto">
+      {/* Core Features Section - Mobile Optimized */}
+      <section id="features" className="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 md:px-16 bg-lightGray dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto text-center mb-8 sm:mb-12 lg:mb-16">
+          <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-darkGray dark:text-gray-100">Qiimaha Revlo Kuu Siiyo</h3>
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-mediumGray dark:text-gray-400 max-w-xs sm:max-w-2xl lg:max-w-3xl mx-auto px-2">
             Qalabka muhiimka ah ee aad u baahan tahay hal meel, si aad ganacsigaaga u kobciso una qaado heerka xiga. Production Orders, Material Purchases, Company Chat, iyo dhammaan qalabka casri ah.
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 md:gap-10 lg:gap-12">
           <FeatureCard
             icon={<Briefcase />}
             title="Maamulka Mashruuca"
@@ -214,15 +224,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Solutions Section - NEW */}
-      <section id="solutions" className="py-24 px-6 md:px-16 bg-white dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto text-center mb-16">
-          <h3 className="text-4xl md:text-5xl font-bold mb-4 text-darkGray dark:text-gray-100">Xalka Gaarka ah ee Revlo Bixiyo</h3>
-          <p className="text-lg md:text-xl text-mediumGray dark:text-gray-400 max-w-3xl mx-auto">
+      {/* Solutions Section - Mobile Optimized */}
+      <section id="solutions" className="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 md:px-16 bg-white dark:bg-gray-800">
+        <div className="max-w-7xl mx-auto text-center mb-8 sm:mb-12 lg:mb-16">
+          <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-darkGray dark:text-gray-100">Xalka Gaarka ah ee Revlo Bixiyo</h3>
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-mediumGray dark:text-gray-400 max-w-xs sm:max-w-2xl lg:max-w-3xl mx-auto px-2">
             Revlo wuxuu bixiyaa qalab casri ah oo u sahlaya ganacsigaaga inuu noqdo mid hufan oo toosan. Production Orders, Material Purchases, Company Chat, iyo dhammaan qalabka casri ah.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           <ValuePropCard 
             icon={<Factory className="w-8 h-8" />} 
             title="Production Orders & BOM" 
@@ -345,57 +355,57 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Mobile App Section */}
-      <section id="mobile-app" className="py-24 px-6 md:px-16 bg-lightGray dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+      {/* Mobile App Section - Mobile Optimized */}
+      <section id="mobile-app" className="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 md:px-16 bg-lightGray dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 items-center">
           <div className="animate-fade-in-left">
-            <h3 className="text-4xl md:text-5xl font-bold mb-6 text-darkGray dark:text-gray-100">Revlo Mobile: Maamul Goobta Kasta</h3>
-            <p className="text-lg md:text-xl text-mediumGray dark:text-gray-400 mb-8 leading-relaxed">
+            <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 text-darkGray dark:text-gray-100">Revlo Mobile: Maamul Goobta Kasta</h3>
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl text-mediumGray dark:text-gray-400 mb-6 sm:mb-8 leading-relaxed">
               Qaado Revlo jeebkaaga! App-ka moobilka ee sahlan wuxuu kuu oggolaanayaa inaad geliso kharashyada, la socoto mashaariicda, Production Orders, Material Purchases, Company Chat, oo aad gasho macluumaadka muhiimka ah meel kasta oo aad joogto, xitaa marka aysan jirin internet.
             </p>
-            <ul className="space-y-4 text-lg text-darkGray dark:text-gray-200 mb-8">
-              <li className="flex items-center space-x-3"><CheckCircle className="w-6 h-6 text-secondary" /><span>Gelinta Kharashyada Degdeg ah (Scan Receipt)</span></li>
-              <li className="flex items-center space-x-3"><CheckCircle className="w-6 h-6 text-secondary" /><span>La Socodka Horumarka Mashruuca</span></li>
-              <li className="flex items-center space-x-3"><CheckCircle className="w-6 h-6 text-secondary" /><span>Maamulka Production Orders</span></li>
-              <li className="flex items-center space-x-3"><CheckCircle className="w-6 h-6 text-secondary" /><span>Company Chat & Communication</span></li>
-              <li className="flex items-center space-x-3"><CheckCircle className="w-6 h-6 text-secondary" /><span>La Socodka Lacagta & Xisaabaadka</span></li>
-              <li className="flex items-center space-x-3"><CheckCircle className="w-6 h-6 text-secondary" /><span>Galitaanka Xogta Offline</span></li>
+            <ul className="space-y-3 sm:space-y-4 text-sm sm:text-base lg:text-lg text-darkGray dark:text-gray-200 mb-6 sm:mb-8">
+              <li className="flex items-center space-x-2 sm:space-x-3"><CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-secondary flex-shrink-0" /><span>Gelinta Kharashyada Degdeg ah (Scan Receipt)</span></li>
+              <li className="flex items-center space-x-2 sm:space-x-3"><CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-secondary flex-shrink-0" /><span>La Socodka Horumarka Mashruuca</span></li>
+              <li className="flex items-center space-x-2 sm:space-x-3"><CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-secondary flex-shrink-0" /><span>Maamulka Production Orders</span></li>
+              <li className="flex items-center space-x-2 sm:space-x-3"><CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-secondary flex-shrink-0" /><span>Company Chat & Communication</span></li>
+              <li className="flex items-center space-x-2 sm:space-x-3"><CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-secondary flex-shrink-0" /><span>La Socodka Lacagta & Xisaabaadka</span></li>
+              <li className="flex items-center space-x-2 sm:space-x-3"><CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-secondary flex-shrink-0" /><span>Galitaanka Xogta Offline</span></li>
             </ul>
-            <div className="flex flex-wrap gap-4">
-              <Link href="#" className="bg-darkGray dark:bg-gray-700 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200 shadow-md flex items-center">
-                <Smartphone className="mr-2" /> App Store
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <Link href="#" className="bg-darkGray dark:bg-gray-700 text-white py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg text-sm sm:text-base lg:text-lg font-semibold hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200 shadow-md flex items-center justify-center">
+                <Smartphone className="mr-2 w-4 h-4 sm:w-5 sm:h-5" /> App Store
               </Link>
-              <Link href="#" className="bg-darkGray dark:bg-gray-700 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200 shadow-md flex items-center">
-                <Award className="mr-2" /> Google Play
+              <Link href="#" className="bg-darkGray dark:bg-gray-700 text-white py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg text-sm sm:text-base lg:text-lg font-semibold hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200 shadow-md flex items-center justify-center">
+                <Award className="mr-2 w-4 h-4 sm:w-5 sm:h-5" /> Google Play
               </Link>
             </div>
           </div>
-          <div className="flex justify-center md:justify-end animate-fade-in-right"> {/* Adjusted for right alignment on desktop */}
+          <div className="flex justify-center md:justify-end animate-fade-in-right">
             {/* Placeholder for mobile app screenshot */}
-            <img src="/images/mobile-app-preview.png" alt="Revlo Mobile App" className="w-80 md:w-96 rounded-xl shadow-2xl border-4 border-white dark:border-gray-700 transform rotate-3 hover:rotate-0 transition-transform duration-500" />
+            <img src="/images/mobile-app-preview.png" alt="Revlo Mobile App" className="w-64 sm:w-80 md:w-96 rounded-xl shadow-2xl border-4 border-white dark:border-gray-700 transform rotate-3 hover:rotate-0 transition-transform duration-500" />
           </div>
         </div>
       </section>
 
-      {/* Pricing Section (Consider moving to a dedicated page later) */}
-      <section id="pricing" className="py-24 px-6 md:px-16 bg-white dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto text-center mb-16">
-          <h3 className="text-4xl md:text-5xl font-bold mb-4 text-darkGray dark:text-gray-100">Qiimaha Xubinimada</h3>
-          <p className="text-lg md:text-xl text-mediumGray dark:text-gray-400 max-w-3xl mx-auto">Dooro qorshaha ku habboon baahida ganacsigaaga. Bilaw bilaash, oo mar walba kor u qaad. Production Orders, Material Purchases, Company Chat, iyo dhammaan qalabka casri ah.</p>
+      {/* Pricing Section - Mobile Optimized */}
+      <section id="pricing" className="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 md:px-16 bg-white dark:bg-gray-800">
+        <div className="max-w-7xl mx-auto text-center mb-8 sm:mb-12 lg:mb-16">
+          <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-darkGray dark:text-gray-100">Qiimaha Xubinimada</h3>
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-mediumGray dark:text-gray-400 max-w-xs sm:max-w-2xl lg:max-w-3xl mx-auto px-2">Dooro qorshaha ku habboon baahida ganacsigaaga. Bilaw bilaash, oo mar walba kor u qaad. Production Orders, Material Purchases, Company Chat, iyo dhammaan qalabka casri ah.</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
           {[
             { name: 'Basic', price: 'Bilaash', features: ['1 Isticmaale', '10 Mashruuc', '50 Kharash', 'Maamulka Bakhaarka (50 shay)', 'Basic Reports'], featured: false, delay: 0 },
             { name: 'Business', price: '$29/bil', features: ['5 Isticmaale', 'Mashaariic Aan Xadidnayn', 'Kharash Aan Xadidnayn', 'Maamulka Bakhaarka (Aan Xadidnayn)', 'Production Orders & BOM', 'Material Purchases', 'Multi-Account Management', 'Company Chat', 'Warbixino horumarsan', 'Expense Approval System'], featured: true, delay: 100 },
             { name: 'Enterprise', price: 'Gaarka ah', features: ['Isticmaale Aan Xadidnayn', 'Dhammaan features-ka Business', 'Advanced Manufacturing', 'Role-based Access Control', 'Maamule u gaar ah', 'Isku-dhexgalka API', 'Talo bixin shakhsi ah'], featured: false, delay: 200 },
           ].map((plan, i) => (
-                <div key={i} className={`p-8 rounded-xl shadow-2xl border text-center transform hover:scale-105 transition duration-300 animate-fade-in-up ${plan.featured ? 'border-primary bg-primary/10' : 'border-lightGray dark:border-gray-700'}`} style={{ animationDelay: `${plan.delay}ms` }}>
-                  <h4 className="text-2xl font-bold mb-4 text-darkGray dark:text-gray-100">{plan.name}</h4>
-                  <p className="text-4xl font-extrabold mb-6 text-darkGray dark:text-gray-100">{plan.price}</p>
-                  <ul className="space-y-2 mb-6">
-                    {plan.features.map((f, idx) => <li key={idx} className="text-mediumGray dark:text-gray-300">{f}</li>)}
+                <div key={i} className={`p-4 sm:p-6 lg:p-8 rounded-xl shadow-2xl border text-center transform hover:scale-105 transition duration-300 animate-fade-in-up ${plan.featured ? 'border-primary bg-primary/10' : 'border-lightGray dark:border-gray-700'}`} style={{ animationDelay: `${plan.delay}ms` }}>
+                  <h4 className="text-lg sm:text-xl lg:text-2xl font-bold mb-3 sm:mb-4 text-darkGray dark:text-gray-100">{plan.name}</h4>
+                  <p className="text-2xl sm:text-3xl lg:text-4xl font-extrabold mb-4 sm:mb-6 text-darkGray dark:text-gray-100">{plan.price}</p>
+                  <ul className="space-y-1 sm:space-y-2 mb-4 sm:mb-6">
+                    {plan.features.map((f, idx) => <li key={idx} className="text-xs sm:text-sm lg:text-base text-mediumGray dark:text-gray-300">{f}</li>)}
                   </ul>
-                  <Link href="/signup" className={`inline-block py-3 px-8 rounded-full font-semibold ${plan.featured ? 'bg-secondary text-white hover:bg-green-600' : 'border-2 border-primary text-primary hover:bg-primary hover:text-white'}`}>
+                  <Link href="/signup" className={`inline-block py-2 sm:py-3 px-4 sm:px-6 lg:px-8 rounded-full text-sm sm:text-base font-semibold ${plan.featured ? 'bg-secondary text-white hover:bg-green-600' : 'border-2 border-primary text-primary hover:bg-primary hover:text-white'}`}>
                     {plan.featured ? 'Bilaaw Tijaabada Bilaashka' : 'Dooro Qorshaha'}
                   </Link>
                 </div>
@@ -405,37 +415,34 @@ export default function HomePage() {
 
       
 
-      {/* Testimonials */}
-      <section id="testimonials" className="py-24 px-6 md:px-16 bg-white dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto text-center mb-16">
-          <h3 className="text-4xl md:text-5xl font-bold mb-4 text-darkGray dark:text-gray-100">Waxa Ay Dadku Ka Dhahaan Revlo</h3>
-          <p className="text-lg md:text-xl text-mediumGray dark:text-gray-400 max-w-3xl mx-auto">
-            Halkaan ka ogoow sababta Revlo uu u yahay doorashada koowaad ee ganacsato badan. Production Orders, Material Purchases, Company Chat, iyo dhammaan qalabka casri ah.
+      {/* Testimonials - Mobile Optimized */}
+      <section id="testimonials" className="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 md:px-16 bg-white dark:bg-gray-800">
+        <div className="max-w-7xl mx-auto text-center mb-8 sm:mb-12 lg:mb-16">
+          <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-darkGray dark:text-gray-100">Waxa Ay Dadku Ka Dhahaan Revlo</h3>
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-mediumGray dark:text-gray-400 max-w-xs sm:max-w-2xl lg:max-w-3xl mx-auto px-2">
+            Halkaan ka ogoow sababta Revlo uu u yahay doorashada koowaad . Production Orders, Material Purchases, Company Chat, iyo dhammaan qalabka casri ah.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-12">
-          <TestimonialCard text="Revlo wuxuu si buuxda u bedelay sida aan u maamulo mashruucyadayda furniture-ka. Production Orders iyo BOM waa qalab aan laga maarmin!" name="Axmed Maxamed" role="Maamulaha, X‑Furniture" delay={0} />
-          <TestimonialCard text="Maamulka kharashaadku waligiis ma ahayn mid sidan u fudud. Expense Approval System wuxuu ii sahlay inaan hubiyo kharashyada." name="Faadumo Cali" role="Qandiraasle, Y‑Construction" delay={100} />
-          <TestimonialCard text="Company Chat iyo Material Purchases waa qalab aan laga maarmin. Waxaan hadda ka warqabaa wax kasta oo ku jira shirkadayda." name="Nuur Xassan" role="Ganacsade, Z‑Hardware" delay={200} />
-        </div>
+        {/* Live Reviews Section */}
+        <LiveReviews />
       </section>
 
-      {/* Call to Action */}
-      <section id="contact" className="py-24 px-6 md:px-16 bg-gradient-to-tr from-blue-700 to-primary text-white text-center">
+      {/* Call to Action - Mobile Optimized */}
+      <section id="contact" className="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 md:px-16 bg-gradient-to-tr from-blue-700 to-primary text-white text-center">
         <div className="max-w-6xl mx-auto animate-fade-in-up">
-          <h3 className="text-4xl md:text-5xl font-bold mb-6 drop-shadow-lg">Diyaar Ma U Tahay inaad Ganacsigaaga Kobciso?</h3>
-          <p className="text-lg md:text-2xl mb-10 opacity-90 max-w-4xl mx-auto">
+          <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 drop-shadow-lg">Diyaar Ma U Tahay inaad Ganacsigaaga Kobciso?</h3>
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl mb-6 sm:mb-8 lg:mb-10 opacity-90 max-w-xs sm:max-w-2xl lg:max-w-4xl mx-auto px-2">
             Ku soo biir Revlo si aad maamulatid hawlahaaga maalinlaha ah. Isticmaal Production Orders, Material Purchases, Company Chat, iyo dhammaan qalabka casri ah ee ganacsigaaga u baahan yahay.
           </p>
-          <Link href="/signup" className="bg-white text-primary py-4 px-12 rounded-full text-xl font-bold hover:bg-gray-100 transition-all duration-300 shadow-xl transform hover:scale-105">
+          <Link href="/signup" className="bg-white text-primary py-3 sm:py-4 px-8 sm:px-12 rounded-full text-lg sm:text-xl font-bold hover:bg-gray-100 transition-all duration-300 shadow-xl transform hover:scale-105">
             Bilaaw Bilaashkaaga
           </Link>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-darkGray dark:bg-gray-900 text-white py-12 px-6 md:px-16 text-center border-t border-gray-700">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
+      {/* Footer - Mobile Optimized */}
+      <footer className="bg-darkGray dark:bg-gray-900 text-white py-8 sm:py-12 px-4 sm:px-6 md:px-16 text-center border-t border-gray-700">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10 mb-6 sm:mb-10">
           <div>
             <h4 className="text-3xl font-bold mb-4">Revlo<span className="text-secondary">.</span></h4>
             <p className="text-mediumGray dark:text-gray-400 leading-relaxed">Maamulka Ganacsigaaga oo Fudud, hufan, oo casri ah. Production Orders, Material Purchases, Company Chat, iyo dhammaan qalabka casri ah.</p>
