@@ -7,21 +7,21 @@ export async function POST(request: Request, { params }: { params: { id: string 
   try {
     const companyId = await getSessionCompanyId();
     const { id: projectId } = params;
-    const { employeeName, workDescription, agreedWage, dateWorked } = await request.json();
-    if (!employeeName || !workDescription || !agreedWage || !dateWorked) {
+    const { workDescription, agreedWage, dateWorked, employeeId, paidFrom } = await request.json();
+    if (!workDescription || !agreedWage || !dateWorked || !employeeId || !paidFrom) {
       return NextResponse.json({ message: 'Fadlan buuxi dhammaan beeraha waajibka ah.' }, { status: 400 });
     }
     // Create ProjectLabor record (no paidAmount, no double fields)
     const labor = await prisma.projectLabor.create({
       data: {
-        employeeName,
-        workDescription,
+        description: workDescription,
         agreedWage,
         paidAmount: 0,
         remainingWage: agreedWage,
         dateWorked: new Date(dateWorked),
         projectId,
-        // employeeId: null, // Optionally link to Employee if needed
+        employeeId,
+        paidFrom,
       },
     });
     return NextResponse.json({ message: 'Shaqaale mashruuc si guul leh ayaa loo daray!', labor }, { status: 201 });
