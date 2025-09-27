@@ -4,8 +4,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
-import Layout from '../../../components/layouts/Layout';
-import { useNotifications } from '../../../contexts/NotificationContext';
+import Layout from '@/components/layouts/Layout';
+import { useNotifications } from '@/contexts/NotificationContext';
 import {
   ArrowLeft, Edit, Trash2, Calendar, Tag, DollarSign, Briefcase, CreditCard,
   MessageSquare, Paperclip, CheckCircle, XCircle, Loader2, Info, User, Printer, Download, Package,

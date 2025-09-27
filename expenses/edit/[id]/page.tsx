@@ -4,14 +4,14 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
-import Layout from '../../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { 
   X, DollarSign, Tag, Calendar, MessageSquare, FileUp, Camera, Upload, 
   Info, ReceiptText, Briefcase, Users, HardHat, Truck, Home, CreditCard, Clock, Plus, Loader2, CheckCircle, XCircle, ChevronRight, ArrowLeft,
   Package, MinusCircle, Building, User, Coins, Save
 } from 'lucide-react';
-import Toast from '../../../../components/common/Toast';
-import { calculateEmployeeSalary } from '../../../../lib/utils';
+import Toast from '@/components/common/Toast';
+import { calculateEmployeeSalary } from '@/lib/utils';
 
 export default function EditExpensePage() {
   const router = useRouter();
