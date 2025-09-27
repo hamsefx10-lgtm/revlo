@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const { name, type, value, purchaseDate, assignedTo } = await request.json();
+  const { name, type, value, purchaseDate, assignedTo, depreciationRate, currentBookValue } = await request.json();
 
     if (!name || !type || !value || !purchaseDate) {
       return NextResponse.json(
@@ -54,6 +54,8 @@ export async function POST(request: Request) {
         assignedTo: assignedTo || 'Office',
         status: 'Active',
         companyId,
+        depreciationRate: depreciationRate !== undefined ? parseFloat(depreciationRate) : 0,
+        currentBookValue: currentBookValue !== undefined ? parseFloat(currentBookValue) : 0,
       },
     });
 
