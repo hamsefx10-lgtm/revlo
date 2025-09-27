@@ -255,14 +255,7 @@ export async function DELETE(
     }
 
     // Refund the amount to the account
-    if (existingPurchase.account) {
-      await prisma.account.update({
-        where: { id: existingPurchase.account.id },
-        data: {
-          balance: existingPurchase.account.balance + existingPurchase.totalPrice
-        }
-      });
-    }
+    // No refund to account, as MaterialPurchase does not have an account relation or accountId
 
     // Delete related transaction
     try {
