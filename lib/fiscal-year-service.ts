@@ -262,7 +262,7 @@ export async function getFiscalYearSummary(
       summary: {
         totalTransactions: transactions.length,
         totalProjects: projects.length,
-        totalExpenses: expenses.length,
+        totalExpensesCount: expenses.length,
         totalPayments: payments.length,
         totalIncome,
         totalExpenses,
