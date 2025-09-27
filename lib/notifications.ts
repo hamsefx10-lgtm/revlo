@@ -137,37 +137,46 @@ class NotificationManager {
     // Check for negative profit
     if (data.netProfit < 0) {
       alerts.push({
+        id: `negative-profit-${Date.now()}`,
         type: 'performance',
         title: 'Negative Profit Alert',
         message: `Your company is showing a negative profit of $${Math.abs(data.netProfit).toLocaleString()}`,
         severity: 'high',
         currentValue: data.netProfit,
-        companyId
+        timestamp: Date.now(),
+        companyId,
+        resolved: false
       });
     }
 
     // Check for high expenses
     if (data.totalExpenses > data.totalIncome * 0.9) {
       alerts.push({
+        id: `high-expenses-${Date.now()}`,
         type: 'threshold',
         title: 'High Expense Ratio',
         message: `Expenses are ${((data.totalExpenses / data.totalIncome) * 100).toFixed(1)}% of total income`,
         severity: 'medium',
         threshold: 90,
         currentValue: (data.totalExpenses / data.totalIncome) * 100,
-        companyId
+        timestamp: Date.now(),
+        companyId,
+        resolved: false
       });
     }
 
     // Check for overdue projects
     if (data.onHoldProjects > 0) {
       alerts.push({
+        id: `on-hold-projects-${Date.now()}`,
         type: 'deadline',
         title: 'Projects On Hold',
         message: `${data.onHoldProjects} project(s) are currently on hold`,
         severity: 'medium',
         currentValue: data.onHoldProjects,
-        companyId
+        timestamp: Date.now(),
+        companyId,
+        resolved: false
       });
     }
 
