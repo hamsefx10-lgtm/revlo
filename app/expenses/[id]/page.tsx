@@ -17,7 +17,7 @@ import {
   Lock, Unlock, Key, UserCheck, UserX, EyeOff, Maximize, Minimize, RotateCcw,
   Receipt, Calculator, PieChart, TrendingDown, Award, Target, Zap as ZapIcon
 } from 'lucide-react';
-import Toast from '../../../components/common/Toast';
+import Toast from '@/components/common/Toast';
 
 // Enhanced Interface with complete expense information
 interface Expense {

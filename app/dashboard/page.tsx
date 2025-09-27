@@ -3,8 +3,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Layout from '../../components/layouts/Layout';
-import { useCurrency } from '../../contexts/CurrencyContext';
+import Layout from '@/components/layouts/Layout';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { 
   DollarSign, Briefcase, Banknote, ArrowUpRight, ArrowDownLeft, TrendingUp, TrendingDown,
   CheckCircle, Clock, XCircle, Plus, Info, MessageSquare, User, Package, Bell, CalendarCheck,
@@ -363,7 +363,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = require('../../components/providers/UserProvider').useUser();
+  const { user } = require('@/components/providers/UserProvider').useUser();
   const { formatCurrency, currency } = useCurrency();
 
   useEffect(() => {
