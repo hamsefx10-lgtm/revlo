@@ -27,18 +27,8 @@ export async function POST(request: Request) {
               where: {
                 companyId,
                 OR: [
-                  { 
-                    AND: [
-                      { projectId: { not: null } },
-                      { project: null }
-                    ]
-                  },
-                  { 
-                    AND: [
-                      { customerId: { not: null } },
-                      { customer: null }
-                    ]
-                  }
+                  { projectId: { not: null }, project: { is: null } },
+                  { customerId: { not: null }, customer: { is: null } }
                 ]
               }
             });
