@@ -4,12 +4,12 @@
 import React, { useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import Link from 'next/link';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { 
   ArrowLeft, UploadCloud, Download, FileText, CheckCircle, XCircle, Loader2, 
   ChevronRight, ChevronLeft, Table, Columns, CheckSquare, Info, List
 } from 'lucide-react';
-import Toast from '../../../components/common/Toast'; // Reuse Toast component
+import Toast from '@/components/common/Toast'; // Reuse Toast component
 
 // Dummy data for expected columns and sample data
 const expectedColumns = [
