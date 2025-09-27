@@ -6,7 +6,11 @@ import { getSessionCompanyUser } from '@/lib/auth';
 // POST /api/notifications/seed - Create sample notifications for testing
 export async function POST(request: Request) {
   try {
-    const { companyId } = await getSessionCompanyUser();
+    const sessionCompanyUser = await getSessionCompanyUser();
+    if (!sessionCompanyUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const { companyId } = sessionCompanyUser;
     
     // Sample notifications data
     const sampleNotifications = [
@@ -32,7 +36,7 @@ export async function POST(request: Request) {
         message: 'User cusub "Cali Xasan" ayaa isku diiwaan geliyay.',
         type: 'User Activity',
         details: 'Email: cali.h@example.com, Role: Member.',
-        user: 'Cali Xasan',
+        userDisplayName: 'Cali Xasan',
         read: true,
       },
       {
@@ -45,7 +49,7 @@ export async function POST(request: Request) {
         message: 'User "Faadumo Maxamed" ayaa wax ka beddelay profile-keeda.',
         type: 'User Activity',
         details: 'Beddelka: Email-ka ayaa la cusboonaysiiyay.',
-        user: 'Faadumo Maxamed',
+        userDisplayName: 'Faadumo Maxamed',
         read: true,
       },
       {
