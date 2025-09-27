@@ -11,7 +11,7 @@ import {
   Package, MinusCircle, Building, User, Coins, Save
 } from 'lucide-react';
 import Toast from '../../../../components/common/Toast';
-import { calculateEmployeeSalary } from '../../../../lib/utils';
+import { calculateEmployeeSalary } from '@/lib/utils';
 
 export default function EditExpensePage() {
   const router = useRouter();

@@ -11,7 +11,7 @@ import {
   ClipboardList, TrendingUp // For work description icon and trending up icon
 } from 'lucide-react';
 import Toast from '../../../components/common/Toast'; // Import Toast component
-import { calculateEmployeeSalary, calculateEmployeeDays } from '../../../lib/utils';
+import { calculateEmployeeSalary, calculateEmployeeDays } from '@/lib/utils';
 
 // --- Employee Data Interface (Refined for API response) ---
 interface Employee {

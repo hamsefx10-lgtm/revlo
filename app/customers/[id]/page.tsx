@@ -4,12 +4,12 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation'; // To get customer ID from URL and for navigation
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { 
   ArrowLeft, User as UserIcon, Building, Mail, Phone, MapPin, MessageSquare, Briefcase, DollarSign, Calendar,
   Eye, Edit, Trash2, Loader2, Info as InfoIcon, CheckCircle, XCircle, Plus, Search, Filter, ChevronRight, Clock, FileX2
 } from 'lucide-react';
-import Toast from '../../../components/common/Toast'; // Import Toast component
+import Toast from '@/components/common/Toast'; // Import Toast component
 
 // --- Customer Data Interface (Refined for API response) ---
 interface Customer {

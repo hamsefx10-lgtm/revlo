@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { 
   ArrowLeft, Scale, Plus, Search, Filter, Calendar, List, LayoutGrid, 
   DollarSign, User, Briefcase, CheckCircle, XCircle, ChevronRight, 
@@ -12,7 +12,7 @@ import {
   Building, Hash, Percent, FileText as FileTextIcon, AlertTriangle, 
   Save, X, Check, ExternalLink, MoreVertical, History
 } from 'lucide-react';
-import Toast from '../../../components/common/Toast'; // Reuse Toast component
+import Toast from '@/components/common/Toast'; // Reuse Toast component
 
 // --- Enhanced Types ---
 type Debt = {

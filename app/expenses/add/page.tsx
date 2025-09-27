@@ -10,8 +10,8 @@ import {
   Info, ReceiptText, Briefcase, Users, HardHat, Truck, Home, CreditCard, Clock, Plus, Loader2, CheckCircle, XCircle, ChevronRight, ArrowLeft,
   Package, MinusCircle, Building, User, Coins // Added new icons for Company Expense types
 } from 'lucide-react';
-import Toast from '../../../components/common/Toast'; // Reuse Toast component
-import { calculateEmployeeSalary } from '../../../lib/utils';
+import Toast from '@/components/common/Toast'; // Reuse Toast component
+import { calculateEmployeeSalary } from '@/lib/utils';
 
 
 export default function AddExpensePage() {

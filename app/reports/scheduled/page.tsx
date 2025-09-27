@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { 
   ArrowLeft, Plus, Edit, Trash2, Play, Pause, Clock, 
   Mail, Calendar, Settings, CheckCircle, XCircle, Info
