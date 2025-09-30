@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     }
     const { companyId, userId } = sessionUser;
     const reqBody = await request.json();
-  const { description, amount, category, subCategory, paidFrom, expenseDate, note, projectId, employeeId, laborPaidAmount = 0, employeeName, transportType, consultantName, consultancyType, consultancyFee, equipmentName, rentalPeriod, rentalFee, supplierName, bankAccountId, agreedWage } = reqBody;
+  const { description, amount, category, subCategory, paidFrom, expenseDate, note, projectId, employeeId, laborPaidAmount = 0, employeeName, transportType, consultantName, consultancyType, consultancyFee, equipmentName, rentalPeriod, rentalFee, supplierName, bankAccountId, agreedWage, startNewAgreement } = reqBody;
     // General required fields
     if (!category) {
       return NextResponse.json({ message: 'Category is required.' }, { status: 400 });
@@ -38,9 +38,8 @@ export async function POST(request: Request) {
     if (!amount) {
       return NextResponse.json({ message: 'Amount is required.' }, { status: 400 });
     }
-    if (!paidFrom) {
-      return NextResponse.json({ message: 'Paid from (account) is required.' }, { status: 400 });
-    }
+    // For project expenses, paidFrom is required only when a payment is made (not for unpaid vendor materials)
+    // We'll validate category-specific below instead of globally here
     if (!expenseDate) {
       return NextResponse.json({ message: 'Expense date is required.' }, { status: 400 });
     }
@@ -83,6 +82,17 @@ export async function POST(request: Request) {
           return NextResponse.json({ message: 'Material name, quantity, price, and unit are required for each material.' }, { status: 400 });
         }
       }
+      // Vendor payment fields
+      const { vendorId, paymentStatus } = reqBody;
+      if (!vendorId) {
+        return NextResponse.json({ message: 'Iibiyaha (vendorId) waa waajib.' }, { status: 400 });
+      }
+      if (!paymentStatus || !['PAID','UNPAID'].includes(paymentStatus)) {
+        return NextResponse.json({ message: 'Xaaladda lacag bixinta (paymentStatus) waa waajib.' }, { status: 400 });
+      }
+      if (paymentStatus === 'PAID' && !paidFrom) {
+        return NextResponse.json({ message: 'Akoonka (paidFrom) waa waajib marka la bixiyo (PAID).'}, { status: 400 });
+      }
     }
 
     if (category === 'Equipment Rental') {
@@ -97,10 +107,12 @@ export async function POST(request: Request) {
     
     if (category === 'Labor') {
       // Find existing labor record for this employee/project
-      existingLabor = await prisma.projectLabor.findFirst({
-        where: { employeeId, projectId },
-        orderBy: { dateWorked: 'desc' },
-      });
+      if (!startNewAgreement) {
+        existingLabor = await prisma.projectLabor.findFirst({
+          where: { employeeId, projectId },
+          orderBy: { dateWorked: 'desc' },
+        });
+      }
 
       if (existingLabor) {
         // UPDATE existing record - add payment to existing paidAmount
@@ -148,16 +160,18 @@ export async function POST(request: Request) {
 
     // 1. Create the expense (only for non-Labor categories or new Labor records)
     let newExpense = null;
-    if (category !== 'Labor' || (category === 'Labor' && !existingLabor)) {
+    if (category !== 'Labor' || (category === 'Labor' && (!existingLabor || startNewAgreement))) {
       // Always provide a non-empty string for description
       const safeDescription = description || note || (category === 'Transport' ? transportType : '') || 'Expense';
+      // Determine safePaidFrom to satisfy non-null schema while representing UNPAID
+      const safePaidFrom = (category === 'Material' && (reqBody.paymentStatus === 'UNPAID')) ? 'UNPAID' : paidFrom;
       newExpense = await prisma.expense.create({
         data: {
           description: safeDescription,
           amount: finalWage.toString(),
           category,
           subCategory: subCategory || null,
-          paidFrom,
+          paidFrom: safePaidFrom as any,
           expenseDate: new Date(expenseDate),
           note: note || null,
           approved: false,
@@ -196,32 +210,51 @@ export async function POST(request: Request) {
     }
 
     // 2. Create a corresponding transaction (always for every expense)
-    const transactionAmount = -Math.abs(Number(laborPaidAmount > 0 ? laborPaidAmount : amount));
-    // Always provide a non-empty string for description
-    const transactionDescription = description || note || category || 'Expense transaction';
+    // 2. Create corresponding transaction based on category/paymentStatus
+    const paymentStatus = reqBody.paymentStatus as string | undefined;
+    const vendorId = reqBody.vendorId as string | undefined;
+    let tType: any = 'EXPENSE';
+    let tAmount = Number(laborPaidAmount > 0 ? laborPaidAmount : amount);
+    let tAccountId: string | null = category === 'Equipment Rental' ? bankAccountId : paidFrom;
+    let tVendorId: string | undefined = undefined;
+
+    if (category === 'Material') {
+      if (paymentStatus === 'UNPAID') {
+        tType = 'DEBT_TAKEN';
+        tAccountId = null; // no account movement
+        tVendorId = vendorId;
+      } else {
+        tType = 'EXPENSE';
+        tVendorId = vendorId;
+        tAmount = -Math.abs(tAmount);
+      }
+    } else {
+      // Labor and others behave as expense
+      tAmount = -Math.abs(tAmount);
+    }
+
     await prisma.transaction.create({
       data: {
-        description: transactionDescription,
-        amount: transactionAmount,
-        type: 'EXPENSE',
+        description: description || note || category || 'Expense transaction',
+        amount: tAmount,
+        type: tType,
         transactionDate: new Date(expenseDate),
         note: note || null,
-        accountId: category === 'Equipment Rental' ? bankAccountId : paidFrom,
-        expenseId: newExpense?.id || null, // Only link to expense if it exists
+        accountId: tAccountId,
+        expenseId: newExpense?.id || null,
         employeeId: employeeId || undefined,
         userId,
         companyId,
         projectId,
+        vendorId: tVendorId,
       },
     });
 
-    // 3. Decrement the account balance in real time
-    if (paidFrom && (laborPaidAmount > 0 || amount)) {
+    // 3. Update account if needed (only when accountId present)
+    if (tAccountId) {
       await prisma.account.update({
-        where: { id: paidFrom },
-        data: {
-          balance: { decrement: Math.abs(Number(laborPaidAmount > 0 ? laborPaidAmount : amount)) },
-        },
+        where: { id: tAccountId },
+        data: { balance: { decrement: Math.abs(Number(amount)) } },
       });
     }
 

@@ -93,6 +93,23 @@ const EmployeeDetailsPage: React.FC = () => {
   const [expensesLoading, setExpensesLoading] = useState(false);
   const [salarySummary, setSalarySummary] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
+  // Mobile-friendly view modes similar to Project page
+  const [viewModes, setViewModes] = useState<{ labor: 'list' | 'board' }>(() => ({
+    labor: (typeof window !== 'undefined' && window.innerWidth < 768) ? 'board' : 'list'
+  }));
+
+  // Auto-switch to board view on mobile for better readability
+  useEffect(() => {
+    const applyMobileDefault = () => {
+      if (typeof window !== 'undefined') {
+        const isMobile = window.matchMedia('(max-width: 767px)').matches;
+        setViewModes(prev => ({ ...prev, labor: isMobile ? 'board' : prev.labor }));
+      }
+    };
+    applyMobileDefault();
+    window.addEventListener('resize', applyMobileDefault);
+    return () => window.removeEventListener('resize', applyMobileDefault);
+  }, []);
 
   // Fetch all expenses for this employee (approved only)
   // Fetch only salary expenses for this employee
@@ -338,7 +355,7 @@ const EmployeeDetailsPage: React.FC = () => {
                 ? 'bg-primary/10 text-primary border border-primary/30' 
                 : 'bg-accent/10 text-accent border border-accent/30'
             }`}>
-              {employee.category === 'COMPANY' ? '🏢 Shaqaale Shirkadda' : '🏗️ Shaqaale Mashruuca'}
+              {employee.category === 'COMPANY' ? '🏢 Company' : '🏗️ Project'}
             </span>
             <span className="px-2 py-1 rounded-full text-xs font-medium bg-secondary/10 text-secondary border border-secondary/30">
               {employee.role}
@@ -753,7 +770,13 @@ const EmployeeDetailsPage: React.FC = () => {
       {/* <-- HALKAAS KALIYA HAL ) */}
       {activeTab === 'Labor Records' && employee.category === 'PROJECT' && (
         <div>
-          <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-4">Project Labor</h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100">Project Labor</h3>
+            <div className="md:hidden inline-flex items-center gap-1 bg-lightGray p-1 rounded-lg">
+              <button onClick={() => setViewModes(v => ({...v, labor: 'list'}))} className={`px-2 py-1 rounded ${viewModes.labor==='list' ? 'bg-white shadow' : 'text-mediumGray'}`}>List</button>
+              <button onClick={() => setViewModes(v => ({...v, labor: 'board'}))} className={`px-2 py-1 rounded ${viewModes.labor==='board' ? 'bg-white shadow' : 'text-mediumGray'}`}>Board</button>
+                  </div>
+          </div>
           {(() => {
             const records = employee.laborRecords || [];
             if (records.length === 0) {
@@ -784,7 +807,7 @@ const EmployeeDetailsPage: React.FC = () => {
 
             const totalAgreed = grouped.reduce((s, g) => s + g.agreed, 0);
             const totalPaid = grouped.reduce((s, g) => s + g.paid, 0);
-            const totalRemaining = totalAgreed - totalPaid;
+            const totalRemaining = grouped.reduce((s, g) => s + g.remaining, 0); // use actual remaining (can be negative)
 
             const goPayRemaining = (projectId: string, projectName: string, remaining: number) => {
               // Navigate to expenses add with preselected params
@@ -812,17 +835,35 @@ const EmployeeDetailsPage: React.FC = () => {
                   </div>
                   <div className="p-3 rounded-xl bg-white dark:bg-gray-800 border border-lightGray dark:border-gray-700">
                     <div className="text-xs text-mediumGray">Remaining</div>
-                    <div className={`text-lg font-bold ${totalRemaining > 0 ? 'text-redError' : 'text-secondary'}`}>{totalRemaining.toLocaleString()} ETB</div>
+                    <div className={`text-lg font-bold ${totalRemaining >= 0 ? 'text-accent' : 'text-redError'}`}>{totalRemaining.toLocaleString()} ETB</div>
                   </div>
                 </div>
 
-                {/* Per-project cards */}
-                <div className="grid grid-cols-1 gap-4">
-                  {grouped.map((g) => (
-                     <div key={g.projectId} className="rounded-xl bg-white dark:bg-gray-800 border border-lightGray dark:border-gray-700 p-3 md:p-4">
+                {/* Per-project mobile views */}
+                {viewModes.labor === 'list' ? (
+                  <ul className="divide-y divide-lightGray rounded-xl overflow-hidden bg-white dark:bg-gray-800 border border-lightGray dark:border-gray-700">
+                    {grouped.map(g => (
+                      <li key={g.projectId} className="p-3 flex items-center justify-between">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <Briefcase className="text-accent" size={18} />
+                            <span className="font-bold truncate text-darkGray dark:text-gray-100">{g.projectName}</span>
+                          </div>
+                          <div className="text-xs text-mediumGray mt-1">Agreed {g.agreed.toLocaleString()} • Paid {g.paid.toLocaleString()} • Rem {g.remaining.toLocaleString()}</div>
+                        </div>
+                        {g.remaining > 0 && (
+                          <button onClick={() => goPayRemaining(g.projectId, g.projectName, g.remaining)} className="px-3 py-1.5 rounded-md bg-secondary text-white text-xs">Bixi</button>
+                        )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+                  <div className="grid grid-cols-1 gap-4">
+                    {grouped.map((g) => (
+                      <div key={g.projectId} className="rounded-xl bg-white dark:bg-gray-800 border border-lightGray dark:border-gray-700 p-3 md:p-4">
                        <div className="flex items-center justify-between mb-3">
                          <div className="flex items-center space-x-2 min-w-0 flex-1">
-                           <Briefcase className="text-accent" size={18} className="flex-shrink-0" />
+                           <Briefcase className="text-accent flex-shrink-0" size={18} />
                            <h4 className="text-base md:text-lg font-bold text-darkGray dark:text-gray-100 truncate">{g.projectName}</h4>
                          </div>
                          <span className={`px-2 py-1 rounded-full text-xs font-bold flex-shrink-0 ${g.remaining > 0 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'}`}>
@@ -851,7 +892,7 @@ const EmployeeDetailsPage: React.FC = () => {
                            </button>
                          )}
                        </div>
-
+                      
                       {/* Transactions related to this project's labor payments */}
                       {(() => {
                         const projectTransactions = (employee.transactions || []).filter((t: any) => t.projectId === g.projectId);
@@ -883,7 +924,8 @@ const EmployeeDetailsPage: React.FC = () => {
                       })()}
                     </div>
                   ))}
-                </div>
+                  </div>
+                )}
               </div>
             );
           })()}

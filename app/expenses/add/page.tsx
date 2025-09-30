@@ -619,6 +619,10 @@ const [consultancyFee, setConsultancyFee] = useState('');
         expenseData.paymentStatus = paymentStatus;
         expenseData.invoiceNumber = invoiceNumber || null;
         expenseData.paymentDate = paymentStatus === 'PAID' ? new Date().toISOString() : null;
+        // For project UNPAID material, do not send paidFrom to backend (avoids invalid FK)
+        if (expenseType === 'project' && paymentStatus === 'UNPAID') {
+          delete expenseData.paidFrom;
+        }
         // If company expense, force projectId to null and add required fields
         if (expenseType === 'company') {
           expenseData.projectId = null;
@@ -835,6 +839,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
           laborPaidAmount: expenseData.paidAmount, // required by backend
           note: expenseData.note || '', // Add note to labor payload
           receiptUrl: receiptUrl, // Add receipt URL to labor payload
+          startNewAgreement: Boolean((window as any)._startNewAgreement || false),
         };
         // Submit to /api/expenses/project (this creates both ProjectLabor and Expense records)
         const expenseRes = await fetch('/api/expenses/project', {
@@ -1421,43 +1426,109 @@ const [consultancyFee, setConsultancyFee] = useState('');
                     {validationErrors.selectedEmployeeForSalary && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.selectedEmployeeForSalary}</p>}
                   </div>
                   <div>
-                    <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Mushaharka La Ogolaaday ($) <span className="text-redError">*</span></label>
-                    {previousWageInfo && (
-                      <div className="mb-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <div className="text-sm text-blue-800 dark:text-blue-300">
-                          <div className="flex justify-between">
-                            <span>Mushaharka Hore:</span>
-                            <span className="font-medium">{previousWageInfo.agreedWage.toLocaleString()} ETB</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Lacagta La Bixiyay:</span>
-                            <span className="font-medium">{previousWageInfo.totalPaid.toLocaleString()} ETB</span>
-                          </div>
-                          <div className="flex justify-between border-t border-blue-300 dark:border-blue-700 pt-1 mt-1">
-                            <span className="font-medium">Inta Dhiman:</span>
-                            <span className="font-bold text-red-600 dark:text-red-400">{previousWageInfo.remaining.toLocaleString()} ETB</span>
+                    <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Mushaharka La Ogolaaday (Agreed)</label>
+                    {previousWageInfo ? (
+                      <>
+                        <div className="mb-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <div className="text-sm text-blue-800 dark:text-blue-300">
+                            <div className="flex justify-between">
+                              <span>Mushaharka Hore:</span>
+                              <span className="font-medium">{previousWageInfo.agreedWage.toLocaleString()} ETB</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Lacagta La Bixiyay:</span>
+                              <span className="font-medium">{previousWageInfo.totalPaid.toLocaleString()} ETB</span>
+                            </div>
+                            <div className="flex justify-between border-t border-blue-300 dark:border-blue-700 pt-1 mt-1">
+                              <span className="font-medium">Inta Dhiman (Remaining):</span>
+                              <span className="font-bold text-red-600 dark:text-red-400">{previousWageInfo.remaining.toLocaleString()} ETB</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )}
-                    <input 
-                      type="number" 
-                      value={wage} 
-                      onChange={e => setWage(parseFloat(e.target.value) || '')} 
-                      className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 ${validationErrors.wage ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} 
-                      required 
-                      placeholder={previousWageInfo ? "Wax ka beddel haddii aad rabto" : "Mushaharka"} 
-                    />
-                    {previousWageInfo && (
-                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                        💡 Mushaharka inta dhiman ayaa la soo buuxiyay. Wax ka beddel haddii aad rabto.
-                      </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm text-mediumGray dark:text-gray-400 mb-1">Agreed (readonly)</label>
+                            <input type="number" value={previousWageInfo.agreedWage} readOnly className="w-full p-3 border rounded-lg bg-gray-100 dark:bg-gray-800 text-darkGray dark:text-gray-300 border-lightGray dark:border-gray-700" />
+                          </div>
+                          <div>
+                            <label className="block text-sm text-mediumGray dark:text-gray-400 mb-1">Remaining (before payment)</label>
+                            <input type="number" value={previousWageInfo.remaining} readOnly className="w-full p-3 border rounded-lg bg-gray-100 dark:bg-gray-800 text-darkGray dark:text-gray-300 border-lightGray dark:border-gray-700" />
+                          </div>
+                        </div>
+                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">Heshiis jira ayaa la bixinayaa; mushaharka lama beddeli karo halkan.</p>
+                        {previousWageInfo.remaining <= 0 && (
+                          <div className="mt-3 p-3 rounded-md bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                            <label className="inline-flex items-center gap-2 text-sm text-green-800 dark:text-green-300">
+                              <input
+                                type="checkbox"
+                                checked={Boolean((window as any)._startNewAgreement || false)}
+                                onChange={e => {
+                                  // use a minimal local flag without adding more state noise
+                                  (window as any)._startNewAgreement = e.target.checked;
+                                  if (e.target.checked) {
+                                    // enable user to type a fresh agreed wage
+                                    setWage('');
+                                  }
+                                  // force refresh by setting laborPaidAmount to itself
+                                  setLaborPaidAmount(laborPaidAmount as any);
+                                }}
+                              />
+                              Bilow heshiis cusub mashruucan (enter Agreed hoose)
+                            </label>
+                            {Boolean((window as any)._startNewAgreement || false) && (
+                              <div className="mt-3">
+                                <label className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Agreed cusub (ETB) <span className="text-redError">*</span></label>
+                                <input
+                                  type="number"
+                                  value={wage}
+                                  onChange={e => setWage(parseFloat(e.target.value) || '')}
+                                  className={`w-full p-3 border rounded-lg bg-white dark:bg-gray-700 text-darkGray dark:text-gray-100 ${validationErrors.wage ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                                  placeholder="Geli mushaharka la isku raacay"
+                                  min={0}
+                                  step="any"
+                                  required
+                                />
+                                <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">Heshiis cusub ayaa la abuurayaa—kan hore waa la dhammeeyay.</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <input 
+                          type="number"
+                          value={wage}
+                          onChange={e => setWage(parseFloat(e.target.value) || '')}
+                          className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 ${validationErrors.wage ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                          required
+                          placeholder="Mushaharka (Agreed Wage)"
+                          min={0}
+                          step="any"
+                        />
+                        <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">Tani waxay abuurtaa heshiis cusub haddii uusan jirin mid hore.</p>
+                      </>
                     )}
                     {validationErrors.wage && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.wage}</p>}
                   </div>
                   <div>
                     <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Lacagta Hadda La Bixiyay ($) <span className="text-redError">*</span></label>
-                    <input type="number" value={laborPaidAmount} onChange={e => setLaborPaidAmount(parseFloat(e.target.value) || '')} className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 ${validationErrors.laborPaidAmount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} required placeholder="Lacagta la bixiyay" />
+                    <input
+                      type="number"
+                      value={laborPaidAmount}
+                      onChange={e => setLaborPaidAmount(parseFloat(e.target.value) || '')}
+                      className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 ${validationErrors.laborPaidAmount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                      required
+                      placeholder="Lacagta la bixiyay"
+                      min={0}
+                      step="any"
+                      {...(previousWageInfo && !(window as any)._startNewAgreement ? { max: previousWageInfo.remaining } : {})}
+                    />
+                    {previousWageInfo && typeof laborPaidAmount === 'number' && (
+                      <p className="text-xs mt-1 text-mediumGray dark:text-gray-400">
+                        Ka dib bixintan: <span className="font-semibold">{Math.max(0, previousWageInfo.remaining - (laborPaidAmount || 0)).toLocaleString()} ETB</span> ayaa hadhay.
+                      </p>
+                    )}
                     {validationErrors.laborPaidAmount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.laborPaidAmount}</p>}
                   </div>
                   <div>

@@ -203,11 +203,17 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+    // paidFrom is only required when a payment is actually made
     if (!paidFrom) {
-      return NextResponse.json(
-        { message: 'Akoonka laga bixiyay (paidFrom) waa waajib.' },
-        { status: 400 }
+      const requiresPaidFrom = !(
+        category === 'Material' && paymentStatus === 'UNPAID'
       );
+      if (requiresPaidFrom) {
+        return NextResponse.json(
+          { message: 'Akoonka laga bixiyay (paidFrom) waa waajib marka lacag dhab ahaantii la bixiyay.' },
+          { status: 400 }
+        );
+      }
     }
     if (!expenseDate) {
       return NextResponse.json(
@@ -278,19 +284,13 @@ export async function POST(request: Request) {
       });
     }
 
-    // NEW: Handle vendor payment logic for Material expenses
-    if (category === 'Material' && paymentStatus === 'PAID' && paidFrom && amount) {
-      // Deduct amount from account balance
-      await prisma.account.update({
-        where: { id: paidFrom },
-        data: { balance: { decrement: Number(amount) } },
-      });
-    }
+    // NOTE: Account balance updates are handled below using transactionType logic; avoid double-decrement here.
 
     // 2. Create a corresponding transaction
     let transactionType: 'INCOME' | 'EXPENSE' | 'TRANSFER_IN' | 'TRANSFER_OUT' | 'DEBT_TAKEN' | 'DEBT_REPAID' | 'OTHER' = 'EXPENSE';
     let transactionAmount = Number(amount);
     let transactionCustomerId = undefined;
+    let transactionVendorId = vendorId || undefined;
     let transactionAccountId = undefined;
     if (category === 'Debt' || (category === 'Company Expense' && subCategory === 'Debt')) {
       if (paymentStatus === 'REPAID') {
@@ -315,11 +315,11 @@ export async function POST(request: Request) {
         transactionAccountId = paidFrom;
       } else if (paymentStatus === 'REPAID') {
         transactionType = 'DEBT_REPAID';
-        transactionCustomerId = vendorId;
+        transactionVendorId = vendorId;
       } else {
         // If unpaid, create debt transaction (vendor debt)
         transactionType = 'DEBT_TAKEN';
-        transactionCustomerId = vendorId; // Treat vendor as customer for debt tracking
+        transactionVendorId = vendorId; // Track vendor on transaction
       }
     }
     // For EXPENSE, always store as negative (money out)
@@ -347,6 +347,7 @@ export async function POST(request: Request) {
         userId,
         companyId,
         customerId: transactionCustomerId,
+        vendorId: transactionVendorId,
       },
     });
 

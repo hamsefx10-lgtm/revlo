@@ -26,6 +26,7 @@ interface Vendor {
   // Nested data from API includes (as per API /api/vendors/[id]/route.ts)
   expenses: { id: string; description: string; amount: number; expenseDate: string; category: string; }[];
   transactions: { id: string; description: string; amount: number; type: string; transactionDate: string; }[];
+  summary?: { totalPurchases: number; totalPaid: number; totalUnpaid: number; lastPurchaseDate?: string | null; projects: string[] };
 }
 
 export default function Page() {
@@ -35,6 +36,8 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('Overview'); // For tab navigation
   const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [expenseFilter, setExpenseFilter] = useState<'ALL' | 'PAID' | 'UNPAID'>('ALL');
+  const [expenseSearch, setExpenseSearch] = useState('');
   const fetchVendorDetails = async () => {
     setLoading(true);
     try {
@@ -102,6 +105,25 @@ export default function Page() {
     );
   }
 
+  // Derive summary values
+  const totalPurchases = (vendor as any).summary?.totalPurchases ?? vendor.expenses.reduce((s, e) => s + e.amount, 0);
+  const totalPaid = (vendor as any).summary?.totalPaid ?? vendor.expenses.filter((e: any) => (e as any).paymentStatus === 'PAID').reduce((s, e) => s + e.amount, 0);
+  const totalUnpaid = (vendor as any).summary?.totalUnpaid ?? (totalPurchases - totalPaid);
+
+  // Derived lists for Expenses tab
+  const filteredExpenses = (vendor.expenses || [])
+    .filter((e: any) => expenseFilter === 'ALL' ? true : (e.paymentStatus || 'UNPAID').toUpperCase() === expenseFilter)
+    .filter((e: any) => {
+      const q = expenseSearch.trim().toLowerCase();
+      if (!q) return true;
+      return (
+        e.description?.toLowerCase().includes(q) ||
+        e.category?.toLowerCase().includes(q) ||
+        e.project?.name?.toLowerCase().includes(q) ||
+        e.invoiceNumber?.toLowerCase().includes(q)
+      );
+    });
+
   return (
     <Layout>
       <div className="flex justify-between items-center mb-8">
@@ -132,12 +154,16 @@ export default function Page() {
           <p className="text-3xl font-extrabold text-primary">{vendor.type}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">Adeegyada/Alaabta</h4>
-          <p className="text-3xl font-extrabold text-secondary">{vendor.productsServices ? 'Provided' : 'N/A'}</p>
+          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">Wadarta La Iibsaday</h4>
+          <p className="text-3xl font-extrabold text-accent">Br{totalPurchases.toLocaleString()}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">Wadarta Kharashyada La Bixiyay</h4>
-          <p className="text-3xl font-extrabold text-accent">${vendor.expenses.reduce((sum, exp) => sum + exp.amount, 0).toLocaleString()}</p>
+          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">La Bixiyay</h4>
+          <p className="text-3xl font-extrabold text-secondary">Br{totalPaid.toLocaleString()}</p>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
+          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">Hadhay (Dayn)</h4>
+          <p className={`text-3xl font-extrabold ${totalUnpaid > 0 ? 'text-red-600' : 'text-secondary'}`}>Br{totalUnpaid.toLocaleString()}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
           <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">Diiwaan Gashan</h4>
@@ -184,21 +210,44 @@ export default function Page() {
           {activeTab === 'Expenses' && (
             <div>
               <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-4">Kharashyada Iibiyaha</h3>
-              {vendor.expenses.length === 0 ? (
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
+                <div className="inline-flex items-center gap-2 bg-lightGray dark:bg-gray-700 p-1 rounded-lg w-fit">
+                  {(['ALL','PAID','UNPAID'] as const).map(k => (
+                    <button key={k} onClick={() => setExpenseFilter(k)} className={`px-3 py-1 rounded-md text-sm ${expenseFilter===k ? 'bg-white dark:bg-gray-800 shadow font-semibold' : 'text-mediumGray'}`}>{k === 'ALL' ? 'Dhammaan' : k}</button>
+                  ))}
+                </div>
+                <input
+                  value={expenseSearch}
+                  onChange={e=>setExpenseSearch(e.target.value)}
+                  placeholder="Raadi: sharaxaad, category, invoice, project"
+                  className="w-full md:w-80 p-2 border rounded-lg bg-white dark:bg-gray-700 text-darkGray dark:text-gray-100"
+                />
+              </div>
+              {filteredExpenses.length === 0 ? (
                 <p className="text-mediumGray dark:text-gray-400">Ma jiraan kharashyo loo diiwaan geliyay iibiyahan.</p>
               ) : (
                 <ul className="space-y-3">
-                  {vendor.expenses.map((exp: any) => (
+                  {filteredExpenses.map((exp: any) => (
                     <li key={exp.id} className="flex justify-between items-center bg-lightGray dark:bg-gray-700 p-3 rounded-lg shadow-sm">
                       <div className="flex items-center space-x-3">
                         <DollarSign className="text-redError" size={20} />
                         <span className="font-semibold text-darkGray dark:text-gray-100">{exp.description}</span>
                       </div>
-                      <div>
-                        <span className="text-mediumGray dark:text-gray-400 mr-2">Category: {exp.category}</span>
-                        <span className="text-redError font-bold">-${exp.amount.toLocaleString()}</span>
+                      <div className="flex flex-col items-end">
+                        <span className="text-mediumGray dark:text-gray-400">Category: {exp.category}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full mt-1 ${exp.paymentStatus === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{exp.paymentStatus || 'UNPAID'}</span>
                       </div>
-                      <span className="text-sm text-mediumGray dark:text-gray-400">{new Date(exp.expenseDate).toLocaleDateString()}</span>
+                      <div className="text-right">
+                        <div className="font-bold text-redError">-Br{exp.amount.toLocaleString()}</div>
+                        <div className="text-xs text-mediumGray">{new Date(exp.expenseDate).toLocaleDateString()}</div>
+                        {exp.project?.name && (
+                          <div className="text-xs text-mediumGray">
+                            Project: <Link className="text-primary underline" href={`/projects/${exp.project.id}`}>{exp.project.name}</Link>
+                          </div>
+                        )}
+                        {exp.invoiceNumber && <div className="text-xs text-mediumGray">Invoice: {exp.invoiceNumber}</div>}
+                        {exp.receiptUrl && <a target="_blank" href={exp.receiptUrl} className="text-xs text-primary underline">Receipt</a>}
+                      </div>
                     </li>
                   ))}
                 </ul>

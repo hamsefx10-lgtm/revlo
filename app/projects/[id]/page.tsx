@@ -19,7 +19,7 @@ interface Project {
     expectedCompletionDate?: string; actualCompletionDate?: string; notes?: string; createdAt: string; updatedAt: string;
     expenses: { id: string; description: string; amount: number; category: string; expenseDate: string; receiptUrl?: string; }[];
     materialsUsed: { id: string; name: string; quantityUsed: number; unit: string; leftoverQty: number; costPerUnit: number | string; dateUsed?: string; }[];
-    laborRecords: { id: string; employeeName: string; workDescription: string; agreedWage: number; paidAmount: number; remainingWage: number; }[];
+    laborRecords: { id: string; employeeId?: string; employeeName: string; workDescription: string; agreedWage: number; paidAmount: number; remainingWage: number; dateWorked?: string; }[];
     payments: { id: string; amount: number; paymentDate: string; paymentType: string; receivedIn: string; }[];
     documents: { id: string; name: string; fileUrl: string; fileType: string; uploadedAt: string; }[];
 }
@@ -414,7 +414,13 @@ const ProjectDetailsPage: React.FC = () => {
                                             <EmptyState message="Lama diiwaan gelin wax shaqaale ah." />
                                         ) : (
                                             <div className="space-y-2">
-                                                {(project.laborRecords || []).map(lab => {
+                                                {[...(project.laborRecords || [])]
+                                                  .sort((a, b) => {
+                                                    const ad = a.dateWorked ? new Date(a.dateWorked).getTime() : 0;
+                                                    const bd = b.dateWorked ? new Date(b.dateWorked).getTime() : 0;
+                                                    return bd - ad;
+                                                  })
+                                                  .map(lab => {
                                                     const agreed = typeof lab.agreedWage === 'number' ? lab.agreedWage : parseFloat(lab.agreedWage as any) || 0;
                                                     const paid = typeof lab.paidAmount === 'number' ? lab.paidAmount : parseFloat(lab.paidAmount as any) || 0;
                                                     const remaining = typeof lab.remainingWage === 'number' ? lab.remainingWage : parseFloat(lab.remainingWage as any) || 0;
@@ -424,6 +430,7 @@ const ProjectDetailsPage: React.FC = () => {
                                                                 <div className='min-w-0'>
                                                                     <p className='font-bold truncate'>{lab.employeeName || '-'}</p>
                                                                     <p className='text-xs text-mediumGray truncate'>{lab.workDescription || '-'}</p>
+                                                                    {lab.dateWorked && <p className='text-[11px] text-mediumGray mt-0.5'>{new Date(lab.dateWorked).toLocaleDateString()}</p>}
                                                                 </div>
                                                                 <div className='text-right'>
                                                                     <p className='text-xs text-mediumGray'>Agreed</p>
@@ -439,6 +446,15 @@ const ProjectDetailsPage: React.FC = () => {
                                                                     <p className='text-xs text-mediumGray'>Remaining</p>
                                                                     <p className={`font-bold ${remaining > 0 ? 'text-redError' : 'text-secondary'}`}>Br{remaining.toLocaleString()}</p>
                                                                 </div>
+                                                            </div>
+                                                            <div className='mt-2 flex justify-end'>
+                                                                <a
+                                                                  href={`/expenses/add?projectId=${project.id}&employeeId=${lab.employeeId || ''}&category=Labor`}
+                                                                  className='inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-primary text-white hover:bg-primary/90'
+                                                                  title='Bixi inta dhiman'
+                                                                >
+                                                                  Bixi hadhay
+                                                                </a>
                                                             </div>
                                                         </div>
                                                     );
@@ -579,7 +595,13 @@ const ProjectDetailsPage: React.FC = () => {
                                                 {/* Labor Records */}
                                                 {(Array.isArray(project.laborRecords) ? project.laborRecords.length : 0) === 0 
                                                     ? (<tr><td colSpan={5}><EmptyState message="Lama diiwaan gelin wax shaqaale ah." /></td></tr>) 
-                                                    : (project.laborRecords || []).map(lab => {
+                                                    : [...(project.laborRecords || [])]
+                                                        .sort((a, b) => {
+                                                            const ad = a.dateWorked ? new Date(a.dateWorked).getTime() : 0;
+                                                            const bd = b.dateWorked ? new Date(b.dateWorked).getTime() : 0;
+                                                            return bd - ad;
+                                                        })
+                                                        .map(lab => {
                                                         const agreed = typeof lab.agreedWage === 'number' ? lab.agreedWage : parseFloat(lab.agreedWage as any) || 0;
                                                         const paid = typeof lab.paidAmount === 'number' ? lab.paidAmount : parseFloat(lab.paidAmount as any) || 0;
                                                         const remaining = typeof lab.remainingWage === 'number' ? lab.remainingWage : parseFloat(lab.remainingWage as any) || 0;

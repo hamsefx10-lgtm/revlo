@@ -18,6 +18,47 @@ export async function GET(
       where: {
         id: params.id,
         companyId: session.user.companyId
+      },
+      include: {
+        expenses: {
+          orderBy: { expenseDate: 'desc' },
+          select: {
+            id: true,
+            description: true,
+            amount: true,
+            expenseDate: true,
+            category: true,
+            paymentStatus: true,
+            invoiceNumber: true,
+            receiptUrl: true,
+            projectId: true,
+            project: { select: { id: true, name: true } },
+          }
+        },
+        transactions: {
+          orderBy: { transactionDate: 'desc' },
+          select: {
+            id: true,
+            description: true,
+            amount: true,
+            type: true,
+            transactionDate: true,
+          }
+        },
+        materialPurchases: {
+          orderBy: { purchaseDate: 'desc' },
+          select: {
+            id: true,
+            materialName: true,
+            quantity: true,
+            unit: true,
+            unitPrice: true,
+            totalPrice: true,
+            invoiceNumber: true,
+            purchaseDate: true,
+            productionOrderId: true,
+          }
+        }
       }
     });
 
@@ -25,9 +66,52 @@ export async function GET(
       return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
     }
 
+    // Transform Decimal fields to numbers and compute aggregates
+    const toNum = (v: any) => {
+      if (v == null) return 0;
+      if (typeof v === 'object' && 'toNumber' in v) return (v as any).toNumber();
+      const n = Number(v);
+      return isNaN(n) ? 0 : n;
+    };
+
+    const safeVendor: any = vendor ? {
+      ...vendor,
+      expenses: (vendor as any).expenses?.map((e: any) => ({
+        ...e,
+        amount: toNum(e.amount)
+      })) || [],
+      transactions: (vendor as any).transactions?.map((t: any) => ({
+        ...t,
+        amount: toNum(t.amount)
+      })) || [],
+      materialPurchases: (vendor as any).materialPurchases?.map((m: any) => ({
+        ...m,
+        totalPrice: toNum(m.totalPrice),
+        unitPrice: toNum(m.unitPrice)
+      })) || [],
+    } : null;
+
+    const totalPurchases = safeVendor.expenses.reduce((s: number, e: any) => s + toNum(e.amount), 0);
+    const totalPaid = safeVendor.expenses
+      .filter((e: any) => (e.paymentStatus || '').toUpperCase() === 'PAID')
+      .reduce((s: number, e: any) => s + toNum(e.amount), 0);
+    const totalUnpaid = safeVendor.expenses
+      .filter((e: any) => (e.paymentStatus || 'UNPAID').toUpperCase() === 'UNPAID')
+      .reduce((s: number, e: any) => s + toNum(e.amount), 0);
+    const lastPurchaseDate = safeVendor.expenses[0]?.expenseDate || null;
+
     return NextResponse.json({
       success: true,
-      vendor
+      vendor: {
+        ...safeVendor,
+        summary: {
+          totalPurchases,
+          totalPaid,
+          totalUnpaid,
+          lastPurchaseDate,
+          projects: Array.from(new Set(safeVendor.expenses.map((e: any) => e.project?.name).filter(Boolean)))
+        }
+      }
     });
 
   } catch (error) {
