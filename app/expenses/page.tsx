@@ -15,6 +15,8 @@ interface Expense {
   date: string;
   project?: { id: string; name: string };
   company?: { id: string; name: string };
+  customer?: { id: string; name: string };
+  vendor?: { id: string; name: string };
   category: string;
   subCategory?: string;
   description: string;
@@ -25,6 +27,7 @@ interface Expense {
   approved?: boolean;
   status?: string;
   employeeId?: string; // NEW: Add employeeId for filtering
+  employee?: { id: string; name: string }; // NEW: Add employee object for display
 }
 
 type FilterType = 'total' | 'company' | 'project';
@@ -42,6 +45,12 @@ export default function ExpensesPage() {
   const [activeFilter, setActiveFilter] = useState<FilterType>('company');
   const [viewMode, setViewMode] = useState<'list' | 'cards'>('list');
   const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10); // Fixed items per page
+  
+  // Bulk select state
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [approvalFilter, setApprovalFilter] = useState<'all' | 'approved' | 'pending'>('all');
   
   // NEW: Advanced filtering states
@@ -215,6 +224,17 @@ export default function ExpensesPage() {
 
   const filteredExpenses = getFilteredExpenses();
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedExpenses = filteredExpenses.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeFilter, searchTerm, categoryFilter, vendorFilter, paymentStatusFilter, dateRangeFilter, amountRangeFilter, projectFilter, employeeFilter, approvalFilter]);
+
   // NEW: Clear all filters function
   const clearAllFilters = () => {
     setSearchTerm('');
@@ -226,6 +246,51 @@ export default function ExpensesPage() {
     setProjectFilter('all');
     setEmployeeFilter('all');
     setApprovalFilter('all');
+  };
+
+  // Selection helpers
+  const isSelected = (id: string) => selectedIds.has(id);
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const copy = new Set(prev);
+      if (copy.has(id)) copy.delete(id); else copy.add(id);
+      return copy;
+    });
+  };
+  const selectAllOnPage = () => {
+    setSelectedIds(prev => {
+      const copy = new Set(prev);
+      paginatedExpenses.forEach(e => copy.add(e.id));
+      return copy;
+    });
+  };
+  const clearSelection = () => setSelectedIds(new Set());
+  const toggleSelectAllOnPage = () => {
+    const allSelected = paginatedExpenses.every(e => selectedIds.has(e.id));
+    if (allSelected) {
+      setSelectedIds(prev => {
+        const copy = new Set(prev);
+        paginatedExpenses.forEach(e => copy.delete(e.id));
+        return copy;
+      });
+    } else {
+      selectAllOnPage();
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!window.confirm(`Ma hubtaa inaad tirtirto ${selectedIds.size} kharash? Tani waa fal aan laga noqon.`)) return;
+    try {
+      const ids = Array.from(selectedIds);
+      await Promise.all(ids.map(id => fetch(`/api/expenses/${id}`, { method: 'DELETE' })));
+      // Refresh
+      await fetchExpenses();
+      clearSelection();
+      setSelectMode(false);
+    } catch (e) {
+      console.error('Bulk delete failed:', e);
+    }
   };
 
   // Calculate statistics based on active filter
@@ -602,7 +667,7 @@ export default function ExpensesPage() {
           {/* Mobile List View */}
           <div className="block lg:hidden">
             <div className="space-y-3">
-              {filteredExpenses.map((expense) => (
+              {paginatedExpenses.map((expense) => (
                 <div key={expense.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-lightGray dark:border-gray-700 p-4">
                   {/* Header Row */}
                   <div className="flex justify-between items-start mb-3">
@@ -616,10 +681,34 @@ export default function ExpensesPage() {
                         {expense.project?.name || expense.company?.name || 'Shirkadda'}
                       </span>
                     </div>
-                    <span className="text-lg font-bold text-redError flex-shrink-0 ml-2">
-                      -{expense.amount.toLocaleString()} ETB
-                    </span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-lg font-bold text-redError flex-shrink-0 ml-2">
+                        -{expense.amount.toLocaleString()} ETB
+                      </span>
+                      <input
+                        type="checkbox"
+                        checked={isSelected(expense.id)}
+                        onChange={() => toggleSelect(expense.id)}
+                        className={`w-4 h-4 transition-opacity duration-200 ${
+                          selectMode ? 'opacity-100' : 'opacity-30 hover:opacity-100'
+                        }`}
+                        title="Xulo"
+                      />
+                    </div>
                   </div>
+
+                  {/* Magac (Project view only) */}
+                  {/* isProjectView && ( */}
+                    <div className="text-xs text-mediumGray dark:text-gray-400 mb-1">
+                      <span className="font-medium text-darkGray dark:text-gray-100">Magac:</span>{' '}
+                      {(() => {
+                        const employeeName = (expense as any)?.employee || (expense.employeeId ? (employees.find(emp => emp.id === expense.employeeId)?.fullName) : undefined);
+                        const vendorName = (expense as any)?.vendor?.name as string | undefined;
+                        const customerName = (expense as any)?.customer?.name as string | undefined;
+                        return employeeName || vendorName || customerName || '-';
+                      })()}
+                    </div>
+                  {/* ) */}
 
                   {/* Description */}
                   <div className="text-sm text-darkGray dark:text-gray-100 mb-3 line-clamp-2">
@@ -729,24 +818,50 @@ export default function ExpensesPage() {
           {/* Desktop Table View */}
           <div className="hidden lg:block bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
             <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-              <table className="min-w-full" style={{ minWidth: '1000px' }}>
+              <table className="min-w-full text-sm" style={{ minWidth: '800px' }}>
                 <thead className="bg-lightGray dark:bg-gray-700">
                   <tr>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Taariikh</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Qaybta</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Mashruuc</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Sharaxaad</th>
-                    <th className="px-4 lg:px-6 py-3 text-right text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Qiimaha</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Account</th>
-                    <th className="px-4 lg:px-6 py-3 text-center text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Xaalad</th>
-                    <th className="px-4 lg:px-6 py-3 text-center text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                    <th className="px-2 py-2 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">
+                      <input
+                        type="checkbox"
+                        checked={paginatedExpenses.length > 0 && paginatedExpenses.every(e => isSelected(e.id))}
+                        onChange={toggleSelectAllOnPage}
+                        className={`w-4 h-4 transition-opacity duration-200 ${
+                          selectMode ? 'opacity-100' : 'opacity-30 hover:opacity-100'
+                        }`}
+                        title="Xulo dhammaan boggan"
+                      />
+                    </th>
+                    <th className="px-2 py-2 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Taariikh</th>
+                    <th className="px-2 py-2 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Qaybta</th>
+                    <th className="px-2 py-2 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Mashruuc</th>
+                    {activeFilter === 'project' && (
+                      <th className="px-2 py-2 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Magac</th>
+                    )}
+                    <th className="px-2 py-2 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Sharaxaad</th>
+                    <th className="px-2 py-2 text-right text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Qiimaha</th>
+                    <th className="px-2 py-2 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Account</th>
+                    <th className="px-2 py-2 text-center text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Xaalad</th>
+                    <th className="px-2 py-2 text-center text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
               <tbody className="divide-y divide-lightGray dark:divide-gray-700">
-                {filteredExpenses.map((expense) => (
+                {paginatedExpenses.map((expense) => (
                   <tr key={expense.id} className="hover:bg-lightGray/50 dark:hover:bg-gray-700/50 transition-colors duration-150">
-                    <td className="px-4 lg:px-6 py-3 whitespace-nowrap">
-                      <div className="text-sm font-medium text-darkGray dark:text-gray-100">
+                    {/* Select checkbox (always visible, faded by default) */}
+                    <td className="px-2 py-2 whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        checked={isSelected(expense.id)}
+                        onChange={() => toggleSelect(expense.id)}
+                        className={`w-4 h-4 transition-opacity duration-200 ${
+                          selectMode ? 'opacity-100' : 'opacity-30 hover:opacity-100'
+                        }`}
+                        title="Xulo"
+                      />
+                    </td>
+                    <td className="px-2 py-2 whitespace-nowrap">
+                      <div className="text-xs font-medium text-darkGray dark:text-gray-100">
                         {new Date(expense.date).toLocaleDateString('so-SO', { 
                           day: 'numeric', 
                           month: 'short', 
@@ -754,9 +869,9 @@ export default function ExpensesPage() {
                         })}
                       </div>
                     </td>
-                    <td className="px-4 lg:px-6 py-3 whitespace-nowrap">
+                    <td className="px-2 py-2 whitespace-nowrap">
                       <div className="flex flex-col space-y-1">
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                           expense.category === 'Material' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
                           expense.category === 'Labor' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
                           expense.category === 'Transport' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
@@ -766,7 +881,7 @@ export default function ExpensesPage() {
                           {expense.category}
                         </span>
                         {expense.subCategory && (
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                             expense.subCategory === 'Salary' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
                             expense.subCategory === 'Material' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200' :
                             expense.subCategory === 'Equipment' ? 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200' :
@@ -779,20 +894,32 @@ export default function ExpensesPage() {
                         )}
                       </div>
                     </td>
-                    <td className="px-4 lg:px-6 py-3 whitespace-nowrap">
+                    <td className="px-2 py-2 whitespace-nowrap">
                       <div className="flex items-center">
                         {expense.project ? (
-                          <Briefcase size={16} className="text-primary mr-2" />
+                          <Briefcase size={14} className="text-primary mr-1" />
                         ) : (
-                          <Building size={16} className="text-orange-500 mr-2" />
+                          <Building size={14} className="text-orange-500 mr-1" />
                         )}
-                        <span className="text-sm text-darkGray dark:text-gray-100">
+                        <span className="text-xs text-darkGray dark:text-gray-100">
                           {expense.project?.name || expense.company?.name || 'Shirkadda'}
                         </span>
                       </div>
                     </td>
-                    <td className="hidden lg:table-cell px-4 lg:px-6 py-3">
-                      <div className="text-sm text-darkGray dark:text-gray-100 max-w-xs truncate" title={expense.description}>
+                    {activeFilter === 'project' && (
+                      <td className="px-2 py-2 whitespace-nowrap">
+                        <span className="text-xs text-darkGray dark:text-gray-100">
+                          {(() => {
+                            const employeeName = (expense as any)?.employee || (expense.employeeId ? (employees.find(emp => emp.id === expense.employeeId)?.fullName) : undefined);
+                            const vendorName = (expense as any)?.vendor?.name as string | undefined;
+                            const customerName = (expense as any)?.customer?.name as string | undefined;
+                            return employeeName || vendorName || customerName || '-';
+                          })()}
+                        </span>
+                      </td>
+                    )}
+                    <td className="hidden lg:table-cell px-2 py-2">
+                      <div className="text-xs text-darkGray dark:text-gray-100 max-w-xs truncate" title={expense.description}>
                         {expense.description}
                       </div>
                       {expense.note && (
@@ -811,16 +938,16 @@ export default function ExpensesPage() {
                         ) : null;
                       })()}
                     </td>
-                    <td className="px-4 lg:px-6 py-3 whitespace-nowrap text-right">
-                      <span className="text-base lg:text-lg font-bold text-redError">
+                    <td className="px-2 py-2 whitespace-nowrap text-right">
+                      <span className="text-sm font-bold text-redError">
                         -{expense.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ETB
                       </span>
                     </td>
-                    <td className="hidden sm:table-cell px-4 lg:px-6 py-3 whitespace-nowrap">
-                      <span className="text-sm text-darkGray dark:text-gray-100">{expense.accountName || expense.paidFrom}</span>
+                    <td className="hidden sm:table-cell px-2 py-2 whitespace-nowrap">
+                      <span className="text-xs text-darkGray dark:text-gray-100">{expense.accountName || expense.paidFrom}</span>
                     </td>
-                    <td className="px-4 lg:px-6 py-3 whitespace-nowrap text-center">
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    <td className="px-2 py-2 whitespace-nowrap text-center">
+                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                         expense.approved 
                           ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
                           : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
@@ -828,8 +955,8 @@ export default function ExpensesPage() {
                         {expense.approved ? 'La Ansixiyay' : 'Sugaya'}
                       </span>
                     </td>
-                    <td className="px-4 lg:px-6 py-3 whitespace-nowrap text-center">
-                      <div className="flex items-center justify-center space-x-1 lg:space-x-2">
+                    <td className="px-2 py-2 whitespace-nowrap text-center">
+                      <div className="flex items-center justify-center space-x-1">
                         <Link
                           href={`/expenses/${expense.id}`}
                           className="text-primary hover:text-blue-700 p-1 rounded hover:bg-primary/10 transition-colors duration-200"
@@ -863,9 +990,19 @@ export default function ExpensesPage() {
                           </>
                         )}
                         <button
-                          onClick={() => {
+                          onClick={async () => {
+                            if (selectedIds.size > 0) {
+                              // Bulk delete selected
+                              await handleBulkDelete();
+                              return;
+                            }
                             if (window.confirm('Ma hubtaa inaad rabto inaad tirtirto kharashkan?')) {
-                              // Handle delete
+                              try {
+                                await fetch(`/api/expenses/${expense.id}`, { method: 'DELETE' });
+                                await fetchExpenses();
+                              } catch (e) {
+                                console.error('Delete failed:', e);
+                              }
                             }
                           }}
                           className="text-redError hover:text-red-700 p-1 rounded hover:bg-redError/10 transition-colors duration-200"
@@ -885,7 +1022,7 @@ export default function ExpensesPage() {
       ) : (
         /* Cards View */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-          {filteredExpenses.map((expense) => (
+          {paginatedExpenses.map((expense) => (
             <div key={expense.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-200 border border-lightGray dark:border-gray-700">
               <div className="p-4 lg:p-6">
                 {/* Header */}
@@ -900,13 +1037,24 @@ export default function ExpensesPage() {
                       {expense.project?.name || expense.company?.name || 'Shirkadda'}
                     </span>
                   </div>
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                    expense.approved 
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                      : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                  }`}>
-                    {expense.approved ? 'La Ansixiyay' : 'Sugaya'}
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      expense.approved 
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                    }`}>
+                      {expense.approved ? 'La Ansixiyay' : 'Sugaya'}
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={isSelected(expense.id)}
+                      onChange={() => toggleSelect(expense.id)}
+                      className={`w-4 h-4 transition-opacity duration-200 ${
+                        selectMode ? 'opacity-100' : 'opacity-30 hover:opacity-100'
+                      }`}
+                      title="Xulo"
+                    />
+                  </div>
                 </div>
 
                 {/* Category & Date */}
@@ -943,10 +1091,23 @@ export default function ExpensesPage() {
                   </span>
                 </div>
 
+                {/* Magac (Project view only) */}
+                {/* isProjectView && ( */}
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-mediumGray dark:text-gray-400">Magac:</span>
+                    <span className="text-darkGray dark:text-gray-100 font-medium">
+                      {(() => {
+                        const employeeName = (expense as any)?.employee || (expense.employeeId ? (employees.find(emp => emp.id === expense.employeeId)?.fullName) : undefined);
+                        const vendorName = (expense as any)?.vendor?.name as string | undefined;
+                        const customerName = (expense as any)?.customer?.name as string | undefined;
+                        return employeeName || vendorName || customerName || '-';
+                      })()}
+                    </span>
+                  </div>
+                {/* ) */}
+
                 {/* Description */}
-                <h3 className="text-base lg:text-lg font-semibold text-darkGray dark:text-gray-100 mb-2 line-clamp-2">
-                  {expense.description}
-                </h3>
+                <h3 className="text-base lg:text-lg font-semibold text-darkGray dark:text-gray-100 mb-2 line-clamp-2">{expense.description}</h3>
 
                 {/* Note */}
                 {expense.note && (
@@ -1007,9 +1168,18 @@ export default function ExpensesPage() {
                     )}
                   </div>
                   <button
-                    onClick={() => {
+                    onClick={async () => {
+                      if (selectedIds.size > 0) {
+                        await handleBulkDelete();
+                        return;
+                      }
                       if (window.confirm('Ma hubtaa inaad rabto inaad tirtirto kharashkan?')) {
-                        // Handle delete
+                        try {
+                          await fetch(`/api/expenses/${expense.id}`, { method: 'DELETE' });
+                          await fetchExpenses();
+                        } catch (e) {
+                          console.error('Delete failed:', e);
+                        }
                       }
                     }}
                     className="text-redError hover:text-red-700 p-2 rounded-lg hover:bg-redError/10 transition-colors duration-200"
@@ -1021,6 +1191,39 @@ export default function ExpensesPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center space-x-4 mt-8">
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+              currentPage === 1
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+                : 'bg-white text-darkGray hover:bg-lightGray border border-lightGray dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 dark:border-gray-600'
+            }`}
+          >
+            Prev
+          </button>
+          
+          <span className="text-sm text-mediumGray dark:text-gray-400">
+            Page {currentPage} of {totalPages}
+          </span>
+          
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+              currentPage === totalPages
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+                : 'bg-white text-darkGray hover:bg-lightGray border border-lightGray dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 dark:border-gray-600'
+            }`}
+          >
+            Next
+          </button>
         </div>
       )}
 

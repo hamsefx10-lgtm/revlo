@@ -15,7 +15,16 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const employee = await prisma.employee.findFirst({
       where: { id, companyId },
       include: {
-        laborRecords: true, // Ku dar diiwaanada shaqada mashruuca
+        laborRecords: {
+          include: {
+            project: {
+              select: {
+                id: true,
+                name: true,
+              }
+            }
+          }
+        }, // Ku dar diiwaanada shaqada mashruuca with project details
         transactions: true, // Ku dar transactions-ka shaqaalahan
       },
     });
@@ -115,7 +124,59 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       return NextResponse.json({ message: 'Shaqaalaha lama helin.' }, { status: 404 });
     }
 
-    // Delete employee (cascade will handle related records)
+    // Manual cascade delete - delete related records first
+    // 1. Get all expenses for this employee to refund account balances
+    const employeeExpenses = await prisma.expense.findMany({
+      where: { employeeId: id },
+      select: { paidFrom: true, amount: true }
+    });
+
+    // 2. Refund account balances for all expenses
+    for (const expense of employeeExpenses) {
+      if (expense.paidFrom && expense.amount) {
+        await prisma.account.update({
+          where: { id: expense.paidFrom },
+          data: {
+            balance: { increment: Number(expense.amount) }, // Soo celi lacagta
+          },
+        });
+      }
+    }
+
+    // 3. Get all project labor records for this employee to refund account balances
+    const projectLabors = await prisma.projectLabor.findMany({
+      where: { employeeId: id },
+      select: { paidFrom: true, paidAmount: true }
+    });
+
+    // 4. Refund account balances for all project labor records
+    for (const labor of projectLabors) {
+      if (labor.paidFrom && labor.paidAmount) {
+        await prisma.account.update({
+          where: { id: labor.paidFrom },
+          data: {
+            balance: { increment: Number(labor.paidAmount) }, // Soo celi lacagta
+          },
+        });
+      }
+    }
+
+    // 5. Delete related project labor records
+    await prisma.projectLabor.deleteMany({
+      where: { employeeId: id }
+    });
+
+    // 6. Delete related transactions
+    await prisma.transaction.deleteMany({
+      where: { employeeId: id }
+    });
+
+    // 7. Delete related expenses
+    await prisma.expense.deleteMany({
+      where: { employeeId: id }
+    });
+
+    // 8. Delete the employee
     await prisma.employee.delete({
       where: { id }
     });

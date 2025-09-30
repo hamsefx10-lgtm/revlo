@@ -33,7 +33,20 @@ export async function GET(request: Request) {
       select: {
         id: true,
         expenseDate: true,
+        employeeId: true,
         project: {
+          select: {
+            id: true,
+            name: true,
+          }
+        },
+        vendor: {
+          select: {
+            id: true,
+            name: true,
+          }
+        },
+        customer: {
           select: {
             id: true,
             name: true,
@@ -46,7 +59,12 @@ export async function GET(request: Request) {
         paidFrom: true,
         note: true,
         approved: true,
-        employee: true,
+        employee: {
+          select: {
+            id: true,
+            fullName: true,
+          }
+        },
         expenseCategory: true,
         createdAt: true,
         updatedAt: true,
@@ -76,6 +94,8 @@ export async function GET(request: Request) {
       date: exp.expenseDate,
       project: exp.project ? { id: exp.project.id, name: exp.project.name } : undefined,
       company: exp.company ? { id: exp.company.id, name: exp.company.name } : undefined,
+      vendor: exp.vendor ? { id: exp.vendor.id, name: exp.vendor.name } : undefined,
+      customer: exp.customer ? { id: exp.customer.id, name: exp.customer.name } : undefined,
       category: exp.category,
       subCategory: exp.subCategory || undefined,
       description: exp.description || '', // Always use actual DB value, never auto-generate
@@ -85,6 +105,7 @@ export async function GET(request: Request) {
       note: exp.note,
       approved: exp.approved,
       employee: exp.employee ? exp.employee.fullName : undefined,
+      employeeId: exp.employeeId || undefined,
       expenseCategory: exp.expenseCategory ? exp.expenseCategory.name : undefined,
       createdAt: exp.createdAt,
       updatedAt: exp.updatedAt,

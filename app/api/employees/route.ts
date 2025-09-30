@@ -123,8 +123,7 @@ export async function POST(request: Request) {
           startDate: new Date(startDate),
           company: { connect: { id: companyId } },
           category: 'PROJECT',
-          // Connect to project if provided (optional)
-          ...(projectId ? { project: { connect: { id: projectId } } } : {}),
+          // Note: Project connection is handled through ProjectLabor records, not directly
         },
       });
 

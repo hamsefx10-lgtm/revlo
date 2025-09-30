@@ -53,6 +53,13 @@ export default function AddExpensePage() {
   const [selectedEmployeeForSalary, setSelectedEmployeeForSalary] = useState('');
   const [salaryPaymentAmount, setSalaryPaymentAmount] = useState<number | ''>('');
   const [salaryPaymentDate, setSalaryPaymentDate] = useState(new Date().toISOString().split('T')[0]);
+  
+  // Project labor wage tracking
+  const [previousWageInfo, setPreviousWageInfo] = useState<{
+    agreedWage: number;
+    totalPaid: number;
+    remaining: number;
+  } | null>(null);
   // Office Rent specific fields
   const [officeRentPeriod, setOfficeRentPeriod] = useState(''); // e.g., 'Monthly', 'Quarterly'
   // Electricity specific fields
@@ -117,7 +124,21 @@ export default function AddExpensePage() {
   const [employees, setEmployees] = useState<any[]>([]);
   const [allCustomers, setAllCustomers] = useState<any[]>([]); // All customers for Debt (lending)
   const [vendors, setVendors] = useState<any[]>([]); // NEW: For vendor payment tracking
+  const [projectLabors, setProjectLabors] = useState<any[]>([]);
   const paidFromOptions = ['Cash', 'CBE', 'Ebirr'];
+  
+  // Fetch project labor records for wage tracking
+  const fetchProjectLabors = async () => {
+    try {
+      const res = await fetch('/api/project-labors');
+      if (res.ok) {
+        const data = await res.json();
+        setProjectLabors(data.projectLabors || []);
+      }
+    } catch (error) {
+      console.error('Error fetching project labors:', error);
+    }
+  };
   // Project expense categories: used when expenseType === 'project'
   const projectExpenseCategories = [
   { value: '', label: '-- Dooro Nooca Kharashka Mashruuca --' },
@@ -259,6 +280,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
         console.error('Error fetching vendors:', error);
         setVendors([]);
       });
+    fetchProjectLabors();
   }, []);
 
   // --- Calculations ---
@@ -267,6 +289,43 @@ const [consultancyFee, setConsultancyFee] = useState('');
     const price = parseFloat(item.price as string) || 0;
     return sum + (qty * price);
   }, 0);
+
+  // Auto-fill wage information when employee and project are selected
+  useEffect(() => {
+    if (selectedEmployeeForSalary && selectedProject && category === 'Labor') {
+      // Find previous labor records for this employee and project
+      const previousRecords = projectLabors.filter(labor => 
+        labor.employeeId === selectedEmployeeForSalary && 
+        labor.projectId === selectedProject
+      );
+      
+      if (previousRecords.length > 0) {
+        // Calculate total agreed wage and total paid
+        const totalAgreedWage = previousRecords.reduce((sum, record) => sum + (record.agreedWage || 0), 0);
+        const totalPaid = previousRecords.reduce((sum, record) => sum + (record.paidAmount || 0), 0);
+        const remaining = totalAgreedWage - totalPaid;
+        
+        setPreviousWageInfo({
+          agreedWage: totalAgreedWage,
+          totalPaid: totalPaid,
+          remaining: remaining
+        });
+        
+        // Auto-fill the wage field with remaining amount
+        if (remaining > 0) {
+          setWage(remaining);
+        } else {
+          setWage('');
+        }
+      } else {
+        // No previous records, clear wage info
+        setPreviousWageInfo(null);
+        setWage('');
+      }
+    } else {
+      setPreviousWageInfo(null);
+    }
+  }, [selectedEmployeeForSalary, selectedProject, category, projectLabors]);
 
   const laborRemainingAmount = (typeof wage === 'number' ? wage : 0) - (typeof laborPaidAmount === 'number' ? laborPaidAmount : 0);
 
@@ -774,8 +833,10 @@ const [consultancyFee, setConsultancyFee] = useState('');
           category: 'Labor', // required by backend
           amount: expenseData.paidAmount, // required by backend
           laborPaidAmount: expenseData.paidAmount, // required by backend
+          note: expenseData.note || '', // Add note to labor payload
+          receiptUrl: receiptUrl, // Add receipt URL to labor payload
         };
-        // Submit to /api/expenses/project
+        // Submit to /api/expenses/project (this creates both ProjectLabor and Expense records)
         const expenseRes = await fetch('/api/expenses/project', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -785,31 +846,6 @@ const [consultancyFee, setConsultancyFee] = useState('');
         if (!expenseRes.ok) {
           const errorMsg = expenseDataRes.message || (typeof expenseDataRes === 'string' ? expenseDataRes : JSON.stringify(expenseDataRes)) || 'Failed to record expense';
           console.error('Backend error response (expense):', expenseDataRes);
-          setToastMessage({ message: errorMsg, type: 'error' });
-          setLoading(false);
-          return;
-        }
-        // After ProjectLabor creation, also create Expense record
-        const expensePayload = {
-          amount: expenseData.paidAmount,
-          category: 'Labor',
-          paidFrom: expenseData.paidFrom,
-          expenseDate: expenseData.dateWorked,
-          description: expenseData.description,
-          note: expenseData.note || '',
-          projectId: expenseData.projectId,
-          employeeId: expenseData.employeeId,
-          receiptUrl: receiptUrl,
-        };
-        const expenseRes2 = await fetch('/api/expenses', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(expensePayload),
-        });
-        const expenseDataRes2 = await expenseRes2.json();
-        if (!expenseRes2.ok) {
-          const errorMsg = expenseDataRes2.message || (typeof expenseDataRes2 === 'string' ? expenseDataRes2 : JSON.stringify(expenseDataRes2)) || 'Failed to record expense';
-          console.error('Backend error response (expense):', expenseDataRes2);
           setToastMessage({ message: errorMsg, type: 'error' });
           setLoading(false);
           return;
@@ -1386,7 +1422,37 @@ const [consultancyFee, setConsultancyFee] = useState('');
                   </div>
                   <div>
                     <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Mushaharka La Ogolaaday ($) <span className="text-redError">*</span></label>
-                    <input type="number" value={wage} onChange={e => setWage(parseFloat(e.target.value) || '')} className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 ${validationErrors.wage ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} required placeholder="Mushaharka" />
+                    {previousWageInfo && (
+                      <div className="mb-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <div className="text-sm text-blue-800 dark:text-blue-300">
+                          <div className="flex justify-between">
+                            <span>Mushaharka Hore:</span>
+                            <span className="font-medium">{previousWageInfo.agreedWage.toLocaleString()} ETB</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Lacagta La Bixiyay:</span>
+                            <span className="font-medium">{previousWageInfo.totalPaid.toLocaleString()} ETB</span>
+                          </div>
+                          <div className="flex justify-between border-t border-blue-300 dark:border-blue-700 pt-1 mt-1">
+                            <span className="font-medium">Inta Dhiman:</span>
+                            <span className="font-bold text-red-600 dark:text-red-400">{previousWageInfo.remaining.toLocaleString()} ETB</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <input 
+                      type="number" 
+                      value={wage} 
+                      onChange={e => setWage(parseFloat(e.target.value) || '')} 
+                      className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 ${validationErrors.wage ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} 
+                      required 
+                      placeholder={previousWageInfo ? "Wax ka beddel haddii aad rabto" : "Mushaharka"} 
+                    />
+                    {previousWageInfo && (
+                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                        💡 Mushaharka inta dhiman ayaa la soo buuxiyay. Wax ka beddel haddii aad rabto.
+                      </p>
+                    )}
                     {validationErrors.wage && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.wage}</p>}
                   </div>
                   <div>

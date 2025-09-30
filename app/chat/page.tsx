@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import Layout from '../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { Send, Paperclip, Image, Smile, Users, Phone, Video, MoreVertical, Search, Settings } from 'lucide-react';
 
 interface User {

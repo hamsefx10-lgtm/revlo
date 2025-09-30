@@ -410,18 +410,41 @@ const ProjectDetailsPage: React.FC = () => {
                                             </div>
                                         )}
                                         <h4 className="font-bold text-lg mb-2 text-primary">Shaqaalaha</h4>
-                                        {(Array.isArray(project.laborRecords) ? project.laborRecords.length : 0) === 0 ? <EmptyState message="Lama diiwaan gelin wax shaqaale ah." /> : (project.laborRecords || []).map(lab => (
-                                            <div key={lab.id} className='bg-lightGray/50 p-3 rounded-lg'>
-                                                <div className='flex justify-between items-start'>
-                                                    <div>
-                                                        <p className='font-bold'>{lab.employeeName || '-'}</p>
-                                                        <p className='text-xs text-mediumGray'>{lab.workDescription || '-'}</p>
-                                                    </div>
-                                                    <p className='font-bold text-lg text-accent'>Br{(typeof lab.agreedWage === 'number' ? lab.agreedWage : parseFloat(lab.agreedWage as any) || 0).toLocaleString()}</p>
-                                                </div>
-                                                {lab.remainingWage > 0 && <p className='text-right text-xs text-redError mt-1'>Hadhay: Br{(typeof lab.remainingWage === 'number' ? lab.remainingWage : parseFloat(lab.remainingWage as any) || 0).toLocaleString()}</p>}
+                                        {(Array.isArray(project.laborRecords) ? project.laborRecords.length : 0) === 0 ? (
+                                            <EmptyState message="Lama diiwaan gelin wax shaqaale ah." />
+                                        ) : (
+                                            <div className="space-y-2">
+                                                {(project.laborRecords || []).map(lab => {
+                                                    const agreed = typeof lab.agreedWage === 'number' ? lab.agreedWage : parseFloat(lab.agreedWage as any) || 0;
+                                                    const paid = typeof lab.paidAmount === 'number' ? lab.paidAmount : parseFloat(lab.paidAmount as any) || 0;
+                                                    const remaining = typeof lab.remainingWage === 'number' ? lab.remainingWage : parseFloat(lab.remainingWage as any) || 0;
+                                                    return (
+                                                        <div key={lab.id} className='bg-white p-3 rounded-lg shadow-sm'>
+                                                            <div className='flex items-start justify-between gap-3'>
+                                                                <div className='min-w-0'>
+                                                                    <p className='font-bold truncate'>{lab.employeeName || '-'}</p>
+                                                                    <p className='text-xs text-mediumGray truncate'>{lab.workDescription || '-'}</p>
+                                                                </div>
+                                                                <div className='text-right'>
+                                                                    <p className='text-xs text-mediumGray'>Agreed</p>
+                                                                    <p className='font-bold text-accent'>Br{agreed.toLocaleString()}</p>
+                                                                </div>
+                                                            </div>
+                                                            <div className='mt-2 grid grid-cols-2 gap-2'>
+                                                                <div className='bg-lightGray/40 rounded p-2 text-center'>
+                                                                    <p className='text-xs text-mediumGray'>Paid</p>
+                                                                    <p className='font-bold text-green-600'>Br{paid.toLocaleString()}</p>
+                                                                </div>
+                                                                <div className='bg-lightGray/40 rounded p-2 text-center'>
+                                                                    <p className='text-xs text-mediumGray'>Remaining</p>
+                                                                    <p className={`font-bold ${remaining > 0 ? 'text-redError' : 'text-secondary'}`}>Br{remaining.toLocaleString()}</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
-                                        ))}
+                                        )}
                                     </>
                                 )}
                                 {activeTab === 'Payments' && (
@@ -530,7 +553,17 @@ const ProjectDetailsPage: React.FC = () => {
                             </div>
                             <div className="hidden md:block">
                                 <table className='w-full text-sm'>
-                                    {activeTab === 'Labor' && (project.laborRecords.length > 0 && <thead><tr className='text-left bg-lightGray'><th>Magaca Shaqaalaha</th><th>Shaqada</th><th>Mushaharka</th><th className='text-right'>Hadhaaga</th></tr></thead>)}
+                                    {activeTab === 'Labor' && (project.laborRecords.length > 0 && (
+                                        <thead>
+                                            <tr className='text-left bg-lightGray'>
+                                                <th>Magaca Shaqaalaha</th>
+                                                <th>Shaqada</th>
+                                                <th className='text-right'>Agreed</th>
+                                                <th className='text-right'>Paid</th>
+                                                <th className='text-right'>Remaining</th>
+                                            </tr>
+                                        </thead>
+                                    ))}
                                     {activeTab === 'Payments' && (project.payments.length > 0 && <thead><tr className='text-left bg-lightGray'><th>Taariikh</th><th>Nooca</th><th>Lagu Helay</th><th className='text-right'>Qiimaha</th></tr></thead>)}
                                     {activeTab === 'Documents' && (project.expenses.filter(exp => exp.receiptUrl).length > 0 && <thead><tr className='text-left bg-lightGray'><th>Sharaxaad</th><th>Nooca</th><th>Lacag</th><th>Taariikh</th><th>Rasiid</th></tr></thead>)}
                                     <tbody>
@@ -544,7 +577,23 @@ const ProjectDetailsPage: React.FC = () => {
                                                     </tr>
                                                 ))}
                                                 {/* Labor Records */}
-                                                {(Array.isArray(project.laborRecords) ? project.laborRecords.length : 0) === 0 ? <tr><td colSpan={4}><EmptyState message="Lama diiwaan gelin wax shaqaale ah." /></td></tr> : (project.laborRecords || []).map(lab=>(<tr key={lab.id}><td>{lab.employeeName || '-'}</td><td>{lab.workDescription || '-'}</td><td>Br{(typeof lab.agreedWage === 'number' ? lab.agreedWage : parseFloat(lab.agreedWage as any) || 0).toLocaleString()}</td><td className='text-right font-semibold text-redError'>Br{(typeof lab.remainingWage === 'number' ? lab.remainingWage : parseFloat(lab.remainingWage as any) || 0).toLocaleString()}</td></tr>))}
+                                                {(Array.isArray(project.laborRecords) ? project.laborRecords.length : 0) === 0 
+                                                    ? (<tr><td colSpan={5}><EmptyState message="Lama diiwaan gelin wax shaqaale ah." /></td></tr>) 
+                                                    : (project.laborRecords || []).map(lab => {
+                                                        const agreed = typeof lab.agreedWage === 'number' ? lab.agreedWage : parseFloat(lab.agreedWage as any) || 0;
+                                                        const paid = typeof lab.paidAmount === 'number' ? lab.paidAmount : parseFloat(lab.paidAmount as any) || 0;
+                                                        const remaining = typeof lab.remainingWage === 'number' ? lab.remainingWage : parseFloat(lab.remainingWage as any) || 0;
+                                                        return (
+                                                            <tr key={lab.id}>
+                                                                <td>{lab.employeeName || '-'}</td>
+                                                                <td>{lab.workDescription || '-'}</td>
+                                                                <td className='text-right'>Br{agreed.toLocaleString()}</td>
+                                                                <td className='text-right text-green-600'>Br{paid.toLocaleString()}</td>
+                                                                <td className={`text-right font-semibold ${remaining > 0 ? 'text-redError' : 'text-secondary'}`}>Br{remaining.toLocaleString()}</td>
+                                                            </tr>
+                                                        );
+                                                    })
+                                                }
                                             </>
                                         )}
                                         {activeTab === 'Payments' && (

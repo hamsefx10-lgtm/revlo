@@ -92,6 +92,7 @@ const EmployeeDetailsPage: React.FC = () => {
   const [salaryExpenses, setSalaryExpenses] = useState<Expense[]>([]);
   const [expensesLoading, setExpensesLoading] = useState(false);
   const [salarySummary, setSalarySummary] = useState<any>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Fetch all expenses for this employee (approved only)
   // Fetch only salary expenses for this employee
@@ -202,6 +203,40 @@ const EmployeeDetailsPage: React.FC = () => {
     // eslint-disable-next-line
   }, [id]);
 
+  // Add refresh function to manually refresh data
+  const refreshData = async () => {
+    if (id) {
+      setRefreshing(true);
+      try {
+        await Promise.all([
+          fetchEmployeeDetails(),
+          fetchSalaryExpenses(),
+          fetchSalarySummary()
+        ]);
+        setToastMessage({ message: 'Data-ka si guul leh ayaa loo cusboonaysiiyay!', type: 'success' });
+      } catch (error) {
+        setToastMessage({ message: 'Cilad ayaa dhacday marka data-ka la cusboonaysiinayay.', type: 'error' });
+      } finally {
+        setRefreshing(false);
+      }
+    }
+  };
+
+  // Add event listener for page visibility to refresh when user comes back to page
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && id) {
+        // Refresh data when page becomes visible again
+        refreshData();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [id]);
+
   if (loading) {
     return (
       <Layout>
@@ -277,8 +312,62 @@ const EmployeeDetailsPage: React.FC = () => {
 
   return (
     <Layout>
+      {/* Mobile Header */}
+      <div className="block md:hidden mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <Link href="/employees" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200">
+            <ArrowLeft size={24} className="inline-block" />
+          </Link>
+          <button 
+            onClick={refreshData} 
+            disabled={refreshing}
+            className={`p-2 rounded-lg transition duration-200 ${
+              refreshing 
+                ? 'bg-gray-400 text-white cursor-not-allowed' 
+                : 'bg-primary text-white hover:bg-blue-700'
+            }`}
+          >
+            {refreshing ? <Loader2 size={18} className="animate-spin" /> : <ClockIcon size={18} />}
+          </button>
+        </div>
+        <div className="text-center mb-4">
+          <h1 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-2">{employee.fullName}</h1>
+          <div className="flex flex-wrap justify-center gap-2">
+            <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+              employee.category === 'COMPANY' 
+                ? 'bg-primary/10 text-primary border border-primary/30' 
+                : 'bg-accent/10 text-accent border border-accent/30'
+            }`}>
+              {employee.category === 'COMPANY' ? '🏢 Shaqaale Shirkadda' : '🏗️ Shaqaale Mashruuca'}
+            </span>
+            <span className="px-2 py-1 rounded-full text-xs font-medium bg-secondary/10 text-secondary border border-secondary/30">
+              {employee.role}
+            </span>
+            <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-300">
+              ID: {employee.id.slice(0, 8)}...
+            </span>
+          </div>
+        </div>
+        <div className="flex space-x-2">
+          <Link 
+            href={`/employees/edit/${employee.id}`}
+            className="flex-1 py-2 px-4 rounded-lg font-medium text-sm transition duration-200 shadow-md bg-accent text-white hover:bg-orange-600 flex items-center justify-center"
+          >
+            <Edit size={16} className="mr-2" />
+            Edit Shaqaale
+          </Link>
+          <button 
+            onClick={handleDeleteEmployee}
+            className="flex-1 py-2 px-4 rounded-lg font-medium text-sm transition duration-200 shadow-md bg-redError text-white hover:bg-red-700 flex items-center justify-center"
+          >
+            <Trash2 size={16} className="mr-2" />
+            Delete
+          </button>
+        </div>
+      </div>
 
-      <div className="flex justify-between items-center mb-8">
+      {/* Desktop Header */}
+      <div className="hidden md:flex justify-between items-center mb-8">
         <div className="flex items-center space-x-4">
           <Link href="/employees" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200">
             <ArrowLeft size={28} className="inline-block" />
@@ -303,6 +392,22 @@ const EmployeeDetailsPage: React.FC = () => {
           </div>
         </div>
         <div className="flex space-x-3">
+          <button 
+            onClick={refreshData} 
+            disabled={refreshing}
+            className={`py-2.5 px-6 rounded-lg font-bold text-lg transition duration-200 shadow-md flex items-center ${
+              refreshing 
+                ? 'bg-gray-400 text-white cursor-not-allowed' 
+                : 'bg-primary text-white hover:bg-blue-700'
+            }`}
+          >
+            {refreshing ? (
+              <Loader2 size={20} className="mr-2 animate-spin" />
+            ) : (
+              <ClockIcon size={20} className="mr-2" />
+            )}
+            {refreshing ? 'Cusboonaysiina...' : 'Cusboonaysii'}
+          </button>
           <Link href={`/employees/edit/${employee.id}`} className="bg-accent text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-orange-600 transition duration-200 shadow-md flex items-center">
             <Edit size={20} className="mr-2" /> Edit Shaqaale
           </Link>
@@ -313,14 +418,14 @@ const EmployeeDetailsPage: React.FC = () => {
       </div>
 
       {/* Employee Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-fade-in-up">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">Nooca</h4>
-          <p className="text-3xl font-extrabold text-primary">{employee.category === 'COMPANY' ? 'Company' : 'Project'}</p>
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8 animate-fade-in-up">
+        <div className="bg-white dark:bg-gray-800 p-3 md:p-6 rounded-xl shadow-md text-center">
+          <h4 className="text-xs md:text-lg font-semibold text-mediumGray dark:text-gray-400">Nooca</h4>
+          <p className="text-lg md:text-3xl font-extrabold text-primary">{employee.category === 'COMPANY' ? 'Company' : 'Project'}</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">Doorka</h4>
-          <p className="text-3xl font-extrabold text-primary">{employee.role}</p>
+        <div className="bg-white dark:bg-gray-800 p-3 md:p-6 rounded-xl shadow-md text-center">
+          <h4 className="text-xs md:text-lg font-semibold text-mediumGray dark:text-gray-400">Doorka</h4>
+          <p className="text-lg md:text-3xl font-extrabold text-primary">{employee.role}</p>
         </div>
         {employee.category === 'COMPANY' && (
           <>
@@ -479,12 +584,12 @@ const EmployeeDetailsPage: React.FC = () => {
       {/* Tabs for Employee Details */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden animate-fade-in-up">
         <div className="border-b border-lightGray dark:border-gray-700">
-          <nav className="-mb-px flex space-x-8 px-6 md:px-8" aria-label="Tabs">
+          <nav className="-mb-px flex space-x-2 md:space-x-8 px-3 md:px-6 lg:px-8 overflow-x-auto" aria-label="Tabs">
             {['Overview', 'Labor Records', 'Payments', 'Transactions'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-lg focus:outline-none transition-colors duration-200
+                className={`whitespace-nowrap py-3 md:py-4 px-2 md:px-1 border-b-2 font-medium text-sm md:text-lg focus:outline-none transition-colors duration-200
                   ${activeTab === tab 
                     ? 'border-primary text-primary dark:text-gray-100' 
                     : 'border-transparent text-mediumGray dark:text-gray-400 hover:text-darkGray dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
@@ -497,7 +602,7 @@ const EmployeeDetailsPage: React.FC = () => {
         </div>
 
         {/* Tab Content */}
-        <div className="p-6 md:p-8">
+        <div className="p-4 md:p-6 lg:p-8">
           {activeTab === 'Overview' && (
             <div>
               <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-4">Macluumaadka Guud</h3>
@@ -648,23 +753,140 @@ const EmployeeDetailsPage: React.FC = () => {
       {/* <-- HALKAAS KALIYA HAL ) */}
       {activeTab === 'Labor Records' && employee.category === 'PROJECT' && (
         <div>
-          <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-4">Labor Records</h3>
-          {employee.laborRecords && employee.laborRecords.length > 0 ? (
-            <ul className="space-y-3">
-              {employee.laborRecords.map((rec: any) => (
-                <li key={rec.id} className="flex justify-between items-center bg-lightGray dark:bg-gray-700 p-3 rounded-lg shadow-sm">
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-darkGray dark:text-gray-100">{rec.projectName || 'Project'}</span>
-                    <span className="text-sm text-mediumGray dark:text-gray-400">Agreed Wage: ${rec.agreedWage.toLocaleString()}</span>
+          <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-4">Project Labor</h3>
+          {(() => {
+            const records = employee.laborRecords || [];
+            if (records.length === 0) {
+              return <p className="text-mediumGray dark:text-gray-400">No labor records for this employee.</p>;
+            }
+
+            // Group by project
+            const projectMap: Record<string, { projectId: string; projectName: string; agreed: number; paid: number; remaining: number; items: any[] }>
+              = {} as any;
+            for (const r of records) {
+              const key = r.projectId;
+              if (!projectMap[key]) {
+                projectMap[key] = { 
+                  projectId: r.projectId, 
+                  projectName: r.project?.name || 'Project', 
+                  agreed: 0, 
+                  paid: 0, 
+                  remaining: 0, 
+                  items: [] 
+                };
+              }
+              projectMap[key].agreed += Number(r.agreedWage || 0);
+              projectMap[key].paid += Number(r.paidAmount || 0);
+              projectMap[key].remaining += Number(r.remainingWage || 0);
+              projectMap[key].items.push(r);
+            }
+            const grouped = Object.values(projectMap);
+
+            const totalAgreed = grouped.reduce((s, g) => s + g.agreed, 0);
+            const totalPaid = grouped.reduce((s, g) => s + g.paid, 0);
+            const totalRemaining = totalAgreed - totalPaid;
+
+            const goPayRemaining = (projectId: string, projectName: string, remaining: number) => {
+              // Navigate to expenses add with preselected params
+              const params = new URLSearchParams({
+                type: 'project',
+                category: 'Labor',
+                projectId,
+                employeeId: String(employee.id),
+              });
+              // We rely on expenses/add logic to auto-fill remaining when previous records exist
+              router.push(`/expenses/add?${params.toString()}`);
+            };
+
+            return (
+              <div>
+                {/* Summary */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                  <div className="p-3 rounded-xl bg-white dark:bg-gray-800 border border-lightGray dark:border-gray-700">
+                    <div className="text-xs text-mediumGray">Total Project Wage</div>
+                    <div className="text-lg font-bold text-darkGray dark:text-gray-100">{totalAgreed.toLocaleString()} ETB</div>
                   </div>
-                  <span className="text-primary font-bold">Paid: ${rec.paidAmount.toLocaleString()}</span>
-                  <span className="text-sm text-mediumGray dark:text-gray-400">Remaining: ${rec.remainingWage.toLocaleString()}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-mediumGray dark:text-gray-400">No labor records found for this project employee.</p>
-          )}
+                  <div className="p-3 rounded-xl bg-white dark:bg-gray-800 border border-lightGray dark:border-gray-700">
+                    <div className="text-xs text-mediumGray">Total Paid</div>
+                    <div className="text-lg font-bold text-green-600">{totalPaid.toLocaleString()} ETB</div>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white dark:bg-gray-800 border border-lightGray dark:border-gray-700">
+                    <div className="text-xs text-mediumGray">Remaining</div>
+                    <div className={`text-lg font-bold ${totalRemaining > 0 ? 'text-redError' : 'text-secondary'}`}>{totalRemaining.toLocaleString()} ETB</div>
+                  </div>
+                </div>
+
+                {/* Per-project cards */}
+                <div className="grid grid-cols-1 gap-4">
+                  {grouped.map((g) => (
+                     <div key={g.projectId} className="rounded-xl bg-white dark:bg-gray-800 border border-lightGray dark:border-gray-700 p-3 md:p-4">
+                       <div className="flex items-center justify-between mb-3">
+                         <div className="flex items-center space-x-2 min-w-0 flex-1">
+                           <Briefcase className="text-accent" size={18} className="flex-shrink-0" />
+                           <h4 className="text-base md:text-lg font-bold text-darkGray dark:text-gray-100 truncate">{g.projectName}</h4>
+                         </div>
+                         <span className={`px-2 py-1 rounded-full text-xs font-bold flex-shrink-0 ${g.remaining > 0 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'}`}>
+                           {g.remaining > 0 ? 'Pending' : 'Paid'}
+                         </span>
+                       </div>
+                       <div className="grid grid-cols-3 gap-2 md:gap-3 text-center">
+                         <div>
+                           <div className="text-xs text-mediumGray">Agreed</div>
+                           <div className="font-bold text-sm md:text-base">{g.agreed.toLocaleString()} ETB</div>
+                         </div>
+                         <div>
+                           <div className="text-xs text-mediumGray">Paid</div>
+                           <div className="font-bold text-green-600 text-sm md:text-base">{g.paid.toLocaleString()} ETB</div>
+                         </div>
+                         <div>
+                           <div className="text-xs text-mediumGray">Remaining</div>
+                           <div className={`font-bold text-sm md:text-base ${g.remaining > 0 ? 'text-redError' : 'text-secondary'}`}>{g.remaining.toLocaleString()} ETB</div>
+                         </div>
+                       </div>
+                       <div className="mt-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                         <div className="text-xs text-mediumGray">Contracts: {g.items.length}</div>
+                         {g.remaining > 0 && (
+                           <button onClick={() => goPayRemaining(g.projectId, g.projectName, g.remaining)} className="px-3 py-2 rounded-lg bg-secondary text-white text-xs md:text-sm hover:bg-green-600 transition-colors w-full sm:w-auto">
+                             Bixi Inta Dhiman
+                           </button>
+                         )}
+                       </div>
+
+                      {/* Transactions related to this project's labor payments */}
+                      {(() => {
+                        const projectTransactions = (employee.transactions || []).filter((t: any) => t.projectId === g.projectId);
+                        if (projectTransactions.length === 0) {
+                          return null;
+                        }
+                        return (
+                          <div className="mt-4 border-t border-lightGray dark:border-gray-700 pt-3">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <ClipboardList size={16} className="text-mediumGray" />
+                              <span className="text-sm font-semibold text-darkGray dark:text-gray-100">Transactions</span>
+                            </div>
+                            <ul className="space-y-2">
+                              {projectTransactions.map((trx: any) => (
+                                <li key={trx.id} className="flex items-center justify-between text-xs">
+                                  <div className="flex items-center space-x-2 min-w-0">
+                                    <ClockIcon size={14} className="text-mediumGray" />
+                                    <span className="truncate text-darkGray dark:text-gray-100" title={trx.description}>{trx.description || 'Payment'}</span>
+                                  </div>
+                                  <div className="flex items-center space-x-3">
+                                    <span className={`font-bold ${Number(trx.amount) < 0 ? 'text-redError' : 'text-secondary'}`}>{Number(trx.amount).toLocaleString()} ETB</span>
+                                    <span className="text-mediumGray">{new Date(trx.transactionDate).toLocaleDateString()}</span>
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
       {activeTab === 'Payments' && employee.category === 'COMPANY' && (

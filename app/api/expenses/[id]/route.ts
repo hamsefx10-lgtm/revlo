@@ -315,7 +315,23 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       return NextResponse.json({ message: 'Kharashka lama helin.' }, { status: 404 });
     }
 
-    // Delete expense (cascade will handle related records)
+    // Manual cascade delete - delete related records first
+    // 1. Refund account balance (add back the amount that was deducted)
+    if (existingExpense.paidFrom && existingExpense.amount) {
+      await prisma.account.update({
+        where: { id: existingExpense.paidFrom },
+        data: {
+          balance: { increment: Number(existingExpense.amount) }, // Soo celi lacagta
+        },
+      });
+    }
+
+    // 2. Delete related transactions
+    await prisma.transaction.deleteMany({
+      where: { expenseId: id }
+    });
+
+    // 3. Delete the expense
     await prisma.expense.delete({
       where: { id }
     });

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Layout from '../../components/layouts/Layout'; // Layout for sidebar
 import {
   Plus, Search, Filter, Eye, Edit, Trash2, LayoutGrid, List, Calendar, CheckCircle, Clock, XCircle, ChevronRight,
-  Loader2, Info, Bell, FileX2, MoreVertical, DollarSign, User, Hash, AlertTriangle
+  Loader2, Info, Bell, FileX2, MoreVertical, DollarSign, User, Hash, AlertTriangle, Upload
 } from 'lucide-react';
 import Toast from '../../components/common/Toast'; // Import Toast component
 
@@ -312,9 +312,12 @@ export default function ProjectsPage() {
           <h1 className="text-3xl md:text-4xl font-bold text-darkGray dark:text-gray-100">Projects Dashboard</h1>
           <p className="text-mediumGray dark:text-gray-400 mt-1">Manage all your projects from one place.</p>
         </div>
-        <Link href="/projects/add" className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-lg hover:shadow-primary/40 flex items-center gap-2 self-start md:self-center">
-          <Plus size={20} /> Add New Project
-        </Link>
+        <div className="flex gap-3 self-start md:self-center">
+          
+          <Link href="/projects/add" className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-lg hover:shadow-primary/40 flex items-center gap-2">
+            <Plus size={20} /> Add New Project
+          </Link>
+        </div>
       </div>
 
       {/* --- Project Statistics Cards --- */}

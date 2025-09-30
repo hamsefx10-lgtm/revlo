@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     }
     const { companyId, userId } = sessionUser;
     const reqBody = await request.json();
-  const { description, amount, category, subCategory, paidFrom, expenseDate, note, projectId, employeeId, laborPaidAmount = 0, employeeName, transportType, consultantName, consultancyType, consultancyFee, equipmentName, rentalPeriod, rentalFee, supplierName, bankAccountId } = reqBody;
+  const { description, amount, category, subCategory, paidFrom, expenseDate, note, projectId, employeeId, laborPaidAmount = 0, employeeName, transportType, consultantName, consultancyType, consultancyFee, equipmentName, rentalPeriod, rentalFee, supplierName, bankAccountId, agreedWage } = reqBody;
     // General required fields
     if (!category) {
       return NextResponse.json({ message: 'Category is required.' }, { status: 400 });
@@ -56,6 +56,9 @@ export async function POST(request: Request) {
       }
       if (!projectId) {
         return NextResponse.json({ message: 'Project is required for Labor expense.' }, { status: 400 });
+      }
+      if (!agreedWage || agreedWage === undefined || agreedWage === null || agreedWage === '') {
+        return NextResponse.json({ message: 'Agreed wage is required for Labor expense.' }, { status: 400 });
       }
       if (laborPaidAmount === undefined || laborPaidAmount === null || laborPaidAmount === '') {
         return NextResponse.json({ message: 'Paid amount for labor is required.' }, { status: 400 });
@@ -90,71 +93,91 @@ export async function POST(request: Request) {
 
     let finalWage = amount;
     let projectLabor;
+    let existingLabor = null;
+    
     if (category === 'Labor') {
-      // Find previous record for this employee/project
-      const previousLabor = await prisma.projectLabor.findFirst({
+      // Find existing labor record for this employee/project
+      existingLabor = await prisma.projectLabor.findFirst({
         where: { employeeId, projectId },
         orderBy: { dateWorked: 'desc' },
       });
-      let agreedWage: number = 0;
-      let previousPaidAmount: number = 0;
-      let remainingWage: number = 0;
-      if (previousLabor) {
-        // Safely handle nullable Decimal fields
-        agreedWage = previousLabor.agreedWage !== null ? (typeof previousLabor.agreedWage === 'object' && 'toNumber' in previousLabor.agreedWage ? previousLabor.agreedWage.toNumber() : Number(previousLabor.agreedWage)) : 0;
-        previousPaidAmount = previousLabor.paidAmount !== null ? (typeof previousLabor.paidAmount === 'object' && 'toNumber' in previousLabor.paidAmount ? previousLabor.paidAmount.toNumber() : Number(previousLabor.paidAmount)) : 0;
-        const prevRemaining = previousLabor.remainingWage !== null ? (typeof previousLabor.remainingWage === 'object' && 'toNumber' in previousLabor.remainingWage ? previousLabor.remainingWage.toNumber() : Number(previousLabor.remainingWage)) : 0;
-        remainingWage = prevRemaining - Number(laborPaidAmount);
+
+      if (existingLabor) {
+        // UPDATE existing record - add payment to existing paidAmount
+        const currentPaidAmount = existingLabor.paidAmount !== null ? 
+          (typeof existingLabor.paidAmount === 'object' && 'toNumber' in existingLabor.paidAmount ? 
+            existingLabor.paidAmount.toNumber() : Number(existingLabor.paidAmount)) : 0;
+        
+        const newTotalPaid = currentPaidAmount + Number(laborPaidAmount);
+        const agreedWage = existingLabor.agreedWage !== null ? 
+          (typeof existingLabor.agreedWage === 'object' && 'toNumber' in existingLabor.agreedWage ? 
+            existingLabor.agreedWage.toNumber() : Number(existingLabor.agreedWage)) : 0;
+        const newRemaining = agreedWage - newTotalPaid;
+
+        projectLabor = await prisma.projectLabor.update({
+          where: { id: existingLabor.id },
+          data: {
+            paidAmount: newTotalPaid,
+            remainingWage: newRemaining,
+            // Update description if provided
+            ...(description && { description }),
+            // Update date if provided
+            ...(expenseDate && { dateWorked: new Date(expenseDate) }),
+          },
+        });
       } else {
-        agreedWage = amount ? Number(amount) : 0;
-        previousPaidAmount = 0;
-        remainingWage = agreedWage - Number(laborPaidAmount);
+        // CREATE new record - first time working on this project
+        const agreedWage = reqBody.agreedWage ? Number(reqBody.agreedWage) : 0;
+        const paidAmount = Number(laborPaidAmount);
+        const remainingWage = agreedWage - paidAmount;
+
+        projectLabor = await prisma.projectLabor.create({
+          data: {
+            projectId,
+            employeeId,
+            agreedWage,
+            paidAmount,
+            remainingWage,
+            description,
+            paidFrom,
+            dateWorked: new Date(expenseDate),
+          },
+        });
       }
-      // Create new ProjectLabor record
-      projectLabor = await prisma.projectLabor.create({
+    }
+
+    // 1. Create the expense (only for non-Labor categories or new Labor records)
+    let newExpense = null;
+    if (category !== 'Labor' || (category === 'Labor' && !existingLabor)) {
+      // Always provide a non-empty string for description
+      const safeDescription = description || note || (category === 'Transport' ? transportType : '') || 'Expense';
+      newExpense = await prisma.expense.create({
         data: {
-          projectId,
-          employeeId,
-          agreedWage,
-          paidAmount: Number(laborPaidAmount),
-          previousPaidAmount,
-          remainingWage,
-          description,
+          description: safeDescription,
+          amount: finalWage.toString(),
+          category,
+          subCategory: subCategory || null,
           paidFrom,
-          dateWorked: new Date(expenseDate),
+          expenseDate: new Date(expenseDate),
+          note: note || null,
+          approved: false,
+          company: { connect: { id: companyId } },
+          user: { connect: { id: userId } },
+          project: projectId ? { connect: { id: projectId } } : undefined,
+          employee: employeeId ? { connect: { id: employeeId } } : undefined,
+          transportType: category === 'Transport' ? transportType : undefined,
+          consultantName: category === 'Consultancy' ? consultantName : undefined,
+          consultancyType: category === 'Consultancy' ? consultancyType : undefined,
+          consultancyFee: category === 'Consultancy' ? consultancyFee ? Number(consultancyFee) : undefined : undefined,
+          equipmentName: category === 'Equipment Rental' ? equipmentName : undefined,
+          rentalPeriod: category === 'Equipment Rental' ? rentalPeriod : undefined,
+          rentalFee: category === 'Equipment Rental' ? rentalFee ? Number(rentalFee) : undefined : undefined,
+          supplierName: category === 'Equipment Rental' ? supplierName : undefined,
+          bankAccountId: category === 'Equipment Rental' ? bankAccountId : undefined,
+          materials: reqBody.materials ? reqBody.materials : undefined,
         },
       });
     }
-
-    // 1. Create the expense
-    // Always provide a non-empty string for description
-    const safeDescription = description || note || (category === 'Transport' ? transportType : '') || 'Expense';
-    const newExpense = await prisma.expense.create({
-      data: {
-        description: safeDescription,
-        amount: finalWage.toString(),
-        category,
-        subCategory: subCategory || null,
-        paidFrom,
-        expenseDate: new Date(expenseDate),
-        note: note || null,
-        approved: false,
-        company: { connect: { id: companyId } },
-        user: { connect: { id: userId } },
-        project: projectId ? { connect: { id: projectId } } : undefined,
-        employee: employeeId ? { connect: { id: employeeId } } : undefined,
-        transportType: category === 'Transport' ? transportType : undefined,
-        consultantName: category === 'Consultancy' ? consultantName : undefined,
-        consultancyType: category === 'Consultancy' ? consultancyType : undefined,
-        consultancyFee: category === 'Consultancy' ? consultancyFee ? Number(consultancyFee) : undefined : undefined,
-        equipmentName: category === 'Equipment Rental' ? equipmentName : undefined,
-        rentalPeriod: category === 'Equipment Rental' ? rentalPeriod : undefined,
-        rentalFee: category === 'Equipment Rental' ? rentalFee ? Number(rentalFee) : undefined : undefined,
-        supplierName: category === 'Equipment Rental' ? supplierName : undefined,
-        bankAccountId: category === 'Equipment Rental' ? bankAccountId : undefined,
-        materials: reqBody.materials ? reqBody.materials : undefined,
-      },
-    });
 
     // 1b. If Material expense, create ProjectMaterial records for each material
     if (category === 'Material' && Array.isArray(reqBody.materials) && projectId) {
@@ -184,7 +207,7 @@ export async function POST(request: Request) {
         transactionDate: new Date(expenseDate),
         note: note || null,
         accountId: category === 'Equipment Rental' ? bankAccountId : paidFrom,
-        expenseId: newExpense.id,
+        expenseId: newExpense?.id || null, // Only link to expense if it exists
         employeeId: employeeId || undefined,
         userId,
         companyId,
@@ -193,19 +216,83 @@ export async function POST(request: Request) {
     });
 
     // 3. Decrement the account balance in real time
-    if (paidFrom && amount) {
+    if (paidFrom && (laborPaidAmount > 0 || amount)) {
       await prisma.account.update({
         where: { id: paidFrom },
         data: {
-          balance: { decrement: Number(amount) },
+          balance: { decrement: Math.abs(Number(laborPaidAmount > 0 ? laborPaidAmount : amount)) },
         },
       });
     }
 
-    return NextResponse.json({ expense: newExpense }, { status: 201 });
+    return NextResponse.json({ 
+      expense: newExpense, 
+      projectLabor: projectLabor,
+      message: existingLabor ? 'Payment added to existing labor record' : 'New labor record created'
+    }, { status: 201 });
   } catch (error) {
     console.error('Labor expense API error:', error);
     const errorMessage = error && typeof error === 'object' && 'message' in error ? (error as any).message : String(error);
     return NextResponse.json({ message: 'Server error.', details: errorMessage }, { status: 500 });
+  }
+}
+
+// DELETE /api/expenses/project/[id] - Delete project labor record
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  try {
+    const { id } = params;
+    const sessionUser = await getSessionCompanyUser() as { companyId: string; userId: string } | null;
+    if (!sessionUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const { companyId } = sessionUser;
+
+    // Verify project labor record exists and belongs to company
+    const existingLabor = await prisma.projectLabor.findFirst({
+      where: { 
+        id, 
+        project: { companyId } // Check through project relationship
+      }
+    });
+
+    if (!existingLabor) {
+      return NextResponse.json({ message: 'Project labor record lama helin.' }, { status: 404 });
+    }
+
+    // Manual cascade delete - delete related records first
+    // 1. Refund account balance (add back the amount that was deducted)
+    if (existingLabor.paidFrom && existingLabor.paidAmount) {
+      await prisma.account.update({
+        where: { id: existingLabor.paidFrom },
+        data: {
+          balance: { increment: Number(existingLabor.paidAmount) }, // Soo celi lacagta
+        },
+      });
+    }
+
+    // 2. Delete related transactions
+    await prisma.transaction.deleteMany({
+      where: { 
+        projectId: existingLabor.projectId,
+        employeeId: existingLabor.employeeId,
+        description: { contains: existingLabor.description || '' }
+      }
+    });
+
+    // 3. Delete the project labor record
+    await prisma.projectLabor.delete({
+      where: { id }
+    });
+
+    return NextResponse.json(
+      { message: 'Project labor record si guul leh ayaa loo tirtiray!' },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error(`Cilad ayaa dhacday marka project labor record ${params.id} la tirtirayay:`, error);
+    return NextResponse.json(
+      { message: 'Cilad server ayaa dhacday. Fadlan isku day mar kale.' },
+      { status: 500 }
+    );
   }
 }

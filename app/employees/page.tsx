@@ -128,9 +128,11 @@ const EmployeeRow: React.FC<{ employee: Employee; onEdit: (id: string) => void; 
           ) : <span className="text-mediumGray">N/A</span>
         ) : (
           <div className="text-right">
-            <div className="text-sm font-bold text-accent dark:text-accent">Project Worker</div>
+            <div className="text-sm font-bold text-accent dark:text-accent">
+              {employee.laborRecords?.reduce((sum, record) => sum + (record.agreedWage || 0), 0).toLocaleString()} ETB
+            </div>
             <div className="text-xs text-gray-500 dark:text-gray-400">
-              No Monthly Salary
+              Total Project Wage
             </div>
           </div>
         )}
@@ -148,7 +150,7 @@ const EmployeeRow: React.FC<{ employee: Employee; onEdit: (id: string) => void; 
               {employee.laborRecords?.reduce((sum, record) => sum + (record.paidAmount || 0), 0).toLocaleString()} ETB
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400">
-              Project Payments
+              Total Paid
             </div>
           </div>
         )}
@@ -168,10 +170,15 @@ const EmployeeRow: React.FC<{ employee: Employee; onEdit: (id: string) => void; 
         ) : (
           <div className="text-right">
             <div className="text-sm font-bold text-accent dark:text-accent">
-              {employee.laborRecords?.reduce((sum, record) => sum + (record.remainingWage || 0), 0).toLocaleString()} ETB
+              {(() => {
+                const totalAgreedWage = employee.laborRecords?.reduce((sum, record) => sum + (record.agreedWage || 0), 0) || 0;
+                const totalPaidAmount = employee.laborRecords?.reduce((sum, record) => sum + (record.paidAmount || 0), 0) || 0;
+                const totalRemaining = totalAgreedWage - totalPaidAmount;
+                return totalRemaining.toLocaleString();
+              })()} ETB
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400">
-              Project Remaining
+              Remaining
             </div>
           </div>
         )}
@@ -200,18 +207,6 @@ const EmployeeRow: React.FC<{ employee: Employee; onEdit: (id: string) => void; 
           </button>
         </div>
         {/* Show project assignments if present */}
-        {employee.laborRecords && employee.laborRecords.length > 0 && (
-          <div className="mt-3 text-xs text-mediumGray dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-2 rounded-lg">
-            <strong className="text-primary dark:text-blue-400">Projects:</strong>
-            <ul className="list-disc ml-4 mt-1">
-              {employee.laborRecords.map(lr => (
-                <li key={lr.id} className="mb-1">
-                  <span className="font-semibold text-primary dark:text-blue-400">{lr.projectName}</span> - {lr.workDescription} | Wage: {lr.agreedWage != null ? `${lr.agreedWage.toLocaleString()} ETB` : 'N/A'} | Paid: {lr.paidAmount != null ? `${lr.paidAmount.toLocaleString()} ETB` : 'N/A'} | Remaining: {lr.remainingWage != null ? `${lr.remainingWage.toLocaleString()} ETB` : 'N/A'}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </td>
     </tr>
   );
@@ -281,7 +276,7 @@ const EmployeeCard: React.FC<{ employee: Employee; onEdit: (id: string) => void;
           <span>
             {employee.category === 'COMPANY' 
               ? `Mushahar Bil kasta: ${employee.monthlySalary != null ? `${employee.monthlySalary.toLocaleString()} ETB` : 'N/A'}`
-              : `Project Worker: No Monthly Salary`
+              : `Total Project Wage: ${employee.laborRecords?.reduce((sum, record) => sum + (record.agreedWage || 0), 0).toLocaleString()} ETB`
             }
           </span>
         </p>
@@ -290,7 +285,7 @@ const EmployeeCard: React.FC<{ employee: Employee; onEdit: (id: string) => void;
           <span>
             {employee.category === 'COMPANY' 
               ? `La Bixiyay Bishaan: ${employee.salaryPaidThisMonth != null ? `${employee.salaryPaidThisMonth.toLocaleString()} ETB` : 'N/A'}`
-              : `Project Payments: ${employee.laborRecords?.reduce((sum, record) => sum + (record.paidAmount || 0), 0).toLocaleString()} ETB`
+              : `Total Paid: ${employee.laborRecords?.reduce((sum, record) => sum + (record.paidAmount || 0), 0).toLocaleString()} ETB`
             }
           </span>
         </p>
@@ -299,25 +294,17 @@ const EmployeeCard: React.FC<{ employee: Employee; onEdit: (id: string) => void;
           <span>
             {employee.category === 'COMPANY' 
               ? `Hadhay Bishaan: ${employee.overpaidAmount != null ? (isOverpaidBasedOnWork ? `-${Math.abs(employee.overpaidAmount).toLocaleString()} ETB` : `${employee.overpaidAmount.toLocaleString()} ETB`) : 'N/A'}`
-              : `Project Remaining: ${employee.laborRecords?.reduce((sum, record) => sum + (record.remainingWage || 0), 0).toLocaleString()} ETB`
+              : `Total Project Remaining: ${(() => {
+                  const totalAgreedWage = employee.laborRecords?.reduce((sum, record) => sum + (record.agreedWage || 0), 0) || 0;
+                  const totalPaidAmount = employee.laborRecords?.reduce((sum, record) => sum + (record.paidAmount || 0), 0) || 0;
+                  return (totalAgreedWage - totalPaidAmount).toLocaleString();
+                })()} ETB`
             }
           </span>
         </p>
       </div>
 
       {/* Show project assignments if present */}
-      {employee.laborRecords && employee.laborRecords.length > 0 && (
-        <div className="mt-3 text-xs text-mediumGray dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
-          <strong className="text-primary dark:text-blue-400">Projects:</strong>
-          <ul className="list-disc ml-4 mt-1">
-          {employee.laborRecords.map(lr => (
-              <li key={lr.id} className="mb-1">
-                <span className="font-semibold text-primary dark:text-blue-400">{lr.projectName}</span> - {lr.workDescription} | Wage: {lr.agreedWage != null ? `${lr.agreedWage.toLocaleString()} ETB` : 'N/A'} | Paid: {lr.paidAmount != null ? `${lr.paidAmount.toLocaleString()} ETB` : 'N/A'} | Remaining: {lr.remainingWage != null ? `${lr.remainingWage.toLocaleString()} ETB` : 'N/A'}
-          </li>
-          ))}
-        </ul>
-        </div>
-      )}
 
       {/* Progress Bar */}
       <div className="mt-4">
@@ -441,6 +428,27 @@ export default function EmployeesPage() {
 
   useEffect(() => {
     fetchEmployees(); // Fetch employees on component mount
+  }, []);
+
+  // Add refresh function to manually refresh data
+  const refreshData = async () => {
+    await fetchEmployees();
+    setToastMessage({ message: 'Data-ka si guul leh ayaa loo cusboonaysiiyay!', type: 'success' });
+  };
+
+  // Add event listener for page visibility to refresh when user comes back to page
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        // Refresh data when page becomes visible again
+        refreshData();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []); 
 
 
@@ -471,7 +479,7 @@ export default function EmployeesPage() {
   
   // Calculate total salary owed based on months worked for each employee
   const totalSalaryOwed = filteredEmployees.reduce((sum, employee) => {
-    if (employee.monthlySalary) {
+    if (employee.category === 'COMPANY' && employee.monthlySalary) {
       const salaryCalc = calculateEmployeeSalary(
         Number(employee.monthlySalary),
         employee.startDate,
@@ -479,16 +487,46 @@ export default function EmployeesPage() {
         Number(employee.salaryPaidThisMonth || 0)
       );
       return sum + salaryCalc.totalSalaryOwed;
+    } else if (employee.category === 'PROJECT') {
+      // For project employees, sum up all agreed wages
+      return sum + (employee.laborRecords?.reduce((sum, record) => sum + (record.agreedWage || 0), 0) || 0);
     }
     return sum;
   }, 0);
   
-  const totalSalaryPaid = filteredEmployees.reduce((sum, e) => sum + (e.salaryPaidThisMonth ?? 0), 0);
-  const totalSalaryRemaining = totalSalaryOwed - totalSalaryPaid;
-  const totalOverpaidAmount = filteredEmployees.reduce((sum, e) => sum + ((e.overpaidAmount ?? 0) > 0 ? (e.overpaidAmount ?? 0) : 0), 0);
+  const totalSalaryPaid = filteredEmployees.reduce((sum, e) => {
+    if (e.category === 'COMPANY') {
+      return sum + (e.salaryPaidThisMonth ?? 0);
+    } else if (e.category === 'PROJECT') {
+      return sum + (e.laborRecords?.reduce((sum, record) => sum + (record.paidAmount || 0), 0) || 0);
+    }
+    return sum;
+  }, 0);
   
-  // Monthly salary commitment (for reference)
-  const totalMonthlySalaryCommitment = filteredEmployees.reduce((sum, e) => sum + (e.monthlySalary ?? 0), 0);
+  const totalSalaryRemaining = totalSalaryOwed - totalSalaryPaid;
+  const totalOverpaidAmount = filteredEmployees.reduce((sum, e) => {
+    if (e.category === 'COMPANY') {
+      return sum + ((e.overpaidAmount ?? 0) > 0 ? (e.overpaidAmount ?? 0) : 0);
+    } else if (e.category === 'PROJECT') {
+      // For project employees, calculate overpaid amount from remaining wages
+      const totalAgreedWage = e.laborRecords?.reduce((sum, record) => sum + (record.agreedWage || 0), 0) || 0;
+      const totalPaidAmount = e.laborRecords?.reduce((sum, record) => sum + (record.paidAmount || 0), 0) || 0;
+      const totalRemaining = totalAgreedWage - totalPaidAmount;
+      return sum + (totalRemaining < 0 ? Math.abs(totalRemaining) : 0);
+    }
+    return sum;
+  }, 0);
+  
+  // Monthly salary commitment (for reference) - includes PROJECT employees
+  const totalMonthlySalaryCommitment = filteredEmployees.reduce((sum, e) => {
+    if (e.category === 'COMPANY') {
+      return sum + (e.monthlySalary ?? 0);
+    } else if (e.category === 'PROJECT') {
+      // For project employees, sum up all agreed wages
+      return sum + (e.laborRecords?.reduce((sum, record) => sum + (record.agreedWage || 0), 0) || 0);
+    }
+    return sum;
+  }, 0);
 
 
   return (
@@ -499,7 +537,7 @@ export default function EmployeesPage() {
           <Link href="/employees/add" className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center">
             <Plus size={20} className="mr-2" /> Ku Dar Shaqaale
           </Link>
-          <button onClick={fetchEmployees} className="bg-secondary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-green-600 transition duration-200 shadow-md flex items-center">
+          <button onClick={refreshData} className="bg-secondary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-green-600 transition duration-200 shadow-md flex items-center">
             <RefreshCw size={20} className="mr-2" /> Cusboonaysii
           </button>
         </div>
@@ -522,7 +560,7 @@ export default function EmployeesPage() {
           </div>
           <h4 className="text-lg font-semibold text-green-600 dark:text-green-400">Wadarta Mushahaarka</h4>
           <p className="text-3xl font-extrabold text-green-900 dark:text-green-100">{totalSalaryOwed.toLocaleString()} ETB</p>
-          <p className="text-sm text-green-600 dark:text-green-400 mt-1">Dhammaan bilaha</p>
+          <p className="text-sm text-green-600 dark:text-green-400 mt-1">Company + Project Wages</p>
         </div>
         
         <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 p-6 rounded-xl shadow-lg border border-orange-200 dark:border-orange-700/30 text-center">
@@ -531,7 +569,7 @@ export default function EmployeesPage() {
           </div>
           <h4 className="text-lg font-semibold text-orange-600 dark:text-orange-400">Lacagta La Bixiyay</h4>
           <p className="text-3xl font-extrabold text-orange-900 dark:text-orange-100">{totalSalaryPaid.toLocaleString()} ETB</p>
-          <p className="text-sm text-orange-600 dark:text-orange-400 mt-1">Bishan</p>
+          <p className="text-sm text-orange-600 dark:text-orange-400 mt-1">Company + Project Payments</p>
         </div>
         
         <div className={`p-6 rounded-xl shadow-lg border text-center ${
@@ -549,7 +587,7 @@ export default function EmployeesPage() {
             {Math.abs(totalSalaryRemaining).toLocaleString()} ETB
           </p>
           <p className={`text-sm mt-1 ${totalSalaryRemaining >= 0 ? 'text-purple-600 dark:text-purple-400' : 'text-red-600 dark:text-red-400'}`}>
-            {totalSalaryRemaining >= 0 ? 'Waa la bixin karaa' : 'Overpaid'}
+            {totalSalaryRemaining >= 0 ? 'Company + Project Remaining' : 'Overpaid'}
           </p>
         </div>
         
