@@ -32,19 +32,28 @@ export async function GET(request: Request) {
       orderBy: { dateWorked: 'desc' },
     });
 
-    // Transform to frontend format
+    // Transform to frontend format with safe Decimal/null handling
+    const toNumeric = (v: any): number => {
+      if (v == null) return 0;
+      if (typeof v === 'object' && 'toNumber' in v && typeof v.toNumber === 'function') {
+        try { return v.toNumber(); } catch { return Number(v as any) || 0; }
+      }
+      const n = Number(v);
+      return isNaN(n) ? 0 : n;
+    };
+
     const transformedLabors = projectLabors.map(labor => ({
       id: labor.id,
       employeeId: labor.employeeId,
       projectId: labor.projectId,
-      agreedWage: typeof labor.agreedWage === 'object' && 'toNumber' in labor.agreedWage ? labor.agreedWage.toNumber() : Number(labor.agreedWage),
-      paidAmount: typeof labor.paidAmount === 'object' && 'toNumber' in labor.paidAmount ? labor.paidAmount.toNumber() : Number(labor.paidAmount),
-      remainingWage: typeof labor.remainingWage === 'object' && 'toNumber' in labor.remainingWage ? labor.remainingWage.toNumber() : Number(labor.remainingWage),
-      description: labor.description,
+      agreedWage: toNumeric(labor.agreedWage),
+      paidAmount: toNumeric(labor.paidAmount),
+      remainingWage: toNumeric(labor.remainingWage),
+      description: labor.description || '',
       dateWorked: labor.dateWorked,
-      projectName: labor.projectName,
+      projectName: (labor as any).projectName || labor.project?.name || '',
       employeeName: labor.employee?.fullName || 'Unknown Employee',
-      workDescription: labor.workDescription,
+      workDescription: (labor as any).workDescription || '',
     }));
 
     return NextResponse.json({ projectLabors: transformedLabors }, { status: 200 });
