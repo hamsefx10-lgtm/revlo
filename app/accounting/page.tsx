@@ -80,7 +80,7 @@ const AccountRow: React.FC<{ account: Account; onEdit: (id: string) => void; onD
     </td>
     <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">{account.type}</td>
     <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">{account.currency}</td>
-    <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-semibold text-right">${account.balance.toLocaleString()}</td>
+    <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-semibold text-right">ETB {account.balance.toLocaleString()}</td>
     <td className="p-4 whitespace-nowrap text-right">
       <div className="flex items-center justify-end space-x-2">
         <Link href={`/accounting/accounts/${account.id}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View Details">
@@ -147,7 +147,7 @@ const TransactionRow: React.FC<{ transaction: Transaction; onEdit: (id: string) 
         </span>
       </td>
       <td className={`p-4 whitespace-nowrap font-semibold ${amountColorClass}`}>
-        {isIncome ? '+' : '-'}${Math.abs(transaction.amount).toLocaleString()}
+        {isIncome ? '+' : '-'}ETB {Math.abs(transaction.amount).toLocaleString()}
       </td>
       <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">{transaction.account?.name || 'N/A'}</td>
       <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">
@@ -309,7 +309,7 @@ const MobileTransactionCard: React.FC<{ transaction: Transaction; onEdit: (id: s
       
       {/* Amount - Prominent display */}
       <div className={`mb-1 text-sm font-bold ${amountColorClass}`}>
-        {isIncome ? '+' : '-'}${Math.abs(transaction.amount).toLocaleString()}
+        {isIncome ? '+' : '-'}ETB {Math.abs(transaction.amount).toLocaleString()}
       </div>
       
       {/* Transaction details */}
@@ -503,6 +503,35 @@ export default function AccountingPage() {
         if (!response.ok) throw new Error(data.message || 'Failed to delete transaction');
         
         setToastMessage({ message: data.message || 'Dhaqdhaqaaqa lacagta si guul leh ayaa loo tirtiray!', type: 'success' });
+        
+        // If API returned an event, notify all pages about transaction deletion for real-time updates
+        if (data.event) {
+          const deleteEvent = data.event;
+
+          // Store in localStorage for cross-tab communication
+          localStorage.setItem('transactionDeleted', JSON.stringify(deleteEvent));
+          localStorage.setItem('expenses_updated', JSON.stringify(deleteEvent));
+          localStorage.setItem('project_updated', JSON.stringify(deleteEvent));
+
+          // Trigger storage events for same-tab listeners
+          window.dispatchEvent(new StorageEvent('storage', {
+            key: 'transactionDeleted',
+            newValue: JSON.stringify(deleteEvent)
+          }));
+          window.dispatchEvent(new StorageEvent('storage', {
+            key: 'expenses_updated',
+            newValue: JSON.stringify(deleteEvent)
+          }));
+          window.dispatchEvent(new StorageEvent('storage', {
+            key: 'project_updated',
+            newValue: JSON.stringify(deleteEvent)
+          }));
+
+          // Trigger custom events for same-tab listeners
+          window.dispatchEvent(new CustomEvent('expense_updated', { detail: deleteEvent }));
+          window.dispatchEvent(new CustomEvent('project_updated', { detail: deleteEvent }));
+        }
+        
         fetchAccountingData(); // Re-fetch all data after deleting
       } catch (error: any) {
         console.error('Error deleting transaction:', error);
@@ -514,6 +543,48 @@ export default function AccountingPage() {
 
   useEffect(() => {
     fetchAccountingData();
+  }, []);
+
+  // Auto-refresh data every 30 seconds for live updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchAccountingData();
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Listen for storage events (when expenses are added/deleted from other tabs)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'expenses_updated' || e.key === 'project_updated' || e.key === 'transactionCreated' || e.key === 'transactionDeleted') {
+        console.log('Accounting page: Storage event detected, refreshing data...', e.key);
+        fetchAccountingData();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  // Listen for custom events (when expenses are added/deleted from same tab)
+  useEffect(() => {
+    const handleExpenseUpdate = (event: any) => {
+      console.log('Accounting page: Custom event detected, refreshing data...', event.type, event.detail);
+      fetchAccountingData();
+    };
+
+    window.addEventListener('expense_updated', handleExpenseUpdate);
+    window.addEventListener('project_updated', handleExpenseUpdate);
+    window.addEventListener('transaction_created', handleExpenseUpdate);
+    window.addEventListener('transaction_deleted', handleExpenseUpdate);
+    
+    return () => {
+      window.removeEventListener('expense_updated', handleExpenseUpdate);
+      window.removeEventListener('project_updated', handleExpenseUpdate);
+      window.removeEventListener('transaction_created', handleExpenseUpdate);
+      window.removeEventListener('transaction_deleted', handleExpenseUpdate);
+    };
   }, []);
 
   // Chart Data for Monthly Cash Flow (from overviewStats only - no dummy data)
@@ -1059,7 +1130,7 @@ export default function AccountingPage() {
                     <h4 className="text-sm font-semibold text-blue-800 dark:text-blue-200">Wadarta Lacagta</h4>
                     <DollarSign size={18} className="text-blue-600" />
                 </div>
-                  <p className="text-xl font-bold text-blue-600">${overviewStats?.totalBalance.toLocaleString() || '0'}</p>
+                  <p className="text-xl font-bold text-blue-600">ETB {overviewStats?.totalBalance.toLocaleString() || '0'}</p>
                   <p className="text-xs text-blue-600 dark:text-blue-300">Total Balance</p>
                 </div>
                 
@@ -1068,7 +1139,7 @@ export default function AccountingPage() {
                     <h4 className="text-sm font-semibold text-green-800 dark:text-green-200">Dakhliga Bishaan</h4>
                     <TrendingUp size={18} className="text-green-600" />
                 </div>
-                  <p className="text-xl font-bold text-green-600">${overviewStats?.totalIncomeThisMonth.toLocaleString() || '0'}</p>
+                  <p className="text-xl font-bold text-green-600">ETB {overviewStats?.totalIncomeThisMonth.toLocaleString() || '0'}</p>
                   <p className="text-xs text-green-600 dark:text-green-300">This Month Income</p>
                 </div>
                 
@@ -1077,7 +1148,7 @@ export default function AccountingPage() {
                     <h4 className="text-sm font-semibold text-red-800 dark:text-red-200">Kharashyada Bishaan</h4>
                     <TrendingDown size={18} className="text-red-600" />
                 </div>
-                  <p className="text-xl font-bold text-red-600">${overviewStats?.totalExpensesThisMonth.toLocaleString() || '0'}</p>
+                  <p className="text-xl font-bold text-red-600">ETB {overviewStats?.totalExpensesThisMonth.toLocaleString() || '0'}</p>
                   <p className="text-xs text-red-600 dark:text-red-300">This Month Expenses</p>
                 </div>
               </div>
@@ -1402,7 +1473,7 @@ export default function AccountingPage() {
                         </div>
                         
                         <div className="mb-4 text-2xl font-bold text-primary">
-                          ${acc.balance.toLocaleString()}
+                          ETB {acc.balance.toLocaleString()}
                         </div>
                         
                         <div className="space-y-3">
@@ -1545,7 +1616,7 @@ export default function AccountingPage() {
                     <h4 className="text-base font-semibold text-blue-800 dark:text-blue-200">Wadarta Lacagta</h4>
                     <DollarSign size={20} className="text-blue-600" />
                   </div>
-                  <p className="text-2xl font-bold text-blue-600">${overviewStats?.totalBalance.toLocaleString() || '0'}</p>
+                  <p className="text-2xl font-bold text-blue-600">ETB {overviewStats?.totalBalance.toLocaleString() || '0'}</p>
                   <p className="text-sm text-blue-600 dark:text-blue-300 mt-1">Total Balance</p>
                 </div>
                 
@@ -1554,7 +1625,7 @@ export default function AccountingPage() {
                     <h4 className="text-base font-semibold text-green-800 dark:text-green-200">Dakhliga Bishaan</h4>
                     <TrendingUp size={20} className="text-green-600" />
                   </div>
-                  <p className="text-2xl font-bold text-green-600">${overviewStats?.totalIncomeThisMonth.toLocaleString() || '0'}</p>
+                  <p className="text-2xl font-bold text-green-600">ETB {overviewStats?.totalIncomeThisMonth.toLocaleString() || '0'}</p>
                   <p className="text-sm text-green-600 dark:text-green-300 mt-1">This Month Income</p>
                 </div>
                 
@@ -1563,7 +1634,7 @@ export default function AccountingPage() {
                     <h4 className="text-base font-semibold text-red-800 dark:text-red-200">Kharashyada Bishaan</h4>
                     <TrendingDown size={20} className="text-red-600" />
                   </div>
-                  <p className="text-2xl font-bold text-red-600">${overviewStats?.totalExpensesThisMonth.toLocaleString() || '0'}</p>
+                  <p className="text-2xl font-bold text-red-600">ETB {overviewStats?.totalExpensesThisMonth.toLocaleString() || '0'}</p>
                   <p className="text-sm text-red-600 dark:text-red-300 mt-1">This Month Expenses</p>
                 </div>
               </div>

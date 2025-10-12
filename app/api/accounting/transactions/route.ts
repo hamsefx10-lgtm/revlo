@@ -191,8 +191,17 @@ export async function POST(request: Request) {
       });
     }
 
+    // Notify about transaction creation for real-time updates
+    const transactionEvent = {
+      id: newTransaction.id,
+      projectId: projectId || null,
+      customerId: customerId || null,
+      action: 'created',
+      timestamp: Date.now()
+    };
+
     return NextResponse.json(
-      { message: 'Dhaqdhaqaaqa lacagta si guul leh ayaa loo daray!', transaction: newTransaction },
+      { message: 'Dhaqdhaqaaqa lacagta si guul leh ayaa loo daray!', transaction: newTransaction, event: transactionEvent },
       { status: 201 }
     );
   } catch (error) {

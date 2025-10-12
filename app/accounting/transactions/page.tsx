@@ -50,7 +50,7 @@ const TransactionRow: React.FC<{ transaction: Transaction; onEdit: (id: string) 
         </span>
       </td>
       <td className={`p-4 whitespace-nowrap font-semibold ${amountColorClass}`}>
-        {isIncome ? '+' : '-'}${Math.abs(transaction.amount).toLocaleString()}
+        {isIncome ? '+' : '-'}ETB {Math.abs(transaction.amount).toLocaleString()}
       </td>
       <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">{transaction.account?.name || 'N/A'}</td>
       <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">
@@ -109,7 +109,7 @@ const TransactionCard: React.FC<{ transaction: Transaction; onEdit: (id: string)
       
       {/* Amount - Prominent display */}
       <div className={`mb-3 text-xl sm:text-2xl font-bold ${isIncome ? 'text-secondary' : 'text-redError'}`}>
-        {isIncome ? '+' : '-'}${Math.abs(transaction.amount).toLocaleString()}
+        {isIncome ? '+' : '-'}ETB {Math.abs(transaction.amount).toLocaleString()}
       </div>
       
       {/* Transaction details */}
@@ -125,7 +125,7 @@ const TransactionCard: React.FC<{ transaction: Transaction; onEdit: (id: string)
         <p className="text-xs sm:text-sm text-mediumGray dark:text-gray-400 flex items-center space-x-2">
           <Banknote size={12} className="flex-shrink-0" /> 
           <span className="truncate">{transaction.account?.name || 'N/A'}</span>
-          </p>
+        </p>
         {(transaction.project?.name || transaction.customer?.name || transaction.vendor?.name || transaction.user?.fullName) && (
           <p className="text-xs sm:text-sm text-mediumGray dark:text-gray-400 flex items-center space-x-2">
             <InfoIcon size={12} className="flex-shrink-0" /> 
@@ -155,7 +155,7 @@ export default function TransactionsPage() {
   const [filterType, setFilterType] = useState('All');
   const [filterAccount, setFilterAccount] = useState('All');
   const [filterDateRange, setFilterDateRange] = useState('All');
-  const [viewMode, setViewMode] = useState<'list' | 'cards'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'cards'>('cards');
   const [pageLoading, setPageLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
@@ -344,6 +344,16 @@ export default function TransactionsPage() {
         
         {/* View Mode Toggle - Mobile Optimized */}
         <div className="flex space-x-2 justify-center">
+          {/* Mobile - Always show cards view (no toggle) */}
+          <div className="lg:hidden">
+            <div className="flex items-center space-x-2 text-sm text-mediumGray dark:text-gray-400">
+              <LayoutGrid size={18} />
+              <span>Cards View</span>
+            </div>
+          </div>
+          
+          {/* Desktop - Show both options */}
+          <div className="hidden lg:flex space-x-2">
           <button
             onClick={() => setViewMode('list')}
             title="List View"
@@ -358,6 +368,7 @@ export default function TransactionsPage() {
           >
             <LayoutGrid size={18} />
           </button>
+          </div>
         </div>
       </div>
 
@@ -370,7 +381,20 @@ export default function TransactionsPage() {
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center text-mediumGray dark:text-gray-400 animate-fade-in">
           Ma jiraan dhaqdhaqaaq lacag ah oo la helay.
         </div>
-      ) : viewMode === 'list' ? (
+      ) : (
+        <>
+          {/* Mobile - Always show cards view */}
+          <div className="lg:hidden">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 animate-fade-in">
+              {filteredTransactions.map(trx => (
+                <TransactionCard key={trx.id} transaction={trx} onEdit={handleEditTransaction} onDelete={handleDeleteTransaction} />
+              ))}
+            </div>
+          </div>
+          
+          {/* Desktop - Show based on view mode */}
+          <div className="hidden lg:block">
+            {viewMode === 'list' ? (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden animate-fade-in">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
@@ -399,12 +423,15 @@ export default function TransactionsPage() {
             <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Next</button>
           </div>
         </div>
-      ) : ( /* Cards View - Mobile Optimized */
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 animate-fade-in">
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 animate-fade-in">
           {filteredTransactions.map(trx => (
             <TransactionCard key={trx.id} transaction={trx} onEdit={handleEditTransaction} onDelete={handleDeleteTransaction} />
           ))}
         </div>
+            )}
+          </div>
+        </>
       )}
 
       {toastMessage && (

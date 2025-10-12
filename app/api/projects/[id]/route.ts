@@ -125,8 +125,15 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
     console.log('Project updated successfully:', updatedProject.id);
 
+    // Notify about project update for real-time updates
+    const projectEvent = {
+      id: updatedProject.id,
+      action: 'updated',
+      timestamp: Date.now()
+    };
+
     return NextResponse.json(
-      { message: 'Mashruuca si guul leh ayaa la cusboonaysiiyay!', project: updatedProject },
+      { message: 'Mashruuca si guul leh ayaa la cusboonaysiiyay!', project: updatedProject, event: projectEvent },
       { status: 200 }
     );
   } catch (error: any) {
@@ -233,8 +240,15 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       where: { id }
     });
 
+    // Notify about project deletion for real-time updates
+    const projectEvent = {
+      id: id,
+      action: 'deleted',
+      timestamp: Date.now()
+    };
+
     return NextResponse.json(
-      { message: 'Mashruuca si guul leh ayaa loo tirtiray!' },
+      { message: 'Mashruuca si guul leh ayaa loo tirtiray!', event: projectEvent },
       { status: 200 }
     );
   } catch (error) {

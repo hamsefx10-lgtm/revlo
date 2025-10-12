@@ -61,8 +61,15 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         lastUpdated: new Date(),
       },
     });
+    // Notify about inventory item update for real-time updates
+    const inventoryEvent = {
+      id: updatedItem.id,
+      action: 'updated',
+      timestamp: Date.now()
+    };
+
     return NextResponse.json(
-      { message: 'Alaabta si guul leh ayaa loo cusboonaysiiyay!', item: updatedItem },
+      { message: 'Alaabta si guul leh ayaa loo cusboonaysiiyay!', item: updatedItem, event: inventoryEvent },
       { status: 200 }
     );
   } catch (error) {
@@ -84,8 +91,15 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       return NextResponse.json({ message: 'Alaabta lama helin.' }, { status: 404 });
     }
     await prisma.inventoryItem.delete({ where: { id, companyId } });
+    // Notify about inventory item deletion for real-time updates
+    const inventoryEvent = {
+      id: id,
+      action: 'deleted',
+      timestamp: Date.now()
+    };
+
     return NextResponse.json(
-      { message: 'Alaabta si guul leh ayaa loo tirtiray!' },
+      { message: 'Alaabta si guul leh ayaa loo tirtiray!', event: inventoryEvent },
       { status: 200 }
     );
   } catch (error) {

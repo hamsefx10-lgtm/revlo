@@ -42,8 +42,16 @@ export async function POST(request: Request) {
       },
     });
 
+    // Notify about inventory item restock for real-time updates
+    const inventoryEvent = {
+      id: updatedItem.id,
+      action: 'restocked',
+      quantity: quantity,
+      timestamp: Date.now()
+    };
+
     return NextResponse.json(
-      { message: `Alaabta '${updatedItem.name}' si guul leh ayaa dib loogu buuxiyay!`, item: updatedItem },
+      { message: `Alaabta '${updatedItem.name}' si guul leh ayaa dib loogu buuxiyay!`, item: updatedItem, event: inventoryEvent },
       { status: 200 } // OK
     );
   } catch (error) {

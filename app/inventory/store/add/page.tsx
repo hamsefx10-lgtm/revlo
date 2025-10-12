@@ -82,6 +82,30 @@ export default function AddInventoryItemPage() {
 
       if (response.ok) {
         setToastMessage({ message: data.message || 'Alaabta si guul leh ayaa loo daray!', type: 'success' });
+        
+        // If API returned an event, notify all pages about inventory creation for real-time updates
+        if (data.event) {
+          const createEvent = data.event;
+
+          // Store in localStorage for cross-tab communication
+          localStorage.setItem('inventory_created', JSON.stringify(createEvent));
+          localStorage.setItem('inventory_updated', JSON.stringify(createEvent));
+
+          // Trigger storage events for same-tab listeners
+          window.dispatchEvent(new StorageEvent('storage', {
+            key: 'inventory_created',
+            newValue: JSON.stringify(createEvent)
+          }));
+          window.dispatchEvent(new StorageEvent('storage', {
+            key: 'inventory_updated',
+            newValue: JSON.stringify(createEvent)
+          }));
+
+          // Trigger custom events for same-tab listeners
+          window.dispatchEvent(new CustomEvent('inventory_created', { detail: createEvent }));
+          window.dispatchEvent(new CustomEvent('inventory_updated', { detail: createEvent }));
+        }
+        
         router.push('/inventory/store'); // Redirect to inventory list on success
       } else {
         setToastMessage({ message: data.message || 'Cilad ayaa dhacday marka alaabta la darayay.', type: 'error' });

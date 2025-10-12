@@ -170,6 +170,30 @@ export default function InventoryStorePage() {
         if (!response.ok) throw new Error(data.message || 'Failed to delete item');
         
         setToastMessage({ message: data.message || 'Alaabta si guul leh ayaa loo tirtiray!', type: 'success' });
+        
+        // If API returned an event, notify all pages about inventory deletion for real-time updates
+        if (data.event) {
+          const deleteEvent = data.event;
+
+          // Store in localStorage for cross-tab communication
+          localStorage.setItem('inventory_deleted', JSON.stringify(deleteEvent));
+          localStorage.setItem('inventory_updated', JSON.stringify(deleteEvent));
+
+          // Trigger storage events for same-tab listeners
+          window.dispatchEvent(new StorageEvent('storage', {
+            key: 'inventory_deleted',
+            newValue: JSON.stringify(deleteEvent)
+          }));
+          window.dispatchEvent(new StorageEvent('storage', {
+            key: 'inventory_updated',
+            newValue: JSON.stringify(deleteEvent)
+          }));
+
+          // Trigger custom events for same-tab listeners
+          window.dispatchEvent(new CustomEvent('inventory_deleted', { detail: deleteEvent }));
+          window.dispatchEvent(new CustomEvent('inventory_updated', { detail: deleteEvent }));
+        }
+        
         fetchInventoryItems(); // Re-fetch items after deleting
       } catch (error: any) {
         console.error('Error deleting item:', error);
@@ -189,6 +213,48 @@ export default function InventoryStorePage() {
 
   useEffect(() => {
     fetchInventoryItems(); // Fetch items on component mount
+  }, []);
+
+  // Auto-refresh data every 30 seconds for live updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchInventoryItems();
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Listen for storage events (when inventory is added/deleted from other tabs)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'inventory_updated' || e.key === 'inventory_created' || e.key === 'inventory_deleted' || e.key === 'inventory_restocked') {
+        console.log('Inventory store page: Storage event detected, refreshing data...', e.key);
+        fetchInventoryItems();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  // Listen for custom events (when inventory is added/deleted from same tab)
+  useEffect(() => {
+    const handleInventoryUpdate = (event: any) => {
+      console.log('Inventory store page: Custom event detected, refreshing data...', event.type, event.detail);
+      fetchInventoryItems();
+    };
+
+    window.addEventListener('inventory_updated', handleInventoryUpdate);
+    window.addEventListener('inventory_created', handleInventoryUpdate);
+    window.addEventListener('inventory_deleted', handleInventoryUpdate);
+    window.addEventListener('inventory_restocked', handleInventoryUpdate);
+    
+    return () => {
+      window.removeEventListener('inventory_updated', handleInventoryUpdate);
+      window.removeEventListener('inventory_created', handleInventoryUpdate);
+      window.removeEventListener('inventory_deleted', handleInventoryUpdate);
+      window.removeEventListener('inventory_restocked', handleInventoryUpdate);
+    };
   }, []); 
 
 

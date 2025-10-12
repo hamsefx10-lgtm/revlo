@@ -212,8 +212,17 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     // ama in update-ka balance-ka lagu sameeyo backend service gaar ah.
     // Hadda, waxaan ka saaray logic-ka balance update-ka halkan si looga fogaado cilado.
 
+    // Notify about transaction deletion for real-time updates
+    const transactionEvent = {
+      id: id,
+      projectId: existingTransaction.projectId,
+      customerId: existingTransaction.customerId,
+      action: 'deleted',
+      timestamp: Date.now()
+    };
+
     return NextResponse.json(
-      { message: 'Dhaqdhaqaaqa lacagta si guul leh ayaa loo tirtiray!' },
+      { message: 'Dhaqdhaqaaqa lacagta si guul leh ayaa loo tirtiray!', event: transactionEvent },
       { status: 200 } // OK
     );
   } catch (error) {

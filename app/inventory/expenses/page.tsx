@@ -60,6 +60,129 @@ export default function CompanyMaterialExpensesPage() {
     fetchMaterials();
   }, []);
 
+  // Auto-refresh data every 30 seconds for live updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const fetchMaterials = async () => {
+        try {
+          const response = await fetch('/api/expenses?category=Material&projectId=null');
+          if (!response.ok) throw new Error('Failed to fetch company material expenses');
+          const data = await response.json();
+          // Flatten all materials from expenses
+          const allMaterials: ExpenseMaterial[] = [];
+          for (const exp of data.expenses) {
+            if (Array.isArray(exp.materials)) {
+              exp.materials.forEach((mat: any) => {
+                allMaterials.push({
+                  id: exp.id,
+                  name: mat.name,
+                  qty: mat.qty,
+                  price: mat.price,
+                  unit: mat.unit,
+                  expenseDate: exp.expenseDate,
+                  note: exp.note,
+                });
+              });
+            }
+          }
+          setMaterials(allMaterials);
+        } catch (error: any) {
+          console.error('Error fetching company material expenses:', error);
+        }
+      };
+      fetchMaterials();
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Listen for storage events (when inventory is added/deleted from other tabs)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'inventory_updated' || e.key === 'inventory_created' || e.key === 'inventory_deleted' || e.key === 'inventory_restocked') {
+        console.log('Inventory expenses page: Storage event detected, refreshing data...', e.key);
+        const fetchMaterials = async () => {
+          try {
+            const response = await fetch('/api/expenses?category=Material&projectId=null');
+            if (!response.ok) throw new Error('Failed to fetch company material expenses');
+            const data = await response.json();
+            // Flatten all materials from expenses
+            const allMaterials: ExpenseMaterial[] = [];
+            for (const exp of data.expenses) {
+              if (Array.isArray(exp.materials)) {
+                exp.materials.forEach((mat: any) => {
+                  allMaterials.push({
+                    id: exp.id,
+                    name: mat.name,
+                    qty: mat.qty,
+                    price: mat.price,
+                    unit: mat.unit,
+                    expenseDate: exp.expenseDate,
+                    note: exp.note,
+                  });
+                });
+              }
+            }
+            setMaterials(allMaterials);
+          } catch (error: any) {
+            console.error('Error fetching company material expenses:', error);
+          }
+        };
+        fetchMaterials();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  // Listen for custom events (when inventory is added/deleted from same tab)
+  useEffect(() => {
+    const handleInventoryUpdate = (event: any) => {
+      console.log('Inventory expenses page: Custom event detected, refreshing data...', event.type, event.detail);
+      const fetchMaterials = async () => {
+        try {
+          const response = await fetch('/api/expenses?category=Material&projectId=null');
+          if (!response.ok) throw new Error('Failed to fetch company material expenses');
+          const data = await response.json();
+          // Flatten all materials from expenses
+          const allMaterials: ExpenseMaterial[] = [];
+          for (const exp of data.expenses) {
+            if (Array.isArray(exp.materials)) {
+              exp.materials.forEach((mat: any) => {
+                allMaterials.push({
+                  id: exp.id,
+                  name: mat.name,
+                  qty: mat.qty,
+                  price: mat.price,
+                  unit: mat.unit,
+                  expenseDate: exp.expenseDate,
+                  note: exp.note,
+                });
+              });
+            }
+          }
+          setMaterials(allMaterials);
+        } catch (error: any) {
+          console.error('Error fetching company material expenses:', error);
+        }
+      };
+      fetchMaterials();
+    };
+
+    window.addEventListener('inventory_updated', handleInventoryUpdate);
+    window.addEventListener('inventory_created', handleInventoryUpdate);
+    window.addEventListener('inventory_deleted', handleInventoryUpdate);
+    window.addEventListener('inventory_restocked', handleInventoryUpdate);
+    
+    return () => {
+      window.removeEventListener('inventory_updated', handleInventoryUpdate);
+      window.removeEventListener('inventory_created', handleInventoryUpdate);
+      window.removeEventListener('inventory_deleted', handleInventoryUpdate);
+      window.removeEventListener('inventory_restocked', handleInventoryUpdate);
+    };
+  }, []);
+
   // --- Statistics ---
   const totalRecords = materials.length;
   const totalQty = materials.reduce((sum, mat) => sum + mat.qty, 0);

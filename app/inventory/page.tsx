@@ -89,11 +89,45 @@ export default function InventoryManagementPage() {
       if (!inventoryResponse.ok) throw new Error('Failed to fetch inventory items');
       const inventoryData = await inventoryResponse.json();
       setInventoryItems(inventoryData.items); 
+      
+      // If API returned an event, notify other pages about inventory data update
+      if (inventoryData.event) {
+        const updateEvent = inventoryData.event;
+        
+        // Store in localStorage for cross-tab communication
+        localStorage.setItem('inventory_updated', JSON.stringify(updateEvent));
+
+        // Trigger storage events for same-tab listeners
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'inventory_updated',
+          newValue: JSON.stringify(updateEvent)
+        }));
+
+        // Trigger custom events for same-tab listeners
+        window.dispatchEvent(new CustomEvent('inventory_updated', { detail: updateEvent }));
+      }
 
       const projectMaterialsResponse = await fetch('/api/inventory/projects');
       if (!projectMaterialsResponse.ok) throw new Error('Failed to fetch project material usages');
       const projectMaterialsData = await projectMaterialsResponse.json();
       setProjectMaterialUsages(projectMaterialsData.projectMaterials);
+      
+      // If API returned an event, notify other pages about project materials data update
+      if (projectMaterialsData.event) {
+        const updateEvent = projectMaterialsData.event;
+        
+        // Store in localStorage for cross-tab communication
+        localStorage.setItem('inventory_updated', JSON.stringify(updateEvent));
+
+        // Trigger storage events for same-tab listeners
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'inventory_updated',
+          newValue: JSON.stringify(updateEvent)
+        }));
+
+        // Trigger custom events for same-tab listeners
+        window.dispatchEvent(new CustomEvent('inventory_updated', { detail: updateEvent }));
+      }
 
     } catch (error: any) {
       console.error('Error fetching inventory data:', error);
@@ -111,6 +145,48 @@ export default function InventoryManagementPage() {
 
   useEffect(() => {
     fetchInventoryData();
+  }, []);
+
+  // Auto-refresh data every 30 seconds for live updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchInventoryData();
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Listen for storage events (when inventory is added/deleted from other tabs)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'inventory_updated' || e.key === 'inventory_created' || e.key === 'inventory_deleted' || e.key === 'inventory_restocked') {
+        console.log('Inventory main page: Storage event detected, refreshing data...', e.key);
+        fetchInventoryData();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  // Listen for custom events (when inventory is added/deleted from same tab)
+  useEffect(() => {
+    const handleInventoryUpdate = (event: any) => {
+      console.log('Inventory main page: Custom event detected, refreshing data...', event.type, event.detail);
+      fetchInventoryData();
+    };
+
+    window.addEventListener('inventory_updated', handleInventoryUpdate);
+    window.addEventListener('inventory_created', handleInventoryUpdate);
+    window.addEventListener('inventory_deleted', handleInventoryUpdate);
+    window.addEventListener('inventory_restocked', handleInventoryUpdate);
+    
+    return () => {
+      window.removeEventListener('inventory_updated', handleInventoryUpdate);
+      window.removeEventListener('inventory_created', handleInventoryUpdate);
+      window.removeEventListener('inventory_deleted', handleInventoryUpdate);
+      window.removeEventListener('inventory_restocked', handleInventoryUpdate);
+    };
   }, []);
 
 

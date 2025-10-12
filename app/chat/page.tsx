@@ -291,9 +291,274 @@ export default function ChatPage() {
   return (
     <Layout>
       <div className="flex h-full bg-lightGray">
-        {/* Sidebar */}
+        {/* Mobile Layout - Stack vertically on mobile */}
+        <div className="flex flex-col lg:hidden w-full">
+          {/* Mobile Sidebar */}
+          <div className="w-full bg-white border-b border-gray-200 flex flex-col">
+            {/* Mobile Header */}
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="text-xl font-semibold text-darkGray">Messages</h1>
+                <button 
+                  className="p-2 hover:bg-lightGray rounded-lg transition-colors"
+                  title="Chat Settings"
+                  aria-label="Open chat settings"
+                >
+                  <Settings className="w-5 h-5 text-mediumGray" />
+                </button>
+              </div>
+              
+              {/* Mobile Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-mediumGray" />
+                <input
+                  type="text"
+                  placeholder="Search conversations..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Mobile Chat Rooms List */}
+            <div className="flex-1 overflow-y-auto max-h-64">
+              {filteredRooms.map((room) => (
+                <div
+                  key={room.id}
+                  onClick={() => setActiveRoom(room.id)}
+                  className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-lightGray transition-colors ${
+                    activeRoom === room.id ? 'bg-primary/10 border-l-4 border-l-primary' : ''
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="relative">
+                      <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
+                        <Users className="w-6 h-6 text-white" />
+                      </div>
+                      {room.isOnline && (
+                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-secondary rounded-full border-2 border-white"></div>
+                      )}
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium text-darkGray truncate">{room.name}</h3>
+                        {room.lastMessage && (
+                          <span className="text-xs text-mediumGray">
+                            {formatTime(room.lastMessage.timestamp)}
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center justify-between mt-1">
+                        <p className="text-sm text-mediumGray truncate">
+                          {room.lastMessage ? room.lastMessage.content : 'No messages yet'}
+                        </p>
+                        {room.unreadCount > 0 && (
+                          <span className="bg-primary text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
+                            {room.unreadCount}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Mobile Main Chat Area */}
+          <div className="flex-1 flex flex-col">
+            {activeRoomData ? (
+              <>
+                {/* Mobile Chat Header */}
+                <div className="bg-white border-b border-gray-200 p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="relative">
+                        <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                          <Users className="w-5 h-5 text-white" />
+                        </div>
+                        {activeRoomData.isOnline && (
+                          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-secondary rounded-full border-2 border-white"></div>
+                        )}
+                      </div>
+                      
+                      <div>
+                        <h2 className="font-semibold text-darkGray">{activeRoomData.name}</h2>
+                        <p className="text-sm text-mediumGray">
+                          {activeRoomData.members.length} members
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <button 
+                        className="p-2 hover:bg-lightGray rounded-lg transition-colors"
+                        title="Voice Call"
+                        aria-label="Start voice call"
+                      >
+                        <Phone className="w-5 h-5 text-mediumGray" />
+                      </button>
+                      <button 
+                        className="p-2 hover:bg-lightGray rounded-lg transition-colors"
+                        title="Video Call"
+                        aria-label="Start video call"
+                      >
+                        <Video className="w-5 h-5 text-mediumGray" />
+                      </button>
+                      <button 
+                        className="p-2 hover:bg-lightGray rounded-lg transition-colors"
+                        title="More Options"
+                        aria-label="Open more options"
+                      >
+                        <MoreVertical className="w-5 h-5 text-mediumGray" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mobile Messages Area */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                  {messages.map((message, index) => {
+                    const isCurrentUser = message.senderId === (session?.user as any)?.id;
+                    const showDate = index === 0 || 
+                      formatDate(message.timestamp) !== formatDate(messages[index - 1].timestamp);
+                    
+                    return (
+                      <div key={message.id}>
+                        {showDate && (
+                          <div className="text-center my-4">
+                            <span className="bg-lightGray text-mediumGray text-sm px-3 py-1 rounded-full">
+                              {formatDate(message.timestamp)}
+                            </span>
+                          </div>
+                        )}
+                        
+                        <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
+                          <div className={`flex space-x-2 max-w-xs ${isCurrentUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                            {!isCurrentUser && (
+                              <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center flex-shrink-0">
+                                <span className="text-white text-sm font-medium">
+                                  {message.senderName.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                            )}
+                            
+                            <div className={`rounded-lg px-4 py-2 ${
+                              isCurrentUser 
+                                ? 'bg-primary text-white' 
+                                : 'bg-white border border-gray-200 text-darkGray'
+                            }`}>
+                              {!isCurrentUser && (
+                                <p className="text-xs font-medium mb-1 opacity-70">
+                                  {message.senderName}
+                                </p>
+                              )}
+                              
+                              {message.type === 'image' && message.fileUrl ? (
+                                <div className="space-y-2">
+                                  <img
+                                    src={message.fileUrl}
+                                    alt={message.fileName || 'Image'} 
+                                    className="max-w-xs max-h-64 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                    onClick={() => window.open(message.fileUrl, '_blank')}
+                                  />
+                                  <p className="text-sm text-gray-600">{message.fileName}</p>
+                                </div>
+                              ) : message.type === 'file' && message.fileUrl ? (
+                                <div className="flex items-center space-x-2 p-2 bg-gray-100 rounded-lg">
+                                  <Paperclip className="w-4 h-4 text-gray-500" />
+                                  <a 
+                                    href={message.fileUrl} 
+                                    download={message.fileName}
+                                    className="text-sm text-blue-600 hover:underline"
+                                  >
+                                    {message.fileName}
+                                  </a>
+                                </div>
+                              ) : (
+                                <p className="text-sm">{message.content}</p>
+                              )}
+                              
+                              <p className={`text-xs mt-1 ${
+                                isCurrentUser ? 'text-white/70' : 'text-mediumGray'
+                              }`}>
+                                {formatTime(message.timestamp)}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div ref={messagesEndRef} />
+                </div>
+
+                {/* Mobile Message Input */}
+                <div className="bg-white border-t border-gray-200 p-4">
+                  <div className="flex items-center space-x-2">
+                    <button 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="p-2 hover:bg-lightGray rounded-lg transition-colors"
+                      title="Attach File"
+                      aria-label="Attach file to message"
+                    >
+                      <Paperclip className="w-5 h-5 text-mediumGray" />
+                    </button>
+                  
+                    <button
+                      onClick={() => imageInputRef.current?.click()}
+                      className="p-2 hover:bg-lightGray rounded-lg transition-colors"
+                      title="Attach Image"
+                      aria-label="Attach image to message"
+                    >
+                      <Image className="w-5 h-5 text-mediumGray" />
+                    </button>
+                  
+                    <div className="flex-1 relative">
+                      <input
+                        type="text"
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Type a message..."
+                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                      />
+                    </div>
+                    
+                    <button
+                      onClick={handleSendMessage}
+                      disabled={!newMessage.trim() || isSending}
+                      className="p-2 bg-primary text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      title="Send Message"
+                      aria-label="Send message"
+                    >
+                      <Send className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center p-4">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Users className="w-8 h-8 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-medium text-darkGray mb-2">No chat selected</h3>
+                  <p className="text-mediumGray text-sm">Select a conversation to start messaging</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Desktop Layout - Side by side */}
+        <div className="hidden lg:flex h-full bg-lightGray w-full">
+          {/* Desktop Sidebar */}
         <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-          {/* Header */}
+            {/* Desktop Header */}
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between mb-4">
               <h1 className="text-xl font-semibold text-darkGray">Messages</h1>
@@ -306,7 +571,7 @@ export default function ChatPage() {
               </button>
             </div>
             
-            {/* Search */}
+              {/* Desktop Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-mediumGray" />
               <input
@@ -319,7 +584,7 @@ export default function ChatPage() {
             </div>
           </div>
 
-          {/* Chat Rooms List */}
+            {/* Desktop Chat Rooms List */}
           <div className="flex-1 overflow-y-auto">
                 {filteredRooms.map((room) => (
                   <div
@@ -366,11 +631,11 @@ export default function ChatPage() {
           </div>
         </div>
 
-        {/* Main Chat Area */}
+          {/* Desktop Main Chat Area */}
         <div className="flex-1 flex flex-col">
           {activeRoomData ? (
             <>
-              {/* Chat Header */}
+                {/* Desktop Chat Header */}
               <div className="bg-white border-b border-gray-200 p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
@@ -417,7 +682,7 @@ export default function ChatPage() {
                 </div>
               </div>
 
-              {/* Messages Area */}
+                {/* Desktop Messages Area */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.map((message, index) => {
                   const isCurrentUser = message.senderId === (session?.user as any)?.id;
@@ -435,7 +700,7 @@ export default function ChatPage() {
                       )}
                       
                       <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`flex space-x-2 max-w-xs lg:max-w-md ${isCurrentUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                          <div className={`flex space-x-2 max-w-md ${isCurrentUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
                           {!isCurrentUser && (
                             <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center flex-shrink-0">
                               <span className="text-white text-sm font-medium">
@@ -494,7 +759,7 @@ export default function ChatPage() {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Message Input */}
+                {/* Desktop Message Input */}
               <div className="bg-white border-t border-gray-200 p-4">
                 <div className="flex items-center space-x-2">
                     <button 
@@ -541,12 +806,15 @@ export default function ChatPage() {
           ) : (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
-                <Users className="w-16 h-16 text-mediumGray mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-darkGray mb-2">No chat selected</h3>
+                  <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Users className="w-10 h-10 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-medium text-darkGray mb-2">No chat selected</h3>
                 <p className="text-mediumGray">Select a conversation to start messaging</p>
               </div>
             </div>
           )}
+          </div>
         </div>
       </div>
 

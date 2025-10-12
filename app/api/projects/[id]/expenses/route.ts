@@ -65,8 +65,16 @@ export async function POST(request: Request, { params }: { params: { id: string 
         companyId,
       },
     });
+    // Notify about expense creation for real-time updates
+    const expenseEvent = {
+      id: newExpense.id,
+      projectId: projectId,
+      action: 'created',
+      timestamp: Date.now()
+    };
+
     return NextResponse.json(
-      { message: 'Expense si guul leh ayaa loo daray mashruuca!', expense: newExpense },
+      { message: 'Expense si guul leh ayaa loo daray mashruuca!', expense: newExpense, event: expenseEvent },
       { status: 201 }
     );
   } catch (error) {

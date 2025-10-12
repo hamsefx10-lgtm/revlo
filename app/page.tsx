@@ -396,7 +396,7 @@ export default function HomePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
           {[
             { name: 'Basic', price: 'Bilaash', features: ['1 Isticmaale', '10 Mashruuc', '50 Kharash', 'Maamulka Bakhaarka (50 shay)', 'Basic Reports'], featured: false, delay: 0 },
-            { name: 'Business', price: '$29/bil', features: ['5 Isticmaale', 'Mashaariic Aan Xadidnayn', 'Kharash Aan Xadidnayn', 'Maamulka Bakhaarka (Aan Xadidnayn)', 'Production Orders & BOM', 'Material Purchases', 'Multi-Account Management', 'Company Chat', 'Warbixino horumarsan', 'Expense Approval System'], featured: true, delay: 100 },
+            { name: 'Business', price: 'ETB/bil', features: ['5 Isticmaale', 'Mashaariic Aan Xadidnayn', 'Kharash Aan Xadidnayn', 'Maamulka Bakhaarka (Aan Xadidnayn)', 'Production Orders & BOM', 'Material Purchases', 'Multi-Account Management', 'Company Chat', 'Warbixino horumarsan', 'Expense Approval System'], featured: true, delay: 100 },
             { name: 'Enterprise', price: 'Gaarka ah', features: ['Isticmaale Aan Xadidnayn', 'Dhammaan features-ka Business', 'Advanced Manufacturing', 'Role-based Access Control', 'Maamule u gaar ah', 'Isku-dhexgalka API', 'Talo bixin shakhsi ah'], featured: false, delay: 200 },
           ].map((plan, i) => (
                 <div key={i} className={`p-4 sm:p-6 lg:p-8 rounded-xl shadow-2xl border text-center transform hover:scale-105 transition duration-300 animate-fade-in-up ${plan.featured ? 'border-primary bg-primary/10' : 'border-lightGray dark:border-gray-700'}`} style={{ animationDelay: `${plan.delay}ms` }}>

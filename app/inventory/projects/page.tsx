@@ -146,6 +146,48 @@ export default function InventoryProjectsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataSource]);
 
+  // Auto-refresh data every 30 seconds for live updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchProjectMaterialUsages(dataSource);
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
+  }, [dataSource]);
+
+  // Listen for storage events (when inventory is added/deleted from other tabs)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'inventory_updated' || e.key === 'inventory_created' || e.key === 'inventory_deleted' || e.key === 'inventory_restocked') {
+        console.log('Inventory projects page: Storage event detected, refreshing data...', e.key);
+        fetchProjectMaterialUsages(dataSource);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [dataSource]);
+
+  // Listen for custom events (when inventory is added/deleted from same tab)
+  useEffect(() => {
+    const handleInventoryUpdate = (event: any) => {
+      console.log('Inventory projects page: Custom event detected, refreshing data...', event.type, event.detail);
+      fetchProjectMaterialUsages(dataSource);
+    };
+
+    window.addEventListener('inventory_updated', handleInventoryUpdate);
+    window.addEventListener('inventory_created', handleInventoryUpdate);
+    window.addEventListener('inventory_deleted', handleInventoryUpdate);
+    window.addEventListener('inventory_restocked', handleInventoryUpdate);
+    
+    return () => {
+      window.removeEventListener('inventory_updated', handleInventoryUpdate);
+      window.removeEventListener('inventory_created', handleInventoryUpdate);
+      window.removeEventListener('inventory_deleted', handleInventoryUpdate);
+      window.removeEventListener('inventory_restocked', handleInventoryUpdate);
+    };
+  }, [dataSource]);
+
   // Filter options
   const projects = ['All', ...Array.from(new Set(projectMaterialUsages.map(usage => usage.project.name)))];
   const categories = ['All', ...Array.from(new Set(projectMaterialUsages.map(usage => usage.name)))]; // Assuming material name is unique enough for category filter

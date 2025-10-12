@@ -83,8 +83,15 @@ export async function POST(request: Request) {
         companyId,
       },
     });
+    // Notify about inventory item creation for real-time updates
+    const inventoryEvent = {
+      id: newItem.id,
+      action: 'created',
+      timestamp: Date.now()
+    };
+
     return NextResponse.json(
-      { message: 'Alaabta si guul leh ayaa loogu daray bakhaarka!', item: newItem },
+      { message: 'Alaabta si guul leh ayaa loogu daray bakhaarka!', item: newItem, event: inventoryEvent },
       { status: 201 }
     );
   } catch (error) {

@@ -157,44 +157,48 @@ export default function AddTransactionPage() {
 
       setToastMessage({ message: data.message || 'Dhaqdhaqaaqa lacagta si guul leh ayaa loo diiwaan geliyay!', type: 'success' });
 
-      // Notify customer pages about transaction creation for real-time updates
-      if (transactionData.customerId) {
-        localStorage.setItem('transactionCreated', JSON.stringify({
-          customerId: transactionData.customerId,
-          type: transactionData.type,
-          amount: transactionData.amount,
-          timestamp: Date.now()
-        }));
-        // Trigger storage event for same-tab listeners
+      // If API returned an event, notify all pages about transaction creation for real-time updates
+      if (data.event) {
+        const transactionEvent = data.event;
+
+        // Store in localStorage for cross-tab communication
+        localStorage.setItem('transactionCreated', JSON.stringify(transactionEvent));
+        localStorage.setItem('expenses_updated', JSON.stringify(transactionEvent));
+        localStorage.setItem('project_updated', JSON.stringify(transactionEvent));
+
+        // Trigger storage events for same-tab listeners
         window.dispatchEvent(new StorageEvent('storage', {
           key: 'transactionCreated',
-          newValue: JSON.stringify({
-            customerId: transactionData.customerId,
-            type: transactionData.type,
-            amount: transactionData.amount,
-            timestamp: Date.now()
-          })
+          newValue: JSON.stringify(transactionEvent)
         }));
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'expenses_updated',
+          newValue: JSON.stringify(transactionEvent)
+        }));
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'project_updated',
+          newValue: JSON.stringify(transactionEvent)
+        }));
+
+        // Trigger custom events for same-tab listeners
+        window.dispatchEvent(new CustomEvent('expense_updated', { detail: transactionEvent }));
+        window.dispatchEvent(new CustomEvent('project_updated', { detail: transactionEvent }));
+      }
 
         // Notify about project payment if it's related to a project
         if (transactionData.projectId && (transactionData.type === 'INCOME' || transactionData.type === 'DEBT_REPAID')) {
-          localStorage.setItem('projectPaymentMade', JSON.stringify({
+        const projectPaymentEvent = {
             customerId: transactionData.customerId,
             projectId: transactionData.projectId,
             type: transactionData.type,
             amount: transactionData.amount,
             timestamp: Date.now()
-          }));
-          // Trigger storage event for same-tab listeners
+        };
+        
+        localStorage.setItem('projectPaymentMade', JSON.stringify(projectPaymentEvent));
           window.dispatchEvent(new StorageEvent('storage', {
             key: 'projectPaymentMade',
-            newValue: JSON.stringify({
-              customerId: transactionData.customerId,
-              projectId: transactionData.projectId,
-              type: transactionData.type,
-              amount: transactionData.amount,
-              timestamp: Date.now()
-            })
+          newValue: JSON.stringify(projectPaymentEvent)
           }));
         }
       }

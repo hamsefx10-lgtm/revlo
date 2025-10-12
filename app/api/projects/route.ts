@@ -93,8 +93,18 @@ export async function POST(request: Request) {
       }
     }
 
+    // Notify about project creation for real-time updates
+    const projectEvent = {
+      id: newProject.id,
+      action: 'created',
+      timestamp: Date.now()
+    };
+
+    // Store in localStorage for cross-tab communication (this will be handled by client-side)
+    // The client will listen for this event and update accordingly
+
     return NextResponse.json(
-      { message: 'Mashruuca si guul leh ayaa loo daray!', project: newProject },
+      { message: 'Mashruuca si guul leh ayaa loo daray!', project: newProject, event: projectEvent },
       { status: 201 }
     );
   } catch (error) {
