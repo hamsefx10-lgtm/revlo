@@ -4,16 +4,14 @@ import prisma from '@/lib/db';
 
 export async function GET() {
   try {
-    // Get current user session
-    // (If you have a custom getCurrentUser, use that instead)
-    // If getServerSession is not available, fallback to mock user for now
-    // TODO: Replace with real session user ID
-    // For now, fetch the first user (for demo/testing only)
-    const user = await prisma.user.findFirst({});
-    if (!user) {
-      return NextResponse.json({ message: 'User not found' }, { status: 404 });
+    // Use getServerSession to get the authenticated user
+    const { getServerSession } = await import('next-auth/next');
+    const { authOptions } = await import('@/lib/auth');
+  const session = (await getServerSession(authOptions)) as import('next-auth').Session | null;
+    if (!session || !session.user?.id) {
+      return NextResponse.json({ message: 'User not authenticated' }, { status: 401 });
     }
-    const userId = user.id;
+    const userId = session.user.id;
 
     // Fetch user profile
     const userProfile = await prisma.user.findUnique({

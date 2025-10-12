@@ -185,22 +185,20 @@ export default function AddTransactionPage() {
         window.dispatchEvent(new CustomEvent('project_updated', { detail: transactionEvent }));
       }
 
-        // Notify about project payment if it's related to a project
-        if (transactionData.projectId && (transactionData.type === 'INCOME' || transactionData.type === 'DEBT_REPAID')) {
+      // Notify about project payment if it's related to a project
+      if (transactionData.projectId && (transactionData.type === 'INCOME' || transactionData.type === 'DEBT_REPAID')) {
         const projectPaymentEvent = {
-            customerId: transactionData.customerId,
-            projectId: transactionData.projectId,
-            type: transactionData.type,
-            amount: transactionData.amount,
-            timestamp: Date.now()
+          customerId: transactionData.customerId,
+          projectId: transactionData.projectId,
+          type: transactionData.type,
+          amount: transactionData.amount,
+          timestamp: Date.now()
         };
-        
         localStorage.setItem('projectPaymentMade', JSON.stringify(projectPaymentEvent));
-          window.dispatchEvent(new StorageEvent('storage', {
-            key: 'projectPaymentMade',
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: 'projectPaymentMade',
           newValue: JSON.stringify(projectPaymentEvent)
-          }));
-        }
+        }));
       }
 
       // Clear form
