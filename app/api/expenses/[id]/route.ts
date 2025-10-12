@@ -107,6 +107,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       approved: expense.approved,
       receiptUrl: expense.receiptUrl || undefined,
       materials: expense.materials || [],
+      materialDate: expense.materialDate || undefined,
       employee: expense.employee ? {
         id: expense.employee.id,
         fullName: expense.employee.fullName,
@@ -194,6 +195,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         customerId: body.customerId,
         materials: body.materials,
         receiptUrl: body.receiptUrl,
+        materialDate: body.materialDate ? new Date(body.materialDate) : undefined,
         transportType: body.transportType,
         consultantName: body.consultantName,
         consultancyType: body.consultancyType,

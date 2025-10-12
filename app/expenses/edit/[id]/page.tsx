@@ -37,6 +37,8 @@ export default function EditExpensePage() {
 
   // Specific fields for different categories
   const [materials, setMaterials] = useState([{ id: 1, name: '', qty: '', price: '', unit: '' }]); 
+  // Material date tracking
+  const [materialDate, setMaterialDate] = useState(new Date().toISOString().split('T')[0]);
   const [workDescription, setWorkDescription] = useState('');
   const [wage, setWage] = useState<number | ''>('');
   const [laborPaidAmount, setLaborPaidAmount] = useState<number | ''>('');
@@ -140,7 +142,12 @@ export default function EditExpensePage() {
           setNote(expense.note || '');
           setDescription(expense.description || '');
           setSelectedProject(expense.project?.id || '');
-                  setAmount(expense.amount);
+          setAmount(expense.amount);
+          
+          // Populate material date if available
+          if (expense.materialDate) {
+            setMaterialDate(new Date(expense.materialDate).toISOString().split('T')[0]);
+          }
 
           // Determine expense type based on category
           if (expense.category === 'Company Expense') {
@@ -285,6 +292,7 @@ export default function EditExpensePage() {
       description: finalDescription,
       amount: category === 'Material' ? totalMaterialCost : amount,
       materials: category === 'Material' ? materials.map(({id, ...rest}) => rest) : undefined,
+      materialDate: category === 'Material' ? materialDate : undefined,
       transportType: transportType || undefined,
       consultantName: consultantName || undefined,
       consultancyType: consultancyType || undefined,
@@ -404,6 +412,23 @@ export default function EditExpensePage() {
           {category === 'Material' && (
              <div className="p-4 border border-primary/20 rounded-lg bg-primary/5 space-y-4">
               <h3 className="text-lg font-bold text-primary dark:text-blue-300">Faahfaahinta Alaabta</h3>
+              
+              {/* Material Date Section */}
+              <div className="mb-4 p-3 border border-green-200 rounded-lg bg-green-50 dark:bg-green-900/20">
+                <h4 className="text-md font-semibold text-green-700 dark:text-green-300 mb-3">Taariikhda Alaabta</h4>
+                
+                <div className="mb-3">
+                  <label className="block text-sm font-medium mb-1">Taariikhda Alaabta La Qatay <span className="text-red-500">*</span></label>
+                  <input 
+                    type="date" 
+                    value={materialDate} 
+                    onChange={e => setMaterialDate(e.target.value)} 
+                    className="w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary"
+                    required 
+                    title="Taariikhda Alaabta La Qatay"
+                  />
+                </div>
+              </div>
               {materials.map((material, index) => (
                 <div key={material.id} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-10 gap-3 items-end relative">
                   <div className="md:col-span-3"><label className="text-xs text-gray-700 dark:text-gray-300">Alaabta</label><input type="text" value={material.name} onChange={(e) => handleMaterialChange(material.id, 'name', e.target.value)} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" title="Magaca Alaabta"/></div>

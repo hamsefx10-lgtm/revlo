@@ -69,6 +69,7 @@ export async function GET(request: Request) {
         createdAt: true,
         updatedAt: true,
         materials: true,
+        materialDate: true,
         company: {
           select: {
             id: true,
@@ -110,6 +111,7 @@ export async function GET(request: Request) {
       createdAt: exp.createdAt,
       updatedAt: exp.updatedAt,
       materials: exp.materials || [],
+      materialDate: exp.materialDate || undefined,
     }));
     return NextResponse.json({ expenses: mappedExpenses }, { status: 200 });
   } catch (error) {
@@ -144,6 +146,7 @@ export async function POST(request: Request) {
       paymentStatus,
       invoiceNumber,
       paymentDate,
+      materialDate, // NEW: for Material date tracking
     } = await request.json();
 
     // Defensive: fallback for missing/invalid category
@@ -271,6 +274,8 @@ export async function POST(request: Request) {
         ...(paymentStatus ? { paymentStatus } : {}),
         ...(invoiceNumber ? { invoiceNumber } : {}),
         ...(paymentDate ? { paymentDate: new Date(paymentDate) } : {}),
+        // NEW: Store material date if provided
+        ...(materialDate ? { materialDate: new Date(materialDate) } : {}),
       },
     });
     // 2b. If this is a Salary payment, increment salaryPaidThisMonth for the employee

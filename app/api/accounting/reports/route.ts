@@ -30,13 +30,56 @@ export async function GET(request: Request) {
     });
     let totalIncomeThisMonth = 0;
     let totalExpensesThisMonth = 0;
-    monthlyTransactions.forEach(trx => {
-      if (trx.type === 'INCOME' || trx.type === 'TRANSFER_IN' || trx.type === 'DEBT_TAKEN') {
-        totalIncomeThisMonth += trx.amount.toNumber();
-      } else if (trx.type === 'EXPENSE' || trx.type === 'TRANSFER_OUT' || trx.type === 'DEBT_REPAID') {
-        totalExpensesThisMonth += trx.amount.toNumber();
+    
+    // Calculate TOTAL income from transactions (all time)
+    const allTransactions = await prisma.transaction.findMany({
+      where: {
+        companyId,
+      },
+    });
+    
+    let totalIncome = 0;
+    allTransactions.forEach(trx => {
+      if (trx.type === 'INCOME' || trx.type === 'TRANSFER_IN' || trx.type === 'DEBT_REPAID') {
+        // DEBT_REPAID is income (money received from customer)
+        totalIncome += Math.abs(trx.amount.toNumber());
       }
     });
+    
+    // Calculate monthly income for comparison
+    monthlyTransactions.forEach(trx => {
+      if (trx.type === 'INCOME' || trx.type === 'TRANSFER_IN' || trx.type === 'DEBT_REPAID') {
+        // DEBT_REPAID is income (money received from customer)
+        totalIncomeThisMonth += Math.abs(trx.amount.toNumber());
+      }
+    });
+    
+    // Calculate TOTAL expenses from expenses table (all time, not just this month)
+    const allExpenses = await prisma.expense.findMany({
+      where: {
+        companyId,
+      },
+    });
+    
+    // Sum ALL expenses from expenses table
+    const totalExpenses = allExpenses.reduce((sum, expense) => {
+      return sum + (typeof expense.amount === 'string' ? parseFloat(expense.amount) : Number(expense.amount));
+    }, 0);
+    
+    // Also calculate monthly expenses for comparison
+    const monthlyExpenses = await prisma.expense.findMany({
+      where: {
+        expenseDate: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
+        companyId,
+      },
+    });
+    
+    totalExpensesThisMonth = monthlyExpenses.reduce((sum, expense) => {
+      return sum + (typeof expense.amount === 'string' ? parseFloat(expense.amount) : Number(expense.amount));
+    }, 0);
     const netFlowThisMonth = totalIncomeThisMonth - totalExpensesThisMonth;
     const accountTypeCounts = await prisma.account.groupBy({
       by: ['type'],
@@ -55,7 +98,9 @@ export async function GET(request: Request) {
       {
         totalBalance: totalBalance,
         totalIncomeThisMonth: totalIncomeThisMonth,
+        totalIncome: totalIncome, // Total income (all time)
         totalExpensesThisMonth: totalExpensesThisMonth,
+        totalExpenses: totalExpenses, // Total expenses (all time)
         netFlowThisMonth: netFlowThisMonth,
         totalBankAccounts: totalBankAccounts,
         totalCashAccounts: totalCashAccounts,

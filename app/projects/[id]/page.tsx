@@ -211,121 +211,233 @@ const ProjectDetailsPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Tabs Container */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
-                <nav className="flex space-x-2 px-2 border-b border-lightGray dark:border-gray-700 overflow-x-auto">
-                    {tabs.map((tab) => <button key={tab} onClick={() => setActiveTab(tab)} className={`flex items-center gap-2 whitespace-nowrap py-3 px-3 text-sm font-semibold ${activeTab === tab ? 'border-b-2 border-primary text-primary' : 'border-b-2 border-transparent text-mediumGray hover:text-darkGray'}`}>{tab}</button>)}
+            {/* Mobile Tab Navigation */}
+            <div className="block lg:hidden mb-6">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4">
+                <nav className="grid grid-cols-3 gap-2">
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`flex flex-col items-center py-3 px-2 rounded-lg font-medium text-xs transition-all duration-200 ${
+                        activeTab === tab 
+                          ? 'bg-primary text-white shadow-md' 
+                          : 'text-mediumGray dark:text-gray-400 hover:text-darkGray dark:hover:text-gray-200 hover:bg-lightGray dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      {tab === 'Overview' && <LayoutGrid size={16} />}
+                      {tab === 'Expenses' && <AlertTriangle size={16} />}
+                      {tab === 'Materials' && <Layers size={16} />}
+                      {tab === 'Labor' && <HardHat size={16} />}
+                      {tab === 'Payments' && <DollarSign size={16} />}
+                      {tab === 'Documents' && <FileText size={16} />}
+                      <span className="text-xs leading-tight text-center mt-1">{tab}</span>
+                    </button>
+                  ))}
                 </nav>
+              </div>
+            </div>
 
-                <div className="p-4 md:p-6">
-                     <div className='flex justify-between items-center mb-4'>
-                        <h3 className="text-xl font-bold text-darkGray dark:text-gray-100">{activeTab}</h3>
-                        {['Overview', 'Expenses', 'Materials'].includes(activeTab) && <ViewSwitcher tabKey={activeTab.toLowerCase() as any} />}
+            {/* Desktop Tab Navigation */}
+            <div className="hidden lg:block">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+                <nav className="flex space-x-2 px-2 border-b border-lightGray dark:border-gray-700 overflow-x-auto">
+                  {tabs.map((tab) => (
+                    <button 
+                      key={tab} 
+                      onClick={() => setActiveTab(tab)} 
+                      className={`flex items-center gap-2 whitespace-nowrap py-3 px-3 text-sm font-semibold transition-colors duration-200 ${activeTab === tab ? 'border-b-2 border-primary text-primary' : 'border-b-2 border-transparent text-mediumGray hover:text-darkGray'}`}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </nav>
+              </div>
+            </div>
+
+            {/* Tab Content - Mobile & Desktop Separate Designs */}
+            {/* Mobile Tab Content */}
+            <div className="block lg:hidden p-4">
+              <div className="mb-4">
+                <h3 className="text-lg font-bold text-darkGray dark:text-gray-100 mb-2 flex items-center">
+                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-3">
+                    {activeTab === 'Overview' && <LayoutGrid size={16} className="text-primary" />}
+                    {activeTab === 'Expenses' && <AlertTriangle size={16} className="text-primary" />}
+                    {activeTab === 'Materials' && <Layers size={16} className="text-primary" />}
+                    {activeTab === 'Labor' && <HardHat size={16} className="text-primary" />}
+                    {activeTab === 'Payments' && <DollarSign size={16} className="text-primary" />}
+                    {activeTab === 'Documents' && <FileText size={16} className="text-primary" />}
+                  </div>
+                  {activeTab}
+                </h3>
+                <p className="text-sm text-mediumGray dark:text-gray-400">
+                  {activeTab === 'Overview' && 'Halkan waxaad ka arki kartaa guudmarka mashruuca.'}
+                  {activeTab === 'Expenses' && 'Halkan waxaad ka arki kartaa kharashaadka mashruuca.'}
+                  {activeTab === 'Materials' && 'Halkan waxaad ka arki kartaa agabka la isticmaalay.'}
+                  {activeTab === 'Labor' && 'Halkan waxaad ka arki kartaa shaqaalaha mashruuca.'}
+                  {activeTab === 'Payments' && 'Halkan waxaad ka arki kartaa lacagaha la bixiyay.'}
+                  {activeTab === 'Documents' && 'Halkan waxaad ka arki kartaa dukumentiyada mashruuca.'}
+                </p>
+              </div>
+
+              {/* Mobile Overview Content */}
+              {activeTab === 'Overview' && (
+                <div className="space-y-4">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-4 rounded-xl shadow-md">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-semibold text-blue-800 dark:text-blue-200">Macmiil</h4>
+                      <User size={18} className="text-blue-600" />
                     </div>
-                    
-                    {/* --- PRESERVING YOUR ORIGINAL TAB STRUCTURE --- */}
-                    {activeTab === 'Overview' && (
-                        viewModes.overview === 'board' ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                <div className="bg-lightGray/40 p-3 rounded-lg flex items-start gap-3"><User className="w-5 h-5 text-primary mt-0.5" /><div><p className="font-semibold text-mediumGray">Macmiil:</p><p className="font-medium">{project.customer?.name || '-'}</p></div></div>
-                                <div className="bg-lightGray/40 p-3 rounded-lg flex items-start gap-3"><Tag className="w-5 h-5 text-primary mt-0.5" /><div><p className="font-semibold text-mediumGray">Nooca:</p><p className="font-medium">{project.projectType || '-'}</p></div></div>
-                                <p className="md:col-span-2 pt-2"><b>Sharaxaad:</b> {project.description || 'Lama gelin.'}</p>
-                            </div>
-                        ) : (
-                             <div className="space-y-2 text-sm">
-                                 {Object.entries({
-                                     "Macmiil": project.customer?.name || '-',
-                                     "Nooca Mashruuca": project.projectType || '-',
-                                     "Taariikhda La Filayo": project.expectedCompletionDate ? new Date(project.expectedCompletionDate).toLocaleDateString() : 'N/A',
-                                     "Taariikhda Dhabta ah": project.actualCompletionDate ? new Date(project.actualCompletionDate).toLocaleDateString() : '-',
-                                     "Sharaxaad": project.description || 'Lama gelin.',
-                                     "Fiiro Gaar Ah": project.notes || 'Lama gelin.'
-                                 }).map(([label, value]) => <p key={label}><span className="font-semibold text-mediumGray">{label}:</span> {value}</p>)}
-                             </div>
-                        )
-                    )}
+                    <p className="text-lg font-bold text-blue-600">{project.customer?.name || '-'}</p>
+                    <p className="text-xs text-blue-600 dark:text-blue-300">Customer</p>
+                  </div>
+                  
+                  <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-4 rounded-xl shadow-md">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-semibold text-green-800 dark:text-green-200">Nooca Mashruuca</h4>
+                      <Tag size={18} className="text-green-600" />
+                    </div>
+                    <p className="text-lg font-bold text-green-600">{project.projectType || '-'}</p>
+                    <p className="text-xs text-green-600 dark:text-green-300">Project Type</p>
+                  </div>
+                  
+                  <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 p-4 rounded-xl shadow-md">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Sharaxaad</h4>
+                      <FileText size={18} className="text-gray-600" />
+                    </div>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">{project.description || 'Lama gelin.'}</p>
+                  </div>
+                </div>
+              )}
 
-                    {activeTab === 'Expenses' && (
-    <div>
-        {project.expenses.length === 0 ? <EmptyState message="Lama diiwaan gelin wax kharash ah."/> : (
-            viewModes.expenses === 'list' ? (
-                <>
-                    {/* Mobile List: Grouped by category with subtotals and colored category heading */}
-                    <div className="space-y-6 md:hidden">
-                        {Object.entries(expensesByCategory).map(([cat, exps]) => (
-                            <div key={cat} className="bg-lightGray/30 rounded-lg p-2">
-                                <div className="mb-2">
-                                    <span className={`block font-bold text-lg ${cat.toLowerCase() === 'labor' ? 'text-blue-500' : cat.toLowerCase() === 'material' ? 'text-cyan-600' : 'text-primary'}`}>{cat}</span>
+              {/* Mobile Expenses Content */}
+              {activeTab === 'Expenses' && (
+                <div>
+                  {project.expenses.length === 0 ? <EmptyState message="Lama diiwaan gelin wax kharash ah."/> : (
+                    <div className="space-y-4">
+                      {Object.entries(expensesByCategory).map(([cat, exps]) => (
+                        <div key={cat} className="bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 p-4 rounded-xl shadow-md">
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className={`text-sm font-semibold ${cat.toLowerCase() === 'labor' ? 'text-blue-800 dark:text-blue-200' : cat.toLowerCase() === 'material' ? 'text-cyan-800 dark:text-cyan-200' : 'text-red-800 dark:text-red-200'}`}>
+                              {cat}
+                            </h4>
+                            <AlertTriangle size={18} className={`${cat.toLowerCase() === 'labor' ? 'text-blue-600' : cat.toLowerCase() === 'material' ? 'text-cyan-600' : 'text-red-600'}`} />
+                          </div>
+                          <p className="text-lg font-bold text-red-600 mb-3">
+                            Total: -Br{exps.reduce((s, e) => s + (typeof e.amount === 'number' ? e.amount : parseFloat(e.amount as any) || 0), 0).toLocaleString()}
+                          </p>
+                          <div className="space-y-2">
+                            {exps.map(exp => (
+                              <div key={exp.id} className='bg-white p-3 rounded-lg shadow-sm'>
+                                <div className="flex justify-between items-center">
+                                  <div className="flex-1 min-w-0">
+                                    <p className='font-bold text-darkGray dark:text-gray-100 truncate'>{exp.description}</p>
+                                    <p className='text-xs text-mediumGray dark:text-gray-400'>{new Date(exp.expenseDate).toLocaleDateString()}</p>
+                                  </div>
+                                  <p className='font-bold text-lg text-redError ml-2'>-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</p>
                                 </div>
-                                <div className="flex justify-between items-center mb-1">
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Desktop Tab Content */}
+            <div className="hidden lg:block">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+                <div className="p-4 md:p-6">
+                  <div className='flex justify-between items-center mb-4'>
+                    <h3 className="text-xl font-bold text-darkGray dark:text-gray-100">{activeTab}</h3>
+                    {['Overview', 'Expenses', 'Materials'].includes(activeTab) && <ViewSwitcher tabKey={activeTab.toLowerCase() as any} />}
+                  </div>
+                    
+                  {/* Desktop Overview Content */}
+                  {activeTab === 'Overview' && (
+                    <div>
+                      {viewModes.overview === 'board' ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                          <div className="bg-lightGray/40 p-3 rounded-lg flex items-start gap-3"><User className="w-5 h-5 text-primary mt-0.5" /><div><p className="font-semibold text-mediumGray">Macmiil:</p><p className="font-medium">{project.customer?.name || '-'}</p></div></div>
+                          <div className="bg-lightGray/40 p-3 rounded-lg flex items-start gap-3"><Tag className="w-5 h-5 text-primary mt-0.5" /><div><p className="font-semibold text-mediumGray">Nooca:</p><p className="font-medium">{project.projectType || '-'}</p></div></div>
+                          <p className="md:col-span-2 pt-2"><b>Sharaxaad:</b> {project.description || 'Lama gelin.'}</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2 text-sm">
+                          {Object.entries({
+                            "Macmiil": project.customer?.name || '-',
+                            "Nooca Mashruuca": project.projectType || '-',
+                            "Taariikhda La Filayo": project.expectedCompletionDate ? new Date(project.expectedCompletionDate).toLocaleDateString() : 'N/A',
+                            "Taariikhda Dhabta ah": project.actualCompletionDate ? new Date(project.actualCompletionDate).toLocaleDateString() : '-',
+                            "Sharaxaad": project.description || 'Lama gelin.',
+                            "Fiiro Gaar Ah": project.notes || 'Lama gelin.'
+                          }).map(([label, value]) => <p key={label}><span className="font-semibold text-mediumGray">{label}:</span> {value}</p>)}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Desktop Expenses Content */}
+                  {activeTab === 'Expenses' && (
+                    <div>
+                      {project.expenses.length === 0 ? <EmptyState message="Lama diiwaan gelin wax kharash ah."/> : (
+                        viewModes.expenses === 'list' ? (
+                          <>
+                            {/* Desktop List: Grouped by category with subtotals and colored category heading */}
+                            <div className="space-y-6">
+                              {Object.entries(expensesByCategory).map(([cat, exps]) => (
+                                <div key={cat} className="bg-lightGray/30 rounded-lg p-2">
+                                  <div className="mb-2">
+                                    <span className={`block font-bold text-lg ${cat.toLowerCase() === 'labor' ? 'text-blue-500' : cat.toLowerCase() === 'material' ? 'text-cyan-600' : 'text-primary'}`}>{cat}</span>
+                                  </div>
+                                  <div className="flex justify-between items-center mb-1">
                                     <span className="font-semibold text-darkGray text-sm">Total: <span className="text-redError">-Br{exps.reduce((s, e) => s + (typeof e.amount === 'number' ? e.amount : parseFloat(e.amount as any) || 0), 0).toLocaleString()}</span></span>
+                                  </div>
+                                  <div className="space-y-2">
+                                    {exps.map(exp => (
+                                      <div key={exp.id} className='bg-white p-3 rounded-lg flex justify-between items-center shadow-sm'>
+                                        <div>
+                                          <p className='font-bold'>{exp.description}</p>
+                                          <p className='text-xs text-mediumGray'>{new Date(exp.expenseDate).toLocaleDateString()}</p>
+                                        </div>
+                                        <p className='font-bold text-lg text-redError'>-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {Object.entries(expensesByCategory).map(([cat, exps]) => (
+                              <div key={cat} className="bg-lightGray/30 rounded-lg p-3 shadow">
+                                <div className="mb-2">
+                                  <span className={`block font-bold text-xl ${cat.toLowerCase() === 'labor' ? 'text-blue-500' : cat.toLowerCase() === 'material' ? 'text-cyan-600' : 'text-primary'}`}>{cat}</span>
+                                </div>
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="font-semibold text-darkGray text-base">Total: <span className="text-redError">-Br{exps.reduce((s, e) => s + (typeof e.amount === 'number' ? e.amount : parseFloat(e.amount as any) || 0), 0).toLocaleString()}</span></span>
                                 </div>
                                 <div className="space-y-2">
-                                    {exps.map(exp => (
-                                        <div key={exp.id} className='bg-white p-3 rounded-lg flex justify-between items-center shadow-sm'>
-                                            <div>
-                                                <p className='font-bold'>{exp.description}</p>
-                                                <p className='text-xs text-mediumGray'>{new Date(exp.expenseDate).toLocaleDateString()}</p>
-                                            </div>
-                                            <p className='font-bold text-lg text-redError'>-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    {/* Desktop Table: Grouped by category with subtotals and colored category heading */}
-                    <div className="hidden md:block">
-                        {Object.entries(expensesByCategory).map(([cat, exps]) => (
-                            <div key={cat} className="mb-6">
-                                <div className="mb-2">
-                                    <span className={`block font-bold text-xl ${cat.toLowerCase() === 'labor' ? 'text-blue-500' : cat.toLowerCase() === 'material' ? 'text-cyan-600' : 'text-primary'}`}>{cat}</span>
-                                </div>
-                                <div className="flex justify-between items-center mb-1">
-                                    <span className="font-semibold text-darkGray text-base">Total: <span className="text-redError">-Br{exps.reduce((s, e) => s + (typeof e.amount === 'number' ? e.amount : parseFloat(e.amount as any) || 0), 0).toLocaleString()}</span></span>
-                                </div>
-                                <table className='w-full text-sm mb-2'>
-                                    <thead><tr className='text-left bg-lightGray'><th>Taariikh</th><th>Sharaxaad</th><th className='text-right'>Qiimaha</th></tr></thead>
-                                    <tbody>
-                                        {exps.map(exp => (
-                                            <tr key={exp.id}>
-                                                <td>{new Date(exp.expenseDate).toLocaleDateString()}</td>
-                                                <td>{exp.description}</td>
-                                                <td className='text-right font-semibold text-redError'>-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        ))}
-                    </div>
-                </>
-            ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {Object.entries(expensesByCategory).map(([cat, exps]) => (
-                        <div key={cat} className="bg-lightGray/30 rounded-lg p-3 shadow">
-                            <div className="mb-2">
-                                <span className={`block font-bold text-xl ${cat.toLowerCase() === 'labor' ? 'text-blue-500' : cat.toLowerCase() === 'material' ? 'text-cyan-600' : 'text-primary'}`}>{cat}</span>
-                            </div>
-                            <div className="flex justify-between items-center mb-2">
-                                <span className="font-semibold text-darkGray text-base">Total: <span className="text-redError">-Br{exps.reduce((s, e) => s + (typeof e.amount === 'number' ? e.amount : parseFloat(e.amount as any) || 0), 0).toLocaleString()}</span></span>
-                            </div>
-                            <div className="space-y-2">
-                                {exps.map(exp => (
+                                  {exps.map(exp => (
                                     <div key={exp.id} className="bg-white p-3 rounded-lg flex flex-col gap-1 shadow-sm">
-                                        <span className="font-bold">{exp.description}</span>
-                                        <span className="text-xs text-mediumGray">{new Date(exp.expenseDate).toLocaleDateString()}</span>
-                                        <span className="text-right font-semibold text-redError">-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</span>
+                                      <span className="font-bold">{exp.description}</span>
+                                      <span className="text-xs text-mediumGray">{new Date(exp.expenseDate).toLocaleDateString()}</span>
+                                      <span className="text-right font-semibold text-redError">-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</span>
                                     </div>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )
-        )}
-    </div>
-                    )}
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )
+                      )}
+                    </div>
+                  )}
                     
                     {activeTab === 'Materials' && (
                         <div>
@@ -676,6 +788,7 @@ const ProjectDetailsPage: React.FC = () => {
                         </div>
                     )}
                 </div>
+              </div>
             </div>
             {toastMessage && <Toast message={toastMessage.message} type={toastMessage.type} onClose={() => setToastMessage(null)} />}
         </Layout>

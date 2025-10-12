@@ -36,6 +36,8 @@ export default function AddExpensePage() {
 
   // Specific fields for different categories
   const [materials, setMaterials] = useState([{ id: 1, name: '', qty: '', price: '', unit: '' }]); 
+  // Material date tracking
+  const [materialDate, setMaterialDate] = useState(new Date().toISOString().split('T')[0]);
   // REMOVED: employeeName, use selectedEmployeeForSalary for project labor
   const [workDescription, setWorkDescription] = useState('');
   
@@ -407,6 +409,8 @@ const [consultancyFee, setConsultancyFee] = useState('');
           if (typeof parseFloat(mat.price as string) !== 'number' || parseFloat(mat.price as string) <= 0) errors[`materialPrice_${index}`] = 'Qiimaha waa inuu noqdaa nambar wanaagsan.';
           if (!mat.unit) errors[`materialUnit_${index}`] = 'Unit waa waajib.'; 
         });
+        // Material date validation
+        if (!materialDate) errors.materialDate = 'Taariikhda alaabta waa waajib.';
         // NEW: Vendor payment validation
         if (!selectedVendor) errors.selectedVendor = 'Iibiyaha waa waajib.';
         if (!paymentStatus) errors.paymentStatus = 'Xaaladda lacag bixinta waa waajib.';
@@ -600,7 +604,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
 
     const expenseData: any = {
       paidFrom: category === 'Equipment Rental' && expenseType === 'project' ? selectedBankAccount : paidFrom,
-      expenseDate,
+      expenseDate: category === 'Material' ? materialDate : expenseDate, // Use materialDate for Material expenses
       note: note.trim() === '' ? undefined : note,
       projectId: expenseType === 'project' ? selectedProject : undefined,
       category: category,
@@ -613,12 +617,14 @@ const [consultancyFee, setConsultancyFee] = useState('');
         expenseData.amount = totalMaterialCost;
         expenseData.materials = materials.map(m => ({ name: m.name, qty: parseFloat(m.qty as string), price: parseFloat(m.price as string), unit: m.unit }));
         // Use user-entered description if provided, otherwise fallback to default
-        expenseData.description = description && description.trim() !== '' ? description.trim() : `Material expense - ${expenseDate}`;
+        expenseData.description = description && description.trim() !== '' ? description.trim() : `Material expense - ${materialDate}`;
         // NEW: Add vendor payment tracking fields
         expenseData.vendorId = selectedVendor;
         expenseData.paymentStatus = paymentStatus;
         expenseData.invoiceNumber = invoiceNumber || null;
         expenseData.paymentDate = paymentStatus === 'PAID' ? new Date().toISOString() : null;
+        // Material date tracking
+        expenseData.materialDate = materialDate;
         // For project UNPAID material, do not send paidFrom to backend (avoids invalid FK)
         if (expenseType === 'project' && paymentStatus === 'UNPAID') {
           delete expenseData.paidFrom;
@@ -627,11 +633,11 @@ const [consultancyFee, setConsultancyFee] = useState('');
         if (expenseType === 'company') {
           expenseData.projectId = null;
           expenseData.category = 'Material';
-          expenseData.expenseDate = expenseDate;
+          expenseData.expenseDate = materialDate; // Use materialDate instead of expenseDate for Material expenses
           expenseData.paidFrom = paymentStatus === 'PAID' ? paidFrom : null; // Only set if paid
           expenseData.note = note.trim() === '' ? undefined : note;
           // PATCH: Always set description for company material expense
-          expenseData.description = description && description.trim() !== '' ? description.trim() : `Material expense - ${expenseDate}`;
+          expenseData.description = description && description.trim() !== '' ? description.trim() : `Material expense - ${materialDate}`;
         }
         break;
       case 'Labor':
@@ -716,8 +722,11 @@ const [consultancyFee, setConsultancyFee] = useState('');
             expenseData.materials = materials.map(m => ({ name: m.name, qty: parseFloat(m.qty as string), price: parseFloat(m.price as string), unit: m.unit }));
             expenseData.category = 'Material';
             expenseData.projectId = null;
+            expenseData.expenseDate = materialDate; // Use materialDate instead of expenseDate for Material expenses
             // PATCH: Always set description for company material expense
             expenseData.description = description;
+            // Material date tracking
+            expenseData.materialDate = materialDate;
             break;
           case 'Debt':
             expenseData.amount = amount;
@@ -1122,6 +1131,24 @@ const [consultancyFee, setConsultancyFee] = useState('');
                 </select>
               </div>
               
+              {/* Material Date Section */}
+              <div className="mb-4 p-3 border border-green-200 rounded-lg bg-green-50 dark:bg-green-900/20">
+                <h4 className="text-md font-semibold text-green-700 dark:text-green-300 mb-3">Taariikhda Alaabta</h4>
+                
+                <div className="mb-3">
+                  <label className="block text-sm font-medium mb-1">Taariikhda Alaabta La Qatay <span className="text-red-500">*</span></label>
+                  <input 
+                    type="date" 
+                    value={materialDate} 
+                    onChange={e => setMaterialDate(e.target.value)} 
+                    className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.materialDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    required 
+                    title="Taariikhda Alaabta La Qatay"
+                  />
+                  {validationErrors.materialDate && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1"/>{validationErrors.materialDate}</p>}
+                </div>
+              </div>
+
               {/* NEW: Vendor Payment Tracking Section */}
               <div className="mb-4 p-3 border border-blue-200 rounded-lg bg-blue-50 dark:bg-blue-900/20">
                 <h4 className="text-md font-semibold text-blue-700 dark:text-blue-300 mb-3">Faahfaahinta Iibiyaha & Lacag Bixinta</h4>
@@ -1910,6 +1937,24 @@ const [consultancyFee, setConsultancyFee] = useState('');
               {companyExpenseType === 'Material' && (
                 <div className="p-4 border border-primary/20 rounded-lg bg-primary/5 animate-fade-in">
                   <h3 className="text-lg font-bold text-primary dark:text-blue-300 mb-4">Faahfaahinta Alaabta (Kharashka Shirkadda)</h3>
+                  {/* Material Date Section */}
+                  <div className="mb-4 p-3 border border-green-200 rounded-lg bg-green-50 dark:bg-green-900/20">
+                    <h4 className="text-md font-semibold text-green-700 dark:text-green-300 mb-3">Taariikhda Alaabta</h4>
+                    
+                    <div className="mb-3">
+                      <label className="block text-sm font-medium mb-1">Taariikhda Alaabta La Qatay <span className="text-red-500">*</span></label>
+                      <input 
+                        type="date" 
+                        value={materialDate} 
+                        onChange={e => setMaterialDate(e.target.value)} 
+                        className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.materialDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                        required 
+                        title="Taariikhda Alaabta La Qatay"
+                      />
+                      {validationErrors.materialDate && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1"/>{validationErrors.materialDate}</p>}
+                    </div>
+                  </div>
+
                   {/* Sharaxaad (Description) field */}
                   <div className="mb-4">
                     <label htmlFor="description" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Sharaxaad <span className="text-redError">*</span></label>

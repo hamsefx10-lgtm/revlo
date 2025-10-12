@@ -41,6 +41,7 @@ interface Expense {
   approved?: boolean;
   receiptUrl?: string;
   materials?: { name: string; qty: number; price: number; unit: string }[];
+  materialDate?: string;
   employee?: {
     id: string;
     fullName: string;
@@ -304,6 +305,23 @@ const ProfessionalExpenseCard: React.FC<{ expense: Expense; router: any; handleD
               <Package className="w-5 h-5 text-green-600" />
               <h4 className="font-semibold text-green-800 dark:text-green-200">Alaabta La Iibiyay</h4>
             </div>
+            
+            {/* Material Date Display */}
+            {expense.materialDate && (
+              <div className="mb-4 p-3 bg-green-100 dark:bg-green-800/30 rounded-lg border border-green-200 dark:border-green-700">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-4 h-4 text-green-600" />
+                  <span className="text-sm font-medium text-green-800 dark:text-green-200">Taariikhda Alaabta:</span>
+                  <span className="text-sm text-green-700 dark:text-green-300">
+                    {new Date(expense.materialDate).toLocaleDateString('so-SO', { 
+                      day: 'numeric', 
+                      month: 'long', 
+                      year: 'numeric' 
+                    })}
+                  </span>
+                </div>
+              </div>
+            )}
                   <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>

@@ -74,8 +74,18 @@ const TransactionRow: React.FC<{ transaction: Transaction; onEdit: (id: string) 
 const TransactionCard: React.FC<{ transaction: Transaction; onEdit: (id: string) => void; onDelete: (id: string) => void }> = ({ transaction, onEdit, onDelete }) => {
   const isIncome = transaction.amount >= 0;
   let borderColor = 'border-lightGray dark:border-gray-700';
-  if (isIncome) borderColor = 'border-secondary';
-  else borderColor = 'border-redError';
+  let statusIcon: React.ReactNode;
+  let statusBgClass = '';
+
+  if (isIncome) {
+    borderColor = 'border-secondary';
+    statusIcon = <TrendingUp size={16} className="text-secondary" />;
+    statusBgClass = 'bg-secondary/10';
+  } else {
+    borderColor = 'border-redError';
+    statusIcon = <TrendingDown size={16} className="text-redError" />;
+    statusBgClass = 'bg-redError/10';
+  }
 
   return (
     <div className={`bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-all duration-300 animate-fade-in-up border-l-4 ${borderColor} relative`}>
@@ -115,13 +125,23 @@ const TransactionCard: React.FC<{ transaction: Transaction; onEdit: (id: string)
         <p className="text-xs sm:text-sm text-mediumGray dark:text-gray-400 flex items-center space-x-2">
           <Banknote size={12} className="flex-shrink-0" /> 
           <span className="truncate">{transaction.account?.name || 'N/A'}</span>
-        </p>
+          </p>
         {(transaction.project?.name || transaction.customer?.name || transaction.vendor?.name || transaction.user?.fullName) && (
           <p className="text-xs sm:text-sm text-mediumGray dark:text-gray-400 flex items-center space-x-2">
             <InfoIcon size={12} className="flex-shrink-0" /> 
             <span className="truncate">{transaction.project?.name || transaction.customer?.name || transaction.vendor?.name || transaction.user?.fullName}</span>
           </p>
         )}
+      </div>
+      
+      {/* Status Badge */}
+      <div className="mt-3 flex items-center justify-between">
+        <span className={`px-2 py-1 rounded-full text-xs font-semibold inline-flex items-center space-x-1 ${statusBgClass}`}>
+          {statusIcon} <span>{isIncome ? 'Dakhli' : 'Kharash'}</span>
+        </span>
+        <Link href={`/accounting/transactions/${transaction.id}`} className="text-primary hover:underline text-xs font-medium">
+          Fiiri &rarr;
+        </Link>
       </div>
     </div>
   );
@@ -228,20 +248,32 @@ export default function TransactionsPage() {
       {/* Transaction Statistics Cards - Mobile Optimized */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 lg:mb-8 animate-fade-in-up">
         <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 lg:p-6 rounded-lg lg:rounded-xl shadow-md text-center hover:shadow-lg transition-shadow duration-300">
-          <h4 className="text-xs sm:text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-1 lg:mb-2">Wadarta Dhaqdhaqaaqa</h4>
+          <div className="flex items-center justify-center mb-2">
+            <DollarSign size={20} className="text-primary mr-2" />
+            <h4 className="text-xs sm:text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400">Wadarta Dhaqdhaqaaqa</h4>
+          </div>
           <p className="text-lg sm:text-xl lg:text-3xl font-extrabold text-primary">{totalTransactionsCount}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 lg:p-6 rounded-lg lg:rounded-xl shadow-md text-center hover:shadow-lg transition-shadow duration-300">
-          <h4 className="text-xs sm:text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-1 lg:mb-2">Wadarta Dakhliga</h4>
-          <p className="text-lg sm:text-xl lg:text-3xl font-extrabold text-secondary">${totalIncome.toLocaleString()}</p>
+          <div className="flex items-center justify-center mb-2">
+            <TrendingUp size={20} className="text-secondary mr-2" />
+            <h4 className="text-xs sm:text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400">Wadarta Dakhliga</h4>
+          </div>
+          <p className="text-lg sm:text-xl lg:text-3xl font-extrabold text-secondary">{totalIncome.toLocaleString()} ETB</p>
         </div>
         <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 lg:p-6 rounded-lg lg:rounded-xl shadow-md text-center hover:shadow-lg transition-shadow duration-300">
-          <h4 className="text-xs sm:text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-1 lg:mb-2">Wadarta Kharashyada</h4>
-          <p className="text-lg sm:text-xl lg:text-3xl font-extrabold text-redError">${totalExpenses.toLocaleString()}</p>
+          <div className="flex items-center justify-center mb-2">
+            <TrendingDown size={20} className="text-redError mr-2" />
+            <h4 className="text-xs sm:text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400">Wadarta Kharashyada</h4>
+          </div>
+          <p className="text-lg sm:text-xl lg:text-3xl font-extrabold text-redError">{totalExpenses.toLocaleString()} ETB</p>
         </div>
         <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 lg:p-6 rounded-lg lg:rounded-xl shadow-md text-center hover:shadow-lg transition-shadow duration-300">
-          <h4 className="text-xs sm:text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-1 lg:mb-2">Net Flow</h4>
-          <p className={`text-lg sm:text-xl lg:text-3xl font-extrabold ${netFlow >= 0 ? 'text-primary' : 'text-redError'}`}>${netFlow.toLocaleString()}</p>
+          <div className="flex items-center justify-center mb-2">
+            <RefreshCw size={20} className={`mr-2 ${netFlow >= 0 ? 'text-primary' : 'text-redError'}`} />
+            <h4 className="text-xs sm:text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400">Net Flow</h4>
+          </div>
+          <p className={`text-lg sm:text-xl lg:text-3xl font-extrabold ${netFlow >= 0 ? 'text-primary' : 'text-redError'}`}>{netFlow.toLocaleString()} ETB</p>
         </div>
       </div>
 
@@ -259,7 +291,7 @@ export default function TransactionsPage() {
           />
         </div>
         
-        {/* Filters Row */}
+        {/* Filters Row - Mobile Optimized */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4">
           {/* Filter by Type */}
           <div className="relative">
@@ -310,7 +342,7 @@ export default function TransactionsPage() {
           </div>
         </div>
         
-        {/* View Mode Toggle */}
+        {/* View Mode Toggle - Mobile Optimized */}
         <div className="flex space-x-2 justify-center">
           <button
             onClick={() => setViewMode('list')}
@@ -368,7 +400,7 @@ export default function TransactionsPage() {
           </div>
         </div>
       ) : ( /* Cards View - Mobile Optimized */
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 animate-fade-in">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 animate-fade-in">
           {filteredTransactions.map(trx => (
             <TransactionCard key={trx.id} transaction={trx} onEdit={handleEditTransaction} onDelete={handleDeleteTransaction} />
           ))}

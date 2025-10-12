@@ -28,6 +28,7 @@ interface Expense {
   status?: string;
   employeeId?: string; // NEW: Add employeeId for filtering
   employee?: { id: string; name: string }; // NEW: Add employee object for display
+  materialDate?: string; // NEW: Add materialDate for material expenses
 }
 
 type FilterType = 'total' | 'company' | 'project';
@@ -862,7 +863,7 @@ export default function ExpensesPage() {
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
                       <div className="text-xs font-medium text-darkGray dark:text-gray-100">
-                        {new Date(expense.date).toLocaleDateString('so-SO', { 
+                        {new Date(expense.category === 'Material' && expense.materialDate ? expense.materialDate : expense.date).toLocaleDateString('so-SO', { 
                           day: 'numeric', 
                           month: 'short', 
                           year: 'numeric' 

@@ -45,7 +45,9 @@ interface Transaction {
 interface OverviewStats {
   totalBalance: number;
   totalIncomeThisMonth: number;
+  totalIncome: number; // Total income (all time)
   totalExpensesThisMonth: number;
+  totalExpenses: number; // Total expenses (all time)
   netFlowThisMonth: number;
   totalBankAccounts: number;
   totalCashAccounts: number;
@@ -441,7 +443,9 @@ export default function AccountingPage() {
       setOverviewStats({
         totalBalance: statsData.totalBalance,
         totalIncomeThisMonth: statsData.totalIncomeThisMonth,
+        totalIncome: statsData.totalIncome, // Total income (all time)
         totalExpensesThisMonth: statsData.totalExpensesThisMonth,
+        totalExpenses: statsData.totalExpenses, // Total expenses (all time)
         netFlowThisMonth: statsData.netFlowThisMonth,
         totalBankAccounts: statsData.totalBankAccounts,
         totalCashAccounts: statsData.totalCashAccounts,
@@ -512,20 +516,22 @@ export default function AccountingPage() {
     fetchAccountingData();
   }, []);
 
-  // Chart Data for Monthly Cash Flow (from overviewStats)
+  // Chart Data for Monthly Cash Flow (from overviewStats only - no dummy data)
   const monthlyCashFlowData = overviewStats?.monthlyCashFlow || [];
   const accountDistributionData = overviewStats?.accountDistribution || [];
 
   return (
     <Layout>
-      {/* Header - Mobile Optimized */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 lg:mb-8 gap-4">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-darkGray dark:text-gray-100">
-          <Link href="/dashboard" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-3 sm:mr-4">
-            <ArrowLeft size={24} className="inline-block sm:w-7 sm:h-7" />
+      {/* Header - Responsive Design */}
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6 lg:mb-8 gap-4">
+        <div className="flex items-center">
+          <Link href="/dashboard" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-3 lg:mr-4">
+            <ArrowLeft size={24} className="inline-block lg:w-7 lg:h-7" />
           </Link>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-darkGray dark:text-gray-100">
           Accounting & Finance
         </h1>
+        </div>
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
           <Link href="/accounting/transactions/add" className="bg-primary text-white py-2.5 px-4 sm:px-6 rounded-lg font-bold text-sm sm:text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center justify-center">
             <Plus size={18} className="mr-2" /> Diiwaan Geli Dhaqdhaqaaq
@@ -536,227 +542,573 @@ export default function AccountingPage() {
         </div>
       </div>
 
-      {/* Overview Statistics Cards - Ultra Compact Mobile Design */}
+      {/* Overview Statistics Cards - Mobile & Desktop Separate Designs */}
       {overviewStats && (
-        <div className="grid grid-cols-2 gap-1 mb-3 animate-fade-in-up">
-          {/* Main Financial Cards */}
-          <div className="bg-white dark:bg-gray-800 p-1.5 rounded-lg shadow-md text-center hover:shadow-lg transition-shadow duration-300">
-            <h4 className="text-xs font-semibold text-mediumGray dark:text-gray-400 mb-0">Wadarta Lacagta</h4>
-            <p className="text-sm font-extrabold text-primary">${overviewStats.totalBalance.toLocaleString()}</p>
+        <>
+          {/* Mobile Design - Clean Cards */}
+          <div className="block lg:hidden space-y-3 mb-6 animate-fade-in-up">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 border-l-4 border-primary">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mr-3">
+                    <DollarSign size={20} className="text-primary" />
           </div>
-          <div className="bg-white dark:bg-gray-800 p-1.5 rounded-lg shadow-md text-center hover:shadow-lg transition-shadow duration-300">
-            <h4 className="text-xs font-semibold text-mediumGray dark:text-gray-400 mb-0">Dakhliga Bishaan</h4>
-            <p className="text-sm font-extrabold text-secondary">${overviewStats.totalIncomeThisMonth.toLocaleString()}</p>
+                  <div>
+                    <h4 className="font-semibold text-darkGray dark:text-gray-100">Wadarta Lacagta</h4>
+                    <p className="text-xs text-mediumGray dark:text-gray-400">Total Balance</p>
           </div>
-          <div className="bg-white dark:bg-gray-800 p-1.5 rounded-lg shadow-md text-center hover:shadow-lg transition-shadow duration-300">
-            <h4 className="text-xs font-semibold text-mediumGray dark:text-gray-400 mb-0">Kharashyada Bishaan</h4>
-            <p className="text-sm font-extrabold text-redError">${overviewStats.totalExpensesThisMonth.toLocaleString()}</p>
           </div>
-          <div className="bg-white dark:bg-gray-800 p-1.5 rounded-lg shadow-md text-center hover:shadow-lg transition-shadow duration-300">
-            <h4 className="text-xs font-semibold text-mediumGray dark:text-gray-400 mb-0">Dhaqdhaqaaqa Deynta</h4>
-            <p className="text-sm font-extrabold text-orange-500">{debtTransactions.length}</p>
-            <p className="text-xs text-mediumGray dark:text-gray-400 mt-0">
-              {debtTransactions.filter(t => t.type === 'DEBT_TAKEN').length} Qaatay, {debtTransactions.filter(t => t.type === 'DEBT_REPAID').length} Bixiyay
-            </p>
-            <p className="text-xs text-blue-500 mt-0">
-              {projectDebtTransactions.length} Mashruuc
-            </p>
+                <div className="text-right">
+                  <p className="text-xl font-bold text-primary">{overviewStats.totalBalance.toLocaleString()}</p>
+                  <p className="text-xs text-mediumGray dark:text-gray-400">ETB</p>
+                </div>
+              </div>
           </div>
           
-          {/* Account Type Cards - All Visible */}
-          <div className="bg-white dark:bg-gray-800 p-1.5 rounded-lg shadow-md text-center hover:shadow-lg transition-shadow duration-300">
-            <h4 className="text-xs font-semibold text-mediumGray dark:text-gray-400 mb-0">Accounts-ka Bankiga</h4>
-            <p className="text-sm font-extrabold text-blue-500">{overviewStats.totalBankAccounts}</p>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 border-l-4 border-secondary">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-secondary/10 rounded-full flex items-center justify-center mr-3">
+                    <TrendingUp size={20} className="text-secondary" />
           </div>
-          <div className="bg-white dark:bg-gray-800 p-1.5 rounded-lg shadow-md text-center hover:shadow-lg transition-shadow duration-300">
-            <h4 className="text-xs font-semibold text-mediumGray dark:text-gray-400 mb-0">Accounts-ka Cash-ka</h4>
-            <p className="text-sm font-extrabold text-green-500">{overviewStats.totalCashAccounts}</p>
+                  <div>
+                    <h4 className="font-semibold text-darkGray dark:text-gray-100">Wadarta Dakhliga</h4>
+                    <p className="text-xs text-mediumGray dark:text-gray-400">Total Income</p>
           </div>
-          <div className="bg-white dark:bg-gray-800 p-1.5 rounded-lg shadow-md text-center hover:shadow-lg transition-shadow duration-300">
-            <h4 className="text-xs font-semibold text-mediumGray dark:text-gray-400 mb-0">Accounts-ka Mobile Money</h4>
-            <p className="text-sm font-extrabold text-purple-500">{overviewStats.totalMobileMoneyAccounts}</p>
+          </div>
+                <div className="text-right">
+                  <p className="text-xl font-bold text-secondary">{overviewStats.totalIncome.toLocaleString()}</p>
+                  <p className="text-xs text-mediumGray dark:text-gray-400">ETB</p>
+        </div>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 border-l-4 border-redError">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-redError/10 rounded-full flex items-center justify-center mr-3">
+                    <TrendingDown size={20} className="text-redError" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-darkGray dark:text-gray-100">Wadarta Kharashyada</h4>
+                    <p className="text-xs text-mediumGray dark:text-gray-400">Total Expenses</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xl font-bold text-redError">{overviewStats.totalExpenses.toLocaleString()}</p>
+                  <p className="text-xs text-mediumGray dark:text-gray-400">ETB</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 border-l-4 border-orange-500">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-orange-500/10 rounded-full flex items-center justify-center mr-3">
+                    <Scale size={20} className="text-orange-500" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-darkGray dark:text-gray-100">Dhaqdhaqaaqa Deynta</h4>
+                    <p className="text-xs text-mediumGray dark:text-gray-400">Debt Activity</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xl font-bold text-orange-500">{debtTransactions.length}</p>
+                  <p className="text-xs text-mediumGray dark:text-gray-400">Total</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                <div className="text-center">
+                  <p className="text-sm font-semibold text-orange-600">{debtTransactions.filter(t => t.type === 'DEBT_TAKEN').length}</p>
+                  <p className="text-xs text-mediumGray dark:text-gray-400">Qaatay</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-semibold text-green-600">{debtTransactions.filter(t => t.type === 'DEBT_REPAID').length}</p>
+                  <p className="text-xs text-mediumGray dark:text-gray-400">Bixiyay</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-semibold text-blue-600">{projectDebtTransactions.length}</p>
+                  <p className="text-xs text-mediumGray dark:text-gray-400">Mashruuc</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Design - Enhanced Cards */}
+          <div className="hidden lg:grid lg:grid-cols-4 gap-6 mb-8 animate-fade-in-up">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300 border-l-4 border-primary">
+              <div className="flex items-center justify-center mb-3">
+                <DollarSign size={20} className="text-primary mr-2" />
+                <h4 className="text-base font-semibold text-mediumGray dark:text-gray-400">Wadarta Lacagta</h4>
+              </div>
+              <p className="text-2xl font-extrabold text-primary">{overviewStats.totalBalance.toLocaleString()} ETB</p>
+              <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Total Balance</p>
+            </div>
+            
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300 border-l-4 border-secondary">
+              <div className="flex items-center justify-center mb-3">
+                <TrendingUp size={20} className="text-secondary mr-2" />
+                <h4 className="text-base font-semibold text-mediumGray dark:text-gray-400">Wadarta Dakhliga</h4>
+              </div>
+              <p className="text-2xl font-extrabold text-secondary">{overviewStats.totalIncome.toLocaleString()} ETB</p>
+              <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Total Income</p>
+            </div>
+            
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300 border-l-4 border-redError">
+              <div className="flex items-center justify-center mb-3">
+                <TrendingDown size={20} className="text-redError mr-2" />
+                <h4 className="text-base font-semibold text-mediumGray dark:text-gray-400">Wadarta Kharashyada</h4>
+              </div>
+              <p className="text-2xl font-extrabold text-redError">{overviewStats.totalExpenses.toLocaleString()} ETB</p>
+              <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Total Expenses</p>
+            </div>
+            
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300 border-l-4 border-orange-500">
+              <div className="flex items-center justify-center mb-3">
+                <Scale size={20} className="text-orange-500 mr-2" />
+                <h4 className="text-base font-semibold text-mediumGray dark:text-gray-400">Dhaqdhaqaaqa Deynta</h4>
+              </div>
+              <p className="text-2xl font-extrabold text-orange-500">{debtTransactions.length}</p>
+              <div className="text-sm text-mediumGray dark:text-gray-400 mt-1 space-y-1">
+                <p>{debtTransactions.filter(t => t.type === 'DEBT_TAKEN').length} Qaatay</p>
+                <p>{debtTransactions.filter(t => t.type === 'DEBT_REPAID').length} Bixiyay</p>
+                <p className="text-blue-500">{projectDebtTransactions.length} Mashruuc</p>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Account Type Cards - Desktop Layout */}
+      {overviewStats && (
+        <div className="hidden lg:grid lg:grid-cols-3 gap-6 mb-8 animate-fade-in-up">
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300">
+            <div className="flex items-center justify-center mb-3">
+              <Landmark size={24} className="text-blue-600 mr-3" />
+              <h4 className="text-lg font-semibold text-blue-800 dark:text-blue-200">Accounts-ka Bankiga</h4>
+            </div>
+            <p className="text-3xl font-extrabold text-blue-600">{overviewStats.totalBankAccounts}</p>
+            <p className="text-sm text-blue-600 dark:text-blue-300 mt-2">Bank Accounts</p>
+          </div>
+          
+          <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300">
+            <div className="flex items-center justify-center mb-3">
+              <Banknote size={24} className="text-green-600 mr-3" />
+              <h4 className="text-lg font-semibold text-green-800 dark:text-green-200">Accounts-ka Cash-ka</h4>
+            </div>
+            <p className="text-3xl font-extrabold text-green-600">{overviewStats.totalCashAccounts}</p>
+            <p className="text-sm text-green-600 dark:text-green-300 mt-2">Cash Accounts</p>
+          </div>
+          
+          <div className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300">
+            <div className="flex items-center justify-center mb-3">
+              <CreditCard size={24} className="text-purple-600 mr-3" />
+              <h4 className="text-lg font-semibold text-purple-800 dark:text-purple-200">Mobile Money</h4>
+            </div>
+            <p className="text-3xl font-extrabold text-purple-600">{overviewStats.totalMobileMoneyAccounts}</p>
+            <p className="text-sm text-purple-600 dark:text-purple-300 mt-2">Mobile Money Accounts</p>
           </div>
         </div>
       )}
 
-      {/* Charts Section - Ultra Compact Mobile Design */}
-      <div className="grid grid-cols-1 gap-1 mb-3">
-        {/* Monthly Cash Flow Chart */}
-        <div className="bg-white dark:bg-gray-800 p-1.5 rounded-lg shadow-md animate-fade-in-up">
-            <h3 className="text-xs font-semibold text-darkGray dark:text-gray-100 mb-0.5">Dhaqdhaqaaqa Lacagta Bishiiba</h3>
-            <div className="w-full h-[120px]">
-                <ResponsiveContainer>
-                    {monthlyCashFlowData.length > 0 ? (
-                        <LineChart data={monthlyCashFlowData} margin={{ top: 5, right: 15, left: 5, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" className="dark:stroke-gray-700" vertical={false} />
-                            <XAxis 
-                                dataKey="month" 
-                                stroke="#7F8C8D" 
-                                className="dark:text-gray-400" 
-                                fontSize={10}
-                                tick={{ fontSize: 10 }}
-                            />
-                            <YAxis 
-                                stroke="#7F8C8D" 
-                                className="dark:text-gray-400" 
-                                fontSize={10}
-                                tick={{ fontSize: 10 }}
-                            />
-                            <Tooltip 
-                                contentStyle={{ 
-                                    backgroundColor: 'white', 
-                                    border: '1px solid #ddd', 
-                                    borderRadius: '8px', 
-                                    fontSize: '11px',
-                                    padding: '8px'
-                                }}
-                                labelStyle={{ color: '#2C3E50', fontWeight: 'bold', fontSize: '11px' }}
-                                itemStyle={{ color: '#2C3E50', fontSize: '11px' }}
-                            />
-                            <Legend 
-                                wrapperStyle={{ fontSize: '10px', paddingTop: '5px' }} 
-                                iconType="line"
-                            />
-                            <Line type="monotone" dataKey="income" stroke={CHART_COLORS[1]} name="Dakhli" strokeWidth={2} />
-                            <Line type="monotone" dataKey="expense" stroke={CHART_COLORS[3]} name="Kharash" strokeWidth={2} />
-                            <Line type="monotone" dataKey="net" stroke={CHART_COLORS[0]} name="Net Flow" strokeWidth={2} />
-                        </LineChart>
-                    ) : (
-                        <div className="flex items-center justify-center h-full text-mediumGray dark:text-gray-500 text-xs sm:text-sm">
-                          <div className="text-center">
-                            <TrendingUp size={32} className="mx-auto mb-2 text-gray-400" />
-                            <p>No data for Monthly Cash Flow Chart.</p>
-                          </div>
-                        </div>
-                    )}
-                </ResponsiveContainer>
+      {/* Charts Section - Mobile & Desktop Separate Designs */}
+      {/* Mobile Charts Design */}
+      <div className="block lg:hidden space-y-4 mb-6 animate-fade-in-up">
+        {/* Mobile Monthly Cash Flow Chart */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-bold text-darkGray dark:text-gray-100 flex items-center">
+              <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-3">
+                <TrendingUp size={16} className="text-primary" />
+              </div>
+              Dhaqdhaqaaqa Lacagta
+            </h3>
+          </div>
+          <div className="w-full h-[180px]">
+            <ResponsiveContainer>
+              {monthlyCashFlowData.length > 0 ? (
+                <LineChart data={monthlyCashFlowData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" className="dark:stroke-gray-700" vertical={false} />
+                  <XAxis 
+                    dataKey="month" 
+                    stroke="#7F8C8D" 
+                    className="dark:text-gray-400" 
+                    fontSize={10}
+                    tick={{ fontSize: 10 }}
+                  />
+                  <YAxis 
+                    stroke="#7F8C8D" 
+                    className="dark:text-gray-400" 
+                    fontSize={10}
+                    tick={{ fontSize: 10 }}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'white', 
+                      border: '1px solid #ddd', 
+                      borderRadius: '8px', 
+                      fontSize: '12px',
+                      padding: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                    labelStyle={{ color: '#2C3E50', fontWeight: 'bold', fontSize: '12px' }}
+                    itemStyle={{ color: '#2C3E50', fontSize: '12px' }}
+                  />
+                  <Line type="monotone" dataKey="income" stroke="#2ECC71" name="Dakhli" strokeWidth={3} dot={{ r: 5, fill: '#2ECC71' }} />
+                  <Line type="monotone" dataKey="expense" stroke="#E74C3C" name="Kharash" strokeWidth={3} dot={{ r: 5, fill: '#E74C3C' }} />
+                  <Line type="monotone" dataKey="net" stroke="#3498DB" name="Net" strokeWidth={3} dot={{ r: 5, fill: '#3498DB' }} />
+                </LineChart>
+              ) : (
+                <div className="flex items-center justify-center h-full text-mediumGray dark:text-gray-500">
+                  <div className="text-center">
+                    <TrendingUp size={32} className="mx-auto mb-2 text-gray-400" />
+                    <p className="text-sm">Ma jiraan xog dhaqdhaqaaqa lacagta</p>
+                    <p className="text-xs text-gray-400 mt-1">Ku dar dhaqdhaqaaq lacag ah si aad u arko xogta</p>
+                  </div>
+                </div>
+              )}
+            </ResponsiveContainer>
+          </div>
+          <div className="flex justify-center space-x-4 mt-3">
+            <div className="flex items-center text-xs">
+              <div className="w-2 h-2 bg-secondary rounded-full mr-1"></div>
+              <span className="text-mediumGray dark:text-gray-400">Dakhli</span>
             </div>
+            <div className="flex items-center text-xs">
+              <div className="w-2 h-2 bg-redError rounded-full mr-1"></div>
+              <span className="text-mediumGray dark:text-gray-400">Kharash</span>
+            </div>
+            <div className="flex items-center text-xs">
+              <div className="w-2 h-2 bg-primary rounded-full mr-1"></div>
+              <span className="text-mediumGray dark:text-gray-400">Net</span>
+            </div>
+          </div>
         </div>
 
-        {/* Account Distribution Pie Chart */}
-        <div className="bg-white dark:bg-gray-800 p-1.5 rounded-lg shadow-md animate-fade-in-up">
-            <h3 className="text-xs font-semibold text-darkGray dark:text-gray-100 mb-0.5">Qaybinta Lacagta Accounts-ka</h3>
-            <div className="w-full h-[120px]">
-                <ResponsiveContainer>
-                    {accountDistributionData.length > 0 ? (
-                        <PieChart>
-                            <Pie
-                                data={accountDistributionData}
-                                cx="50%"
-                                cy="50%"
-                                labelLine={false}
-                                label={renderCustomizedLabel}
-                                outerRadius={60}
-                                dataKey="value"
-                            >
-                                {accountDistributionData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip 
-                                contentStyle={{ 
-                                    backgroundColor: 'white', 
-                                    border: '1px solid #ddd', 
-                                    borderRadius: '8px', 
-                                    fontSize: '11px',
-                                    padding: '8px'
-                                }}
-                                labelStyle={{ color: '#2C3E50', fontWeight: 'bold', fontSize: '11px' }}
-                                itemStyle={{ color: '#2C3E50', fontSize: '11px' }}
-                            />
-                            <Legend 
-                                align="center" 
-                                verticalAlign="bottom" 
-                                layout="horizontal" 
-                                wrapperStyle={{ fontSize: '10px', paddingTop: '8px' }} 
-                                iconType="circle"
-                            />
-                        </PieChart>
-                    ) : (
-                        <div className="flex items-center justify-center h-full text-mediumGray dark:text-gray-500 text-xs sm:text-sm">
-                          <div className="text-center">
-                            <PieChart className="mx-auto mb-2 text-gray-400 w-8 h-8" />
-                            <p>No data for Account Distribution Chart.</p>
-                          </div>
-                        </div>
-                    )}
-                </ResponsiveContainer>
-            </div>
+        {/* Mobile Account Distribution Chart */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-bold text-darkGray dark:text-gray-100 flex items-center">
+              <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center mr-3">
+                <div className="w-4 h-4 text-accent flex items-center justify-center">
+                  <PieChart />
+                </div>
+              </div>
+              Qaybinta Accounts-ka
+            </h3>
+          </div>
+          <div className="w-full h-[180px]">
+            <ResponsiveContainer>
+              {accountDistributionData.length > 0 ? (
+                <PieChart>
+                  <Pie
+                    data={accountDistributionData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={renderCustomizedLabel}
+                    outerRadius={60}
+                    innerRadius={20}
+                    dataKey="value"
+                  >
+                    {accountDistributionData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'white', 
+                      border: '1px solid #ddd', 
+                      borderRadius: '8px', 
+                      fontSize: '12px',
+                      padding: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                    labelStyle={{ color: '#2C3E50', fontWeight: 'bold', fontSize: '12px' }}
+                    itemStyle={{ color: '#2C3E50', fontSize: '12px' }}
+                  />
+                </PieChart>
+              ) : (
+                <div className="flex items-center justify-center h-full text-mediumGray dark:text-gray-500">
+                  <div className="text-center">
+                    <div className="w-8 h-8 mx-auto mb-2 text-gray-400 flex items-center justify-center">
+                      <PieChart />
+                    </div>
+                    <p className="text-sm">Ma jiraan xog qaybinta accounts-ka</p>
+                    <p className="text-xs text-gray-400 mt-1">Ku dar accounts lacag ah si aad u arko xogta</p>
+                  </div>
+                </div>
+              )}
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 
-      {/* Tabs for Accounting Sections - Ultra Compact Mobile Design */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden animate-fade-in-up">
+      {/* Desktop Charts Design */}
+      <div className="hidden lg:grid lg:grid-cols-2 gap-8 mb-8 animate-fade-in-up">
+        {/* Desktop Monthly Cash Flow Chart */}
+        <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-darkGray dark:text-gray-100 flex items-center">
+              <TrendingUp size={24} className="text-primary mr-3" />
+              Dhaqdhaqaaqa Lacagta Bishiiba
+            </h3>
+            <div className="flex space-x-2">
+              <div className="flex items-center text-sm">
+                <div className="w-3 h-3 bg-secondary rounded-full mr-2"></div>
+                <span className="text-mediumGray dark:text-gray-400">Dakhli</span>
+              </div>
+              <div className="flex items-center text-sm">
+                <div className="w-3 h-3 bg-redError rounded-full mr-2"></div>
+                <span className="text-mediumGray dark:text-gray-400">Kharash</span>
+              </div>
+              <div className="flex items-center text-sm">
+                <div className="w-3 h-3 bg-primary rounded-full mr-2"></div>
+                <span className="text-mediumGray dark:text-gray-400">Net</span>
+              </div>
+            </div>
+          </div>
+          <div className="w-full h-[300px]">
+            <ResponsiveContainer>
+              {monthlyCashFlowData.length > 0 ? (
+                <LineChart data={monthlyCashFlowData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" className="dark:stroke-gray-700" vertical={false} />
+                  <XAxis 
+                    dataKey="month" 
+                    stroke="#7F8C8D" 
+                    className="dark:text-gray-400" 
+                    fontSize={12}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis 
+                    stroke="#7F8C8D" 
+                    className="dark:text-gray-400" 
+                    fontSize={12}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'white', 
+                      border: '1px solid #ddd', 
+                      borderRadius: '12px', 
+                      fontSize: '14px',
+                      padding: '12px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                    labelStyle={{ color: '#2C3E50', fontWeight: 'bold', fontSize: '14px' }}
+                    itemStyle={{ color: '#2C3E50', fontSize: '14px' }}
+                  />
+                  <Line type="monotone" dataKey="income" stroke="#2ECC71" name="Dakhli" strokeWidth={4} dot={{ r: 6, fill: '#2ECC71' }} />
+                  <Line type="monotone" dataKey="expense" stroke="#E74C3C" name="Kharash" strokeWidth={4} dot={{ r: 6, fill: '#E74C3C' }} />
+                  <Line type="monotone" dataKey="net" stroke="#3498DB" name="Net Flow" strokeWidth={4} dot={{ r: 6, fill: '#3498DB' }} />
+                </LineChart>
+              ) : (
+                <div className="flex items-center justify-center h-full text-mediumGray dark:text-gray-500">
+                  <div className="text-center">
+                    <TrendingUp size={48} className="mx-auto mb-4 text-gray-400" />
+                    <p className="text-lg">Ma jiraan xog dhaqdhaqaaqa lacagta</p>
+                    <p className="text-sm text-gray-400 mt-2">Ku dar dhaqdhaqaaq lacag ah si aad u arko xogta</p>
+                  </div>
+                </div>
+              )}
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Desktop Account Distribution Pie Chart */}
+        <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-darkGray dark:text-gray-100 flex items-center">
+              <div className="w-6 h-6 text-accent mr-3 flex items-center justify-center">
+                <PieChart />
+              </div>
+              Qaybinta Lacagta Accounts-ka
+            </h3>
+          </div>
+          <div className="w-full h-[300px]">
+            <ResponsiveContainer>
+              {accountDistributionData.length > 0 ? (
+                <PieChart>
+                  <Pie
+                    data={accountDistributionData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={renderCustomizedLabel}
+                    outerRadius={80}
+                    innerRadius={40}
+                    dataKey="value"
+                  >
+                    {accountDistributionData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'white', 
+                      border: '1px solid #ddd', 
+                      borderRadius: '12px', 
+                      fontSize: '14px',
+                      padding: '12px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                    labelStyle={{ color: '#2C3E50', fontWeight: 'bold', fontSize: '14px' }}
+                    itemStyle={{ color: '#2C3E50', fontSize: '14px' }}
+                  />
+                  <Legend 
+                    align="center" 
+                    verticalAlign="bottom" 
+                    layout="horizontal" 
+                    wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }} 
+                    iconType="circle"
+                  />
+                </PieChart>
+              ) : (
+                <div className="flex items-center justify-center h-full text-mediumGray dark:text-gray-500">
+                  <div className="text-center">
+                    <div className="w-12 h-12 mx-auto mb-4 text-gray-400 flex items-center justify-center">
+                      <PieChart />
+                    </div>
+                    <p className="text-lg">Ma jiraan xog qaybinta accounts-ka</p>
+                    <p className="text-sm text-gray-400 mt-2">Ku dar accounts lacag ah si aad u arko xogta</p>
+                  </div>
+                </div>
+              )}
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs for Accounting Sections - Mobile & Desktop Separate Designs */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden animate-fade-in-up">
+        {/* Mobile Tab Navigation */}
+        <div className="block lg:hidden">
         <div className="border-b border-lightGray dark:border-gray-700">
-          <nav className="-mb-px flex overflow-x-auto space-x-0 px-0.5" aria-label="Tabs">
+            <nav className="flex overflow-x-auto space-x-0 px-1" aria-label="Tabs">
             {['Overview', 'Transactions', 'Debts', 'Project Debts', 'Accounts', 'Reports'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`whitespace-nowrap py-1 px-0.5 border-b-2 font-medium text-xs focus:outline-none transition-colors duration-200 flex-shrink-0
+                  className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-xs focus:outline-none transition-all duration-200 flex-shrink-0 flex flex-col items-center space-y-1 w-[16.66%]
                             ${activeTab === tab 
-                              ? 'border-primary text-primary dark:text-gray-100' 
+                                ? 'border-primary text-primary dark:text-gray-100 bg-primary/5' 
                               : 'border-transparent text-mediumGray dark:text-gray-400 hover:text-darkGray dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
                             }`}
               >
-                {tab}
+                  {tab === 'Overview' && <LayoutGrid size={14} />}
+                  {tab === 'Transactions' && <ReceiptText size={14} />}
+                  {tab === 'Debts' && <Scale size={14} />}
+                  {tab === 'Project Debts' && <BriefcaseIcon size={14} />}
+                  {tab === 'Accounts' && <Landmark size={14} />}
+                  {tab === 'Reports' && <TrendingUp size={14} />}
+                  <span className="text-xs leading-tight text-center">{tab === 'Project Debts' ? 'Project' : tab === 'Transactions' ? 'Trans' : tab}</span>
               </button>
             ))}
           </nav>
+          </div>
         </div>
 
-        {/* Tab Content - Ultra Compact Mobile Design */}
-        <div className="p-1.5">
+        {/* Desktop Tab Navigation */}
+        <div className="hidden lg:block">
+          <div className="border-b border-lightGray dark:border-gray-700">
+            <nav className="-mb-px flex overflow-x-auto space-x-0 px-6" aria-label="Tabs">
+              {['Overview', 'Transactions', 'Debts', 'Project Debts', 'Accounts', 'Reports'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`whitespace-nowrap py-3 px-6 border-b-2 font-medium text-base focus:outline-none transition-all duration-200 flex-shrink-0 flex items-center space-x-2
+                              ${activeTab === tab 
+                                ? 'border-primary text-primary dark:text-gray-100 bg-primary/5' 
+                                : 'border-transparent text-mediumGray dark:text-gray-400 hover:text-darkGray dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                              }`}
+                >
+                  {tab === 'Overview' && <LayoutGrid size={16} />}
+                  {tab === 'Transactions' && <ReceiptText size={16} />}
+                  {tab === 'Debts' && <Scale size={16} />}
+                  {tab === 'Project Debts' && <BriefcaseIcon size={16} />}
+                  {tab === 'Accounts' && <Landmark size={16} />}
+                  {tab === 'Reports' && <TrendingUp size={16} />}
+                  <span>{tab}</span>
+                </button>
+              ))}
+            </nav>
+          </div>
+        </div>
+
+        {/* Tab Content - Mobile & Desktop Separate Designs */}
+        {/* Mobile Tab Content */}
+        <div className="block lg:hidden p-4">
           {activeTab === 'Overview' && (
             <div>
-              <h3 className="text-xs font-bold text-darkGray dark:text-gray-100 mb-1">Guudmarka Maaliyadda</h3>
-              <p className="text-xs text-mediumGray dark:text-gray-400 mb-2">
-                Halkan waxaad ka arki kartaa guudmarka maaliyadda shirkaddaada, oo ay ku jiraan dhaqdhaqaaqa lacagta iyo xaaladda accounts-ka.
-              </p>
+              <div className="mb-4">
+                <h3 className="text-lg font-bold text-darkGray dark:text-gray-100 mb-2 flex items-center">
+                  <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-3">
+                    <LayoutGrid size={16} className="text-primary" />
+                  </div>
+                  Guudmarka Maaliyadda
+                </h3>
+                <p className="text-sm text-mediumGray dark:text-gray-400">
+                  Halkan waxaad ka arki kartaa guudmarka maaliyadda shirkaddaada.
+                </p>
+              </div>
               
-              {/* Financial Summary Cards */}
-              <div className="grid grid-cols-2 gap-1 mb-2">
-                <div className="bg-lightGray dark:bg-gray-700 p-1.5 rounded-lg">
-                  <h4 className="text-xs font-semibold text-darkGray dark:text-gray-100 mb-0">Wadarta Lacagta</h4>
-                  <p className="text-xs font-bold text-primary">${overviewStats?.totalBalance.toLocaleString() || '0'}</p>
+              {/* Mobile Financial Summary Cards */}
+              <div className="space-y-3 mb-4">
+                <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-4 rounded-xl shadow-md">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-semibold text-blue-800 dark:text-blue-200">Wadarta Lacagta</h4>
+                    <DollarSign size={18} className="text-blue-600" />
                 </div>
-                <div className="bg-lightGray dark:bg-gray-700 p-1.5 rounded-lg">
-                  <h4 className="text-xs font-semibold text-darkGray dark:text-gray-100 mb-0">Dakhliga Bishaan</h4>
-                  <p className="text-xs font-bold text-secondary">${overviewStats?.totalIncomeThisMonth.toLocaleString() || '0'}</p>
+                  <p className="text-xl font-bold text-blue-600">${overviewStats?.totalBalance.toLocaleString() || '0'}</p>
+                  <p className="text-xs text-blue-600 dark:text-blue-300">Total Balance</p>
                 </div>
-                <div className="bg-lightGray dark:bg-gray-700 p-1.5 rounded-lg">
-                  <h4 className="text-xs font-semibold text-darkGray dark:text-gray-100 mb-0">Kharashyada Bishaan</h4>
-                  <p className="text-xs font-bold text-redError">${overviewStats?.totalExpensesThisMonth.toLocaleString() || '0'}</p>
+                
+                <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-4 rounded-xl shadow-md">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-semibold text-green-800 dark:text-green-200">Dakhliga Bishaan</h4>
+                    <TrendingUp size={18} className="text-green-600" />
                 </div>
-                <div className="bg-lightGray dark:bg-gray-700 p-1.5 rounded-lg">
-                  <h4 className="text-xs font-semibold text-darkGray dark:text-gray-100 mb-0">Accounts-ka Bankiga</h4>
-                  <p className="text-xs font-bold text-blue-500">{overviewStats?.totalBankAccounts || '0'}</p>
+                  <p className="text-xl font-bold text-green-600">${overviewStats?.totalIncomeThisMonth.toLocaleString() || '0'}</p>
+                  <p className="text-xs text-green-600 dark:text-green-300">This Month Income</p>
                 </div>
-                <div className="bg-lightGray dark:bg-gray-700 p-1.5 rounded-lg">
-                  <h4 className="text-xs font-semibold text-darkGray dark:text-gray-100 mb-0">Accounts-ka Cash-ka</h4>
-                  <p className="text-xs font-bold text-green-500">{overviewStats?.totalCashAccounts || '0'}</p>
+                
+                <div className="bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 p-4 rounded-xl shadow-md">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-semibold text-red-800 dark:text-red-200">Kharashyada Bishaan</h4>
+                    <TrendingDown size={18} className="text-red-600" />
                 </div>
-                <div className="bg-lightGray dark:bg-gray-700 p-1.5 rounded-lg">
-                  <h4 className="text-xs font-semibold text-darkGray dark:text-gray-100 mb-0">Accounts-ka Mobile Money</h4>
-                  <p className="text-xs font-bold text-purple-500">{overviewStats?.totalMobileMoneyAccounts || '0'}</p>
+                  <p className="text-xl font-bold text-red-600">${overviewStats?.totalExpensesThisMonth.toLocaleString() || '0'}</p>
+                  <p className="text-xs text-red-600 dark:text-red-300">This Month Expenses</p>
                 </div>
               </div>
               
-              {/* Recent Activity Summary */}
-              <div className="bg-lightGray dark:bg-gray-700 p-1.5 rounded-lg">
-                <h4 className="text-xs font-semibold text-darkGray dark:text-gray-100 mb-0.5">Dhaqdhaqaaqa Dhawaan</h4>
-                <div className="grid grid-cols-3 gap-1">
-                  <div className="text-center">
-                    <p className="text-xs font-bold text-primary">{recentTransactions.length}</p>
-                    <p className="text-xs text-mediumGray dark:text-gray-400">Dhaqdhaqaaq Dhawaan</p>
+              {/* Mobile Recent Activity Summary */}
+              <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 p-4 rounded-xl shadow-md">
+                <h4 className="text-base font-semibold text-darkGray dark:text-gray-100 mb-3 flex items-center">
+                  <ClockIcon size={16} className="text-primary mr-2" />
+                  Dhaqdhaqaaqa Dhawaan
+                </h4>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-primary rounded-full mr-2"></div>
+                      <p className="text-sm text-mediumGray dark:text-gray-400">Dhaqdhaqaaq Dhawaan</p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-xs font-bold text-orange-500">{debtTransactions.length}</p>
-                    <p className="text-xs text-mediumGray dark:text-gray-400">Dhaqdhaqaaq Deynta</p>
+                    <p className="text-lg font-bold text-primary">{recentTransactions.length}</p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-xs font-bold text-blue-500">{projectDebtTransactions.length}</p>
-                    <p className="text-xs text-mediumGray dark:text-gray-400">Dhaqdhaqaaq Mashruucyada</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
+                      <p className="text-sm text-mediumGray dark:text-gray-400">Dhaqdhaqaaq Deynta</p>
+                  </div>
+                    <p className="text-lg font-bold text-orange-500">{debtTransactions.length}</p>
+                </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                      <p className="text-sm text-mediumGray dark:text-gray-400">Dhaqdhaqaaq Mashruucyada</p>
+                    </div>
+                    <p className="text-lg font-bold text-blue-500">{projectDebtTransactions.length}</p>
                   </div>
                 </div>
               </div>
@@ -765,30 +1117,53 @@ export default function AccountingPage() {
 
           {activeTab === 'Transactions' && (
             <div>
-              <h3 className="text-xs font-bold text-darkGray dark:text-gray-100 mb-1">Dhaqdhaqaaqa Lacagta Dhawaan</h3>
+              <div className="mb-6 lg:mb-8">
+                <h3 className="text-xl lg:text-2xl font-bold text-darkGray dark:text-gray-100 mb-2 flex items-center">
+                  <ReceiptText size={24} className="text-primary mr-3" />
+                  Dhaqdhaqaaqa Lacagta Dhawaan
+                </h3>
+                <p className="text-sm lg:text-base text-mediumGray dark:text-gray-400">
+                  Halkan waxaad ka arki kartaa dhaqdhaqaaqa lacagta ee dhawaan la sameeyay.
+                </p>
+              </div>
+              
               {recentTransactions.length === 0 ? (
-                <p className="text-xs text-mediumGray dark:text-gray-400">Ma jiraan dhaqdhaqaaq lacag ah oo dhawaan ah.</p>
+                <div className="text-center py-8 lg:py-12">
+                  <ReceiptText size={48} className="mx-auto text-gray-400 mb-4" />
+                  <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-2">Ma Jiraan Dhaqdhaqaaq Lacag Ah</h4>
+                  <p className="text-sm lg:text-base text-mediumGray dark:text-gray-400 mb-6">
+                    Wali ma jiraan dhaqdhaqaaq lacag ah oo dhawaan la sameeyay.
+                  </p>
+                  <Link 
+                    href="/accounting/transactions/add" 
+                    className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
+                  >
+                    <Plus size={18} className="mr-2" />
+                    Ku Dar Dhaqdhaqaaq Cusub
+                  </Link>
+                </div>
               ) : (
                 <>
-                  {/* Mobile View - Ultra Compact Cards */}
-                  <div className="block lg:hidden space-y-1">
+                  {/* Mobile View - Compact Cards */}
+                  <div className="block lg:hidden space-y-2">
                     {recentTransactions.map(trx => (
                       <MobileTransactionCard key={trx.id} transaction={trx} onEdit={handleEditTransaction} onDelete={handleDeleteTransaction} />
                     ))}
                   </div>
                   
-                  {/* Desktop View - Table */}
-                  <div className="hidden lg:block overflow-x-auto -mx-4 sm:mx-0">
+                  {/* Desktop View - Enhanced Table */}
+                  <div className="hidden lg:block bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+                    <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
-                      <thead className="bg-lightGray dark:bg-gray-700">
-                        <tr>
-                          <th scope="col" className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Taariikhda</th>
-                          <th scope="col" className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Sharaxaad</th>
-                          <th scope="col" className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Nooca</th>
-                          <th scope="col" className="px-2 sm:px-4 py-2 sm:py-3 text-right text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Qiimaha</th>
-                          <th scope="col" className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Account</th>
-                          <th scope="col" className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">La Xiriira</th>
-                          <th scope="col" className="px-2 sm:px-4 py-2 sm:py-3 text-right text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                        <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600">
+                          <tr>
+                            <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Taariikhda</th>
+                            <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Sharaxaad</th>
+                            <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Nooca</th>
+                            <th scope="col" className="px-6 py-4 text-right text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Qiimaha</th>
+                            <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Account</th>
+                            <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">La Xiriira</th>
+                            <th scope="col" className="px-6 py-4 text-right text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-lightGray dark:divide-gray-700">
@@ -797,12 +1172,20 @@ export default function AccountingPage() {
                         ))}
                       </tbody>
                     </table>
+                    </div>
                   </div>
                 </>
               )}
-              <Link href="/accounting/transactions" className="mt-2 inline-block text-primary hover:underline text-xs font-medium">
-                Fiiri Dhammaan Dhaqdhaqaaqa &rarr;
+              
+              <div className="mt-6 lg:mt-8 text-center">
+                <Link 
+                  href="/accounting/transactions" 
+                  className="inline-flex items-center px-6 py-3 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg font-medium transition-all duration-200"
+                >
+                  Fiiri Dhammaan Dhaqdhaqaaqa
+                  <ArrowLeft size={16} className="ml-2 rotate-180" />
               </Link>
+              </div>
             </div>
           )}
 
@@ -967,46 +1350,68 @@ export default function AccountingPage() {
 
           {activeTab === 'Accounts' && (
             <div>
-              <h3 className="text-xl sm:text-2xl font-bold text-darkGray dark:text-gray-100 mb-3 sm:mb-4">Accounts-ka Lacagta</h3>
+              <div className="mb-6 lg:mb-8">
+                <h3 className="text-xl lg:text-2xl font-bold text-darkGray dark:text-gray-100 mb-2 flex items-center">
+                  <Landmark size={24} className="text-primary mr-3" />
+                  Accounts-ka Lacagta
+                </h3>
+                <p className="text-sm lg:text-base text-mediumGray dark:text-gray-400">
+                  Halkan waxaad ka maamuli kartaa accounts-ka lacagta ee shirkaddaada.
+                </p>
+              </div>
+              
               {accounts.length === 0 ? (
-                <p className="text-sm sm:text-base text-mediumGray dark:text-gray-400">Ma jiraan accounts lacag ah oo la helay.</p>
+                <div className="text-center py-8 lg:py-12">
+                  <Landmark size={48} className="mx-auto text-gray-400 mb-4" />
+                  <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-2">Ma Jiraan Accounts Lacag Ah</h4>
+                  <p className="text-sm lg:text-base text-mediumGray dark:text-gray-400 mb-6">
+                    Wali ma jiraan accounts lacag ah oo la helay.
+                  </p>
+                  <Link 
+                    href="/accounting/accounts/add" 
+                    className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
+                  >
+                    <Plus size={18} className="mr-2" />
+                    Ku Dar Account Cusub
+                  </Link>
+                </div>
               ) : (
                 <>
-                  {/* Mobile View - Cards */}
-                  <div className="block lg:hidden space-y-3">
+                  {/* Mobile View - Enhanced Cards */}
+                  <div className="block lg:hidden space-y-4">
                     {accounts.map(acc => (
-                      <div key={acc.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-primary">
-                        <div className="flex justify-between items-start mb-3">
+                      <div key={acc.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-primary">
+                        <div className="flex justify-between items-start mb-4">
                           <div className="flex-1 min-w-0">
                             <h4 className="font-semibold text-darkGray dark:text-gray-100 text-base flex items-center space-x-2 truncate">
                               <Banknote size={18} className="text-primary flex-shrink-0" />
                               <span className="truncate">{acc.name}</span>
                             </h4>
                           </div>
-                          <div className="flex space-x-1 flex-shrink-0 ml-2">
-                            <Link href={`/accounting/accounts/${acc.id}`} className="p-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View">
-                              <Eye size={14} />
+                          <div className="flex space-x-2 flex-shrink-0 ml-2">
+                            <Link href={`/accounting/accounts/${acc.id}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View">
+                              <Eye size={16} />
                             </Link>
-                            <button onClick={() => handleEditAccount(acc.id)} className="p-1.5 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit">
-                              <Edit size={14} />
+                            <button onClick={() => handleEditAccount(acc.id)} className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit">
+                              <Edit size={16} />
                             </button>
-                            <button onClick={() => handleDeleteAccount(acc.id)} className="p-1.5 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-colors duration-200" title="Delete">
-                              <Trash2 size={14} />
+                            <button onClick={() => handleDeleteAccount(acc.id)} className="p-2 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-colors duration-200" title="Delete">
+                              <Trash2 size={16} />
                             </button>
                           </div>
                         </div>
                         
-                        <div className="mb-3 text-xl font-bold text-primary">
+                        <div className="mb-4 text-2xl font-bold text-primary">
                           ${acc.balance.toLocaleString()}
                         </div>
                         
-                        <div className="space-y-2">
-                          <p className="text-xs text-mediumGray dark:text-gray-400 flex items-center space-x-2">
-                            <TagIcon size={12} className="flex-shrink-0" />
+                        <div className="space-y-3">
+                          <p className="text-sm text-mediumGray dark:text-gray-400 flex items-center space-x-2">
+                            <TagIcon size={14} className="flex-shrink-0" />
                             <span className="truncate">{acc.type}</span>
                           </p>
-                          <p className="text-xs text-mediumGray dark:text-gray-400 flex items-center space-x-2">
-                            <Coins size={12} className="flex-shrink-0" />
+                          <p className="text-sm text-mediumGray dark:text-gray-400 flex items-center space-x-2">
+                            <Coins size={14} className="flex-shrink-0" />
                             <span className="truncate">{acc.currency}</span>
                           </p>
                         </div>
@@ -1014,16 +1419,17 @@ export default function AccountingPage() {
                     ))}
                   </div>
                   
-                  {/* Desktop View - Table */}
-                  <div className="hidden lg:block overflow-x-auto">
+                  {/* Desktop View - Enhanced Table */}
+                  <div className="hidden lg:block bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+                    <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
-                      <thead className="bg-lightGray dark:bg-gray-700">
-                        <tr>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Magaca Account-ka</th>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Nooca</th>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Currency</th>
-                          <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Balance</th>
-                          <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                        <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600">
+                          <tr>
+                            <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Magaca Account-ka</th>
+                            <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Nooca</th>
+                            <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Currency</th>
+                            <th scope="col" className="px-6 py-4 text-right text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Balance</th>
+                            <th scope="col" className="px-6 py-4 text-right text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-lightGray dark:divide-gray-700">
@@ -1032,37 +1438,432 @@ export default function AccountingPage() {
                         ))}
                       </tbody>
                     </table>
+                    </div>
                   </div>
                 </>
               )}
-              <Link href="/accounting/accounts/add" className="mt-3 sm:mt-4 bg-primary text-white py-2 px-4 rounded-lg flex items-center hover:bg-blue-700 transition duration-200 w-fit text-sm sm:text-base">
-                  <Plus size={16} className="mr-2"/> Ku Dar Account Cusub
+              
+              <div className="mt-6 lg:mt-8 text-center">
+                <Link 
+                  href="/accounting/accounts/add" 
+                  className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
+                >
+                  <Plus size={18} className="mr-2" />
+                  Ku Dar Account Cusub
               </Link>
+              </div>
             </div>
           )}
 
           {activeTab === 'Reports' && (
             <div>
-              <h3 className="text-xl sm:text-2xl font-bold text-darkGray dark:text-gray-100 mb-3 sm:mb-4">Warbixinada Maaliyadda</h3>
-              <p className="text-sm sm:text-base text-mediumGray dark:text-gray-400 mb-4">
+              <div className="mb-6 lg:mb-8">
+                <h3 className="text-xl lg:text-2xl font-bold text-darkGray dark:text-gray-100 mb-2 flex items-center">
+                  <TrendingUp size={24} className="text-primary mr-3" />
+                  Warbixinada Maaliyadda
+                </h3>
+                <p className="text-sm lg:text-base text-mediumGray dark:text-gray-400">
                 Halkan waxaad ka heli kartaa warbixino maaliyadeed oo faahfaahsan.
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <Link href="/reports/profit-loss" className="bg-lightGray dark:bg-gray-700 p-3 sm:p-4 rounded-lg shadow-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition flex items-center space-x-2 sm:space-x-3">
-                  <TrendingUp size={20} className="text-primary flex-shrink-0"/> 
-                  <span className="font-semibold text-darkGray dark:text-gray-100 text-sm sm:text-base">Profit & Loss Report</span>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+                <Link href="/reports/profit-loss" className="group bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-6 lg:p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="p-3 bg-blue-100 dark:bg-blue-800 rounded-lg group-hover:scale-110 transition-transform duration-200">
+                      <TrendingUp size={24} className="text-blue-600 dark:text-blue-300"/>
+                    </div>
+                    <div>
+                      <h4 className="text-lg lg:text-xl font-bold text-blue-800 dark:text-blue-200">Profit & Loss Report</h4>
+                      <p className="text-sm text-blue-600 dark:text-blue-300">Warbixinta Fayda iyo Khasaaraha</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">Ka arko fayda iyo khasaaraha shirkaddaada</p>
                 </Link>
-                <Link href="/reports/bank" className="bg-lightGray dark:bg-gray-700 p-3 sm:p-4 rounded-lg shadow-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition flex items-center space-x-2 sm:space-x-3">
-                  <Banknote size={20} className="text-secondary flex-shrink-0"/> 
-                  <span className="font-semibold text-darkGray dark:text-gray-100 text-sm sm:text-base">Bank & Cash Flow Report</span>
+                
+                <Link href="/reports/bank" className="group bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-6 lg:p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-green-200 dark:border-green-800">
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="p-3 bg-green-100 dark:bg-green-800 rounded-lg group-hover:scale-110 transition-transform duration-200">
+                      <Banknote size={24} className="text-green-600 dark:text-green-300"/>
+                    </div>
+                    <div>
+                      <h4 className="text-lg lg:text-xl font-bold text-green-800 dark:text-green-200">Bank & Cash Flow Report</h4>
+                      <p className="text-sm text-green-600 dark:text-green-300">Warbixinta Bank iyo Dhaqdhaqaaqa Lacagta</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-green-700 dark:text-green-300">Ka arko dhaqdhaqaaqa lacagta iyo xaaladda bankiga</p>
                 </Link>
-                <Link href="/reports/expenses" className="bg-lightGray dark:bg-gray-700 p-3 sm:p-4 rounded-lg shadow-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition flex items-center space-x-2 sm:space-x-3">
-                  <DollarSign size={20} className="text-redError flex-shrink-0"/> 
-                  <span className="font-semibold text-darkGray dark:text-gray-100 text-sm sm:text-base">Expenses Report</span>
+                
+                <Link href="/reports/expenses" className="group bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 p-6 lg:p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-red-200 dark:border-red-800">
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="p-3 bg-red-100 dark:bg-red-800 rounded-lg group-hover:scale-110 transition-transform duration-200">
+                      <DollarSign size={24} className="text-red-600 dark:text-red-300"/>
+                    </div>
+                    <div>
+                      <h4 className="text-lg lg:text-xl font-bold text-red-800 dark:text-red-200">Expenses Report</h4>
+                      <p className="text-sm text-red-600 dark:text-red-300">Warbixinta Kharashyada</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-red-700 dark:text-red-300">Ka arko dhammaan kharashyada la sameeyay</p>
                 </Link>
-                <Link href="/reports/debts" className="bg-lightGray dark:bg-gray-700 p-3 sm:p-4 rounded-lg shadow-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition flex items-center space-x-2 sm:space-x-3">
-                  <Scale size={20} className="text-accent flex-shrink-0"/> 
-                  <span className="font-semibold text-darkGray dark:text-gray-100 text-sm sm:text-base">Debts Report</span>
+                
+                <Link href="/reports/debts" className="group bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 p-6 lg:p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-orange-200 dark:border-orange-800">
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="p-3 bg-orange-100 dark:bg-orange-800 rounded-lg group-hover:scale-110 transition-transform duration-200">
+                      <Scale size={24} className="text-orange-600 dark:text-orange-300"/>
+                    </div>
+                    <div>
+                      <h4 className="text-lg lg:text-xl font-bold text-orange-800 dark:text-orange-200">Debts Report</h4>
+                      <p className="text-sm text-orange-600 dark:text-orange-300">Warbixinta Deynta</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-orange-700 dark:text-orange-300">Ka arko dhammaan deynta la qaatay iyo la bixiyay</p>
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Tab Content */}
+        <div className="hidden lg:block p-8">
+          {activeTab === 'Overview' && (
+            <div>
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-2 flex items-center">
+                  <LayoutGrid size={24} className="text-primary mr-3" />
+                  Guudmarka Maaliyadda
+                </h3>
+                <p className="text-base text-mediumGray dark:text-gray-400">
+                  Halkan waxaad ka arki kartaa guudmarka maaliyadda shirkaddaada, oo ay ku jiraan dhaqdhaqaaqa lacagta iyo xaaladda accounts-ka.
+                </p>
+              </div>
+              
+              {/* Desktop Financial Summary Cards */}
+              <div className="grid grid-cols-3 gap-6 mb-8">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-base font-semibold text-blue-800 dark:text-blue-200">Wadarta Lacagta</h4>
+                    <DollarSign size={20} className="text-blue-600" />
+                  </div>
+                  <p className="text-2xl font-bold text-blue-600">${overviewStats?.totalBalance.toLocaleString() || '0'}</p>
+                  <p className="text-sm text-blue-600 dark:text-blue-300 mt-1">Total Balance</p>
+                </div>
+                
+                <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-base font-semibold text-green-800 dark:text-green-200">Dakhliga Bishaan</h4>
+                    <TrendingUp size={20} className="text-green-600" />
+                  </div>
+                  <p className="text-2xl font-bold text-green-600">${overviewStats?.totalIncomeThisMonth.toLocaleString() || '0'}</p>
+                  <p className="text-sm text-green-600 dark:text-green-300 mt-1">This Month Income</p>
+                </div>
+                
+                <div className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 p-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-base font-semibold text-red-800 dark:text-red-200">Kharashyada Bishaan</h4>
+                    <TrendingDown size={20} className="text-red-600" />
+                  </div>
+                  <p className="text-2xl font-bold text-red-600">${overviewStats?.totalExpensesThisMonth.toLocaleString() || '0'}</p>
+                  <p className="text-sm text-red-600 dark:text-red-300 mt-1">This Month Expenses</p>
+                </div>
+              </div>
+              
+              {/* Desktop Recent Activity Summary */}
+              <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 p-6 rounded-xl shadow-md">
+                <h4 className="text-xl font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
+                  <ClockIcon size={20} className="text-primary mr-2" />
+                  Dhaqdhaqaaqa Dhawaan
+                </h4>
+                <div className="grid grid-cols-3 gap-6">
+                  <div className="text-left">
+                    <div className="flex items-center mb-2">
+                      <div className="w-3 h-3 bg-primary rounded-full mr-2"></div>
+                      <p className="text-3xl font-bold text-primary">{recentTransactions.length}</p>
+                    </div>
+                    <p className="text-base text-mediumGray dark:text-gray-400">Dhaqdhaqaaq Dhawaan</p>
+                  </div>
+                  <div className="text-left">
+                    <div className="flex items-center mb-2">
+                      <div className="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
+                      <p className="text-3xl font-bold text-orange-500">{debtTransactions.length}</p>
+                    </div>
+                    <p className="text-base text-mediumGray dark:text-gray-400">Dhaqdhaqaaq Deynta</p>
+                  </div>
+                  <div className="text-left">
+                    <div className="flex items-center mb-2">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                      <p className="text-3xl font-bold text-blue-500">{projectDebtTransactions.length}</p>
+                    </div>
+                    <p className="text-base text-mediumGray dark:text-gray-400">Dhaqdhaqaaq Mashruucyada</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'Transactions' && (
+            <div>
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-2 flex items-center">
+                  <ReceiptText size={24} className="text-primary mr-3" />
+                  Dhaqdhaqaaqa Lacagta Dhawaan
+                </h3>
+                <p className="text-base text-mediumGray dark:text-gray-400">
+                  Halkan waxaad ka arki kartaa dhaqdhaqaaqa lacagta ee dhawaan la sameeyay.
+                </p>
+              </div>
+              
+              {recentTransactions.length === 0 ? (
+                <div className="text-center py-12">
+                  <ReceiptText size={48} className="mx-auto text-gray-400 mb-4" />
+                  <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-2">Ma Jiraan Dhaqdhaqaaq Lacag Ah</h4>
+                  <p className="text-base text-mediumGray dark:text-gray-400 mb-6">
+                    Wali ma jiraan dhaqdhaqaaq lacag ah oo dhawaan la sameeyay.
+                  </p>
+                  <Link 
+                    href="/accounting/transactions/add" 
+                    className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
+                  >
+                    <Plus size={18} className="mr-2" />
+                    Ku Dar Dhaqdhaqaaq Cusub
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  {/* Desktop View - Enhanced Table */}
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
+                        <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600">
+                          <tr>
+                            <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Taariikhda</th>
+                            <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Sharaxaad</th>
+                            <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Nooca</th>
+                            <th scope="col" className="px-6 py-4 text-right text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Qiimaha</th>
+                            <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Account</th>
+                            <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">La Xiriira</th>
+                            <th scope="col" className="px-6 py-4 text-right text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-lightGray dark:divide-gray-700">
+                          {recentTransactions.map(trx => (
+                            <TransactionRow key={trx.id} transaction={trx} onEdit={handleEditTransaction} onDelete={handleDeleteTransaction} />
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              )}
+              
+              <div className="mt-8 text-center">
+                <Link 
+                  href="/accounting/transactions" 
+                  className="inline-flex items-center px-6 py-3 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg font-medium transition-all duration-200"
+                >
+                  Fiiri Dhammaan Dhaqdhaqaaqa
+                  <ArrowLeft size={16} className="ml-2 rotate-180" />
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'Accounts' && (
+            <div>
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-2 flex items-center">
+                  <Landmark size={24} className="text-primary mr-3" />
+                  Accounts-ka Lacagta
+                </h3>
+                <p className="text-base text-mediumGray dark:text-gray-400">
+                  Halkan waxaad ka maamuli kartaa accounts-ka lacagta ee shirkaddaada.
+                </p>
+              </div>
+              
+              {accounts.length === 0 ? (
+                <div className="text-center py-12">
+                  <Landmark size={48} className="mx-auto text-gray-400 mb-4" />
+                  <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-2">Ma Jiraan Accounts Lacag Ah</h4>
+                  <p className="text-base text-mediumGray dark:text-gray-400 mb-6">
+                    Wali ma jiraan accounts lacag ah oo la helay.
+                  </p>
+                  <Link 
+                    href="/accounting/accounts/add" 
+                    className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
+                  >
+                    <Plus size={18} className="mr-2" />
+                    Ku Dar Account Cusub
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  {/* Desktop View - Enhanced Table */}
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
+                        <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600">
+                          <tr>
+                            <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Magaca Account-ka</th>
+                            <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Nooca</th>
+                            <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Currency</th>
+                            <th scope="col" className="px-6 py-4 text-right text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Balance</th>
+                            <th scope="col" className="px-6 py-4 text-right text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-lightGray dark:divide-gray-700">
+                          {accounts.map(acc => (
+                            <AccountRow key={acc.id} account={acc} onEdit={handleEditAccount} onDelete={handleDeleteAccount} />
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              )}
+              
+              <div className="mt-8 text-center">
+                <Link 
+                  href="/accounting/accounts/add" 
+                  className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
+                >
+                  <Plus size={18} className="mr-2" />
+                  Ku Dar Account Cusub
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'Reports' && (
+            <div>
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-2 flex items-center">
+                  <TrendingUp size={24} className="text-primary mr-3" />
+                  Warbixinada Maaliyadda
+                </h3>
+                <p className="text-base text-mediumGray dark:text-gray-400">
+                  Halkan waxaad ka heli kartaa warbixino maaliyadeed oo faahfaahsan.
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-8">
+                <Link href="/reports/profit-loss" className="group bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="p-3 bg-blue-100 dark:bg-blue-800 rounded-lg group-hover:scale-110 transition-transform duration-200">
+                      <TrendingUp size={24} className="text-blue-600 dark:text-blue-300"/>
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-bold text-blue-800 dark:text-blue-200">Profit & Loss Report</h4>
+                      <p className="text-sm text-blue-600 dark:text-blue-300">Warbixinta Fayda iyo Khasaaraha</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">Ka arko fayda iyo khasaaraha shirkaddaada</p>
+                </Link>
+                
+                <Link href="/reports/bank" className="group bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-green-200 dark:border-green-800">
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="p-3 bg-green-100 dark:bg-green-800 rounded-lg group-hover:scale-110 transition-transform duration-200">
+                      <Banknote size={24} className="text-green-600 dark:text-green-300"/>
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-bold text-green-800 dark:text-green-200">Bank & Cash Flow Report</h4>
+                      <p className="text-sm text-green-600 dark:text-green-300">Warbixinta Bank iyo Dhaqdhaqaaqa Lacagta</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-green-700 dark:text-green-300">Ka arko dhaqdhaqaaqa lacagta iyo xaaladda bankiga</p>
+                </Link>
+                
+                <Link href="/reports/expenses" className="group bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-red-200 dark:border-red-800">
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="p-3 bg-red-100 dark:bg-red-800 rounded-lg group-hover:scale-110 transition-transform duration-200">
+                      <DollarSign size={24} className="text-red-600 dark:text-red-300"/>
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-bold text-red-800 dark:text-red-200">Expenses Report</h4>
+                      <p className="text-sm text-red-600 dark:text-red-300">Warbixinta Kharashyada</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-red-700 dark:text-red-300">Ka arko dhammaan kharashyada la sameeyay</p>
+                </Link>
+                
+                <Link href="/reports/debts" className="group bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 p-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-orange-200 dark:border-orange-800">
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="p-3 bg-orange-100 dark:bg-orange-800 rounded-lg group-hover:scale-110 transition-transform duration-200">
+                      <Scale size={24} className="text-orange-600 dark:text-orange-300"/>
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-bold text-orange-800 dark:text-orange-200">Debts Report</h4>
+                      <p className="text-sm text-orange-600 dark:text-orange-300">Warbixinta Deynta</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-orange-700 dark:text-orange-300">Ka arko dhammaan deynta la qaatay iyo la bixiyay</p>
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'Project Debts' && (
+            <div>
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-2 flex items-center">
+                  <BriefcaseIcon size={24} className="text-primary mr-3" />
+                  Dhaqdhaqaaqa Deynta Mashruucyada
+                </h3>
+                <p className="text-base text-mediumGray dark:text-gray-400">
+                  Halkan waxaad ka arki kartaa dhammaan dhaqdhaqaaqa deynta ee la xiriira mashruucyada.
+                </p>
+              </div>
+              
+              {projectDebtTransactions.length === 0 ? (
+                <div className="text-center py-12">
+                  <BriefcaseIcon size={48} className="mx-auto text-gray-400 mb-4" />
+                  <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-2">Ma Jiraan Dhaqdhaqaaq Deyn Ah oo Mashruuc Loo Xiriira</h4>
+                  <p className="text-base text-mediumGray dark:text-gray-400 mb-6">
+                    Wali ma jiraan dhaqdhaqaaq deyn ah oo la xiriira mashruucyada.
+                  </p>
+                  <Link 
+                    href="/accounting/transactions/add" 
+                    className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
+                  >
+                    <Plus size={18} className="mr-2" />
+                    Ku Dar Dhaqdhaqaaq Mashruuc
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  {/* Desktop View - Enhanced Table */}
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
+                        <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600">
+                          <tr>
+                            <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Taariikhda</th>
+                            <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Sharaxaad</th>
+                            <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Nooca</th>
+                            <th scope="col" className="px-6 py-4 text-right text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Qiimaha</th>
+                            <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Mashruuc</th>
+                            <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Account</th>
+                            <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">La Xiriira</th>
+                            <th scope="col" className="px-6 py-4 text-right text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-lightGray dark:divide-gray-700">
+                          {projectDebtTransactions.map(trx => (
+                            <TransactionRow key={trx.id} transaction={trx} onEdit={handleEditTransaction} onDelete={handleDeleteTransaction} />
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              )}
+              
+              <div className="mt-8 text-center">
+                <Link 
+                  href="/accounting/transactions/add" 
+                  className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
+                >
+                  <Plus size={18} className="mr-2" />
+                  Ku Dar Dhaqdhaqaaq Mashruuc
                 </Link>
               </div>
             </div>

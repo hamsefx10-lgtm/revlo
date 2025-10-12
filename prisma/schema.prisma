@@ -294,6 +294,8 @@ model Expense {
   paymentStatus   String?          @default("UNPAID") // UNPAID, PAID
   invoiceNumber   String?
   paymentDate     DateTime?
+  // NEW: Material Date Tracking
+  materialDate    DateTime?
   account         Account?         @relation(fields: [accountId], references: [id])
   expenseCategory ExpenseCategory? @relation(fields: [categoryId], references: [id])
   company         Company          @relation(fields: [companyId], references: [id])
