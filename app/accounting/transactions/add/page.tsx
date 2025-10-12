@@ -56,35 +56,35 @@ export default function AddTransactionPage() {
     const fetchInitialData = async () => {
       setPageLoading(true);
       try {
-        const [accountsRes, projectsRes, customersRes, vendorsRes, employeesRes] = await Promise.all([
+        const [accountsRes, projectsRes, customersRes, vendorsRes, employeesRes, debtsRes] = await Promise.all([
           fetch('/api/accounting/accounts'),
           fetch('/api/projects'),
           fetch('/api/customers'),
           fetch('/api/vendors'),
           fetch('/api/employees'),
+          fetch('/api/reports/debts'),
         ]);
         if (!accountsRes.ok) throw new Error('Accounts fetch failed');
         if (!projectsRes.ok) throw new Error('Projects fetch failed');
         if (!customersRes.ok) throw new Error('Customers fetch failed');
         if (!vendorsRes.ok) throw new Error('Vendors fetch failed');
         if (!employeesRes.ok) throw new Error('Employees fetch failed');
+        if (!debtsRes.ok) throw new Error('Debts fetch failed');
 
         const accountsData = await accountsRes.json();
         const projectsData = await projectsRes.json();
         const customersData = await customersRes.json();
         const vendorsData = await vendorsRes.json();
         const employeesData = await employeesRes.json();
+        const debtsData = await debtsRes.json();
 
         setAccounts(accountsData.accounts || []);
         setProjects(projectsData.projects || []);
         setCustomers(customersData.customers || []);
         setVendors(vendorsData.vendors || []);
         setEmployees(employeesData.employees || []);
-        
-        // Show all customers for DEBT_REPAID (not filtered by debt)
-        console.log('All customers:', customersData.customers);
-        setDebts(customersData.customers || []);
-        // setDebts(debtsData.debts || []); // Uncomment if debts API exists
+        // Only set debts for DEBT_REPAID from the debts API
+        setDebts(debtsData.debts || []);
       } catch (error: any) {
         setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka xogta la soo gelinayay.', type: 'error' });
       } finally {
@@ -372,26 +372,31 @@ export default function AddTransactionPage() {
                     className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.selectedDebtToRepay ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                   >
                     <option value="">-- Dooro Deynta --</option>
-                    {debts && debts.length > 0 ? debts.map(customer => (
-                      <option key={customer.id} value={customer.id}>
-                        {customer.name} - Dayn dhan: ${customer.outstandingDebt?.toLocaleString() || 0}
+                    {debts && debts.length > 0 ? debts.map(debt => (
+                      <option key={debt.id} value={debt.id}>
+                        {debt.lender || debt.customer || debt.vendor || 'N/A'} - Dayn dhan: ${debt.remaining?.toLocaleString() || debt.amount?.toLocaleString() || 0}
                       </option>
                     )) : (
-                      <option value="" disabled>Ma jiraan customers-ka</option>
+                      <option value="" disabled>Ma jiraan daymo la helay</option>
                     )}
                   </select>
                   <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
                 </div>
                 {validationErrors.selectedDebtToRepay && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1"/>{validationErrors.selectedDebtToRepay}</p>}
                 {(selectedDebtToRepay && debts && debts.length > 0) && (() => {
-                  const customer = debts.find(c => c.id === selectedDebtToRepay);
-                  if (!customer) return null;
+                  const debt = debts.find(d => d.id === selectedDebtToRepay);
+                  if (!debt) return null;
                   return (
                     <div className="mt-2 text-xs text-blue-700 dark:text-blue-300">
-                      <Link href={`/customers/${customer.id}`} className="underline text-primary hover:text-blue-700" target="_blank">Eeg Macmiilkan</Link>
                       <span className="ml-2 text-orange-600 dark:text-orange-400 font-semibold">
-                        Dayn dhan (Soo Celiyay): ${customer.outstandingDebt?.toLocaleString() || 0}
+                        Dayn dhan (Soo Celinayo): ${debt.remaining?.toLocaleString() || debt.amount?.toLocaleString() || 0}
                       </span>
+                      {debt.lender && (
+                        <span className="ml-2">Lender: {debt.lender}</span>
+                      )}
+                      {debt.project && (
+                        <span className="ml-2">Mashruuc: {debt.project}</span>
+                      )}
                     </div>
                   );
                 })()}
