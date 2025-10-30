@@ -326,6 +326,12 @@ export async function POST(request: Request) {
         transactionType = 'DEBT_TAKEN';
         transactionVendorId = vendorId; // Track vendor on transaction
       }
+    } else if (category === 'Company Expense') {
+      // For general company expenses (not Debt or Material), treat as expense and deduct from paidFrom
+      if (subCategory !== 'Debt' && subCategory !== 'Material') {
+        transactionType = 'EXPENSE';
+        transactionAccountId = paidFrom;
+      }
     }
     // For EXPENSE, always store as negative (money out)
     if (transactionType === 'EXPENSE') {

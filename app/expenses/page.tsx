@@ -719,7 +719,11 @@ export default function ExpensesPage() {
                   {/* Date and Category Row */}
                   <div className="flex justify-between items-center mb-3">
                     <div className="text-xs text-mediumGray dark:text-gray-400">
-                      {new Date(expense.date).toLocaleDateString('so-SO', { 
+                      {new Date(
+                        expense.category === 'Material' && expense.materialDate ? expense.materialDate : 
+                        expense.category === 'Company Expense' && expense.subCategory === 'Debt' ? expense.date :
+                        expense.date
+                      ).toLocaleDateString('so-SO', { 
                         day: 'numeric', 
                         month: 'short', 
                         year: 'numeric' 
@@ -863,7 +867,11 @@ export default function ExpensesPage() {
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
                       <div className="text-xs font-medium text-darkGray dark:text-gray-100">
-                        {new Date(expense.category === 'Material' && expense.materialDate ? expense.materialDate : expense.date).toLocaleDateString('so-SO', { 
+                        {new Date(
+                          expense.category === 'Material' && expense.materialDate ? expense.materialDate : 
+                          expense.category === 'Company Expense' && expense.subCategory === 'Debt' ? expense.date :
+                          expense.date
+                        ).toLocaleDateString('so-SO', { 
                           day: 'numeric', 
                           month: 'short', 
                           year: 'numeric' 
@@ -1084,10 +1092,14 @@ export default function ExpensesPage() {
                     )}
                   </div>
                   <span className="text-xs text-mediumGray dark:text-gray-400">
-                    {new Date(expense.date).toLocaleDateString('so-SO', { 
+                    {new Date(
+                      expense.category === 'Material' && expense.materialDate ? expense.materialDate : 
+                      expense.category === 'Company Expense' && expense.subCategory === 'Debt' ? expense.date :
+                      expense.date
+                    ).toLocaleDateString('so-SO', { 
                       day: 'numeric', 
                       month: 'short', 
-                      year: 'numeric' 
+                      year: 'numeric'
                     })}
                   </span>
                 </div>

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Layout from '../../components/layouts/Layout'; // Layout for sidebar
 import {
   Plus, Search, Filter, Eye, Edit, Trash2, LayoutGrid, List, Calendar, CheckCircle, Clock, XCircle, ChevronRight,
-  Loader2, Info, Bell, FileX2, MoreVertical, DollarSign, User, Hash, AlertTriangle, Upload
+  Loader2, Info, Bell, FileX2, MoreVertical, DollarSign, User, Hash, AlertTriangle, Upload, TrendingUp
 } from 'lucide-react';
 import Toast from '../../components/common/Toast'; // Import Toast component
 
@@ -321,26 +321,31 @@ export default function ProjectsPage() {
       </div>
 
       {/* --- Project Statistics Cards --- */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8 animate-fade-in-up">
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 w-full text-center">
-          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">Active</h4>
-          <p className="text-4xl font-extrabold text-primary">{activeProjectsCount}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8 animate-fade-in-up">
+        <div className="bg-white dark:bg-gray-800 p-3 md:p-4 sm:p-5 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 w-full text-center border-l-4 border-primary flex flex-col items-center justify-center min-h-[120px]">
+          <TrendingUp className="text-primary mb-2" size={22} />
+          <h4 className="text-xs font-semibold text-primary mb-1 truncate">Active</h4>
+          <span className="text-2xl md:text-3xl font-bold text-primary">{activeProjectsCount}</span>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 w-full text-center">
-          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">Completed</h4>
-          <p className="text-4xl font-extrabold text-secondary">{completedProjectsCount}</p>
+        <div className="bg-white dark:bg-gray-800 p-3 md:p-4 sm:p-5 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 w-full text-center border-l-4 border-secondary flex flex-col items-center justify-center min-h-[120px]">
+          <CheckCircle className="text-secondary mb-2" size={22} />
+          <h4 className="text-xs font-semibold text-secondary mb-1 truncate">Completed</h4>
+          <span className="text-2xl md:text-3xl font-bold text-secondary">{completedProjectsCount}</span>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 w-full text-center">
-          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">On Hold</h4>
-          <p className="text-4xl font-extrabold text-accent">{onHoldProjectsCount}</p>
+        <div className="bg-white dark:bg-gray-800 p-3 md:p-4 sm:p-5 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 w-full text-center border-l-4 border-accent flex flex-col items-center justify-center min-h-[120px]">
+          <Clock className="text-accent mb-2" size={22} />
+          <h4 className="text-xs font-semibold text-accent mb-1 truncate">On Hold</h4>
+          <span className="text-2xl md:text-3xl font-bold text-accent">{onHoldProjectsCount}</span>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 w-full text-center">
-          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">Total Advance</h4>
-          <p className="text-4xl font-extrabold text-secondary">Br{totalAdvance.toLocaleString()}</p>
+        <div className="bg-white dark:bg-gray-800 p-3 md:p-4 sm:p-5 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 w-full text-center border-l-4 border-secondary flex flex-col items-center justify-center min-h-[120px]">
+          <DollarSign className="text-secondary mb-2" size={22} />
+          <h4 className="text-xs font-semibold text-secondary mb-1 truncate">Total Advance</h4>
+          <span className="text-2xl md:text-3xl font-bold text-secondary">Br{totalAdvance.toLocaleString()}</span>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 w-full text-center">
-          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">Total Remaining</h4>
-          <p className="text-4xl font-extrabold text-redError">Br{totalRemaining.toLocaleString()}</p>
+        <div className="bg-white dark:bg-gray-800 p-3 md:p-4 sm:p-5 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 w-full text-center border-l-4 border-redError flex flex-col items-center justify-center min-h-[120px]">
+          <XCircle className="text-redError mb-2" size={22} />
+          <h4 className="text-xs font-semibold text-redError mb-1 truncate">Total Remaining</h4>
+          <span className="text-2xl md:text-3xl font-bold text-redError">Br{totalRemaining.toLocaleString()}</span>
         </div>
       </div>
 

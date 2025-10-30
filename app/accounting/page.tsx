@@ -57,6 +57,28 @@ interface OverviewStats {
   accountDistribution: { name: string; value: number; }[];
 }
 
+interface DebtsReportCompanyDebt {
+  id?: string;
+  lender?: string;
+  customerName?: string;
+  amount?: number;
+  paid?: number;
+  remaining?: number;
+  dueDate?: string;
+  status: string;
+}
+
+interface DebtsReportProjectDebt {
+  id?: string;
+  project?: string;
+  projectName?: string;
+  amount?: number;
+  paid?: number;
+  remaining?: number;
+  dueDate?: string;
+  status: string;
+}
+
 // Helper for chart colors
 const CHART_COLORS = ['#3498DB', '#2ECC71', '#F39C12', '#E74C3C', '#9B59B6', '#1ABC9C', '#34495E', '#A0A0A0'];
 
@@ -411,6 +433,8 @@ export default function AccountingPage() {
   const [pageLoading, setPageLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('Overview');
   const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [companyDebts, setCompanyDebts] = useState<DebtsReportCompanyDebt[]>([]);
+  const [projectDebts, setProjectDebts] = useState<DebtsReportProjectDebt[]>([]);
 
   // --- API Functions ---
   const fetchAccountingData = async () => {
@@ -455,6 +479,12 @@ export default function AccountingPage() {
       });
       setAccounts(accountsData.accounts); // Data already converted to Number in API
       setRecentTransactions(transactionsData.transactions); // Data already converted to Number in API
+
+      // NEW: Fetch debts report (true aggregation)
+      const debtsReportRes = await fetch('/api/reports/debts');
+      const debtsReport = await debtsReportRes.json();
+      setCompanyDebts(debtsReport.companyDebts || []);
+      setProjectDebts(debtsReport.projectDebts || []);
 
     } catch (error: any) {
       console.error('Error fetching accounting data:', error);
@@ -1262,77 +1292,62 @@ export default function AccountingPage() {
 
           {activeTab === 'Debts' && (
             <div>
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-4">
-                <div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-darkGray dark:text-gray-100 mb-2">Dhaqdhaqaaqa Deynta</h3>
-                  <p className="text-sm sm:text-base text-mediumGray dark:text-gray-400">
-                    Halkan waxaad ka arki kartaa dhammaan dhaqdhaqaaqa deynta - kuwa la qaatay iyo kuwa la bixiyay.
-                  </p>
-                </div>
-                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-                  <Link 
-                    href="/accounting/transactions/add" 
-                    className="inline-flex items-center justify-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium text-sm sm:text-base"
-                  >
-                    <Plus size={18} className="mr-2" />
-                    Ku Dar Dhaqdhaqaaq
-                  </Link>
-                  <Link 
-                    href="/reports/debts" 
-                    className="inline-flex items-center justify-center px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors duration-200 font-medium text-sm sm:text-base"
-                  >
-                    <Eye size={18} className="mr-2" />
-                    Warbixinta Deynta
-                  </Link>
-                </div>
+              <div className="mb-6">
+                <h3 className="text-xl sm:text-2xl font-bold text-darkGray dark:text-gray-100 mb-2">Lacagaha Deynta Macaamiisha/Shirkadaha</h3>
+                <p className="text-sm sm:text-base text-mediumGray dark:text-gray-400 mb-4">Halkan waxaad ka arki kartaa macaamiisha/shirkadaha ay shirkaddu daynta ku leedahay.</p>
               </div>
-
-              {debtTransactions.length === 0 ? (
+              {companyDebts.length === 0 ? (
                 <div className="text-center py-8 sm:py-12">
                   <Scale size={40} className="mx-auto text-gray-400 mb-4" />
-                  <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-2">Ma Jiraan Dhaqdhaqaaq Deyn Ah</h4>
-                  <p className="text-sm sm:text-base text-mediumGray dark:text-gray-400 mb-6">
-                    Wali ma jiraan dhaqdhaqaaq deyn ah oo la qaatay ama la bixiyay.
-                  </p>
-                  <Link 
-                    href="/accounting/transactions/add" 
-                    className="inline-flex items-center px-4 sm:px-6 py-2.5 sm:py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium text-sm sm:text-base"
-                  >
-                    <Plus size={18} className="mr-2" />
-                    Ku Dar Dhaqdhaqaaq Deyn Ah
-                  </Link>
+                  <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-2">Ma jiraan deymo sax ah oo macaamiil/shirkad leedahay</h4>
+                  <p className="text-sm sm:text-base text-mediumGray dark:text-gray-400">Deynta oo dhan waa la bixiyay ama lama helin wax deyn ah.</p>
                 </div>
               ) : (
                 <>
-                  {/* Mobile View - Ultra Compact Cards */}
-                  <div className="block lg:hidden space-y-1">
-                    {debtTransactions.map(trx => (
-                      <MobileTransactionCard key={trx.id} transaction={trx} onEdit={handleEditTransaction} onDelete={handleDeleteTransaction} />
+                  {/* Mobile Cards */}
+                  <div className="block lg:hidden space-y-3">
+                    {companyDebts.map((debt) => (
+                      <div key={debt.id || debt.lender} className={`bg-white dark:bg-gray-800 p-3 rounded-xl shadow-md border-l-4 ${debt.status === 'Overdue' ? 'border-redError' : 'border-accent'} flex flex-col gap-2`}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Scale size={18} className={debt.status === 'Overdue' ? 'text-redError' : 'text-accent'} />
+                          <span className="font-bold text-darkGray dark:text-gray-100 text-base">{debt.lender || debt.customerName || '--'}</span>
+                          <span className={`ml-auto px-2 py-0.5 rounded-full text-xs font-semibold ${debt.status === 'Overdue' ? 'bg-redError/20 text-redError' : debt.status === 'Paid' ? 'bg-green-100 text-secondary' : 'bg-accent/10 text-accent'}`}>{debt.status}</span>
+                        </div>
+                        <div className="flex flex-wrap justify-between text-xs font-medium text-mediumGray dark:text-gray-400">
+                          <div>Total: <span className="text-darkGray dark:text-gray-100 font-bold">{debt.amount?.toLocaleString()}</span></div>
+                          <div>Paid: <span>{debt.paid?.toLocaleString()}</span></div>
+                          <div>Remaining: <span className="text-redError font-bold">{debt.remaining?.toLocaleString()}</span></div>
+                          <div>Due: <span>{debt.dueDate ? new Date(debt.dueDate).toLocaleDateString() : '--'}</span></div>
+                        </div>
+                      </div>
                     ))}
                   </div>
-                  
-                  {/* Desktop View - Table */}
-                  <div className="hidden lg:block bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
-                        <thead className="bg-lightGray dark:bg-gray-700">
-                          <tr>
-                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Taariikh</th>
-                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Sharaxaad</th>
-                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Nooca</th>
-                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Qiime</th>
-                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Account</th>
-                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">La Xiriira</th>
-                            <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                  {/* Desktop Table */}
+                  <div className="hidden lg:block bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-x-auto">
+                    <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
+                      <thead className="bg-lightGray dark:bg-gray-700">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Lender</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Total</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Paid</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Remaining</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Due</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-lightGray dark:divide-gray-700">
+                        {companyDebts.map((debt) => (
+                          <tr key={debt.id || debt.lender} className={debt.status === 'Overdue' ? 'bg-red-50 dark:bg-red-900/20' : ''}>
+                            <td className="px-4 py-2 font-bold text-darkGray dark:text-gray-100">{debt.lender || debt.customerName || '--'}</td>
+                            <td className="px-4 py-2">{debt.amount?.toLocaleString()}</td>
+                            <td className="px-4 py-2">{debt.paid?.toLocaleString()}</td>
+                            <td className="px-4 py-2 text-redError font-semibold">{debt.remaining?.toLocaleString()}</td>
+                            <td className="px-4 py-2">{debt.dueDate ? new Date(debt.dueDate).toLocaleDateString() : '--'}</td>
+                            <td className="px-4 py-2 font-medium"><span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${debt.status === 'Overdue' ? 'bg-redError/20 text-redError' : debt.status === 'Paid' ? 'bg-green-100 text-secondary' : 'bg-accent/10 text-accent'}`}>{debt.status}</span></td>
                           </tr>
-                        </thead>
-                        <tbody className="divide-y divide-lightGray dark:divide-gray-700">
-                          {debtTransactions.map(trx => (
-                            <TransactionRow key={trx.id} transaction={trx} onEdit={handleEditTransaction} onDelete={handleDeleteTransaction} />
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </>
               )}
@@ -1341,78 +1356,62 @@ export default function AccountingPage() {
 
           {activeTab === 'Project Debts' && (
             <div>
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-4">
-                <div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-darkGray dark:text-gray-100 mb-2">Dhaqdhaqaaqa Deynta Mashruucyada</h3>
-                  <p className="text-sm sm:text-base text-mediumGray dark:text-gray-400">
-                    Halkan waxaad ka arki kartaa dhammaan dhaqdhaqaaqa deynta ee la xiriira mashruucyada.
-                  </p>
-                </div>
-                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-                  <Link 
-                    href="/accounting/transactions/add" 
-                    className="inline-flex items-center justify-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium text-sm sm:text-base"
-                  >
-                    <Plus size={18} className="mr-2" />
-                    Ku Dar Dhaqdhaqaaq
-                  </Link>
-                  <Link 
-                    href="/reports/debts" 
-                    className="inline-flex items-center justify-center px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors duration-200 font-medium text-sm sm:text-base"
-                  >
-                    <Eye size={18} className="mr-2" />
-                    Warbixinta Deynta
-                  </Link>
-                </div>
+              <div className="mb-6">
+                <h3 className="text-xl sm:text-2xl font-bold text-darkGray dark:text-gray-100 mb-2">Deynta Mashaariicda Ku Dhiman</h3>
+                <p className="text-sm sm:text-base text-mediumGray dark:text-gray-400 mb-4">Halkan waxaad ka arki kartaa dhammaan mashaariicda weli lacag looga leeyahay shirkad ahaan.</p>
               </div>
-
-              {projectDebtTransactions.length === 0 ? (
+              {projectDebts.length === 0 ? (
                 <div className="text-center py-8 sm:py-12">
                   <BriefcaseIcon size={40} className="mx-auto text-gray-400 mb-4" />
-                  <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-2">Ma Jiraan Dhaqdhaqaaq Deyn Ah oo Mashruuc Loo Xiriira</h4>
-                  <p className="text-sm sm:text-base text-mediumGray dark:text-gray-400 mb-6">
-                    Wali ma jiraan dhaqdhaqaaq deyn ah oo la xiriira mashruucyada.
-                  </p>
-                  <Link 
-                    href="/accounting/transactions/add" 
-                    className="inline-flex items-center px-4 sm:px-6 py-2.5 sm:py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium text-sm sm:text-base"
-                  >
-                    <Plus size={18} className="mr-2" />
-                    Ku Dar Dhaqdhaqaaq Mashruuc
-                  </Link>
+                  <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-2">Ma jiraan deymo mashruuc ah oo ku dhiman</h4>
+                  <p className="text-sm sm:text-base text-mediumGray dark:text-gray-400">Deynta dhammaan mashaariicdu waa la bixiyay ama lama helin wax deyn mashruuc ah.</p>
                 </div>
               ) : (
                 <>
-                  {/* Mobile View - Ultra Compact Cards */}
-                  <div className="block lg:hidden space-y-1">
-                    {projectDebtTransactions.map(trx => (
-                      <MobileTransactionCard key={trx.id} transaction={trx} onEdit={handleEditTransaction} onDelete={handleDeleteTransaction} />
+                  {/* Mobile Cards */}
+                  <div className="block lg:hidden space-y-3">
+                    {projectDebts.map((debt) => (
+                      <div key={debt.id || debt.project} className={`bg-white dark:bg-gray-800 p-3 rounded-xl shadow-md border-l-4 border-darkGray flex flex-col gap-2`}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <BriefcaseIcon size={18} className="text-darkGray" />
+                          <span className="font-bold text-darkGray dark:text-gray-100 text-base">{debt.project || debt.projectName || '--'}</span>
+                          <span className={`ml-auto px-2 py-0.5 rounded-full text-xs font-semibold ${debt.status === 'Overdue' ? 'bg-redError/20 text-redError' : debt.status === 'Paid' ? 'bg-green-100 text-secondary' : 'bg-accent/10 text-accent'}`}>{debt.status}</span>
+                        </div>
+                        <div className="flex flex-wrap justify-between text-xs font-medium text-mediumGray dark:text-gray-400">
+                          <div>Total: <span className="text-darkGray dark:text-gray-100 font-bold">{debt.amount?.toLocaleString()}</span></div>
+                          <div>Paid: <span>{debt.paid?.toLocaleString()}</span></div>
+                          <div>Remaining: <span className="text-redError font-bold">{debt.remaining?.toLocaleString()}</span></div>
+                          <div>Due: <span>{debt.dueDate ? new Date(debt.dueDate).toLocaleDateString() : '--'}</span></div>
+                        </div>
+                      </div>
                     ))}
                   </div>
-                  
-                  {/* Desktop View - Table */}
-                  <div className="hidden lg:block bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
-                        <thead className="bg-lightGray dark:bg-gray-700">
-                          <tr>
-                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Taariikh</th>
-                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Sharaxaad</th>
-                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Nooca</th>
-                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Qiime</th>
-                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Mashruuc</th>
-                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Account</th>
-                            <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">La Xiriira</th>
-                            <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                  {/* Desktop Table */}
+                  <div className="hidden lg:block bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-x-auto">
+                    <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
+                      <thead className="bg-lightGray dark:bg-gray-700">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Project</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Agreement</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Paid</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Remaining</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Due</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-lightGray dark:divide-gray-700">
+                        {projectDebts.map((debt) => (
+                          <tr key={debt.id || debt.project}>
+                            <td className="px-4 py-2 font-bold text-darkGray dark:text-gray-100">{debt.project || debt.projectName || '--'}</td>
+                            <td className="px-4 py-2">{debt.amount?.toLocaleString()}</td>
+                            <td className="px-4 py-2">{debt.paid?.toLocaleString()}</td>
+                            <td className="px-4 py-2 text-redError font-semibold">{debt.remaining?.toLocaleString()}</td>
+                            <td className="px-4 py-2">{debt.dueDate ? new Date(debt.dueDate).toLocaleDateString() : '--'}</td>
+                            <td className="px-4 py-2 font-medium"><span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${debt.status === 'Overdue' ? 'bg-redError/20 text-redError' : debt.status === 'Paid' ? 'bg-green-100 text-secondary' : 'bg-accent/10 text-accent'}`}>{debt.status}</span></td>
                           </tr>
-                        </thead>
-                        <tbody className="divide-y divide-lightGray dark:divide-gray-700">
-                          {projectDebtTransactions.map(trx => (
-                            <TransactionRow key={trx.id} transaction={trx} onEdit={handleEditTransaction} onDelete={handleDeleteTransaction} />
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </>
               )}

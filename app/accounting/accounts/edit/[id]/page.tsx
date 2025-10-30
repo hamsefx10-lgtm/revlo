@@ -193,10 +193,12 @@ export default function EditAccountPage() {
                   type="number"
                   id="balance"
                   value={balance}
-                  onChange={(e) => setBalance(parseFloat(e.target.value) || '')}
+                  readOnly
+                  // onChange-ka iyo suurtagalnimada beddelid waa la xadidayaa
                   placeholder="Tusaale: 10000.00"
                   className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.balance ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 />
+                <p className="text-info text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />Lacagta account-ka lama edit-gareyn karo si toos ah. Si lacag loo kordhiyo ama loo dhimo, isticmaal income, expense, ama transfer oo keliya.</p>
               </div>
               {validationErrors.balance && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1"/>{validationErrors.balance}</p>}
             </div>

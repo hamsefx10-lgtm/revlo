@@ -18,7 +18,14 @@ export async function GET(request: Request) {
       where: { companyId, projectId: null },
       orderBy: { expenseDate: 'desc' },
     });
-    return NextResponse.json({ expenses }, { status: 200 });
+    
+    // Map to frontend format: convert expenseDate to date
+    const mappedExpenses = expenses.map((exp: any) => ({
+      ...exp,
+      date: exp.expenseDate,
+    }));
+    
+    return NextResponse.json({ expenses: mappedExpenses }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ message: `Server error: ${error instanceof Error ? error.message : 'Unknown error'}` }, { status: 500 });
   }

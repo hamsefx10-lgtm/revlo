@@ -179,6 +179,26 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ message: 'Kharashka lama helin.' }, { status: 404 });
     }
 
+    // 1. Refund old account balance (add back the amount that was deducted)
+    if (existingExpense.paidFrom && existingExpense.amount) {
+      await prisma.account.update({
+        where: { id: existingExpense.paidFrom },
+        data: {
+          balance: { increment: Number(existingExpense.amount) }, // Soo celi lacagta hore
+        },
+      });
+    }
+
+    // 2. If this was a salary payment, decrement the old amount from employee
+    if (existingExpense.category === 'Company Expense' && existingExpense.subCategory === 'Salary' && existingExpense.employeeId && existingExpense.amount) {
+      await prisma.employee.update({
+        where: { id: existingExpense.employeeId },
+        data: {
+          salaryPaidThisMonth: { decrement: Number(existingExpense.amount) },
+        },
+      });
+    }
+
     const updatedExpense = await prisma.expense.update({
       where: { id },
       data: {
@@ -289,6 +309,27 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       },
     });
 
+    // 3. Update new account balance (deduct the new amount)
+    if (body.paidFrom && body.amount) {
+      await prisma.account.update({
+        where: { id: body.paidFrom },
+        data: {
+          balance: { decrement: Number(body.amount) }, // Ka dhim lacagta cusub
+        },
+      });
+    }
+
+    // 4. If this is still a salary payment, increment the new amount for the employee
+    if (body.category === 'Company Expense' && body.subCategory === 'Salary' && body.employeeId && body.amount) {
+      await prisma.employee.update({
+        where: { id: body.employeeId },
+        data: {
+          salaryPaidThisMonth: { increment: Number(body.amount) },
+          lastPaymentDate: new Date(body.expenseDate),
+        },
+      });
+    }
+
     return NextResponse.json(
       { message: 'Kharashka si guul leh ayaa la cusboonaysiiyay!', expense: updatedExpense },
       { status: 200 }
@@ -328,12 +369,22 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       });
     }
 
-    // 2. Delete related transactions
+    // 2. If this was a salary payment, decrement salaryPaidThisMonth for the employee
+    if (existingExpense.category === 'Company Expense' && existingExpense.subCategory === 'Salary' && existingExpense.employeeId && existingExpense.amount) {
+      await prisma.employee.update({
+        where: { id: existingExpense.employeeId },
+        data: {
+          salaryPaidThisMonth: { decrement: Number(existingExpense.amount) },
+        },
+      });
+    }
+
+    // 3. Delete related transactions
     await prisma.transaction.deleteMany({
       where: { expenseId: id }
     });
 
-    // 3. Delete the expense
+    // 4. Delete the expense
     await prisma.expense.delete({
       where: { id }
     });

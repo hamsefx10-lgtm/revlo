@@ -142,36 +142,43 @@ function Page() {
           </Link>
           Account: {account.name}
         </h1>
-        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-          <Link href="/accounting/transactions/add" className="bg-primary text-white py-2.5 px-4 sm:px-6 rounded-lg font-bold text-sm sm:text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center justify-center">
-            <Plus size={18} className="mr-2" /> Diiwaan Geli Dhaqdhaqaaq
+        <div className="flex flex-row justify-center items-center gap-4 mb-4">
+          <Link href={`/accounting/accounts/edit/${account.id}`} aria-label="Edit Account" title="Edit Account">
+            <div className="bg-[#FFF4DF] hover:bg-[#F7A400]/90 hover:ring-2 hover:ring-[#F7A400] p-4 rounded-xl flex items-center justify-center cursor-pointer transition duration-150 text-[#F7A400]">
+              <Edit className="" size={30} />
+              <span className="sr-only">Edit Account</span>
+            </div>
           </Link>
-          <Link href={`/accounting/accounts/edit/${account.id}`} className="bg-accent text-white py-2.5 px-4 sm:px-6 rounded-lg font-bold text-sm sm:text-lg hover:bg-orange-600 transition duration-200 shadow-md flex items-center justify-center">
-            <Edit size={18} className="mr-2" /> Edit Account
-          </Link>
-          <button onClick={handleDeleteAccount} className="bg-redError text-white py-2.5 px-4 sm:px-6 rounded-lg font-bold text-sm sm:text-lg hover:bg-red-700 transition duration-200 shadow-md flex items-center justify-center">
-            <Trash2 size={18} className="mr-2" /> Delete
+          <button onClick={handleDeleteAccount} aria-label="Delete Account" title="Delete Account">
+            <div className="bg-[#FEE8E8] hover:bg-[#E03C32]/90 hover:ring-2 hover:ring-red-500 p-4 rounded-xl flex items-center justify-center cursor-pointer transition duration-150 text-[#E03C32]">
+              <Trash2 className="" size={30} />
+              <span className="sr-only">Delete Account</span>
+            </div>
           </button>
         </div>
       </div>
 
-      {/* Account Summary Cards - Mobile Optimized */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 lg:mb-8 animate-fade-in-up">
-        <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 lg:p-6 rounded-lg lg:rounded-xl shadow-md text-center hover:shadow-lg transition-shadow duration-300">
-          <h4 className="text-xs sm:text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-1 lg:mb-2">Magaca Account-ka</h4>
-          <p className="text-sm sm:text-lg lg:text-3xl font-extrabold text-primary truncate">{account.name}</p>
+      {/* Account Summary Cards - Mobile & Desktop Optimized */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 w-full max-w-full">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md text-center border-l-4 border-primary w-full min-w-0 max-w-full flex flex-col items-center py-3">
+          <Banknote className="text-primary mb-1" size={30}/>
+          <h4 className="text-xs font-semibold text-mediumGray dark:text-gray-400 mb-1">Magaca Account-ka</h4>
+          <span className="text-2xl font-bold text-primary truncate">{account.name}</span>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 lg:p-6 rounded-lg lg:rounded-xl shadow-md text-center hover:shadow-lg transition-shadow duration-300">
-          <h4 className="text-xs sm:text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-1 lg:mb-2">Nooca Account-ka</h4>
-          <p className="text-sm sm:text-lg lg:text-3xl font-extrabold text-secondary">{account.type}</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md text-center border-l-4 border-secondary w-full min-w-0 max-w-full flex flex-col items-center py-3">
+          <TagIcon className="text-secondary mb-1" size={30}/>
+          <h4 className="text-xs font-semibold text-mediumGray dark:text-gray-400 mb-1">Nooca Account-ka</h4>
+          <span className="text-2xl font-bold text-secondary">{account.type}</span>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 lg:p-6 rounded-lg lg:rounded-xl shadow-md text-center hover:shadow-lg transition-shadow duration-300">
-          <h4 className="text-xs sm:text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-1 lg:mb-2">Currency</h4>
-          <p className="text-sm sm:text-lg lg:text-3xl font-extrabold text-accent">{account.currency}</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md text-center border-l-4 border-accent w-full min-w-0 max-w-full flex flex-col items-center py-3">
+          <Coins className="text-accent mb-1" size={30}/>
+          <h4 className="text-xs font-semibold text-mediumGray dark:text-gray-400 mb-1">Currency</h4>
+          <span className="text-2xl font-bold text-accent">{account.currency}</span>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 lg:p-6 rounded-lg lg:rounded-xl shadow-md text-center hover:shadow-lg transition-shadow duration-300">
-          <h4 className="text-xs sm:text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-1 lg:mb-2">Balance Hadda</h4>
-          <p className="text-sm sm:text-lg lg:text-3xl font-extrabold text-darkGray dark:text-gray-100">${account.balance.toLocaleString()}</p>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md text-center border-l-4 border-darkGray w-full min-w-0 max-w-full flex flex-col items-center py-3">
+          <DollarSign className="text-darkGray dark:text-gray-100 mb-1" size={30}/>
+          <h4 className="text-xs font-semibold text-mediumGray dark:text-gray-400 mb-1">Balance Hadda</h4>
+          <span className="text-2xl font-bold text-darkGray dark:text-gray-100">${account.balance.toLocaleString()}</span>
         </div>
       </div>
 
@@ -211,34 +218,35 @@ function Page() {
             </div>
           )}
 
+          {/* Transactions Section - Mobile Friendly Card List */}
           {activeTab === 'Transactions' && (
             <div>
-              <h3 className="text-xl sm:text-2xl font-bold text-darkGray dark:text-gray-100 mb-3 sm:mb-4">Dhaqdhaqaaqa Account-kan</h3>
+              <h3 className="text-xl font-bold text-darkGray dark:text-gray-100 mb-3">Dhaqdhaqaaqa Account-kan</h3>
               {account.transactions.length === 0 ? (
-                <p className="text-sm sm:text-base text-mediumGray dark:text-gray-400">Ma jiraan dhaqdhaqaaq lacag ah oo la xiriira account-kan.</p>
+                <p className="text-sm text-mediumGray dark:text-gray-400">Ma jiraan dhaqdhaqaaq lacag ah oo la xiriira account-kan.</p>
               ) : (
-                <ul className="space-y-2 sm:space-y-3">
-                  {account.transactions.map((trx: any) => (
-                    <li key={trx.id} className="bg-lightGray dark:bg-gray-700 p-3 sm:p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
-                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4">
-                        <div className="flex items-center space-x-2 sm:space-x-3">
-                          {trx.amount >= 0 ? <DollarSign className="text-secondary flex-shrink-0" size={18}/> : <XCircle className="text-redError flex-shrink-0" size={18}/>} 
-                          <span className="font-semibold text-sm sm:text-base text-darkGray dark:text-gray-100 truncate">{trx.description}</span>
+                <div className="flex flex-col gap-3 w-full max-w-full">
+                  {account.transactions.map((trx) => (
+                    <div key={trx.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-lightGray dark:border-gray-700 p-3 w-full min-w-0 max-w-full flex flex-col md:flex-row md:justify-between md:items-center gap-3 sm:gap-5 mb-1 overflow-x-auto">
+                      <div className="flex-1 min-w-0 max-w-full flex flex-col gap-1">
+                        <div className="flex items-center gap-2 mb-1 w-full min-w-0 max-w-full">
+                          {trx.amount >= 0 ? <DollarSign className="text-secondary" size={20}/> : <XCircle className="text-redError" size={20}/>} 
+                          <span className="font-semibold text-darkGray dark:text-gray-100 text-sm md:text-base whitespace-normal break-words truncate w-full min-w-0 max-w-full">{trx.description}</span>
                         </div>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-                          <span className={`${trx.amount >= 0 ? 'text-secondary' : 'text-redError'} font-bold text-sm sm:text-base`}>
-                            {trx.amount >= 0 ? '+' : '-'}${Math.abs(trx.amount).toLocaleString()}
-                          </span>
-                          <span className="text-xs sm:text-sm text-mediumGray dark:text-gray-400">{new Date(trx.transactionDate).toLocaleDateString()}</span>
-                          <Link href={`/accounting/transactions/${trx.id}`} className="text-primary hover:underline text-xs sm:text-sm font-medium">Fiiri &rarr;</Link>
-                        </div>
+                        <div className="text-xs text-mediumGray dark:text-gray-400 whitespace-normal break-all">{new Date(trx.transactionDate).toLocaleDateString()}</div>
                       </div>
-                    </li>
+                      <div className="flex flex-col items-start md:items-end gap-2 min-w-[90px] w-full md:w-auto">
+                        <span className={trx.amount >= 0 ? 'text-secondary font-bold text-lg md:text-xl break-words' : 'text-redError font-bold text-lg md:text-xl break-words'}>
+                          {trx.amount >= 0 ? '+' : '-'}${Math.abs(trx.amount).toLocaleString()}
+                        </span>
+                        <Link href={`/accounting/transactions/${trx.id}`} className="text-primary hover:underline text-xs font-medium w-full md:w-fit block">Fiiri &rarr;</Link>
+                      </div>
+                    </div>
                   ))}
-                </ul>
+                </div>
               )}
-              <Link href="/accounting/transactions/add" className="mt-3 sm:mt-4 bg-primary text-white py-2 px-4 rounded-lg flex items-center hover:bg-blue-700 transition duration-200 w-fit text-sm sm:text-base">
-                  <Plus size={16} className="mr-2"/> Diiwaan Geli Dhaqdhaqaaq
+              <Link href="/accounting/transactions/add" className="mt-5 bg-primary text-white py-2 px-4 rounded-lg flex items-center justify-center hover:bg-blue-700 transition w-full sm:w-fit text-sm font-bold">
+                <Plus size={16} className="mr-2"/> Diiwaan Geli Dhaqdhaqaaq
               </Link>
             </div>
           )}

@@ -20,6 +20,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
       where: { id: id, companyId },
       include: {
         transactions: true,
+        fromTransactions: true,
+        toTransactions: true,
       },
     });
 

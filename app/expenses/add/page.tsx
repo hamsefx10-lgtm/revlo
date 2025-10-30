@@ -269,9 +269,9 @@ const [consultancyFee, setConsultancyFee] = useState('');
       })
       .catch(error => {
         console.error('Error fetching customers:', error);
-        setAllCustomers([]);
       });
-    // NEW: Fetch vendors for payment tracking
+    
+    // Fetch vendors for Material expenses
     fetch('/api/vendors')
       .then(res => res.json())
       .then(data => {
@@ -611,8 +611,11 @@ const [consultancyFee, setConsultancyFee] = useState('');
       description: description || undefined,
     };
 
+    // Normalize category for company Material so it follows the same flow as project Material
+    const categoryForSwitch = (expenseType === 'company' && companyExpenseType === 'Material') ? 'Material' : category;
+
     // Set main amount based on category and sub-category
-    switch (category) {
+    switch (categoryForSwitch) {
       case 'Material':
         expenseData.amount = totalMaterialCost;
         expenseData.materials = materials.map(m => ({ name: m.name, qty: parseFloat(m.qty as string), price: parseFloat(m.price as string), unit: m.unit }));
@@ -638,6 +641,11 @@ const [consultancyFee, setConsultancyFee] = useState('');
           expenseData.note = note.trim() === '' ? undefined : note;
           // PATCH: Always set description for company material expense
           expenseData.description = description && description.trim() !== '' ? description.trim() : `Material expense - ${materialDate}`;
+          // Add vendor payment tracking fields for company material expenses
+          expenseData.vendorId = selectedVendor;
+          expenseData.paymentStatus = paymentStatus;
+          expenseData.invoiceNumber = invoiceNumber || null;
+          expenseData.paymentDate = paymentStatus === 'PAID' ? new Date().toISOString() : null;
         }
         break;
       case 'Labor':
@@ -733,6 +741,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
             expenseData.subCategory = 'Debt';
             expenseData.lenderName = lenderName;
             expenseData.loanDate = loanDate;
+            expenseData.expenseDate = loanDate; // Use loanDate as expenseDate for Debt expenses
             if (lenderName) {
               expenseData.customerId = lenderName;
               // Also store customer name for display
@@ -1483,9 +1492,9 @@ const [consultancyFee, setConsultancyFee] = useState('');
                           </div>
                         </div>
                         <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">Heshiis jira ayaa la bixinayaa; mushaharka lama beddeli karo halkan.</p>
-                        {previousWageInfo.remaining <= 0 && (
-                          <div className="mt-3 p-3 rounded-md bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                            <label className="inline-flex items-center gap-2 text-sm text-green-800 dark:text-green-300">
+                        {previousWageInfo && (
+                          <div className="mt-3 p-3 rounded-md bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
+                            <label className="inline-flex items-center gap-2 text-sm text-yellow-800 dark:text-yellow-300">
                               <input
                                 type="checkbox"
                                 checked={Boolean((window as any)._startNewAgreement || false)}
@@ -1969,7 +1978,61 @@ const [consultancyFee, setConsultancyFee] = useState('');
                     />
                     {validationErrors.description && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.description}</p>}
                   </div>
-                  {/* PaidFrom field inside Material (Company Expense) */}
+                  {/* Vendor Selection */}
+                  <div className="mb-4">
+                    <label htmlFor="selectedVendor_comp" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Iibiyaha <span className="text-redError">*</span></label>
+                    <div className="relative">
+                      <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
+                      <select
+                        id="selectedVendor_comp"
+                        required
+                        value={selectedVendor}
+                        onChange={(e) => setSelectedVendor(e.target.value)}
+                        className={`w-full p-2 pl-8 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.selectedVendor ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                      >
+                        <option value="">-- Dooro Iibiyaha --</option>
+                        {vendors.map(vendor => (
+                          <option key={vendor.id} value={vendor.id}>{vendor.name}</option>
+                        ))}
+                      </select>
+                      <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
+                    </div>
+                    {validationErrors.selectedVendor && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.selectedVendor}</p>}
+                  </div>
+
+                  {/* Invoice Number */}
+                  <div className="mb-4">
+                    <label htmlFor="invoiceNumber_comp" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Lambarka Invoice</label>
+                    <input
+                      type="text"
+                      id="invoiceNumber_comp"
+                      value={invoiceNumber}
+                      onChange={(e) => setInvoiceNumber(e.target.value)}
+                      placeholder="Tusaale: INV-2024-001"
+                      className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.invoiceNumber ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    />
+                    {validationErrors.invoiceNumber && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.invoiceNumber}</p>}
+                  </div>
+
+                  {/* Payment Status */}
+                  <div className="mb-4">
+                    <label htmlFor="paymentStatus_comp" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Xaaladda Lacag Bixinta <span className="text-redError">*</span></label>
+                    <select
+                      id="paymentStatus_comp"
+                      value={paymentStatus}
+                      onChange={(e) => setPaymentStatus(e.target.value)}
+                      className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.paymentStatus ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                      required
+                      title="Dooro Xaaladda Lacag Bixinta"
+                    >
+                      <option value="UNPAID">Lacag La'aan (Debt)</option>
+                      <option value="PAID">Lacag Bixiyay (Paid)</option>
+                    </select>
+                    {validationErrors.paymentStatus && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paymentStatus}</p>}
+                  </div>
+
+                  {/* PaidFrom field - Only show if PAID */}
+                  {paymentStatus === 'PAID' && (
                   <div className="mb-4">
                     <label htmlFor="paidFrom_material" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
                     <div className="relative">
@@ -1990,6 +2053,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                     </div>
                     {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paidFrom}</p>}
                   </div>
+                  )}
                   {/* Material Item Headers */}
                   <div className="grid grid-cols-4 gap-4 mb-2 text-sm font-semibold text-mediumGray dark:text-gray-400">
                     <span>Magaca Alaabta</span>

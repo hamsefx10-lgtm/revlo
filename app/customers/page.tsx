@@ -196,18 +196,21 @@ export default function CustomersPage() {
       </div>
 
       {/* Customer Statistics Cards - Ultra Compact Mobile Design */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-1 mb-3 animate-fade-in-up">
-        <div className="bg-white dark:bg-gray-800 p-1.5 rounded-lg shadow-md text-center">
-          <h4 className="text-xs font-semibold text-mediumGray dark:text-gray-400 mb-0">Wadarta Macaamiisha</h4>
-          <p className="text-sm font-extrabold text-primary">{totalCustomersCount}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-6 animate-fade-in-up">
+        <div className="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-md text-center border-l-4 border-primary flex flex-col items-center justify-center min-h-[90px]">
+          <User className="text-primary mb-1" size={18} />
+          <h4 className="text-xs font-semibold text-primary mb-1">Wadarta Macaamiisha</h4>
+          <span className="text-2xl font-bold text-primary">{totalCustomersCount}</span>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-1.5 rounded-lg shadow-md text-center">
-          <h4 className="text-xs font-semibold text-mediumGray dark:text-gray-400 mb-0">Macaamiisha Shakhsiga ah</h4>
-          <p className="text-sm font-extrabold text-secondary">{individualCustomersCount}</p>
+        <div className="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-md text-center border-l-4 border-secondary flex flex-col items-center justify-center min-h-[90px]">
+          <User className="text-secondary mb-1" size={18} />
+          <h4 className="text-xs font-semibold text-secondary mb-1">Macaamiisha Shakhsiga ah</h4>
+          <span className="text-2xl font-bold text-secondary">{individualCustomersCount}</span>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-1.5 rounded-lg shadow-md text-center">
-          <h4 className="text-xs font-semibold text-mediumGray dark:text-gray-400 mb-0">Macaamiisha Shirkadaha</h4>
-          <p className="text-sm font-extrabold text-accent">{companyCustomersCount}</p>
+        <div className="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-md text-center border-l-4 border-accent flex flex-col items-center justify-center min-h-[90px]">
+          <Briefcase className="text-accent mb-1" size={18} />
+          <h4 className="text-xs font-semibold text-accent mb-1">Macaamiisha Shirkadaha</h4>
+          <span className="text-2xl font-bold text-accent">{companyCustomersCount}</span>
         </div>
       </div>
 
