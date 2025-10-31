@@ -10,7 +10,7 @@ import {
   DollarSign, CreditCard, Banknote, RefreshCw, Eye, Edit, Trash2,
   TrendingUp, TrendingDown, Info as InfoIcon, CheckCircle, XCircle, Clock as ClockIcon,
   User as UserIcon, Briefcase as BriefcaseIcon, Tag as TagIcon,
-  Coins, Repeat, ReceiptText, Users, Building, Package, Scale, Truck, Mail, Phone // Added specific icons for dynamic fields
+  Coins, Repeat, ReceiptText, Users, Building, Package, Scale, Truck, Mail, Phone, HardDrive // Added HardDrive for fixed assets
 } from 'lucide-react';
 import Toast from '../../components/common/Toast';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
@@ -47,7 +47,9 @@ interface OverviewStats {
   totalIncomeThisMonth: number;
   totalIncome: number; // Total income (all time)
   totalExpensesThisMonth: number;
-  totalExpenses: number; // Total expenses (all time)
+  totalExpenses: number; // Total expenses (all time, excluding fixed assets)
+  fixedAssetExpenses?: number; // Fixed asset expenses (all time)
+  fixedAssetExpensesThisMonth?: number; // Fixed asset expenses this month
   netFlowThisMonth: number;
   totalBankAccounts: number;
   totalCashAccounts: number;
@@ -121,7 +123,8 @@ const AccountRow: React.FC<{ account: Account; onEdit: (id: string) => void; onD
 
 // --- Transaction Table Row Component ---
 const TransactionRow: React.FC<{ transaction: Transaction; onEdit: (id: string) => void; onDelete: (id: string) => void }> = ({ transaction, onEdit, onDelete }) => {
-  const isIncome = transaction.amount >= 0;
+  // Determine sign by type (debt taken = outflow, debt repaid = inflow)
+  const isIncome = transaction.type === 'INCOME' || transaction.type === 'TRANSFER_IN' || transaction.type === 'DEBT_REPAID';
   const amountColorClass = isIncome ? 'text-secondary' : 'text-redError';
   
   // Enhanced type badge with debt-specific styling
@@ -266,7 +269,7 @@ const TransactionRow: React.FC<{ transaction: Transaction; onEdit: (id: string) 
 
 // --- Mobile Transaction Card Component ---
 const MobileTransactionCard: React.FC<{ transaction: Transaction; onEdit: (id: string) => void; onDelete: (id: string) => void }> = ({ transaction, onEdit, onDelete }) => {
-  const isIncome = transaction.amount >= 0;
+  const isIncome = transaction.type === 'INCOME' || transaction.type === 'TRANSFER_IN' || transaction.type === 'DEBT_REPAID';
   const amountColorClass = isIncome ? 'text-secondary' : 'text-redError';
   let borderColor = 'border-lightGray dark:border-gray-700';
   if (isIncome) borderColor = 'border-secondary';
@@ -469,7 +472,9 @@ export default function AccountingPage() {
         totalIncomeThisMonth: statsData.totalIncomeThisMonth,
         totalIncome: statsData.totalIncome, // Total income (all time)
         totalExpensesThisMonth: statsData.totalExpensesThisMonth,
-        totalExpenses: statsData.totalExpenses, // Total expenses (all time)
+        totalExpenses: statsData.totalExpenses, // Total expenses (all time, excluding fixed assets)
+        fixedAssetExpenses: statsData.fixedAssetExpenses || 0, // Fixed asset expenses (all time)
+        fixedAssetExpensesThisMonth: statsData.fixedAssetExpensesThisMonth || 0, // Fixed asset expenses this month
         netFlowThisMonth: statsData.netFlowThisMonth,
         totalBankAccounts: statsData.totalBankAccounts,
         totalCashAccounts: statsData.totalCashAccounts,
@@ -483,8 +488,11 @@ export default function AccountingPage() {
       // NEW: Fetch debts report (true aggregation)
       const debtsReportRes = await fetch('/api/reports/debts');
       const debtsReport = await debtsReportRes.json();
-      setCompanyDebts(debtsReport.companyDebts || []);
-      setProjectDebts(debtsReport.projectDebts || []);
+      const allDebts = debtsReport.debts || [];
+      const company = allDebts.filter((d: any) => !d.projectId || !d.project);
+      const project = allDebts.filter((d: any) => d.projectId && d.project);
+      setCompanyDebts(company);
+      setProjectDebts(project);
 
     } catch (error: any) {
       console.error('Error fetching accounting data:', error);
@@ -692,11 +700,29 @@ export default function AccountingPage() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-darkGray dark:text-gray-100">Wadarta Kharashyada</h4>
-                    <p className="text-xs text-mediumGray dark:text-gray-400">Total Expenses</p>
+                    <p className="text-xs text-mediumGray dark:text-gray-400">Total Expenses (ma jiraan Hantida)</p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="text-xl font-bold text-redError">{overviewStats.totalExpenses.toLocaleString()}</p>
+                  <p className="text-xs text-mediumGray dark:text-gray-400">ETB</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 border-l-4 border-purple-500">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-purple-500/10 rounded-full flex items-center justify-center mr-3">
+                    <HardDrive size={20} className="text-purple-500" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-darkGray dark:text-gray-100">Kharashyada Hantida Go'an</h4>
+                    <p className="text-xs text-mediumGray dark:text-gray-400">Fixed Asset Expenses</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xl font-bold text-purple-500">{overviewStats.fixedAssetExpenses?.toLocaleString() || 0}</p>
                   <p className="text-xs text-mediumGray dark:text-gray-400">ETB</p>
                 </div>
               </div>
@@ -736,7 +762,7 @@ export default function AccountingPage() {
           </div>
 
           {/* Desktop Design - Enhanced Cards */}
-          <div className="hidden lg:grid lg:grid-cols-4 gap-6 mb-8 animate-fade-in-up">
+          <div className="hidden lg:grid lg:grid-cols-5 gap-6 mb-8 animate-fade-in-up">
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300 border-l-4 border-primary">
               <div className="flex items-center justify-center mb-3">
                 <DollarSign size={20} className="text-primary mr-2" />
@@ -761,7 +787,16 @@ export default function AccountingPage() {
                 <h4 className="text-base font-semibold text-mediumGray dark:text-gray-400">Wadarta Kharashyada</h4>
               </div>
               <p className="text-2xl font-extrabold text-redError">{overviewStats.totalExpenses.toLocaleString()} ETB</p>
-              <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Total Expenses</p>
+              <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Total Expenses (ma jiraan Hantida)</p>
+            </div>
+            
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300 border-l-4 border-purple-500">
+              <div className="flex items-center justify-center mb-3">
+                <HardDrive size={20} className="text-purple-500 mr-2" />
+                <h4 className="text-base font-semibold text-mediumGray dark:text-gray-400">Kharashyada Hantida Go'an</h4>
+              </div>
+              <p className="text-2xl font-extrabold text-purple-500">{overviewStats.fixedAssetExpenses?.toLocaleString() || 0} ETB</p>
+              <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Fixed Asset Expenses</p>
             </div>
             
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300 border-l-4 border-orange-500">
@@ -1295,7 +1330,7 @@ export default function AccountingPage() {
               <div className="mb-6">
                 <h3 className="text-xl sm:text-2xl font-bold text-darkGray dark:text-gray-100 mb-2">Lacagaha Deynta Macaamiisha/Shirkadaha</h3>
                 <p className="text-sm sm:text-base text-mediumGray dark:text-gray-400 mb-4">Halkan waxaad ka arki kartaa macaamiisha/shirkadaha ay shirkaddu daynta ku leedahay.</p>
-              </div>
+                </div>
               {companyDebts.length === 0 ? (
                 <div className="text-center py-8 sm:py-12">
                   <Scale size={40} className="mx-auto text-gray-400 mb-4" />
@@ -1324,18 +1359,18 @@ export default function AccountingPage() {
                   </div>
                   {/* Desktop Table */}
                   <div className="hidden lg:block bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-x-auto">
-                    <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
-                      <thead className="bg-lightGray dark:bg-gray-700">
-                        <tr>
+                      <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
+                        <thead className="bg-lightGray dark:bg-gray-700">
+                          <tr>
                           <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Lender</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Total</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Paid</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Remaining</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Due</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-lightGray dark:divide-gray-700">
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-lightGray dark:divide-gray-700">
                         {companyDebts.map((debt) => (
                           <tr key={debt.id || debt.lender} className={debt.status === 'Overdue' ? 'bg-red-50 dark:bg-red-900/20' : ''}>
                             <td className="px-4 py-2 font-bold text-darkGray dark:text-gray-100">{debt.lender || debt.customerName || '--'}</td>
@@ -1345,9 +1380,9 @@ export default function AccountingPage() {
                             <td className="px-4 py-2">{debt.dueDate ? new Date(debt.dueDate).toLocaleDateString() : '--'}</td>
                             <td className="px-4 py-2 font-medium"><span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${debt.status === 'Overdue' ? 'bg-redError/20 text-redError' : debt.status === 'Paid' ? 'bg-green-100 text-secondary' : 'bg-accent/10 text-accent'}`}>{debt.status}</span></td>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                          ))}
+                        </tbody>
+                      </table>
                   </div>
                 </>
               )}
@@ -1359,7 +1394,7 @@ export default function AccountingPage() {
               <div className="mb-6">
                 <h3 className="text-xl sm:text-2xl font-bold text-darkGray dark:text-gray-100 mb-2">Deynta Mashaariicda Ku Dhiman</h3>
                 <p className="text-sm sm:text-base text-mediumGray dark:text-gray-400 mb-4">Halkan waxaad ka arki kartaa dhammaan mashaariicda weli lacag looga leeyahay shirkad ahaan.</p>
-              </div>
+                </div>
               {projectDebts.length === 0 ? (
                 <div className="text-center py-8 sm:py-12">
                   <BriefcaseIcon size={40} className="mx-auto text-gray-400 mb-4" />
@@ -1388,18 +1423,18 @@ export default function AccountingPage() {
                   </div>
                   {/* Desktop Table */}
                   <div className="hidden lg:block bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-x-auto">
-                    <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
-                      <thead className="bg-lightGray dark:bg-gray-700">
-                        <tr>
+                      <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
+                        <thead className="bg-lightGray dark:bg-gray-700">
+                          <tr>
                           <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Project</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Agreement</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Paid</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Remaining</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Due</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-lightGray dark:divide-gray-700">
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-lightGray dark:divide-gray-700">
                         {projectDebts.map((debt) => (
                           <tr key={debt.id || debt.project}>
                             <td className="px-4 py-2 font-bold text-darkGray dark:text-gray-100">{debt.project || debt.projectName || '--'}</td>
@@ -1409,9 +1444,9 @@ export default function AccountingPage() {
                             <td className="px-4 py-2">{debt.dueDate ? new Date(debt.dueDate).toLocaleDateString() : '--'}</td>
                             <td className="px-4 py-2 font-medium"><span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${debt.status === 'Overdue' ? 'bg-redError/20 text-redError' : debt.status === 'Paid' ? 'bg-green-100 text-secondary' : 'bg-accent/10 text-accent'}`}>{debt.status}</span></td>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                          ))}
+                        </tbody>
+                      </table>
                   </div>
                 </>
               )}

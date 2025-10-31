@@ -237,8 +237,8 @@ function Page() {
                       </div>
                       <div className="flex flex-col items-start md:items-end gap-2 min-w-[90px] w-full md:w-auto">
                         <span className={trx.amount >= 0 ? 'text-secondary font-bold text-lg md:text-xl break-words' : 'text-redError font-bold text-lg md:text-xl break-words'}>
-                          {trx.amount >= 0 ? '+' : '-'}${Math.abs(trx.amount).toLocaleString()}
-                        </span>
+                            {trx.amount >= 0 ? '+' : '-'}${Math.abs(trx.amount).toLocaleString()}
+                          </span>
                         <Link href={`/accounting/transactions/${trx.id}`} className="text-primary hover:underline text-xs font-medium w-full md:w-fit block">Fiiri &rarr;</Link>
                       </div>
                     </div>
@@ -246,7 +246,7 @@ function Page() {
                 </div>
               )}
               <Link href="/accounting/transactions/add" className="mt-5 bg-primary text-white py-2 px-4 rounded-lg flex items-center justify-center hover:bg-blue-700 transition w-full sm:w-fit text-sm font-bold">
-                <Plus size={16} className="mr-2"/> Diiwaan Geli Dhaqdhaqaaq
+                  <Plus size={16} className="mr-2"/> Diiwaan Geli Dhaqdhaqaaq
               </Link>
             </div>
           )}

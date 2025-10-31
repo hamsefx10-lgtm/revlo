@@ -142,7 +142,7 @@ export default function EditExpensePage() {
           setNote(expense.note || '');
           setDescription(expense.description || '');
           setSelectedProject(expense.project?.id || '');
-          setAmount(expense.amount);
+                  setAmount(expense.amount);
           
           // Populate material date if available
           if (expense.materialDate) {

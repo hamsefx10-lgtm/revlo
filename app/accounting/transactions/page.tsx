@@ -9,7 +9,7 @@ import {
   ArrowLeft, Plus, Search, Filter, Calendar, List, LayoutGrid,
   DollarSign, CreditCard, Banknote, RefreshCw, Eye, Edit, Trash2,
   TrendingUp, TrendingDown, Info as InfoIcon, CheckCircle, XCircle, Clock as ClockIcon,
-  User as UserIcon, Briefcase as BriefcaseIcon, Tag as TagIcon, ChevronRight, Loader2 // General icons for tables
+  User as UserIcon, Briefcase as BriefcaseIcon, Tag as TagIcon, ChevronRight, Loader2, HardDrive // Added HardDrive for fixed assets
 } from 'lucide-react';
 import Toast from '../../../components/common/Toast';
 
@@ -19,6 +19,7 @@ interface Transaction {
   description: string;
   amount: number; // Converted from Decimal
   type: string; // e.g., "INCOME", "EXPENSE", "TRANSFER_IN", "TRANSFER_OUT", "DEBT_TAKEN", "DEBT_REPAID"
+  category?: string; // e.g., "FIXED_ASSET_PURCHASE"
   transactionDate: string;
   note?: string;
   account?: { name: string; }; // Primary account
@@ -33,12 +34,12 @@ interface Transaction {
 
 // --- Transaction Table Row Component ---
 const TransactionRow: React.FC<{ transaction: Transaction; onEdit: (id: string) => void; onDelete: (id: string) => void }> = ({ transaction, onEdit, onDelete }) => {
-  const isIncome = transaction.amount >= 0;
+  const isIncome = transaction.type === 'INCOME' || transaction.type === 'TRANSFER_IN' || transaction.type === 'DEBT_REPAID';
   const amountColorClass = isIncome ? 'text-secondary' : 'text-redError';
   const typeBadgeClass =
-    transaction.type === 'INCOME' || transaction.type === 'TRANSFER_IN' ? 'bg-secondary/10 text-secondary' :
-      transaction.type === 'EXPENSE' || transaction.type === 'TRANSFER_OUT' || transaction.type === 'DEBT_REPAID' ? 'bg-redError/10 text-redError' :
-        'bg-primary/10 text-primary';
+    (transaction.type === 'INCOME' || transaction.type === 'TRANSFER_IN' || transaction.type === 'DEBT_REPAID') ? 'bg-secondary/10 text-secondary' :
+    (transaction.type === 'EXPENSE' || transaction.type === 'TRANSFER_OUT' || transaction.type === 'DEBT_TAKEN') ? 'bg-redError/10 text-redError' :
+    'bg-primary/10 text-primary';
 
   return (
     <tr className="hover:bg-lightGray dark:hover:bg-gray-700 transition-colors duration-150 border-b border-lightGray dark:border-gray-700 last:border-b-0">
@@ -72,7 +73,7 @@ const TransactionRow: React.FC<{ transaction: Transaction; onEdit: (id: string) 
 
 // --- Transaction Card Component (Mobile Optimized) ---
 const TransactionCard: React.FC<{ transaction: Transaction; onEdit: (id: string) => void; onDelete: (id: string) => void }> = ({ transaction, onEdit, onDelete }) => {
-  const isIncome = transaction.amount >= 0;
+  const isIncome = transaction.type === 'INCOME' || transaction.type === 'TRANSFER_IN' || transaction.type === 'DEBT_REPAID';
   let borderColor = 'border-lightGray dark:border-gray-700';
   let statusIcon: React.ReactNode;
   let statusBgClass = '';
@@ -221,8 +222,19 @@ export default function TransactionsPage() {
 
   // Statistics
   const totalTransactionsCount = filteredTransactions.length;
-  const totalIncome = filteredTransactions.filter(t => t.amount >= 0).reduce((sum, t) => sum + t.amount, 0);
-  const totalExpenses = filteredTransactions.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0);
+  // Calculate totals based on type, using absolute values to ensure correct summation
+  // DEBT_TAKEN = expense (outflow), DEBT_REPAID = income (inflow)
+  const totalIncome = filteredTransactions
+    .filter(t => t.type === 'INCOME' || t.type === 'TRANSFER_IN' || t.type === 'DEBT_REPAID')
+    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+  // Regular expenses (excluding fixed assets)
+  const totalExpenses = filteredTransactions
+    .filter(t => (t.type === 'EXPENSE' || t.type === 'TRANSFER_OUT' || t.type === 'DEBT_TAKEN') && t.category !== 'FIXED_ASSET_PURCHASE')
+    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+  // Fixed asset expenses (separate)
+  const fixedAssetExpenses = filteredTransactions
+    .filter(t => t.category === 'FIXED_ASSET_PURCHASE')
+    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
   const netFlow = totalIncome - totalExpenses;
 
   return (
@@ -246,7 +258,7 @@ export default function TransactionsPage() {
       </div>
 
       {/* Transaction Statistics Cards - Mobile Optimized */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 lg:mb-8 animate-fade-in-up">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 mb-6 lg:mb-8 animate-fade-in-up">
         <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 lg:p-6 rounded-lg lg:rounded-xl shadow-md text-center hover:shadow-lg transition-shadow duration-300">
           <div className="flex items-center justify-center mb-2">
             <DollarSign size={20} className="text-primary mr-2" />
@@ -266,7 +278,15 @@ export default function TransactionsPage() {
             <TrendingDown size={20} className="text-redError mr-2" />
             <h4 className="text-xs sm:text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400">Wadarta Kharashyada</h4>
           </div>
+          <p className="text-xs text-mediumGray dark:text-gray-400">(ma jiraan Hantida)</p>
           <p className="text-lg sm:text-xl lg:text-3xl font-extrabold text-redError">{totalExpenses.toLocaleString()} ETB</p>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 lg:p-6 rounded-lg lg:rounded-xl shadow-md text-center hover:shadow-lg transition-shadow duration-300 border-l-4 border-purple-500">
+          <div className="flex items-center justify-center mb-2">
+            <HardDrive size={20} className="text-purple-500 mr-2" />
+            <h4 className="text-xs sm:text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400">Kharashyada Hantida</h4>
+          </div>
+          <p className="text-lg sm:text-xl lg:text-3xl font-extrabold text-purple-500">{fixedAssetExpenses.toLocaleString()} ETB</p>
         </div>
         <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 lg:p-6 rounded-lg lg:rounded-xl shadow-md text-center hover:shadow-lg transition-shadow duration-300">
           <div className="flex items-center justify-center mb-2">

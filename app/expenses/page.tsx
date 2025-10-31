@@ -1099,7 +1099,7 @@ export default function ExpensesPage() {
                     ).toLocaleDateString('so-SO', { 
                       day: 'numeric', 
                       month: 'short', 
-                      year: 'numeric'
+                      year: 'numeric' 
                     })}
                   </span>
                 </div>

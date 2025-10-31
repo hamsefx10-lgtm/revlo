@@ -301,9 +301,13 @@ export async function POST(request: Request) {
       if (paymentStatus === 'REPAID') {
         transactionType = 'DEBT_REPAID';
         transactionCustomerId = customerId || null;
+        // When repaying debt, if paidFrom is selected, money goes into account (income)
+        transactionAccountId = paidFrom || undefined;
       } else {
         transactionType = 'DEBT_TAKEN';
         transactionCustomerId = customerId || null;
+        // When taking debt, if paidFrom is selected, deduct from that account
+        transactionAccountId = paidFrom || undefined;
       }
       console.log('Creating debt transaction:', {
         category,
@@ -311,7 +315,8 @@ export async function POST(request: Request) {
         customerId,
         amount,
         description,
-        transactionType
+        transactionType,
+        transactionAccountId
       });
     } else if (category === 'Material') {
       if (paymentStatus === 'PAID') {
@@ -321,17 +326,19 @@ export async function POST(request: Request) {
       } else if (paymentStatus === 'REPAID') {
         transactionType = 'DEBT_REPAID';
         transactionVendorId = vendorId;
+        // When repaying vendor debt, if paidFrom is selected, deduct from that account
+        transactionAccountId = paidFrom || undefined;
       } else {
         // If unpaid, create debt transaction (vendor debt)
         transactionType = 'DEBT_TAKEN';
         transactionVendorId = vendorId; // Track vendor on transaction
+        // If paidFrom is provided even for unpaid, deduct from account (user is paying now)
+        transactionAccountId = paidFrom || undefined;
       }
     } else if (category === 'Company Expense') {
-      // For general company expenses (not Debt or Material), treat as expense and deduct from paidFrom
-      if (subCategory !== 'Debt' && subCategory !== 'Material') {
-        transactionType = 'EXPENSE';
-        transactionAccountId = paidFrom;
-      }
+      // For ALL company expenses (including Debt and Material subcategories), deduct from paidFrom if provided
+      transactionType = 'EXPENSE';
+      transactionAccountId = paidFrom;
     }
     // For EXPENSE, always store as negative (money out)
     if (transactionType === 'EXPENSE') {
@@ -365,15 +372,27 @@ export async function POST(request: Request) {
     // 3. Update account balance based on transaction type
     if (transactionAccountId && amount) {
       if (transactionType === 'DEBT_REPAID') {
-        // For debt repayment, add money to account (income)
-        await prisma.account.update({
-          where: { id: transactionAccountId },
-          data: {
-            balance: { increment: Number(amount) },
-          },
-        });
+        // DEBT_REPAID with customerId = customer repays us (money comes IN)
+        // DEBT_REPAID with vendorId = we repay vendor (money goes OUT)
+        if (transactionCustomerId) {
+          // Customer repaying us - add money to account (income)
+          await prisma.account.update({
+            where: { id: transactionAccountId },
+            data: {
+              balance: { increment: Number(amount) },
+            },
+          });
+        } else if (transactionVendorId) {
+          // We repaying vendor - subtract money from account (expense)
+          await prisma.account.update({
+            where: { id: transactionAccountId },
+            data: {
+              balance: { decrement: Number(amount) },
+            },
+          });
+        }
       } else {
-        // For expenses, subtract money from account
+        // For all other transactions (EXPENSE, DEBT_TAKEN), subtract money from account
         await prisma.account.update({
           where: { id: transactionAccountId },
           data: {

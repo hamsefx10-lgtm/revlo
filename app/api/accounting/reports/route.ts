@@ -54,32 +54,44 @@ export async function GET(request: Request) {
       }
     });
     
-    // Calculate TOTAL expenses from expenses table (all time, not just this month)
-    const allExpenses = await prisma.expense.findMany({
-      where: {
-        companyId,
-      },
+    // Calculate TOTAL expenses from transactions (all time) - matching transactions page logic
+    // DEBT_TAKEN = expense (outflow), exclude FIXED_ASSET_PURCHASE
+    let totalExpenses = 0;
+    allTransactions.forEach(trx => {
+      if (trx.type === 'EXPENSE' || trx.type === 'TRANSFER_OUT' || trx.type === 'DEBT_TAKEN') {
+        // Exclude fixed asset purchases from expenses
+        if (trx.category !== 'FIXED_ASSET_PURCHASE') {
+          totalExpenses += Math.abs(trx.amount.toNumber());
+        }
+      }
     });
     
-    // Sum ALL expenses from expenses table
-    const totalExpenses = allExpenses.reduce((sum, expense) => {
-      return sum + (typeof expense.amount === 'string' ? parseFloat(expense.amount) : Number(expense.amount));
-    }, 0);
-    
-    // Also calculate monthly expenses for comparison
-    const monthlyExpenses = await prisma.expense.findMany({
-      where: {
-        expenseDate: {
-          gte: startOfMonth,
-          lte: endOfMonth,
-        },
-        companyId,
-      },
+    // Calculate monthly expenses from transactions
+    monthlyTransactions.forEach(trx => {
+      if (trx.type === 'EXPENSE' || trx.type === 'TRANSFER_OUT' || trx.type === 'DEBT_TAKEN') {
+        // Exclude fixed asset purchases from expenses
+        if (trx.category !== 'FIXED_ASSET_PURCHASE') {
+          totalExpensesThisMonth += Math.abs(trx.amount.toNumber());
+        }
+      }
     });
     
-    totalExpensesThisMonth = monthlyExpenses.reduce((sum, expense) => {
-      return sum + (typeof expense.amount === 'string' ? parseFloat(expense.amount) : Number(expense.amount));
-    }, 0);
+    // Calculate fixed asset expenses separately (all time)
+    let fixedAssetExpenses = 0;
+    allTransactions.forEach(trx => {
+      if (trx.category === 'FIXED_ASSET_PURCHASE') {
+        fixedAssetExpenses += Math.abs(trx.amount.toNumber());
+      }
+    });
+    
+    // Calculate monthly fixed asset expenses
+    let fixedAssetExpensesThisMonth = 0;
+    monthlyTransactions.forEach(trx => {
+      if (trx.category === 'FIXED_ASSET_PURCHASE') {
+        fixedAssetExpensesThisMonth += Math.abs(trx.amount.toNumber());
+      }
+    });
+    
     const netFlowThisMonth = totalIncomeThisMonth - totalExpensesThisMonth;
     const accountTypeCounts = await prisma.account.groupBy({
       by: ['type'],
@@ -100,7 +112,9 @@ export async function GET(request: Request) {
         totalIncomeThisMonth: totalIncomeThisMonth,
         totalIncome: totalIncome, // Total income (all time)
         totalExpensesThisMonth: totalExpensesThisMonth,
-        totalExpenses: totalExpenses, // Total expenses (all time)
+        totalExpenses: totalExpenses, // Total expenses (all time, excluding fixed assets)
+        fixedAssetExpenses: fixedAssetExpenses, // Fixed asset expenses (all time)
+        fixedAssetExpensesThisMonth: fixedAssetExpensesThisMonth, // Fixed asset expenses this month
         netFlowThisMonth: netFlowThisMonth,
         totalBankAccounts: totalBankAccounts,
         totalCashAccounts: totalCashAccounts,

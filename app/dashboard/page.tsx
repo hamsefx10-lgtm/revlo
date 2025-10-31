@@ -17,6 +17,7 @@ import {
   Calendar, // Calendar icon
   Search, // Search icon
   Factory, // Manufacturing icon
+  Scale, // Debt icon
 } from 'lucide-react';
 
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from 'recharts';
@@ -218,6 +219,16 @@ interface DashboardStats {
   monthlyFinancialData: { month: string; income: number; expenses: number; profit: number }[];
   projectStatusBreakdown: { name: string; value: number; color: string }[];
   recentActivities: { id: string; type: string; description: string; amount?: number; date: string; user: string }[];
+  // New fields
+  accountBreakdown?: { name: string; value: number; type: string }[];
+  outstandingDebts?: number;
+  thisMonthIncome?: number;
+  thisMonthExpenses?: number;
+  lastMonthIncome?: number;
+  lastMonthExpenses?: number;
+  topExpenseCategories?: { name: string; amount: number }[];
+  fixedAssetsValue?: number;
+  fixedAssetsCount?: number;
 }
 
 interface DashboardCardProps {
@@ -269,26 +280,43 @@ interface DashboardCardProps {
   description?: string; // Optional detailed description
 }
 
-const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, trend, colorClass, icon, description }) => (
-  <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col justify-between animate-fade-in-up transform hover:-translate-y-1">
-    <div className="flex items-center justify-between mb-4">
-      <h3 className="text-lg font-semibold text-mediumGray dark:text-gray-400">{title}</h3>
-      <div className={`text-3xl ${colorClass}`}>{icon}</div>
+const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, trend, colorClass, icon, description }) => {
+  // Determine border color and background based on colorClass
+  const getColorClasses = (colorClass: string) => {
+    if (colorClass.includes('primary')) return { border: 'border-primary', bg: 'bg-primary/10' };
+    if (colorClass.includes('secondary')) return { border: 'border-secondary', bg: 'bg-secondary/10' };
+    if (colorClass.includes('accent')) return { border: 'border-accent', bg: 'bg-accent/10' };
+    if (colorClass.includes('redError')) return { border: 'border-redError', bg: 'bg-redError/10' };
+    return { border: 'border-primary', bg: 'bg-primary/10' };
+  };
+  const colors = getColorClasses(colorClass);
+  
+  return (
+    <div className={`bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md border-l-4 ${colors.border} hover:shadow-xl transition-all duration-300 animate-fade-in-up transform hover:-translate-y-1`}>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center space-x-3">
+          <div className={`p-2 rounded-lg ${colors.bg} ${colorClass}`}>
+            {React.cloneElement(icon as React.ReactElement, { size: 22 })}
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-mediumGray dark:text-gray-400">{title}</h3>
+            {description && !trend && (
+              <p className="text-xs text-mediumGray dark:text-gray-500 mt-0.5">{description}</p>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center justify-between">
+        <p className={`text-2xl font-extrabold ${colorClass}`}>{value}</p>
+        {trend && (
+          <span className={`flex items-center text-sm font-medium ${trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
+            {trend === 'up' ? <TrendingUp size={16} className="mr-1" /> : <TrendingDown size={16} className="mr-1" />}
+          </span>
+        )}
+      </div>
     </div>
-    <div className="flex items-center justify-between">
-      <p className={`text-4xl font-extrabold ${colorClass}`}>{value}</p>
-      {trend && (
-        <span className={`flex items-center text-sm font-medium ${trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
-          {trend === 'up' ? <TrendingUp size={16} className="mr-1" /> : <TrendingDown size={16} className="mr-1" />}
-          {description || ''}
-        </span>
-      )}
-    </div>
-    {description && !trend && ( 
-        <p className="text-sm text-mediumGray dark:text-gray-500 mt-2">{description}</p>
-    )}
-  </div>
-);
+  );
+};
 
 // Recent Activity Item
 interface ActivityItemProps {
@@ -392,10 +420,21 @@ export default function DashboardPage() {
     totalIncome, totalExpenses, netProfit, totalProjects, activeProjects, completedProjects, onHoldProjects,
     totalBankBalance, totalMobileMoneyBalance, totalCashBalance, lowStockItems, overdueProjects,
     monthlyFinancialData, projectStatusBreakdown, recentActivities,
-    realizedProfitFromCompletedProjects, potentialProfitFromActiveProjects
+    realizedProfitFromCompletedProjects, potentialProfitFromActiveProjects,
+    accountBreakdown = [], outstandingDebts = 0, thisMonthIncome = 0, thisMonthExpenses = 0,
+    lastMonthIncome = 0, lastMonthExpenses = 0, topExpenseCategories = [],
+    fixedAssetsValue = 0, fixedAssetsCount = 0
   } = stats;
 
   const currentTotalBalance = totalBankBalance + totalMobileMoneyBalance + totalCashBalance;
+  
+  // Calculate monthly comparison percentages
+  const incomeChange = lastMonthIncome > 0 
+    ? ((thisMonthIncome - lastMonthIncome) / lastMonthIncome * 100).toFixed(1)
+    : thisMonthIncome > 0 ? '100' : '0';
+  const expenseChange = lastMonthExpenses > 0
+    ? ((thisMonthExpenses - lastMonthExpenses) / lastMonthExpenses * 100).toFixed(1)
+    : thisMonthExpenses > 0 ? '100' : '0';
 
   return (
     <Layout>
@@ -439,7 +478,140 @@ export default function DashboardPage() {
         />
       </div>
 
+      {/* New Widgets Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 lg:mb-8 animate-fade-in-up">
+        {/* Account Breakdown Widget */}
+        {accountBreakdown.length > 0 && (
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-l-4 border-primary">
+            <h3 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
+              <Banknote size={20} className="mr-2 text-primary" />
+              Qaybinta Accounts-ka
+            </h3>
+            <div className="space-y-3">
+              {accountBreakdown.slice(0, 5).map((acc, idx) => (
+                <div key={idx} className="flex items-center justify-between p-3 bg-lightGray dark:bg-gray-700 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-2 h-2 rounded-full ${
+                      acc.type === 'BANK' ? 'bg-blue-500' : 
+                      acc.type === 'MOBILE_MONEY' ? 'bg-green-500' : 
+                      'bg-orange-500'
+                    }`}></div>
+                    <div>
+                      <p className="text-sm font-medium text-darkGray dark:text-gray-100">{acc.name}</p>
+                      <p className="text-xs text-mediumGray dark:text-gray-400">{acc.type}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm font-bold text-primary">{formatCurrency(acc.value)}</p>
+                </div>
+              ))}
+            </div>
+            <Link href="/accounting/accounts" className="mt-4 block text-sm text-primary hover:underline text-center">
+              Fiiri Dhammaan Accounts-ka →
+            </Link>
+          </div>
+        )}
 
+        {/* Monthly Comparison Widget */}
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-l-4 border-secondary">
+          <h3 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
+            <Calendar size={20} className="mr-2 text-secondary" />
+            Isku Dhig Bishiiba
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-mediumGray dark:text-gray-400">Dakhliga Bishan</span>
+                <span className={`text-sm font-bold ${parseFloat(incomeChange) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  {parseFloat(incomeChange) >= 0 ? '+' : ''}{incomeChange}%
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-lg font-bold text-secondary">{formatCurrency(thisMonthIncome)}</p>
+                <p className="text-xs text-mediumGray dark:text-gray-400">Hore: {formatCurrency(lastMonthIncome)}</p>
+              </div>
+            </div>
+            <div className="border-t border-lightGray dark:border-gray-700 pt-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-mediumGray dark:text-gray-400">Kharashyada Bishan</span>
+                <span className={`text-sm font-bold ${parseFloat(expenseChange) >= 0 ? 'text-red-500' : 'text-green-500'}`}>
+                  {parseFloat(expenseChange) >= 0 ? '+' : ''}{expenseChange}%
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-lg font-bold text-redError">{formatCurrency(thisMonthExpenses)}</p>
+                <p className="text-xs text-mediumGray dark:text-gray-400">Hore: {formatCurrency(lastMonthExpenses)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Debt & Fixed Assets Summary Widget */}
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-l-4 border-accent">
+          <h3 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
+            <Package size={20} className="mr-2 text-accent" />
+            Daymaha & Hantida
+          </h3>
+          <div className="space-y-4">
+            <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-mediumGray dark:text-gray-400 mb-1">Daymo La Qaatay</p>
+                  <p className="text-xl font-bold text-orange-600 dark:text-orange-400">
+                    {formatCurrency(Math.abs(outstandingDebts))}
+                  </p>
+                </div>
+                <Scale size={24} className="text-orange-600 dark:text-orange-400" />
+              </div>
+              <Link href="/accounting?tab=Debts" className="text-xs text-orange-600 dark:text-orange-400 hover:underline mt-2 block">
+                Fiiri Dhammaan →
+              </Link>
+            </div>
+            <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-mediumGray dark:text-gray-400 mb-1">Hantida Go'an</p>
+                  <p className="text-xl font-bold text-purple-600 dark:text-purple-400">
+                    {formatCurrency(fixedAssetsValue)}
+                  </p>
+                  <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">{fixedAssetsCount} Hanti</p>
+                </div>
+                <Factory size={24} className="text-purple-600 dark:text-purple-400" />
+              </div>
+              <Link href="/settings/assets" className="text-xs text-purple-600 dark:text-purple-400 hover:underline mt-2 block">
+                Fiiri Dhammaan →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Top Expense Categories Widget */}
+      {topExpenseCategories.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-l-4 border-redError mb-6 lg:mb-8 animate-fade-in-up">
+          <h3 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
+            <BarChartIcon size={20} className="mr-2 text-redError" />
+            Kharashyada Ugu Waaweyn
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            {topExpenseCategories.map((cat, idx) => {
+              const maxAmount = Math.max(...topExpenseCategories.map(c => c.amount));
+              const percentage = maxAmount > 0 ? (cat.amount / maxAmount) * 100 : 0;
+              return (
+                <div key={idx} className="p-4 bg-lightGray dark:bg-gray-700 rounded-lg">
+                  <p className="text-sm font-medium text-darkGray dark:text-gray-100 mb-2 truncate">{cat.name}</p>
+                  <p className="text-lg font-bold text-redError mb-2">{formatCurrency(cat.amount)}</p>
+                  <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                    <div 
+                      className="bg-redError h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${percentage}%` }}
+                    ></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Alerts and Quick Insights */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8 animate-fade-in-up">

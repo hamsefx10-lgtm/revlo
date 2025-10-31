@@ -32,7 +32,7 @@ const FixedAssetRow: React.FC<{ asset: FixedAsset; onEdit: (id: string) => void;
     <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300 flex items-center space-x-2">
         <Tag size={16} className="text-secondary"/> <span>{asset.type}</span>
     </td>
-    <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-semibold">${asset.value.toLocaleString()}</td>
+    <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-semibold">${Number((asset as any).value ?? 0).toLocaleString()}</td>
     <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">{new Date(asset.purchaseDate).toLocaleDateString()}</td>
     <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300 flex items-center space-x-2">
         {asset.assignedTo === 'Factory' ? <Building size={16}/> : asset.assignedTo === 'Office' ? <Home size={16}/> : <Briefcase size={16}/>}
@@ -211,8 +211,12 @@ export default function FixedAssetsSettingsPage() {
 
   // Statistics
   const totalAssetsCount = assets.length;
-  const totalAssetsValue = assets.reduce((sum, asset) => sum + asset.value, 0);
-  const assignedAssetsCount = assets.filter(asset => asset.status === 'Assigned').length;
+  const totalAssetsValue = assets.reduce((sum, asset) => {
+    const numeric = Number((asset as any).value ?? 0);
+    return sum + (isNaN(numeric) ? 0 : numeric);
+  }, 0);
+  // Treat an asset as assigned if it has a non-empty assignedTo value
+  const assignedAssetsCount = assets.filter(asset => (asset.assignedTo || '').trim().length > 0).length;
 
   const filteredAssets = assets.filter(asset => {
     const matchesSearch = asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -274,28 +278,55 @@ export default function FixedAssetsSettingsPage() {
           </Link>
           Fixed Assets
         </h1>
-        <button 
-          onClick={() => { setShowAddEditModal(true); setEditingAsset(null); }} 
+        <Link 
+          href="/settings/assets/add"
           title="Add new asset"
           className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center"
         >
           <Plus size={20} className="mr-2" /> Ku Dar Hantida
-        </button>
+        </Link>
       </div>
 
       {/* Asset Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 animate-fade-in-up">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">Wadarta Hantida</h4>
-          <p className="text-3xl font-extrabold text-primary">{totalAssetsCount}</p>
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md border-l-4 border-primary">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <HardDrive size={22} />
+              </div>
+              <div>
+                <div className="text-sm text-mediumGray dark:text-gray-400 font-medium">Wadarta Alaabta</div>
+                <div className="text-2xl font-extrabold text-darkGray dark:text-gray-100">{totalAssetsCount}</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">Wadarta Qiimaha Hantida</h4>
-          <p className="text-3xl font-extrabold text-secondary">${totalAssetsValue.toLocaleString()}</p>
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md border-l-4 border-secondary">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 rounded-lg bg-secondary/10 text-secondary">
+                <DollarSign size={22} />
+              </div>
+              <div>
+                <div className="text-sm text-mediumGray dark:text-gray-400 font-medium">Wadarta Qiimaha Hantida</div>
+                <div className="text-2xl font-extrabold text-darkGray dark:text-gray-100">${totalAssetsValue.toLocaleString()}</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">Hantida La Meelayay</h4>
-          <p className="text-3xl font-extrabold text-accent">{assignedAssetsCount}</p>
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md border-l-4 border-accent">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 rounded-lg bg-accent/10 text-accent">
+                <CheckCircle size={22} />
+              </div>
+              <div>
+                <div className="text-sm text-mediumGray dark:text-gray-400 font-medium">Hantida La Meelayay</div>
+                <div className="text-2xl font-extrabold text-darkGray dark:text-gray-100">{assignedAssetsCount}</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -343,52 +374,107 @@ export default function FixedAssetsSettingsPage() {
         </div>
       </div>
 
-      {/* Fixed Assets Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden animate-fade-in">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
-            <thead className="bg-lightGray dark:bg-gray-700">
-              <tr>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Magaca Hantida</th>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Nooca</th>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Qiimaha</th>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Taariikhda Gadashada</th>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Meelaynta</th>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Last Updated</th>
-                <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Ficillo</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-lightGray dark:divide-gray-700">
-              {loading ? (
-                <tr>
-                  <td colSpan={7} className="p-8 text-center text-mediumGray dark:text-gray-400">
-                    <Loader2 className="animate-spin mx-auto mb-2" size={24} />
-                    <div>Waa la soo saarayaa hantida...</div>
-                  </td>
-                </tr>
-              ) : filteredAssets.length > 0 ? (
-                filteredAssets.map(asset => (
-                  <FixedAssetRow 
-                    key={asset.id} 
-                    asset={asset} 
-                    onEdit={openEditModal} 
-                    onDelete={handleDeleteAsset} 
-                  />
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={7} className="p-4 text-center text-mediumGray dark:text-gray-400">Ma jiraan hanti la helay.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      {/* Desktop List View */}
+      <div className="hidden md:block animate-fade-in">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+          {/* Header */}
+          <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-lightGray dark:bg-gray-700 text-xs font-medium text-mediumGray dark:text-gray-300 uppercase tracking-wider">
+            <div className="col-span-3">Magaca Hantida</div>
+            <div className="col-span-2">Nooca</div>
+            <div className="col-span-2">Qiimaha</div>
+            <div className="col-span-2">Taariikhda Gadashada</div>
+            <div className="col-span-2">Meelaynta</div>
+            <div className="col-span-1 text-right">Ficillo</div>
+          </div>
+          {/* Rows */}
+          <div className="divide-y divide-lightGray dark:divide-gray-700">
+            {loading ? (
+              <div className="px-4 py-8 text-center text-mediumGray dark:text-gray-400">
+                <Loader2 className="animate-spin mx-auto mb-2" size={24} />
+                <div>Waa la soo saarayaa hantida...</div>
+              </div>
+            ) : filteredAssets.length > 0 ? (
+              filteredAssets.map(asset => (
+                <div key={asset.id} className="grid grid-cols-12 gap-4 items-center px-4 py-4 hover:bg-lightGray dark:hover:bg-gray-700 transition-colors">
+                  <div className="col-span-3 flex items-center min-w-0">
+                    <HardDrive size={18} className="text-primary mr-2 shrink-0" />
+                    <span className="truncate text-darkGray dark:text-gray-100 font-medium">{asset.name}</span>
+                  </div>
+                  <div className="col-span-2 flex items-center text-mediumGray dark:text-gray-300 min-w-0">
+                    <Tag size={16} className="text-secondary mr-1 shrink-0" />
+                    <span className="truncate">{asset.type}</span>
+                  </div>
+                  <div className="col-span-2 text-darkGray dark:text-gray-100 font-semibold">${Number((asset as any).value ?? 0).toLocaleString()}</div>
+                  <div className="col-span-2 text-mediumGray dark:text-gray-300">{new Date(asset.purchaseDate).toLocaleDateString()}</div>
+                  <div className="col-span-2 flex items-center text-mediumGray dark:text-gray-300 min-w-0">
+                    {asset.assignedTo === 'Factory' ? <Building size={16} className="mr-1"/> : asset.assignedTo === 'Office' ? <Home size={16} className="mr-1"/> : <Briefcase size={16} className="mr-1"/>}
+                    <span className="truncate">{asset.assignedTo}</span>
+                  </div>
+                  <div className="col-span-1 flex items-center justify-end space-x-2">
+                    <button onClick={() => openEditModal(asset.id)} className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit Asset">
+                      <Edit size={18} />
+                    </button>
+                    <button onClick={() => handleDeleteAsset(asset.id)} className="p-2 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-colors duration-200" title="Delete Asset">
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="px-4 py-6 text-center text-mediumGray dark:text-gray-400">Ma jiraan hanti la helay.</div>
+            )}
+          </div>
         </div>
-        {/* Pagination Placeholder */}
-        <div className="p-4 flex justify-between items-center border-t border-lightGray dark:border-gray-700">
-            <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Hore</button>
-            <span className="text-sm text-darkGray dark:text-gray-100">Bogga 1 ee {Math.ceil(filteredAssets.length / 10) || 1}</span>
-            <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Xiga</button>
-        </div>
+      </div>
+
+      {/* Mobile/Small Screens - Cards */}
+      <div className="md:hidden space-y-4 animate-fade-in">
+        {loading ? (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center text-mediumGray dark:text-gray-400">
+            <Loader2 className="animate-spin mx-auto mb-2" size={24} />
+            <div>Waa la soo saarayaa hantida...</div>
+          </div>
+        ) : filteredAssets.length > 0 ? (
+          filteredAssets.map(asset => (
+            <div key={asset.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 border-l-4 border-primary">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
+                    <HardDrive size={20} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-base font-semibold text-darkGray dark:text-gray-100 truncate">{asset.name}</div>
+                    <div className="mt-1 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                      <div className="flex items-center text-mediumGray dark:text-gray-400 min-w-0">
+                        <Tag size={14} className="mr-1 shrink-0" />
+                        <span className="truncate">{asset.type}</span>
+                      </div>
+                      <div className="text-darkGray dark:text-gray-100 font-semibold">${Number((asset as any).value ?? 0).toLocaleString()}</div>
+                      <div className="flex items-center text-mediumGray dark:text-gray-400">
+                        <Calendar size={16} className="mr-1" /> {new Date(asset.purchaseDate).toLocaleDateString()}
+                      </div>
+                      <div className="flex items-center text-mediumGray dark:text-gray-400 min-w-0">
+                        {asset.assignedTo === 'Factory' ? <Building size={16} className="mr-1"/> : asset.assignedTo === 'Office' ? <Home size={16} className="mr-1"/> : <Briefcase size={16} className="mr-1"/>}
+                        <span className="truncate">{asset.assignedTo}</span>
+                      </div>
+                    </div>
+                    <div className="mt-1 text-xs text-mediumGray dark:text-gray-400">Cusboonaysiin: {new Date(asset.updatedAt).toLocaleDateString()}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button onClick={() => openEditModal(asset.id)} className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit Asset">
+                    <Edit size={18} />
+                  </button>
+                  <button onClick={() => handleDeleteAsset(asset.id)} className="p-2 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-colors duration-200" title="Delete Asset">
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center text-mediumGray dark:text-gray-400">Ma jiraan hanti la helay.</div>
+        )}
       </div>
 
       {/* Add/Edit Asset Modal */}

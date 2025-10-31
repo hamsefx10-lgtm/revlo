@@ -67,6 +67,86 @@ export async function GET(request: Request) {
       user: a.userDisplayName || 'System',
     }));
 
+    // Account breakdown by individual accounts
+    const accounts = await prisma.account.findMany({
+      where: { companyId },
+      select: { id: true, name: true, type: true, balance: true },
+      orderBy: { balance: 'desc' },
+    });
+    const accountBreakdown = accounts.map((acc: any) => ({
+      name: acc.name,
+      value: Number(acc.balance) || 0,
+      type: acc.type,
+    }));
+
+    // Debt summary (outstanding debts we owe, receivables owed to us)
+    const debtTaken = await prisma.transaction.aggregate({
+      _sum: { amount: true },
+      where: { companyId, type: 'DEBT_TAKEN' },
+    });
+    const debtRepaid = await prisma.transaction.aggregate({
+      _sum: { amount: true },
+      where: { companyId, type: 'DEBT_REPAID' },
+    });
+    const outstandingDebts = Math.abs(Number(debtTaken._sum.amount) || 0) - Math.abs(Number(debtRepaid._sum.amount) || 0);
+
+    // Monthly comparison (this month vs last month)
+    const today = new Date();
+    const startOfThisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const startOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+
+    const thisMonthIncome = await prisma.transaction.aggregate({
+      _sum: { amount: true },
+      where: { 
+        companyId, 
+        type: { in: ['INCOME', 'TRANSFER_IN', 'DEBT_REPAID'] },
+        transactionDate: { gte: startOfThisMonth },
+      },
+    });
+    const thisMonthExpenses = await prisma.transaction.aggregate({
+      _sum: { amount: true },
+      where: { 
+        companyId, 
+        type: { in: ['EXPENSE', 'TRANSFER_OUT', 'DEBT_TAKEN'] },
+        category: { not: 'FIXED_ASSET_PURCHASE' },
+        transactionDate: { gte: startOfThisMonth },
+      },
+    });
+    const lastMonthIncome = await prisma.transaction.aggregate({
+      _sum: { amount: true },
+      where: { 
+        companyId, 
+        type: { in: ['INCOME', 'TRANSFER_IN', 'DEBT_REPAID'] },
+        transactionDate: { gte: startOfLastMonth, lte: endOfLastMonth },
+      },
+    });
+    const lastMonthExpenses = await prisma.transaction.aggregate({
+      _sum: { amount: true },
+      where: { 
+        companyId, 
+        type: { in: ['EXPENSE', 'TRANSFER_OUT', 'DEBT_TAKEN'] },
+        category: { not: 'FIXED_ASSET_PURCHASE' },
+        transactionDate: { gte: startOfLastMonth, lte: endOfLastMonth },
+      },
+    });
+
+    // Top expense categories
+    const topExpenseCategories = await prisma.expense.groupBy({
+      by: ['category'],
+      where: { companyId },
+      _sum: { amount: true },
+      orderBy: { _sum: { amount: 'desc' } },
+      take: 5,
+    });
+
+    // Fixed assets summary
+    const fixedAssets = await prisma.fixedAsset.aggregate({
+      _sum: { value: true },
+      _count: { id: true },
+      where: { companyId },
+    });
+
     return NextResponse.json({
       totalIncome: Number(incomeAgg._sum.amount) || 0,
       totalExpenses: Number(expensesAgg._sum.amount) || 0,
@@ -85,6 +165,19 @@ export async function GET(request: Request) {
       monthlyFinancialData,
       projectStatusBreakdown,
       recentActivities,
+      // New data
+      accountBreakdown,
+      outstandingDebts,
+      thisMonthIncome: Math.abs(Number(thisMonthIncome._sum.amount) || 0),
+      thisMonthExpenses: Math.abs(Number(thisMonthExpenses._sum.amount) || 0),
+      lastMonthIncome: Math.abs(Number(lastMonthIncome._sum.amount) || 0),
+      lastMonthExpenses: Math.abs(Number(lastMonthExpenses._sum.amount) || 0),
+      topExpenseCategories: topExpenseCategories.map((cat: any) => ({
+        name: cat.category || 'Unknown',
+        amount: Number(cat._sum.amount) || 0,
+      })),
+      fixedAssetsValue: Number(fixedAssets._sum.value) || 0,
+      fixedAssetsCount: fixedAssets._count.id || 0,
     });
   } catch (err) {
     return NextResponse.json({ error: 'Dashboard stats fetch failed', details: String(err) }, { status: 500 });

@@ -10,11 +10,11 @@ export async function GET(request: Request) {
     // Total Income, Expenses, Net Profit
     const incomeResult = await prisma.transaction.aggregate({
       _sum: { amount: true },
-      where: { companyId, type: { in: ['INCOME', 'TRANSFER_IN', 'DEBT_TAKEN'] } },
+      where: { companyId, type: { in: ['INCOME', 'TRANSFER_IN', 'DEBT_REPAID'] } },
     });
     const expenseResult = await prisma.transaction.aggregate({
       _sum: { amount: true },
-      where: { companyId, type: { in: ['EXPENSE', 'TRANSFER_OUT', 'DEBT_REPAID'] } },
+      where: { companyId, type: { in: ['EXPENSE', 'TRANSFER_OUT', 'DEBT_TAKEN'] }, category: { not: 'FIXED_ASSET_PURCHASE' } },
     });
     const totalIncome = incomeResult._sum.amount ? Number(incomeResult._sum.amount) : 0;
     const totalExpenses = expenseResult._sum.amount ? Number(expenseResult._sum.amount) : 0;

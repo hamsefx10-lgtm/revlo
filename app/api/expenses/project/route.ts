@@ -221,16 +221,19 @@ export async function POST(request: Request) {
     if (category === 'Material') {
       if (paymentStatus === 'UNPAID') {
         tType = 'DEBT_TAKEN';
-        tAccountId = null; // no account movement
+        // If paidFrom is provided even for unpaid, deduct from account (user is paying now)
+        tAccountId = paidFrom || null;
         tVendorId = vendorId;
       } else {
         tType = 'EXPENSE';
         tVendorId = vendorId;
         tAmount = -Math.abs(tAmount);
+        tAccountId = paidFrom; // Deduct from account when paid
       }
     } else {
-      // Labor and others behave as expense
+      // Labor and others behave as expense - always deduct from paidFrom if provided
       tAmount = -Math.abs(tAmount);
+      tAccountId = paidFrom; // Ensure account is set for all expense types
     }
 
     await prisma.transaction.create({
