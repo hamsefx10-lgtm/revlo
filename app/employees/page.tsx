@@ -345,6 +345,7 @@ export default function EmployeesPage() {
   const [filterEmployeeType, setFilterEmployeeType] = useState('All'); // Company/Project
   const [filterDateRange, setFilterDateRange] = useState('All');
   const [viewMode, setViewMode] = useState<'list' | 'cards'>('list'); // Default to list view
+  const [activeTab, setActiveTab] = useState<'All' | 'Company' | 'Project'>('All'); // Tab state
   const [pageLoading, setPageLoading] = useState(true); 
   const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
@@ -472,13 +473,20 @@ export default function EmployeesPage() {
   const employeeTypes = ['All', 'Company', 'Project'];
   const dateRanges = ['All', 'Last 30 Days', 'This Quarter', 'This Year'];
 
-  // Statistics with proper salary calculations
-  const totalEmployeesCount = filteredEmployees.length;
-  const activeEmployeesCount = filteredEmployees.filter(e => e.isActive).length;
-  const laborEmployeesCount = filteredEmployees.filter(e => e.role === 'Labor').length;
+  // Filter employees based on active tab
+  const tabFilteredEmployees = activeTab === 'All' 
+    ? filteredEmployees 
+    : activeTab === 'Company' 
+      ? filteredEmployees.filter(emp => emp.category === 'COMPANY')
+      : filteredEmployees.filter(emp => emp.category === 'PROJECT');
+
+  // Statistics with proper salary calculations (based on active tab)
+  const totalEmployeesCount = tabFilteredEmployees.length;
+  const activeEmployeesCount = tabFilteredEmployees.filter(e => e.isActive).length;
+  const laborEmployeesCount = tabFilteredEmployees.filter(e => e.role === 'Labor').length;
   
   // Calculate total salary owed based on months worked for each employee
-  const totalSalaryOwed = filteredEmployees.reduce((sum, employee) => {
+  const totalSalaryOwed = tabFilteredEmployees.reduce((sum, employee) => {
     if (employee.category === 'COMPANY' && employee.monthlySalary) {
       const salaryCalc = calculateEmployeeSalary(
         Number(employee.monthlySalary),
@@ -494,7 +502,7 @@ export default function EmployeesPage() {
     return sum;
   }, 0);
   
-  const totalSalaryPaid = filteredEmployees.reduce((sum, e) => {
+  const totalSalaryPaid = tabFilteredEmployees.reduce((sum, e) => {
     if (e.category === 'COMPANY') {
       return sum + (e.salaryPaidThisMonth ?? 0);
     } else if (e.category === 'PROJECT') {
@@ -504,9 +512,21 @@ export default function EmployeesPage() {
   }, 0);
   
   const totalSalaryRemaining = totalSalaryOwed - totalSalaryPaid;
-  const totalOverpaidAmount = filteredEmployees.reduce((sum, e) => {
+  // Calculate overpaid amount properly for each employee
+  const totalOverpaidAmount = tabFilteredEmployees.reduce((sum, e) => {
     if (e.category === 'COMPANY') {
-      return sum + ((e.overpaidAmount ?? 0) > 0 ? (e.overpaidAmount ?? 0) : 0);
+      const salaryCalc = e.monthlySalary ? calculateEmployeeSalary(
+        Number(e.monthlySalary),
+        e.startDate,
+        new Date().toISOString().split('T')[0],
+        Number(e.salaryPaidThisMonth || 0)
+      ) : null;
+      
+      if (salaryCalc) {
+        // If remainingSalary < 0, employee is overpaid
+        const overpaid = salaryCalc.remainingSalary < 0 ? Math.abs(salaryCalc.remainingSalary) : 0;
+        return sum + overpaid;
+      }
     } else if (e.category === 'PROJECT') {
       // For project employees, calculate overpaid amount from remaining wages
       const totalAgreedWage = e.laborRecords?.reduce((sum, record) => sum + (record.agreedWage || 0), 0) || 0;
@@ -518,7 +538,7 @@ export default function EmployeesPage() {
   }, 0);
   
   // Monthly salary commitment (for reference) - includes PROJECT employees
-  const totalMonthlySalaryCommitment = filteredEmployees.reduce((sum, e) => {
+  const totalMonthlySalaryCommitment = tabFilteredEmployees.reduce((sum, e) => {
     if (e.category === 'COMPANY') {
       return sum + (e.monthlySalary ?? 0);
     } else if (e.category === 'PROJECT') {
@@ -529,9 +549,37 @@ export default function EmployeesPage() {
   }, 0);
 
 
+  // Auto-switch to board view on mobile
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768 && viewMode === 'list') {
+        setViewMode('cards');
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <Layout>
-      <div className="flex justify-between items-center mb-8">
+      {/* Mobile Header */}
+      <div className="block md:hidden mb-6">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border-l-4 border-primary mb-4">
+          <h1 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-4">Shaqaalaha</h1>
+          <div className="flex flex-col gap-2">
+            <Link href="/employees/add" className="bg-primary text-white py-2 px-4 rounded-lg font-medium text-sm hover:bg-blue-700 transition duration-200 shadow-md flex items-center justify-center">
+              <Plus size={16} className="mr-2" /> Ku Dar Shaqaale
+            </Link>
+            <button onClick={refreshData} className="bg-secondary text-white py-2 px-4 rounded-lg font-medium text-sm hover:bg-green-600 transition duration-200 shadow-md flex items-center justify-center">
+              <RefreshCw size={16} className="mr-2" /> Cusboonaysii
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Header */}
+      <div className="hidden md:flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">Employees</h1>
         <div className="flex space-x-3">
           <Link href="/employees/add" className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center">
@@ -544,61 +592,67 @@ export default function EmployeesPage() {
       </div>
 
       {/* Employee Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-fade-in-up">
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-6 rounded-xl shadow-lg border border-blue-200 dark:border-blue-700/30 text-center">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md border-l-4 border-primary hover:shadow-xl transition-all duration-300 text-center">
           <div className="flex items-center justify-center mb-3">
-            <User className="text-blue-500" size={24} />
+            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+              <User size={22} />
+            </div>
           </div>
-          <h4 className="text-lg font-semibold text-blue-600 dark:text-blue-400">Wadarta Shaqaalaha</h4>
-          <p className="text-3xl font-extrabold text-blue-900 dark:text-blue-100">{totalEmployeesCount}</p>
-          <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">{activeEmployeesCount} firfircoon</p>
+          <h4 className="text-sm font-medium text-mediumGray dark:text-gray-400">Wadarta Shaqaalaha</h4>
+          <p className="text-2xl font-extrabold text-primary">{totalEmployeesCount}</p>
+          <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">{activeEmployeesCount} firfircoon</p>
         </div>
         
-        <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-6 rounded-xl shadow-lg border border-green-200 dark:border-green-700/30 text-center">
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md border-l-4 border-secondary hover:shadow-xl transition-all duration-300 text-center">
           <div className="flex items-center justify-center mb-3">
-            <DollarSign className="text-green-500" size={24} />
+            <div className="p-2 rounded-lg bg-secondary/10 text-secondary">
+              <DollarSign size={22} />
+            </div>
           </div>
-          <h4 className="text-lg font-semibold text-green-600 dark:text-green-400">Wadarta Mushahaarka</h4>
-          <p className="text-3xl font-extrabold text-green-900 dark:text-green-100">{totalSalaryOwed.toLocaleString()} ETB</p>
-          <p className="text-sm text-green-600 dark:text-green-400 mt-1">Company + Project Wages</p>
+          <h4 className="text-sm font-medium text-mediumGray dark:text-gray-400">Wadarta Mushahaarka</h4>
+          <p className="text-2xl font-extrabold text-secondary">{totalSalaryOwed.toLocaleString()} ETB</p>
+          <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">Company + Project Wages</p>
         </div>
         
-        <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 p-6 rounded-xl shadow-lg border border-orange-200 dark:border-orange-700/30 text-center">
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md border-l-4 border-accent hover:shadow-xl transition-all duration-300 text-center">
           <div className="flex items-center justify-center mb-3">
-            <Coins className="text-orange-500" size={24} />
+            <div className="p-2 rounded-lg bg-accent/10 text-accent">
+              <Coins size={22} />
+            </div>
           </div>
-          <h4 className="text-lg font-semibold text-orange-600 dark:text-orange-400">Lacagta La Bixiyay</h4>
-          <p className="text-3xl font-extrabold text-orange-900 dark:text-orange-100">{totalSalaryPaid.toLocaleString()} ETB</p>
-          <p className="text-sm text-orange-600 dark:text-orange-400 mt-1">Company + Project Payments</p>
+          <h4 className="text-sm font-medium text-mediumGray dark:text-gray-400">Lacagta La Bixiyay</h4>
+          <p className="text-2xl font-extrabold text-accent">{totalSalaryPaid.toLocaleString()} ETB</p>
+          <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">Company + Project Payments</p>
         </div>
         
-        <div className={`p-6 rounded-xl shadow-lg border text-center ${
-          totalSalaryRemaining >= 0 
-            ? 'bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700/30' 
-            : 'bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-red-200 dark:border-red-700/30'
+        <div className={`bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md border-l-4 hover:shadow-xl transition-all duration-300 text-center ${
+          totalSalaryRemaining >= 0 ? 'border-primary' : 'border-redError'
         }`}>
           <div className="flex items-center justify-center mb-3">
-            <TrendingUp className={totalSalaryRemaining >= 0 ? "text-purple-500" : "text-red-500"} size={24} />
+            <div className={`p-2 rounded-lg ${totalSalaryRemaining >= 0 ? 'bg-primary/10 text-primary' : 'bg-redError/10 text-redError'}`}>
+              <TrendingUp size={22} />
+            </div>
           </div>
-          <h4 className={`text-lg font-semibold ${totalSalaryRemaining >= 0 ? 'text-purple-600 dark:text-purple-400' : 'text-red-600 dark:text-red-400'}`}>
-            Mushahar Hadhay
-          </h4>
-          <p className={`text-3xl font-extrabold ${totalSalaryRemaining >= 0 ? 'text-purple-900 dark:text-purple-100' : 'text-red-900 dark:text-red-100'}`}>
+          <h4 className="text-sm font-medium text-mediumGray dark:text-gray-400">Mushahar Hadhay</h4>
+          <p className={`text-2xl font-extrabold ${totalSalaryRemaining >= 0 ? 'text-primary' : 'text-redError'}`}>
             {Math.abs(totalSalaryRemaining).toLocaleString()} ETB
           </p>
-          <p className={`text-sm mt-1 ${totalSalaryRemaining >= 0 ? 'text-purple-600 dark:text-purple-400' : 'text-red-600 dark:text-red-400'}`}>
-            {totalSalaryRemaining >= 0 ? 'Company + Project Remaining' : 'Overpaid'}
+          <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">
+            {totalSalaryRemaining >= 0 ? 'Company + Project' : 'Overpaid'}
           </p>
         </div>
         
         {totalOverpaidAmount > 0 && (
-          <div className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 p-6 rounded-xl shadow-lg border border-red-200 dark:border-red-700/30 text-center animate-fade-in-up">
+          <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md border-l-4 border-redError hover:shadow-xl transition-all duration-300 text-center md:col-span-2">
             <div className="flex items-center justify-center mb-3">
-              <TrendingDown className="text-red-500" size={24} />
+              <div className="p-2 rounded-lg bg-redError/10 text-redError">
+                <TrendingDown size={22} />
+              </div>
             </div>
-            <h4 className="text-lg font-semibold text-red-600 dark:text-red-400">Lacagta La Siidaayay</h4>
-            <p className="text-3xl font-extrabold text-red-900 dark:text-red-100">{totalOverpaidAmount.toLocaleString()} ETB</p>
-            <p className="text-sm text-red-600 dark:text-red-400 mt-1">Waa la soo celin karaa</p>
+            <h4 className="text-sm font-medium text-mediumGray dark:text-gray-400">Lacagta La Siidaayay</h4>
+            <p className="text-2xl font-extrabold text-redError">{totalOverpaidAmount.toLocaleString()} ETB</p>
+            <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">Waa la soo celin karaa</p>
             </div>
         )}
       </div>
@@ -712,6 +766,69 @@ export default function EmployeesPage() {
         </div>
       </div>
 
+      {/* Tabs for Employee Categories */}
+      <div className="mb-6 border-b border-lightGray dark:border-gray-700">
+        <nav className="flex flex-wrap gap-2" aria-label="Tabs">
+          <button
+            onClick={() => setActiveTab('All')}
+            className={`
+              flex items-center space-x-2 px-4 py-2 sm:px-6 sm:py-3 text-sm font-semibold rounded-t-lg transition-all duration-200 border-b-2
+              ${activeTab === 'All'
+                ? 'bg-primary/10 text-primary border-primary'
+                : 'text-mediumGray dark:text-gray-400 hover:text-darkGray dark:hover:text-gray-200 border-transparent hover:border-lightGray dark:hover:border-gray-600'
+              }
+            `}
+          >
+            <User size={18} />
+            <span className="hidden sm:inline">All Employees</span>
+            <span className="sm:hidden">All</span>
+            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+              activeTab === 'All' ? 'bg-primary/20 text-primary' : 'bg-gray-200 dark:bg-gray-700 text-mediumGray'
+            }`}>
+              {employees.length}
+            </span>
+          </button>
+          
+          <button
+            onClick={() => setActiveTab('Company')}
+            className={`
+              flex items-center space-x-2 px-4 py-2 sm:px-6 sm:py-3 text-sm font-semibold rounded-t-lg transition-all duration-200 border-b-2
+              ${activeTab === 'Company'
+                ? 'bg-primary/10 text-primary border-primary'
+                : 'text-mediumGray dark:text-gray-400 hover:text-darkGray dark:hover:text-gray-200 border-transparent hover:border-lightGray dark:hover:border-gray-600'
+              }
+            `}
+          >
+            <Briefcase size={18} />
+            <span>Company</span>
+            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+              activeTab === 'Company' ? 'bg-primary/20 text-primary' : 'bg-gray-200 dark:bg-gray-700 text-mediumGray'
+            }`}>
+              {employees.filter(e => e.category === 'COMPANY').length}
+            </span>
+          </button>
+          
+          <button
+            onClick={() => setActiveTab('Project')}
+            className={`
+              flex items-center space-x-2 px-4 py-2 sm:px-6 sm:py-3 text-sm font-semibold rounded-t-lg transition-all duration-200 border-b-2
+              ${activeTab === 'Project'
+                ? 'bg-accent/10 text-accent border-accent'
+                : 'text-mediumGray dark:text-gray-400 hover:text-darkGray dark:hover:text-gray-200 border-transparent hover:border-lightGray dark:hover:border-gray-600'
+              }
+            `}
+          >
+            <Truck size={18} />
+            <span>Project</span>
+            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+              activeTab === 'Project' ? 'bg-accent/20 text-accent' : 'bg-gray-200 dark:bg-gray-700 text-mediumGray'
+            }`}>
+              {employees.filter(e => e.category === 'PROJECT').length}
+            </span>
+          </button>
+        </nav>
+      </div>
+
       {/* Employees View */}
       {pageLoading ? (
         <div className="min-h-[400px] flex items-center justify-center">
@@ -721,11 +838,23 @@ export default function EmployeesPage() {
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center text-mediumGray dark:text-gray-400 animate-fade-in">
           Ma jiraan shaqaale la helay.
         </div>
-      ) : viewMode === 'list' ? (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden animate-fade-in">
+      ) : (
+        <div className="animate-fade-in">
+          {tabFilteredEmployees.length === 0 ? (
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center text-mediumGray dark:text-gray-400">
+              Ma jiraan shaqaale la helay {activeTab !== 'All' && activeTab.toLowerCase() + ' category'}.
+            </div>
+          ) : (
+            viewMode === 'list' ? (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
-              <thead className="bg-gradient-to-r from-primary/10 to-secondary/10 dark:from-primary/20 dark:to-secondary/20">
+                    <thead className={activeTab === 'Company' 
+                      ? 'bg-gradient-to-r from-primary/10 to-secondary/10 dark:from-primary/20 dark:to-secondary/20'
+                      : activeTab === 'Project'
+                        ? 'bg-gradient-to-r from-accent/10 to-orange-500/10 dark:from-accent/20 dark:to-orange-500/20'
+                        : 'bg-gradient-to-r from-primary/10 to-secondary/10 dark:from-primary/20 dark:to-secondary/20'
+                    }>
                 <tr>
                   <th scope="col" className="px-4 py-4 text-left text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">MAGACA</th>
                   <th scope="col" className="px-4 py-4 text-left text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">DOORKA</th>
@@ -739,24 +868,21 @@ export default function EmployeesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-lightGray dark:divide-gray-700">
-                {filteredEmployees.map(employee => (
+                      {tabFilteredEmployees.map(employee => (
                   <EmployeeRow key={employee.id} employee={employee} onEdit={handleEditEmployee} onDelete={handleDeleteEmployee} onRecordDailyWork={handleRecordDailyWork} onRecordPayment={handleRecordPayment} />
                 ))}
               </tbody>
             </table>
           </div>
-          {/* Pagination Placeholder */}
-          <div className="p-4 flex justify-between items-center border-t border-lightGray dark:border-gray-700">
-              <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Hore</button>
-              <span className="text-sm text-darkGray dark:text-gray-100">Page 1 of {Math.ceil(filteredEmployees.length / 10) || 1}</span>
-              <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Next</button>
           </div>
-        </div>
-      ) : ( /* Cards View */
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
-            {filteredEmployees.map(employee => (
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {tabFilteredEmployees.map(employee => (
                 <EmployeeCard key={employee.id} employee={employee} onEdit={handleEditEmployee} onDelete={handleDeleteEmployee} onRecordDailyWork={handleRecordDailyWork} onRecordPayment={handleRecordPayment} />
             ))}
+              </div>
+            )
+          )}
         </div>
       )}
 

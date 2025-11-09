@@ -388,13 +388,13 @@ export default function FixedAssetsSettingsPage() {
           </div>
           {/* Rows */}
           <div className="divide-y divide-lightGray dark:divide-gray-700">
-            {loading ? (
+              {loading ? (
               <div className="px-4 py-8 text-center text-mediumGray dark:text-gray-400">
-                <Loader2 className="animate-spin mx-auto mb-2" size={24} />
-                <div>Waa la soo saarayaa hantida...</div>
+                    <Loader2 className="animate-spin mx-auto mb-2" size={24} />
+                    <div>Waa la soo saarayaa hantida...</div>
               </div>
-            ) : filteredAssets.length > 0 ? (
-              filteredAssets.map(asset => (
+              ) : filteredAssets.length > 0 ? (
+                filteredAssets.map(asset => (
                 <div key={asset.id} className="grid grid-cols-12 gap-4 items-center px-4 py-4 hover:bg-lightGray dark:hover:bg-gray-700 transition-colors">
                   <div className="col-span-3 flex items-center min-w-0">
                     <HardDrive size={18} className="text-primary mr-2 shrink-0" />
@@ -419,11 +419,11 @@ export default function FixedAssetsSettingsPage() {
                     </button>
                   </div>
                 </div>
-              ))
-            ) : (
+                ))
+              ) : (
               <div className="px-4 py-6 text-center text-mediumGray dark:text-gray-400">Ma jiraan hanti la helay.</div>
-            )}
-          </div>
+              )}
+        </div>
         </div>
       </div>
 

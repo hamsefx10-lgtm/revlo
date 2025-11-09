@@ -39,7 +39,7 @@ const TransactionRow: React.FC<{ transaction: Transaction; onEdit: (id: string) 
   const typeBadgeClass =
     (transaction.type === 'INCOME' || transaction.type === 'TRANSFER_IN' || transaction.type === 'DEBT_REPAID') ? 'bg-secondary/10 text-secondary' :
     (transaction.type === 'EXPENSE' || transaction.type === 'TRANSFER_OUT' || transaction.type === 'DEBT_TAKEN') ? 'bg-redError/10 text-redError' :
-    'bg-primary/10 text-primary';
+        'bg-primary/10 text-primary';
 
   return (
     <tr className="hover:bg-lightGray dark:hover:bg-gray-700 transition-colors duration-150 border-b border-lightGray dark:border-gray-700 last:border-b-0">

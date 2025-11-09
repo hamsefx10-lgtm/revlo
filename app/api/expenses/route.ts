@@ -376,12 +376,12 @@ export async function POST(request: Request) {
         // DEBT_REPAID with vendorId = we repay vendor (money goes OUT)
         if (transactionCustomerId) {
           // Customer repaying us - add money to account (income)
-          await prisma.account.update({
-            where: { id: transactionAccountId },
-            data: {
-              balance: { increment: Number(amount) },
-            },
-          });
+        await prisma.account.update({
+          where: { id: transactionAccountId },
+          data: {
+            balance: { increment: Number(amount) },
+          },
+        });
         } else if (transactionVendorId) {
           // We repaying vendor - subtract money from account (expense)
           await prisma.account.update({

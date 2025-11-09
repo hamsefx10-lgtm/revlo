@@ -126,7 +126,49 @@ export default function Page() {
 
   return (
     <Layout>
-      <div className="flex justify-between items-center mb-8">
+      <div className="pb-20 md:pb-6">
+      {/* Mobile Header */}
+      <div className="block md:hidden mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <Link href="/vendors" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200">
+            <ArrowLeft size={24} className="inline-block" />
+          </Link>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border-l-4 border-primary mb-4">
+          <h1 className="text-xl font-bold text-darkGray dark:text-gray-100 mb-2">{vendor.name}</h1>
+          <div className="flex flex-wrap gap-2 mb-3">
+            <span className="px-2 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/30">
+              {vendor.type}
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <Link 
+              href={`/expenses/add?vendorId=${vendor.id}`}
+              className="flex-1 py-2 px-3 rounded-lg font-medium text-xs transition duration-200 shadow-md bg-primary text-white hover:bg-blue-700 flex items-center justify-center"
+            >
+              <Plus size={14} className="mr-1" />
+              Ku Dar Kharash
+            </Link>
+            <Link 
+              href={`/vendors/edit/${vendor.id}`}
+              className="flex-1 py-2 px-3 rounded-lg font-medium text-xs transition duration-200 shadow-md bg-accent text-white hover:bg-orange-600 flex items-center justify-center"
+            >
+              <Edit size={14} className="mr-1" />
+              Edit
+            </Link>
+            <button 
+              onClick={handleDeleteVendor}
+              className="flex-1 py-2 px-3 rounded-lg font-medium text-xs transition duration-200 shadow-md bg-redError text-white hover:bg-red-700 flex items-center justify-center"
+            >
+              <Trash2 size={14} className="mr-1" />
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Header */}
+      <div className="hidden md:flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">
           <Link href="/vendors" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
             <ArrowLeft size={28} className="inline-block" />
@@ -134,7 +176,6 @@ export default function Page() {
           {vendor.name}
         </h1>
         <div className="flex space-x-3">
-          {/* Link to add expense related to this vendor (if applicable) */}
           <Link href={`/expenses/add?vendorId=${vendor.id}`} className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center">
             <Plus size={20} className="mr-2" /> Ku Dar Kharash
           </Link>
@@ -148,26 +189,80 @@ export default function Page() {
       </div>
 
       {/* Vendor Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-fade-in-up">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">Nooca Iibiyaha</h4>
-          <p className="text-3xl font-extrabold text-primary">{vendor.type}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
+        {/* Type Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border-l-4 border-primary p-4 md:p-5 hover:shadow-lg transition-shadow duration-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/10 p-3 rounded-lg">
+                <TagIcon className="text-primary" size={24} />
+              </div>
+              <div>
+                <p className="text-sm text-mediumGray dark:text-gray-400 mb-1">Nooca Iibiyaha</p>
+                <p className="text-2xl font-bold text-darkGray dark:text-gray-100">{vendor.type}</p>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">Wadarta La Iibsaday</h4>
-          <p className="text-3xl font-extrabold text-accent">Br{totalPurchases.toLocaleString()}</p>
+
+        {/* Total Purchases Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border-l-4 border-accent p-4 md:p-5 hover:shadow-lg transition-shadow duration-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-accent/10 p-3 rounded-lg">
+                <DollarSign className="text-accent" size={24} />
+              </div>
+              <div>
+                <p className="text-sm text-mediumGray dark:text-gray-400 mb-1">Wadarta La Iibsaday</p>
+                <p className="text-2xl font-bold text-darkGray dark:text-gray-100">Br{totalPurchases.toLocaleString()}</p>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">La Bixiyay</h4>
-          <p className="text-3xl font-extrabold text-secondary">Br{totalPaid.toLocaleString()}</p>
+
+        {/* Total Paid Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border-l-4 border-secondary p-4 md:p-5 hover:shadow-lg transition-shadow duration-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-secondary/10 p-3 rounded-lg">
+                <CheckCircle className="text-secondary" size={24} />
+              </div>
+              <div>
+                <p className="text-sm text-mediumGray dark:text-gray-400 mb-1">La Bixiyay</p>
+                <p className="text-2xl font-bold text-darkGray dark:text-gray-100">Br{totalPaid.toLocaleString()}</p>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">Hadhay (Dayn)</h4>
-          <p className={`text-3xl font-extrabold ${totalUnpaid > 0 ? 'text-red-600' : 'text-secondary'}`}>Br{totalUnpaid.toLocaleString()}</p>
+
+        {/* Unpaid/Debt Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border-l-4 border-redError p-4 md:p-5 hover:shadow-lg transition-shadow duration-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-redError/10 p-3 rounded-lg">
+                <XCircle className="text-redError" size={24} />
+              </div>
+              <div>
+                <p className="text-sm text-mediumGray dark:text-gray-400 mb-1">Hadhay (Dayn)</p>
+                <p className="text-2xl font-bold text-darkGray dark:text-gray-100">Br{totalUnpaid.toLocaleString()}</p>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">Diiwaan Gashan</h4>
-          <p className="text-3xl font-extrabold text-darkGray dark:text-gray-100">{new Date(vendor.createdAt).toLocaleDateString()}</p>
+
+        {/* Created Date Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border-l-4 border-primary p-4 md:p-5 hover:shadow-lg transition-shadow duration-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/10 p-3 rounded-lg">
+                <Calendar className="text-primary" size={24} />
+              </div>
+              <div>
+                <p className="text-sm text-mediumGray dark:text-gray-400 mb-1">Diiwaan Gashan</p>
+                <p className="text-lg font-bold text-darkGray dark:text-gray-100">{new Date(vendor.createdAt).toLocaleDateString()}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -302,6 +397,7 @@ export default function Page() {
       {toastMessage && (
         <Toast message={toastMessage.message} type={toastMessage.type} onClose={() => setToastMessage(null)} />
       )}
+      </div>
     </Layout>
   );
 }

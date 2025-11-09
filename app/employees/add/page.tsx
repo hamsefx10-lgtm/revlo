@@ -216,7 +216,18 @@ export default function AddEmployeePage() {
 
   return (
     <Layout>
-      <div className="flex justify-between items-center mb-8">
+      {/* Mobile Header */}
+      <div className="block md:hidden mb-6">
+        <Link href="/employees" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 inline-block mb-4">
+          <ArrowLeft size={24} />
+        </Link>
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border-l-4 border-primary">
+          <h1 className="text-2xl font-bold text-darkGray dark:text-gray-100">Ku Dar Shaqaale Cusub</h1>
+        </div>
+      </div>
+
+      {/* Desktop Header */}
+      <div className="hidden md:block mb-8">
         <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">
           <Link href="/employees" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
             <ArrowLeft size={28} className="inline-block" />
@@ -224,7 +235,8 @@ export default function AddEmployeePage() {
           Ku Dar Shaqaale Cusub
         </h1>
       </div>
-      <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md animate-fade-in-up">
+
+      <div className="bg-white dark:bg-gray-800 p-4 md:p-8 rounded-xl shadow-md animate-fade-in-up">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Employee Type Selection */}
           <div>
@@ -249,7 +261,16 @@ export default function AddEmployeePage() {
 
           {/* Dynamic Fields based on Employee Type */}
           {employeeType === 'Company' ? (
-            <div className="p-4 border border-primary/20 rounded-lg bg-primary/5 animate-fade-in space-y-6">
+            <div className="p-4 md:p-6 border border-primary/30 rounded-xl bg-primary/5 space-y-6">
+              <div className="flex items-center space-x-3 mb-4 pb-4 border-b border-primary/20">
+                <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                  <Building size={24} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-primary">Shaqaalaha Shirkadda</h3>
+                  <p className="text-sm text-mediumGray dark:text-gray-400">Macluumaadka shaqaalaha shirkadda ee mashruuca</p>
+                </div>
+              </div>
               {/* Full Name */}
               <div>
                 <label htmlFor="fullName" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Magaca Buuxa <span className="text-redError">*</span></label>
@@ -394,8 +415,16 @@ export default function AddEmployeePage() {
               })()}
             </div>
           ) : (
-            <div className="p-4 border border-accent/20 rounded-lg bg-accent/5 animate-fade-in space-y-6">
-              <h3 className="text-lg font-bold text-accent dark:text-orange-300 mb-4">Faahfaahinta Shaqaalaha Mashruuca</h3>
+            <div className="p-4 md:p-6 border border-accent/30 rounded-xl bg-accent/5 space-y-6">
+              <div className="flex items-center space-x-3 mb-4 pb-4 border-b border-accent/20">
+                <div className="p-2 rounded-lg bg-accent/10 text-accent">
+                  <BriefcaseIcon size={24} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-accent">Shaqaalaha Mashruuca</h3>
+                  <p className="text-sm text-mediumGray dark:text-gray-400">Macluumaadka shaqaalaha mashruuca ee muddaha</p>
+                </div>
+              </div>
               
               {/* Project Selection (Optional) */}
               <div>

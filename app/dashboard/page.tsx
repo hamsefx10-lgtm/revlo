@@ -305,17 +305,17 @@ const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, trend, colo
             )}
           </div>
         </div>
-      </div>
-      <div className="flex items-center justify-between">
-        <p className={`text-2xl font-extrabold ${colorClass}`}>{value}</p>
-        {trend && (
-          <span className={`flex items-center text-sm font-medium ${trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
-            {trend === 'up' ? <TrendingUp size={16} className="mr-1" /> : <TrendingDown size={16} className="mr-1" />}
-          </span>
-        )}
-      </div>
     </div>
-  );
+    <div className="flex items-center justify-between">
+        <p className={`text-2xl font-extrabold ${colorClass}`}>{value}</p>
+      {trend && (
+        <span className={`flex items-center text-sm font-medium ${trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
+          {trend === 'up' ? <TrendingUp size={16} className="mr-1" /> : <TrendingDown size={16} className="mr-1" />}
+        </span>
+      )}
+    </div>
+  </div>
+);
 };
 
 // Recent Activity Item

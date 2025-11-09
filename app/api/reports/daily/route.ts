@@ -9,14 +9,18 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const { companyId } = sessionUser;
-    const now = new Date();
-    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    
+    // Get today's date range (start of day to end of day)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
 
     // Debts collected today from projects
     const debtsTx = await prisma.transaction.findMany({
       where: {
         companyId,
-        transactionDate: { gte: yesterday, lte: now },
+        transactionDate: { gte: today, lt: tomorrow },
         type: 'DEBT_REPAID',
         projectId: { not: null },
       },
@@ -29,11 +33,11 @@ export async function GET(request: Request) {
       amount: Number(tx.amount),
     }));
 
-    // Expenses for last 24 hours
+    // Expenses for today only
       const expenses = await prisma.expense.findMany({
         where: {
           companyId,
-          expenseDate: { gte: yesterday, lte: now },
+          expenseDate: { gte: today, lt: tomorrow },
         },
         orderBy: { expenseDate: 'desc' },
         include: {
@@ -60,11 +64,11 @@ export async function GET(request: Request) {
   const totalCompanyExpenses = mappedCompanyExpenses.reduce((sum: number, e: any) => sum + e.amount, 0);
       const totalExpenses = totalProjectExpenses + totalCompanyExpenses;
 
-    // Income for last 24 hours (assume income is positive transactions)
+    // Income for today only
     const incomeTx = await prisma.transaction.findMany({
       where: {
         companyId,
-        transactionDate: { gte: yesterday, lte: now },
+        transactionDate: { gte: today, lt: tomorrow },
         type: 'INCOME',
       },
       orderBy: { transactionDate: 'desc' },
@@ -101,7 +105,7 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json({
-      date: now.toISOString().slice(0, 10),
+      date: today.toISOString().slice(0, 10),
       balances: balances || { previous: {}, today: {} },
       totalPrev: totalPrev ?? 0,
       totalToday: totalToday ?? 0,

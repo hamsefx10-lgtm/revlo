@@ -7,7 +7,7 @@ import {
   Plus, Search, Filter, Calendar, List, LayoutGrid, DollarSign, Tag, Package, ChevronRight,
   Eye, Edit, Trash2, Loader2, Info as InfoIcon, CheckCircle, XCircle, RefreshCw,
   Clock as ClockIcon, TrendingUp, TrendingDown, Factory, Wrench, Users, BarChart3,
-  ShoppingCart, Truck, Receipt, Phone, Mail, MapPin, User
+  ShoppingCart, Truck, Receipt, Phone, Mail, MapPin, User, Building
 } from 'lucide-react';
 import Toast from '../../components/common/Toast';
 
@@ -34,6 +34,20 @@ export default function VendorsPage() {
   const [filterType, setFilterType] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+  // Auto-switch to grid view on mobile
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setViewMode('grid');
+      }
+    };
+    
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Fetch vendors
   const fetchVendors = async () => {
@@ -115,108 +129,140 @@ export default function VendorsPage() {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        {/* Mobile-Responsive Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div className="pb-20 md:pb-6">
+        {/* Mobile Header */}
+        <div className="block md:hidden mb-6">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border-l-4 border-primary mb-4">
+            <h1 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-3">
+              Iibiyayaal
+            </h1>
+            <div className="flex gap-2">
+              <Link 
+                href="/vendors/add"
+                className="flex-1 py-2.5 px-3 rounded-lg font-medium text-sm transition duration-200 shadow-md bg-primary text-white hover:bg-blue-700 flex items-center justify-center"
+              >
+                <Plus size={16} className="mr-1" />
+                Ku Dar Iibiye
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop Header */}
+        <div className="hidden md:flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">Vendors</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm lg:text-base">
-              Manage your suppliers and service providers
+            <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100 mb-2">
+              Iibiyayaal
+            </h1>
+            <p className="text-mediumGray dark:text-gray-400 text-lg">
+              Maareynta iibiyayaasha
             </p>
           </div>
           <Link
             href="/vendors/add"
-            className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-3 lg:px-4 py-2 rounded-lg transition-colors text-sm lg:text-base justify-center"
+            className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center"
           >
-            <Plus size={18} />
-            Add Vendor
+            <Plus size={20} className="mr-2" />
+            Ku Dar Iibiye
           </Link>
         </div>
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-          <div className="bg-white dark:bg-gray-800 p-4 lg:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+          {/* Total Vendors Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border-l-4 border-primary p-4 md:p-5 hover:shadow-lg transition-shadow duration-200">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs lg:text-sm font-medium text-gray-600 dark:text-gray-400">Total Vendors</p>
-                <p className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">{totalVendors}</p>
-              </div>
-              <div className="p-2 lg:p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-                <Users className="h-5 w-5 lg:h-6 lg:w-6 text-blue-600 dark:text-blue-400" />
+              <div className="flex items-center gap-3">
+                <div className="bg-primary/10 p-3 rounded-lg">
+                  <Users className="text-primary" size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-mediumGray dark:text-gray-400 mb-1">Wadarta Iibiyayaasha</p>
+                  <p className="text-2xl font-bold text-darkGray dark:text-gray-100">{totalVendors}</p>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 p-4 lg:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          {/* Material Vendors Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border-l-4 border-green-500 p-4 md:p-5 hover:shadow-lg transition-shadow duration-200">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs lg:text-sm font-medium text-gray-600 dark:text-gray-400">Material Vendors</p>
-                <p className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">{materialVendors}</p>
-              </div>
-              <div className="p-2 lg:p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
-                <Package className="h-5 w-5 lg:h-6 lg:w-6 text-green-600 dark:text-green-400" />
+              <div className="flex items-center gap-3">
+                <div className="bg-green-500/10 p-3 rounded-lg">
+                  <Package className="text-green-500" size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-mediumGray dark:text-gray-400 mb-1">Alaab</p>
+                  <p className="text-2xl font-bold text-darkGray dark:text-gray-100">{materialVendors}</p>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 p-4 lg:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          {/* Service Vendors Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border-l-4 border-purple-500 p-4 md:p-5 hover:shadow-lg transition-shadow duration-200">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs lg:text-sm font-medium text-gray-600 dark:text-gray-400">Service Vendors</p>
-                <p className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">{serviceVendors}</p>
-              </div>
-              <div className="p-2 lg:p-3 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
-                <Wrench className="h-5 w-5 lg:h-6 lg:w-6 text-purple-600 dark:text-purple-400" />
+              <div className="flex items-center gap-3">
+                <div className="bg-purple-500/10 p-3 rounded-lg">
+                  <Wrench className="text-purple-500" size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-mediumGray dark:text-gray-400 mb-1">Adeegyada</p>
+                  <p className="text-2xl font-bold text-darkGray dark:text-gray-100">{serviceVendors}</p>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 p-4 lg:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          {/* Other Vendors Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border-l-4 border-accent p-4 md:p-5 hover:shadow-lg transition-shadow duration-200">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs lg:text-sm font-medium text-gray-600 dark:text-gray-400">Other Vendors</p>
-                <p className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">{otherVendors}</p>
-              </div>
-              <div className="p-2 lg:p-3 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
-                <Tag className="h-5 w-5 lg:h-6 lg:w-6 text-orange-600 dark:text-orange-400" />
+              <div className="flex items-center gap-3">
+                <div className="bg-accent/10 p-3 rounded-lg">
+                  <Tag className="text-accent" size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-mediumGray dark:text-gray-400 mb-1">Kale</p>
+                  <p className="text-2xl font-bold text-darkGray dark:text-gray-100">{otherVendors}</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Filters and Search */}
-        <div className="bg-white dark:bg-gray-800 p-4 lg:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex flex-col sm:flex-row gap-4">
+        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md mb-8">
+          <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
                 <input
                   type="text"
-                  placeholder="Search vendors..."
+                  placeholder="Raadi iibiyayaal..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 lg:pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm lg:text-base"
+                  className="w-full pl-10 pr-4 py-2.5 border border-lightGray dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
                 />
               </div>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-2">
+            <div className="flex gap-3">
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm lg:text-base"
+                className="px-4 py-2.5 border border-lightGray dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
               >
-                <option value="all">All Types</option>
-                <option value="Material">Material</option>
-                <option value="Service">Service</option>
-                <option value="Labor">Labor</option>
-                <option value="Transport">Transport</option>
-                <option value="Other">Other</option>
+                <option value="all">Dhammaan Noocaha</option>
+                <option value="Material">Alaab</option>
+                <option value="Service">Adeegyada</option>
+                <option value="Labor">Shaqada</option>
+                <option value="Transport">Gaadiidka</option>
+                <option value="Other">Kale</option>
               </select>
               
               <button
                 onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                className="p-2.5 border border-lightGray dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-darkGray dark:text-gray-100 hover:bg-lightGray dark:hover:bg-gray-700 transition-colors"
               >
                 {viewMode === 'grid' ? <List size={18} /> : <LayoutGrid size={18} />}
               </button>
@@ -232,46 +278,53 @@ export default function VendorsPage() {
             </div>
           ) : filteredVendors.length === 0 ? (
             <div className="text-center py-12">
-              <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No vendors found</h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
+              <Users className="h-12 w-12 text-mediumGray dark:text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-darkGray dark:text-gray-100 mb-2">Ma jiraan iibiyayaal</h3>
+              <p className="text-mediumGray dark:text-gray-400 mb-4">
                 {searchTerm || filterType !== 'all' 
-                  ? 'Try adjusting your search or filter criteria'
-                  : 'Get started by adding your first vendor'
+                  ? 'Fadlan dib u eeg raadinta ama filterkaaga'
+                  : 'Ku bilaaw dhismaha iibiyahaaga ugu horreeya'
                 }
               </p>
               {!searchTerm && filterType === 'all' && (
                 <Link
                   href="/vendors/add"
-                  className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition-colors"
+                  className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg transition-colors hover:bg-blue-700"
                 >
                   <Plus size={20} />
-                  Add Vendor
+                  Ku Dar Iibiye
                 </Link>
               )}
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
               <table className="w-full" style={{ minWidth: '800px' }}>
-                <thead className="bg-gray-50 dark:bg-gray-700">
+                <thead className="bg-gradient-to-r from-primary to-blue-600">
                   <tr>
-                    <th className="px-3 lg:px-6 py-2 lg:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Vendor
+                    <th className="px-3 lg:px-6 py-3 lg:py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                      <User size={16} className="inline mr-2" />
+                      Iibiye
                     </th>
-                    <th className="px-3 lg:px-6 py-2 lg:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Type
+                    <th className="px-3 lg:px-6 py-3 lg:py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                      <Tag size={16} className="inline mr-2" />
+                      Nooca
                     </th>
-                    <th className="px-3 lg:px-6 py-2 lg:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Contact
+                    <th className="px-3 lg:px-6 py-3 lg:py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                      <Phone size={16} className="inline mr-2" />
+                      Xidhiidhka
                     </th>
-                    <th className="px-3 lg:px-6 py-2 lg:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Products/Services
+                    <th className="px-3 lg:px-6 py-3 lg:py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                      <Package size={16} className="inline mr-2" />
+                      Adeegyo/Alaab
                     </th>
-                    <th className="px-3 lg:px-6 py-2 lg:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Created
+                    <th className="px-3 lg:px-6 py-3 lg:py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                      <Calendar size={16} className="inline mr-2" />
+                      Taariikhda
                     </th>
-                    <th className="px-3 lg:px-6 py-2 lg:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Actions
+                    <th className="px-3 lg:px-6 py-3 lg:py-4 text-right text-xs font-bold text-white uppercase tracking-wider">
+                      Falconaxad
                     </th>
                   </tr>
                 </thead>
@@ -358,6 +411,102 @@ export default function VendorsPage() {
                 </tbody>
               </table>
             </div>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-4 p-4">
+                {filteredVendors.map((vendor) => (
+                  <div key={vendor.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-md border-l-4 border-primary p-4 hover:shadow-lg transition-shadow duration-200">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="bg-primary/10 p-2.5 rounded-lg">
+                          <Building className="text-primary" size={20} />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-lg font-bold text-darkGray dark:text-gray-100 mb-1">{vendor.name}</h3>
+                          {vendor.contactPerson && (
+                            <p className="text-sm text-mediumGray dark:text-gray-400 flex items-center gap-1">
+                              <User size={12} />
+                              {vendor.contactPerson}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <span className={`px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1 ${
+                        vendor.type === 'Material' ? 'bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/30' :
+                        vendor.type === 'Service' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30' :
+                        vendor.type === 'Labor' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30' :
+                        vendor.type === 'Transport' ? 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/30' :
+                        'bg-gray-500/10 text-gray-600 dark:text-gray-400 border border-gray-500/30'
+                      }`}>
+                        {vendor.type === 'Material' ? <Package size={14} /> :
+                         vendor.type === 'Service' ? <Wrench size={14} /> :
+                         vendor.type === 'Labor' ? <Factory size={14} /> :
+                         vendor.type === 'Transport' ? <Truck size={14} /> :
+                         <Tag size={14} />}
+                        {vendor.type}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2 mb-4">
+                      {vendor.phone && (
+                        <div className="flex items-center gap-2 text-sm text-darkGray dark:text-gray-300 bg-lightGray dark:bg-gray-700/50 p-2 rounded-lg">
+                          <Phone size={16} className="text-primary" />
+                          <span>{vendor.phone}</span>
+                        </div>
+                      )}
+                      {vendor.email && (
+                        <div className="flex items-center gap-2 text-sm text-darkGray dark:text-gray-300 bg-lightGray dark:bg-gray-700/50 p-2 rounded-lg">
+                          <Mail size={16} className="text-primary" />
+                          <span className="truncate">{vendor.email}</span>
+                        </div>
+                      )}
+                      {vendor.address && (
+                        <div className="flex items-center gap-2 text-sm text-darkGray dark:text-gray-300 bg-lightGray dark:bg-gray-700/50 p-2 rounded-lg">
+                          <MapPin size={16} className="text-primary" />
+                          <span className="truncate">{vendor.address}</span>
+                        </div>
+                      )}
+                      {vendor.productsServices && (
+                        <div className="pt-2 border-t border-lightGray dark:border-gray-700">
+                          <p className="text-sm font-medium text-mediumGray dark:text-gray-400 mb-1 flex items-center gap-2">
+                            <Package size={14} />
+                            Adeegyo/Alaab:
+                          </p>
+                          <p className="text-sm text-darkGray dark:text-white bg-lightGray dark:bg-gray-700/50 p-2 rounded-lg">{vendor.productsServices}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-3 border-t border-lightGray dark:border-gray-700">
+                      <div className="text-xs text-mediumGray dark:text-gray-400 flex items-center gap-1">
+                        <Calendar size={12} />
+                        {new Date(vendor.createdAt).toLocaleDateString()}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/vendors/${vendor.id}`}
+                          className="bg-accent/10 text-accent hover:bg-accent hover:text-white p-2 rounded-lg transition-colors"
+                        >
+                          <Eye size={16} />
+                        </Link>
+                        <Link
+                          href={`/vendors/${vendor.id}/edit`}
+                          className="bg-primary/10 text-primary hover:bg-primary hover:text-white p-2 rounded-lg transition-colors"
+                        >
+                          <Edit size={16} />
+                        </Link>
+                        <button
+                          onClick={() => handleDeleteVendor(vendor.id)}
+                          className="bg-redError/10 text-redError hover:bg-redError hover:text-white p-2 rounded-lg transition-colors"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       </div>

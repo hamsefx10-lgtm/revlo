@@ -8,7 +8,7 @@ import Layout from '../../../components/layouts/Layout';
 import { 
   ArrowLeft, User as UserIcon, Building, Mail, Phone, MapPin, MessageSquare, Briefcase, DollarSign, Calendar,
   Eye, Edit, Trash2, Loader2, Info as InfoIcon, CheckCircle, XCircle, Plus, Tag as TagIcon, Coins, Clock as ClockIcon,
-  ClipboardList, TrendingUp // For work description icon and trending up icon
+  ClipboardList, TrendingUp, FastForward // For work description icon, trending up icon, and advance payment icon
 } from 'lucide-react';
 import Toast from '../../../components/common/Toast'; // Import Toast component
 import { calculateEmployeeSalary, calculateEmployeeDays } from '@/lib/utils';
@@ -320,16 +320,49 @@ const EmployeeDetailsPage: React.FC = () => {
     ? (employee.earnedThisMonth || 0)
     : employee.laborRecords.reduce((sum, record) => sum + record.agreedWage, 0);
 
-  // Calculate days-related variables for overpaid detection
+  // Calculate days-related variables for advance payment calculation
   const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
   const dailyRate = employee.monthlySalary ? employee.monthlySalary / daysInMonth : 0;
-  const daysPaid = dailyRate ? Math.floor(totalPaidThisMonth / dailyRate) : 0;
   const daysWorked = employee.daysWorkedThisMonth || 0;
-  const isOverpaidDays = daysPaid > daysWorked;
+  
+  // Calculate previous months' salary owed (excluding current month)
+  const previousMonthsOwed = monthsWorked > 1 ? (monthsWorked - 1) * Number(employee.monthlySalary || 0) : 0;
+  
+  // Calculate this month's earned salary (based on actual days worked this month ONLY)
+  // Use earnedThisMonth from employee data if available, otherwise calculate
+  const thisMonthEarned = earnedThisMonth || (dailyRate * daysWorked);
+  
+  // Calculate what would be remaining if only this month was considered
+  // This is: full month salary - this month's earned
+  const fullMonthSalary = Number(employee.monthlySalary || 0);
+  const thisMonthOnlyRemaining = fullMonthSalary - thisMonthEarned;
+  
+  // If salaryRemaining > thisMonthOnlyRemaining, then the excess is from previous months
+  const previousMonthsRemaining = Math.max(0, salaryRemaining - thisMonthOnlyRemaining);
+  
+  // Allocate payment: First to previous months, then to this month's worked days, then advance for THIS MONTH only
+  let paymentRemaining = totalPaidThisMonth;
+  
+  // 1. Pay previous months' remaining first (if any)
+  const paidToPreviousMonths = Math.min(paymentRemaining, previousMonthsRemaining);
+  paymentRemaining -= paidToPreviousMonths;
+  
+  // 2. Pay this month's worked days
+  const paidToThisMonthWorked = Math.min(paymentRemaining, thisMonthEarned);
+  paymentRemaining -= paidToThisMonthWorked;
+  
+  // 3. What's left is advance for THIS MONTH's unworked days only
+  // Calculate remaining unworked days in THIS MONTH only
+  const remainingDaysInMonth = Math.max(0, daysInMonth - daysWorked);
+  const advanceDays = dailyRate > 0 && paymentRemaining > 0 
+    ? Math.min(Math.floor(paymentRemaining / dailyRate), remainingDaysInMonth) 
+    : 0;
+  const advanceAmount = advanceDays * dailyRate;
 
   return (
     <Layout>
-      {/* Mobile Header */}
+      <div className="pb-20 md:pb-6">
+      {/* Mobile Header - Enhanced */}
       <div className="block md:hidden mb-6">
         <div className="flex items-center justify-between mb-4">
           <Link href="/employees" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200">
@@ -347,9 +380,9 @@ const EmployeeDetailsPage: React.FC = () => {
             {refreshing ? <Loader2 size={18} className="animate-spin" /> : <ClockIcon size={18} />}
           </button>
         </div>
-        <div className="text-center mb-4">
-          <h1 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-2">{employee.fullName}</h1>
-          <div className="flex flex-wrap justify-center gap-2">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border-l-4 border-primary mb-4">
+          <h1 className="text-xl font-bold text-darkGray dark:text-gray-100 mb-2">{employee.fullName}</h1>
+          <div className="flex flex-wrap gap-2 mb-3">
             <span className={`px-2 py-1 rounded-full text-xs font-bold ${
               employee.category === 'COMPANY' 
                 ? 'bg-primary/10 text-primary border border-primary/30' 
@@ -360,26 +393,23 @@ const EmployeeDetailsPage: React.FC = () => {
             <span className="px-2 py-1 rounded-full text-xs font-medium bg-secondary/10 text-secondary border border-secondary/30">
               {employee.role}
             </span>
-            <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-300">
-              ID: {employee.id.slice(0, 8)}...
-            </span>
           </div>
-        </div>
-        <div className="flex space-x-2">
+          <div className="flex gap-2">
           <Link 
             href={`/employees/edit/${employee.id}`}
-            className="flex-1 py-2 px-4 rounded-lg font-medium text-sm transition duration-200 shadow-md bg-accent text-white hover:bg-orange-600 flex items-center justify-center"
+              className="flex-1 py-2 px-3 rounded-lg font-medium text-xs transition duration-200 shadow-md bg-accent text-white hover:bg-orange-600 flex items-center justify-center"
           >
-            <Edit size={16} className="mr-2" />
-            Edit Shaqaale
+              <Edit size={14} className="mr-1" />
+              Edit
           </Link>
           <button 
             onClick={handleDeleteEmployee}
-            className="flex-1 py-2 px-4 rounded-lg font-medium text-sm transition duration-200 shadow-md bg-redError text-white hover:bg-red-700 flex items-center justify-center"
+              className="flex-1 py-2 px-3 rounded-lg font-medium text-xs transition duration-200 shadow-md bg-redError text-white hover:bg-red-700 flex items-center justify-center"
           >
-            <Trash2 size={16} className="mr-2" />
+              <Trash2 size={14} className="mr-1" />
             Delete
           </button>
+          </div>
         </div>
       </div>
 
@@ -434,169 +464,193 @@ const EmployeeDetailsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Employee Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8 animate-fade-in-up">
-        <div className="bg-white dark:bg-gray-800 p-3 md:p-6 rounded-xl shadow-md text-center">
-          <h4 className="text-xs md:text-lg font-semibold text-mediumGray dark:text-gray-400">Nooca</h4>
-          <p className="text-lg md:text-3xl font-extrabold text-primary">{employee.category === 'COMPANY' ? 'Company' : 'Project'}</p>
+      {/* Employee Summary Cards - Redesigned with Essential Cards Only */}
+      {employee.category === 'COMPANY' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 pb-4 md:pb-6">
+          {/* Monthly Salary */}
+          <div className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-xl shadow-md border-l-4 border-primary hover:shadow-xl transition-all duration-300">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <DollarSign size={22} />
         </div>
-        <div className="bg-white dark:bg-gray-800 p-3 md:p-6 rounded-xl shadow-md text-center">
-          <h4 className="text-xs md:text-lg font-semibold text-mediumGray dark:text-gray-400">Doorka</h4>
-          <p className="text-lg md:text-3xl font-extrabold text-primary">{employee.role}</p>
+              <div>
+                <h4 className="text-sm font-medium text-mediumGray dark:text-gray-400">Mushahar Bil kasta</h4>
         </div>
-        {employee.category === 'COMPANY' && (
-          <>
-            <div className="bg-gradient-to-br from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30 p-6 rounded-xl shadow-lg border border-primary/30 text-center">
-              <div className="flex items-center justify-center mb-3">
-                <DollarSign className="text-primary" size={24} />
               </div>
-              <h4 className="text-lg font-semibold text-primary dark:text-primary">Mushahar Bil kasta</h4>
-              <p className="text-3xl font-extrabold text-primary dark:text-primary">{employee.monthlySalary?.toLocaleString() || 0} ETB</p>
+            <p className="text-2xl font-extrabold text-primary">{employee.monthlySalary?.toLocaleString() || 0} ETB</p>
             </div>
-            <div className="bg-gradient-to-br from-secondary/10 to-secondary/20 dark:from-secondary/20 dark:to-secondary/30 p-6 rounded-xl shadow-lg border border-secondary/30 text-center">
-              <div className="flex items-center justify-center mb-3">
-                <Coins className="text-secondary" size={24} />
+
+          {/* Paid This Month */}
+          <div className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-xl shadow-md border-l-4 border-secondary hover:shadow-xl transition-all duration-300">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="p-2 rounded-lg bg-secondary/10 text-secondary">
+                <Coins size={22} />
               </div>
-              <h4 className="text-lg font-semibold text-secondary dark:text-secondary">La Bixiyay Bishaan</h4>
-              <p className="text-3xl font-extrabold text-secondary dark:text-secondary">{totalPaidThisMonth.toLocaleString()} ETB</p>
+              <div>
+                <h4 className="text-sm font-medium text-mediumGray dark:text-gray-400">La Bixiyay Bishaan</h4>
             </div>
-            <div className={`p-6 rounded-xl shadow-lg border text-center ${
-              salaryRemaining < 0 
-                ? 'bg-gradient-to-br from-redError/10 to-redError/20 dark:from-redError/20 dark:to-redError/30 border-redError/30' 
-                : 'bg-gradient-to-br from-accent/10 to-accent/20 dark:from-accent/20 dark:to-accent/30 border-accent/30'
+            </div>
+            <p className="text-2xl font-extrabold text-secondary">{totalPaidThisMonth.toLocaleString()} ETB</p>
+          </div>
+
+          {/* Remaining This Month */}
+          <div className={`bg-white dark:bg-gray-800 p-4 md:p-5 rounded-xl shadow-md border-l-4 hover:shadow-xl transition-all duration-300 ${
+            salaryRemaining < 0 ? 'border-redError' : 'border-accent'
             }`}>
-              <div className="flex items-center justify-center mb-3">
-                <TrendingUp className={salaryRemaining < 0 ? "text-redError" : "text-accent"} size={24} />
+            <div className="flex items-center space-x-3 mb-3">
+              <div className={`p-2 rounded-lg ${
+                salaryRemaining < 0 ? 'bg-redError/10 text-redError' : 'bg-accent/10 text-accent'
+              }`}>
+                <TrendingUp size={22} />
               </div>
-              <h4 className={`text-lg font-semibold ${salaryRemaining < 0 ? 'text-redError dark:text-redError' : 'text-accent dark:text-accent'}`}>
-                Hadhay Bishaan
-              </h4>
-              <p className={`text-3xl font-extrabold ${salaryRemaining < 0 ? 'text-redError dark:text-redError' : 'text-accent dark:text-accent'}`}>
-                {salaryRemaining < 0 ? `-${Math.abs(salaryRemaining).toLocaleString()} ETB` : `${salaryRemaining.toLocaleString()} ETB`}
+              <div>
+                <h4 className="text-sm font-medium text-mediumGray dark:text-gray-400">Hadhay Bishaan</h4>
+              </div>
+            </div>
+            <p className={`text-2xl font-extrabold ${salaryRemaining < 0 ? 'text-redError' : 'text-accent'}`}>
+              {salaryRemaining < 0 ? `-${Math.abs(salaryRemaining).toLocaleString()}` : salaryRemaining.toLocaleString()} ETB
               </p>
             </div>
-            <div className="bg-gradient-to-br from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30 p-6 rounded-xl shadow-lg border border-primary/30 text-center">
-              <div className="flex items-center justify-center mb-3">
-                <Briefcase className="text-primary" size={24} />
+
+          {/* Earned This Month */}
+          <div className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-xl shadow-md border-l-4 border-primary hover:shadow-xl transition-all duration-300">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <Briefcase size={22} />
               </div>
-              <h4 className="text-lg font-semibold text-primary dark:text-primary">Kasbaday Bishaan</h4>
-              <p className="text-3xl font-extrabold text-primary dark:text-primary">{earnedThisMonth.toLocaleString()} ETB</p>
+              <div>
+                <h4 className="text-sm font-medium text-mediumGray dark:text-gray-400">Kasbaday Bishaan</h4>
             </div>
-            <div className="bg-gradient-to-br from-secondary/10 to-secondary/20 dark:from-secondary/20 dark:to-secondary/30 p-6 rounded-xl shadow-lg border border-secondary/30 text-center">
-              <div className="flex items-center justify-center mb-3">
-                <Calendar className="text-secondary" size={24} />
               </div>
-              <h4 className="text-lg font-semibold text-secondary dark:text-secondary">Maalmo Shaqeeyay</h4>
-              <p className="text-3xl font-extrabold text-secondary dark:text-secondary">{employee.daysWorkedThisMonth || 0}</p>
+            <p className="text-2xl font-extrabold text-primary">{earnedThisMonth.toLocaleString()} ETB</p>
             </div>
-            <div className="bg-gradient-to-br from-accent/10 to-accent/20 dark:from-accent/20 dark:to-accent/30 p-6 rounded-xl shadow-lg border border-accent/30 text-center">
-              <div className="flex items-center justify-center mb-3">
-                <TrendingUp className="text-accent" size={24} />
+
+          {/* Days Worked This Month */}
+          <div className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-xl shadow-md border-l-4 border-secondary hover:shadow-xl transition-all duration-300">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="p-2 rounded-lg bg-secondary/10 text-secondary">
+                <Calendar size={22} />
               </div>
-              <h4 className="text-lg font-semibold text-accent dark:text-accent">Bilaha La Shaqeeyay</h4>
-              <p className="text-3xl font-extrabold text-accent dark:text-accent">{monthsWorked}</p>
-              <p className="text-sm text-accent dark:text-accent mt-1">
-                Laga bilaabay {new Date(employee.startDate).toLocaleDateString()}
+              <div>
+                <h4 className="text-sm font-medium text-mediumGray dark:text-gray-400">Maalmo Shaqeeyay</h4>
+            </div>
+              </div>
+            <p className="text-2xl font-extrabold text-secondary">{employee.daysWorkedThisMonth || 0}</p>
+          </div>
+
+          {/* Months Worked */}
+          <div className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-xl shadow-md border-l-4 border-accent hover:shadow-xl transition-all duration-300">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="p-2 rounded-lg bg-accent/10 text-accent">
+                <TrendingUp size={22} />
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-mediumGray dark:text-gray-400">Bilaha La Shaqeeyay</h4>
+              </div>
+            </div>
+            <p className="text-2xl font-extrabold text-accent">{monthsWorked}</p>
+            <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">
+              {new Date(employee.startDate).toLocaleDateString()}
               </p>
             </div>
-            <div className="bg-gradient-to-br from-primary/10 to-primary/20 dark:from-primary/20 dark:to-primary/30 p-6 rounded-xl shadow-lg border border-primary/30 text-center">
-              <div className="flex items-center justify-center mb-3">
-                <DollarSign className="text-primary" size={24} />
+
+          {/* Advance Payment for Unworked Days (THIS MONTH ONLY) */}
+          {advanceDays > 0 && advanceAmount > 0 && (
+            <div className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-xl shadow-md border-l-4 border-orange-500 hover:shadow-xl transition-all duration-300">
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="p-2 rounded-lg bg-orange-500/10 text-orange-500">
+                  <FastForward size={22} />
               </div>
-              <h4 className="text-lg font-semibold text-primary dark:text-primary">Wadarta Maalmaha La Shaqeeyay</h4>
-              <p className="text-3xl font-extrabold text-primary dark:text-primary">
-                {employee.totalDaysShouldWork || 0} Maalmood
-              </p>
-              <p className="text-sm text-primary dark:text-primary mt-1">
-                {employee.totalDaysShouldWork ? `${employee.totalDaysShouldWork} maalmood oo dhan la shaqeeyay` : 'Ma jiraan maalmaha la shaqeeyay'}
+                <div>
+                  <h4 className="text-sm font-medium text-mediumGray dark:text-gray-400">Hormarin Maalmo (Bishan)</h4>
+                </div>
+              </div>
+              <p className="text-2xl font-extrabold text-orange-500">{advanceAmount.toLocaleString()} ETB</p>
+              <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">
+                {advanceDays} maalmood uusan bishan shaqayn
               </p>
             </div>
-            <div className="bg-gradient-to-br from-secondary/10 to-secondary/20 dark:from-secondary/20 dark:to-secondary/30 p-6 rounded-xl shadow-lg border border-secondary/30 text-center">
-              <div className="flex items-center justify-center mb-3">
-                <Coins className="text-secondary" size={24} />
-              </div>
-              <h4 className="text-lg font-semibold text-secondary dark:text-secondary">Maalmaha Aan La Bixin Bilihii Hore</h4>
-              <p className="text-3xl font-extrabold text-secondary dark:text-secondary">
-                {employee.unpaidDaysFromPreviousMonths || 0} Maalmood
-              </p>
-              <p className="text-sm text-secondary dark:text-secondary mt-1">
-                {employee.unpaidDaysFromPreviousMonths ? `${employee.unpaidDaysFromPreviousMonths} maalmood oo aan la bixin bilihii hore` : 'Dhammaan maalmaha waa la bixiyay'}
-              </p>
-            </div>
+          )}
+
+          {/* Overpaid Warning */}
             {isOverpaidBasedOnWork && (
-              <div className="bg-gradient-to-br from-redError/10 to-redError/20 dark:from-redError/20 dark:to-redError/30 p-6 rounded-xl shadow-lg border border-redError/30 text-center animate-fade-in-up md:col-span-2">
-                <h4 className="flex items-center justify-center space-x-2 text-lg font-semibold text-redError mb-2">
-                  <XCircle size={24} className="text-redError"/>
-                  <span>Lacag La Siidaayay Marka Loo Eego Shaqada La Qabtay</span>
-                </h4>
-                <p className="text-3xl font-extrabold text-redError mb-1">-{`${overpaidAmount.toLocaleString()} ETB`}</p>
-                <p className="text-sm text-mediumGray dark:text-gray-500 mt-1">
-                  Shaqaaluhu wuxuu qaatay mushahar ka badan inta uu kasbaday bishaan (kasbaday: {earnedThisMonth.toLocaleString()} ETB, la bixiyay: {totalPaidThisMonth.toLocaleString()} ETB).
+            <div className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-xl shadow-md border-l-4 border-redError hover:shadow-xl transition-all duration-300 md:col-span-2">
+              <div className="flex items-center space-x-3 mb-2">
+                <div className="p-2 rounded-lg bg-redError/10 text-redError">
+                  <XCircle size={22} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-redError">Lacag La Siidaayay</h4>
+                </div>
+              </div>
+              <p className="text-xl font-extrabold text-redError mb-1">-{overpaidAmount.toLocaleString()} ETB</p>
+              <p className="text-xs text-mediumGray dark:text-gray-400">
+                Mushahar ka badan kasbashada bishaan
                 </p>
               </div>
             )}
-          </>
-        )}
-        {employee.category === 'PROJECT' && (
-          <>
-            <div className="bg-gradient-to-br from-accent/10 to-accent/20 dark:from-accent/20 dark:to-accent/30 p-6 rounded-xl shadow-lg border border-accent/30 text-center">
-              <div className="flex items-center justify-center mb-3">
-                <Briefcase className="text-accent" size={24} />
               </div>
-              <h4 className="text-lg font-semibold text-accent dark:text-accent">Wadar Agreed Wage</h4>
-              <p className="text-3xl font-extrabold text-accent dark:text-accent">
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {/* Total Agreed Wage */}
+          <div className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-xl shadow-md border-l-4 border-accent hover:shadow-xl transition-all duration-300">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="p-2 rounded-lg bg-accent/10 text-accent">
+                <Briefcase size={22} />
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-mediumGray dark:text-gray-400">Wadar Agreed Wage</h4>
+              </div>
+            </div>
+            <p className="text-2xl font-extrabold text-accent">
                 {employee.laborRecords?.reduce((sum, record) => sum + (record.agreedWage || 0), 0).toLocaleString()} ETB
               </p>
             </div>
-            <div className="bg-gradient-to-br from-accent/10 to-accent/20 dark:from-accent/20 dark:to-accent/30 p-6 rounded-xl shadow-lg border border-accent/30 text-center">
-              <div className="flex items-center justify-center mb-3">
-                <ClipboardList className="text-accent" size={24} />
+
+          {/* Projects Worked */}
+          <div className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-xl shadow-md border-l-4 border-accent hover:shadow-xl transition-all duration-300">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="p-2 rounded-lg bg-accent/10 text-accent">
+                <ClipboardList size={22} />
               </div>
-              <h4 className="text-lg font-semibold text-accent dark:text-accent">Mashruuca La Shaqeeyay</h4>
-              <p className="text-3xl font-extrabold text-accent dark:text-accent">{employee.laborRecords?.length || 0}</p>
-              <p className="text-sm text-accent dark:text-accent mt-1">Mashruuc</p>
+              <div>
+                <h4 className="text-sm font-medium text-mediumGray dark:text-gray-400">Mashruuca La Shaqeeyay</h4>
             </div>
-            <div className="bg-gradient-to-br from-accent/10 to-accent/20 dark:from-accent/20 dark:to-accent/30 p-6 rounded-xl shadow-lg border border-accent/30 text-center">
-              <div className="flex items-center justify-center mb-3">
-                <DollarSign className="text-accent" size={24} />
               </div>
-              <h4 className="text-lg font-semibold text-accent dark:text-accent">Lacagta La Bixiyay</h4>
-              <p className="text-3xl font-extrabold text-accent dark:text-accent">
+            <p className="text-2xl font-extrabold text-accent">{employee.laborRecords?.length || 0}</p>
+          </div>
+
+          {/* Total Paid */}
+          <div className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-xl shadow-md border-l-4 border-secondary hover:shadow-xl transition-all duration-300">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="p-2 rounded-lg bg-secondary/10 text-secondary">
+                <DollarSign size={22} />
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-mediumGray dark:text-gray-400">Lacagta La Bixiyay</h4>
+              </div>
+            </div>
+            <p className="text-2xl font-extrabold text-secondary">
                 {employee.laborRecords?.reduce((sum, record) => sum + (record.paidAmount || 0), 0).toLocaleString()} ETB
               </p>
             </div>
-            <div className="bg-gradient-to-br from-accent/10 to-accent/20 dark:from-accent/20 dark:to-accent/30 p-6 rounded-xl shadow-lg border border-accent/30 text-center">
-              <div className="flex items-center justify-center mb-3">
-                <TrendingUp className="text-accent" size={24} />
+
+          {/* Remaining */}
+          <div className="bg-white dark:bg-gray-800 p-4 md:p-5 rounded-xl shadow-md border-l-4 border-accent hover:shadow-xl transition-all duration-300">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="p-2 rounded-lg bg-accent/10 text-accent">
+                <TrendingUp size={22} />
               </div>
-              <h4 className="text-lg font-semibold text-accent dark:text-accent">Lacagta Hadhay</h4>
-              <p className="text-3xl font-extrabold text-accent dark:text-accent">
-                {employee.laborRecords?.reduce((sum, record) => sum + (record.remainingWage || 0), 0).toLocaleString()} ETB
+              <div>
+                <h4 className="text-sm font-medium text-mediumGray dark:text-gray-400">Lacagta Hadhay</h4>
+            </div>
+              </div>
+            <p className="text-2xl font-extrabold text-accent">
+              {employee.laborRecords?.reduce((sum, record) => sum + (record.remainingWage || 0), 0).toLocaleString()} ETB
               </p>
             </div>
-            <div className="bg-gradient-to-br from-accent/10 to-accent/20 dark:from-accent/20 dark:to-accent/30 p-6 rounded-xl shadow-lg border border-accent/30 text-center">
-              <div className="flex items-center justify-center mb-3">
-                <Calendar className="text-accent" size={24} />
               </div>
-              <h4 className="text-lg font-semibold text-accent dark:text-accent">Taariikhda Ugu Dambeysay</h4>
-              <p className="text-lg font-bold text-accent dark:text-accent">
-                {employee.laborRecords && employee.laborRecords.length > 0 
-                  ? new Date(employee.laborRecords[0].dateWorked).toLocaleDateString()
-                  : 'N/A'
-                }
-              </p>
-            </div>
-            <div className="bg-gradient-to-br from-accent/10 to-accent/20 dark:from-accent/20 dark:to-accent/30 p-6 rounded-xl shadow-lg border border-accent/30 text-center">
-              <div className="flex items-center justify-center mb-3">
-                <UserIcon className="text-accent" size={24} />
-              </div>
-              <h4 className="text-lg font-semibold text-accent dark:text-accent">Nooca Shaqaalaha</h4>
-              <p className="text-2xl font-bold text-accent dark:text-accent">Project</p>
-              <p className="text-sm text-accent dark:text-accent mt-1">Shaqaale Mashruuc</p>
-            </div>
-          </>
         )}
-      </div>
 
       {/* Tabs for Employee Details */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden animate-fade-in-up">
@@ -622,60 +676,135 @@ const EmployeeDetailsPage: React.FC = () => {
         <div className="p-4 md:p-6 lg:p-8">
           {activeTab === 'Overview' && (
             <div>
-              <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-4">Macluumaadka Guud</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-darkGray dark:text-gray-100 mb-6">
-                <p><span className="font-semibold text-mediumGray dark:text-gray-400">Magaca Buuxa:</span> {employee.fullName}</p>
-                <p><span className="font-semibold text-mediumGray dark:text-gray-400">Doorka:</span> {employee.role}</p>
-                <p><span className="font-semibold text-mediumGray dark:text-gray-400">Email:</span> {employee.email || 'N/A'}</p>
-                <p><span className="font-semibold text-mediumGray dark:text-gray-400">Taleefan:</span> {employee.phone || 'N/A'}</p>
-                <p><span className="font-semibold text-mediumGray dark:text-gray-400">Xaaladda:</span> {employee.isActive ? 'Active' : 'Inactive'}</p>
-                <p><span className="font-semibold text-mediumGray dark:text-gray-400">Diiwaan Gashan:</span> {new Date(employee.createdAt).toLocaleDateString()}</p>
-                <p><span className="font-semibold text-mediumGray dark:text-gray-400">Taariikhda Bilowga Shaqada:</span> {new Date(employee.startDate).toLocaleDateString()}</p>
-                {employee.lastPaymentDate && <p><span className="font-semibold text-mediumGray dark:text-gray-400">Taariikhda Mushahar Ugu Dambeysay:</span> {new Date(employee.lastPaymentDate).toLocaleDateString()}</p>}
+              <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-6">Macluumaadka Guud</h3>
+              
+              {/* Employee Basic Information */}
+              <div className="bg-lightGray dark:bg-gray-700 rounded-xl p-5 md:p-6 mb-6">
+                <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
+                  <UserIcon className="mr-2 text-primary" size={20} />
+                  Macluumaadka Shaqaalaha
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                      <UserIcon size={18} />
+                    </div>
+                    <div>
+                      <p className="text-sm text-mediumGray dark:text-gray-400">Magaca Buuxa</p>
+                      <p className="text-base font-semibold text-darkGray dark:text-gray-100">{employee.fullName}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="p-2 rounded-lg bg-secondary/10 text-secondary">
+                      <Briefcase size={18} />
+                    </div>
+                    <div>
+                      <p className="text-sm text-mediumGray dark:text-gray-400">Doorka</p>
+                      <p className="text-base font-semibold text-darkGray dark:text-gray-100">{employee.role}</p>
+                    </div>
+                  </div>
+                  {employee.email && (
+                    <div className="flex items-start space-x-3">
+                      <div className="p-2 rounded-lg bg-accent/10 text-accent">
+                        <Mail size={18} />
+                      </div>
+                      <div>
+                        <p className="text-sm text-mediumGray dark:text-gray-400">Email</p>
+                        <p className="text-base font-semibold text-darkGray dark:text-gray-100">{employee.email}</p>
+                      </div>
+                    </div>
+                  )}
+                  {employee.phone && (
+                    <div className="flex items-start space-x-3">
+                      <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                        <Phone size={18} />
+                      </div>
+                      <div>
+                        <p className="text-sm text-mediumGray dark:text-gray-400">Taleefan</p>
+                        <p className="text-base font-semibold text-darkGray dark:text-gray-100">{employee.phone}</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex items-start space-x-3">
+                    <div className={`p-2 rounded-lg ${employee.isActive ? 'bg-green-500/10 text-green-500' : 'bg-redError/10 text-redError'}`}>
+                      {employee.isActive ? <CheckCircle size={18} /> : <XCircle size={18} />}
+                    </div>
+                    <div>
+                      <p className="text-sm text-mediumGray dark:text-gray-400">Xaaladda</p>
+                      <p className={`text-base font-semibold ${employee.isActive ? 'text-green-500' : 'text-redError'}`}>
+                        {employee.isActive ? 'Active' : 'Inactive'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <div className="p-2 rounded-lg bg-secondary/10 text-secondary">
+                      <Calendar size={18} />
+                    </div>
+                    <div>
+                      <p className="text-sm text-mediumGray dark:text-gray-400">Taariikhda Bilowga Shaqada</p>
+                      <p className="text-base font-semibold text-darkGray dark:text-gray-100">
+                        {new Date(employee.startDate).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  {employee.lastPaymentDate && (
+                    <div className="flex items-start space-x-3">
+                      <div className="p-2 rounded-lg bg-accent/10 text-accent">
+                        <DollarSign size={18} />
+                      </div>
+                      <div>
+                        <p className="text-sm text-mediumGray dark:text-gray-400">Mushahar Ugu Dambeysay</p>
+                        <p className="text-base font-semibold text-darkGray dark:text-gray-100">
+                          {new Date(employee.lastPaymentDate).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
               
               {/* Salary Calculation Details for Company Employees */}
               {employee.category === 'COMPANY' && salaryCalculation && (
-                <div className="bg-gradient-to-r from-primary/10 to-secondary/10 dark:from-primary/20 dark:to-secondary/20 p-6 rounded-xl border border-primary/30 mb-6">
-                  <h4 className="text-xl font-bold text-primary dark:text-primary mb-4 flex items-center">
-                    <DollarSign className="mr-2" size={24} />
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-5 md:p-6 border-l-4 border-primary mb-6 shadow-md">
+                  <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
+                    <DollarSign className="mr-2 text-primary" size={20} />
                     Xisaabinta Mushahaarka Shirkadda
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="text-center">
-                      <p className="text-sm text-primary dark:text-primary font-medium">Bilaha La Shaqeeyay</p>
-                      <p className="text-2xl font-bold text-primary dark:text-primary">{monthsWorked}</p>
-                      <p className="text-xs text-primary dark:text-primary">
-                        Laga bilaabay {new Date(employee.startDate).toLocaleDateString()}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    <div className="bg-lightGray dark:bg-gray-700 p-3 rounded-lg">
+                      <p className="text-xs text-mediumGray dark:text-gray-400 mb-1">Bilaha La Shaqeeyay</p>
+                      <p className="text-lg font-bold text-primary">{monthsWorked}</p>
+                      <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">
+                        {new Date(employee.startDate).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="text-center">
-                      <p className="text-sm text-primary dark:text-primary font-medium">Mushahaar/Bil</p>
-                      <p className="text-2xl font-bold text-primary dark:text-primary">{employee.monthlySalary?.toLocaleString()} ETB</p>
+                    <div className="bg-lightGray dark:bg-gray-700 p-3 rounded-lg">
+                      <p className="text-xs text-mediumGray dark:text-gray-400 mb-1">Mushahaar/Bil</p>
+                      <p className="text-lg font-bold text-primary">{employee.monthlySalary?.toLocaleString()} ETB</p>
                     </div>
-                    <div className="text-center">
-                      <p className="text-sm text-primary dark:text-primary font-medium">Wadarta Mushahaarka</p>
-                      <p className="text-2xl font-bold text-primary dark:text-primary">{totalSalaryOwed.toLocaleString()} ETB</p>
-                      <p className="text-xs text-primary dark:text-primary">
-                        {monthsWorked} bilood × {employee.monthlySalary?.toLocaleString()} ETB
-                      </p>
+                    <div className="bg-lightGray dark:bg-gray-700 p-3 rounded-lg">
+                      <p className="text-xs text-mediumGray dark:text-gray-400 mb-1">Wadarta Mushahaarka</p>
+                      <p className="text-lg font-bold text-primary">{totalSalaryOwed.toLocaleString()} ETB</p>
                     </div>
-                    <div className="text-center">
-                      <p className="text-sm text-primary dark:text-primary font-medium">Hore La Bixiyay</p>
-                      <p className="text-2xl font-bold text-primary dark:text-primary">{employee.salaryPaidThisMonth?.toLocaleString()} ETB</p>
+                    <div className="bg-lightGray dark:bg-gray-700 p-3 rounded-lg">
+                      <p className="text-xs text-mediumGray dark:text-gray-400 mb-1">Hore La Bixiyay</p>
+                      <p className="text-lg font-bold text-secondary">{employee.salaryPaidThisMonth?.toLocaleString()} ETB</p>
                     </div>
                   </div>
-                  <div className="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-primary/30">
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-semibold text-primary dark:text-primary">Lacagta Hadhay:</span>
-                      <span className={`text-2xl font-bold ${salaryRemaining < 0 ? 'text-redError dark:text-redError' : 'text-secondary dark:text-secondary'}`}>
+                  <div className="bg-lightGray dark:bg-gray-700 p-4 rounded-lg border-l-4 border-accent">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-medium text-mediumGray dark:text-gray-400">Lacagta Hadhay:</span>
+                      <span className={`text-xl font-bold ${salaryRemaining < 0 ? 'text-redError' : 'text-secondary'}`}>
                         {salaryRemaining < 0 ? `-${Math.abs(salaryRemaining).toLocaleString()} ETB` : `${salaryRemaining.toLocaleString()} ETB`}
                       </span>
                     </div>
                     {salaryRemaining < 0 && (
-                      <p className="text-sm text-redError dark:text-redError mt-2">
-                        ⚠️ Shaqaaluhu wuxuu qaatay mushahar ka badan inta uu kasbaday
+                      <div className="flex items-center space-x-2 mt-2">
+                        <XCircle size={16} className="text-redError" />
+                        <p className="text-xs text-redError">
+                          Mushahar ka badan kasbashada
                       </p>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -683,48 +812,47 @@ const EmployeeDetailsPage: React.FC = () => {
 
               {/* Project Work Details for Project Employees */}
               {employee.category === 'PROJECT' && employee.laborRecords && employee.laborRecords.length > 0 && (
-                <div className="bg-gradient-to-r from-accent/10 to-accent/20 dark:from-accent/20 dark:to-accent/30 p-6 rounded-xl border border-accent/30 mb-6">
-                  <h4 className="text-xl font-bold text-accent dark:text-accent mb-4 flex items-center">
-                    <Briefcase className="mr-2" size={24} />
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-5 md:p-6 border-l-4 border-accent mb-6 shadow-md">
+                  <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
+                    <Briefcase className="mr-2 text-accent" size={20} />
                     Xogta Mashruuca
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="text-center">
-                      <p className="text-sm text-accent dark:text-accent font-medium">Mashruuca La Shaqeeyay</p>
-                      <p className="text-2xl font-bold text-accent dark:text-accent">{employee.laborRecords.length}</p>
-                      <p className="text-xs text-accent dark:text-accent">Mashruuc</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    <div className="bg-lightGray dark:bg-gray-700 p-3 rounded-lg">
+                      <p className="text-xs text-mediumGray dark:text-gray-400 mb-1">Mashruuca La Shaqeeyay</p>
+                      <p className="text-lg font-bold text-accent">{employee.laborRecords.length}</p>
                     </div>
-                    <div className="text-center">
-                      <p className="text-sm text-accent dark:text-accent font-medium">Wadar Agreed Wage</p>
-                      <p className="text-2xl font-bold text-accent dark:text-accent">
+                    <div className="bg-lightGray dark:bg-gray-700 p-3 rounded-lg">
+                      <p className="text-xs text-mediumGray dark:text-gray-400 mb-1">Wadar Agreed Wage</p>
+                      <p className="text-lg font-bold text-accent">
                         {employee.laborRecords.reduce((sum, record) => sum + (record.agreedWage || 0), 0).toLocaleString()} ETB
                       </p>
                     </div>
-                    <div className="text-center">
-                      <p className="text-sm text-accent dark:text-accent font-medium">Lacagta La Bixiyay</p>
-                      <p className="text-2xl font-bold text-accent dark:text-accent">
+                    <div className="bg-lightGray dark:bg-gray-700 p-3 rounded-lg">
+                      <p className="text-xs text-mediumGray dark:text-gray-400 mb-1">Lacagta La Bixiyay</p>
+                      <p className="text-lg font-bold text-secondary">
                         {employee.laborRecords.reduce((sum, record) => sum + (record.paidAmount || 0), 0).toLocaleString()} ETB
                       </p>
                     </div>
-                    <div className="text-center">
-                      <p className="text-sm text-accent dark:text-accent font-medium">Lacagta Hadhay</p>
-                      <p className="text-2xl font-bold text-accent dark:text-accent">
+                    <div className="bg-lightGray dark:bg-gray-700 p-3 rounded-lg">
+                      <p className="text-xs text-mediumGray dark:text-gray-400 mb-1">Lacagta Hadhay</p>
+                      <p className="text-lg font-bold text-accent">
                         {employee.laborRecords.reduce((sum, record) => sum + (record.remainingWage || 0), 0).toLocaleString()} ETB
                       </p>
                     </div>
                   </div>
-                  <div className="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-accent/30">
-                    <h5 className="text-lg font-semibold text-accent dark:text-accent mb-3">Mashruuca La Shaqeeyay:</h5>
+                  <div className="border-t border-lightGray dark:border-gray-700 pt-4">
+                    <h5 className="text-sm font-semibold text-darkGray dark:text-gray-100 mb-3">Mashruuca La Shaqeeyay:</h5>
                     <div className="space-y-2">
-                      {employee.laborRecords.map((record, index) => (
-                        <div key={index} className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                          <div>
-                            <span className="font-medium text-darkGray dark:text-gray-100">{record.project?.name || 'Unknown Project'}</span>
-                            <p className="text-sm text-mediumGray dark:text-gray-400">{record.workDescription}</p>
+                      {employee.laborRecords.slice(0, 5).map((record, index) => (
+                        <div key={index} className="flex justify-between items-center p-3 bg-lightGray dark:bg-gray-700 rounded-lg">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-darkGray dark:text-gray-100 truncate">{record.project?.name || 'Unknown Project'}</p>
+                            <p className="text-xs text-mediumGray dark:text-gray-400 truncate">{record.workDescription}</p>
                           </div>
-                          <div className="text-right">
-                            <p className="font-bold text-accent dark:text-accent">{record.agreedWage?.toLocaleString()} ETB</p>
-                            <p className="text-sm text-mediumGray dark:text-gray-400">
+                          <div className="text-right ml-3">
+                            <p className="font-bold text-accent">{record.agreedWage?.toLocaleString()} ETB</p>
+                            <p className="text-xs text-mediumGray dark:text-gray-400">
                               Paid: {record.paidAmount?.toLocaleString()} ETB
                             </p>
                           </div>
@@ -732,37 +860,6 @@ const EmployeeDetailsPage: React.FC = () => {
                       ))}
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-        )}
-        {/* --- Monthly Salary/Advance Summary Section (Single, Clear, Not Duplicated) --- */}
-        {employee.category === 'COMPANY' && (
-          <div className="mb-6 bg-lightGray dark:bg-gray-700 rounded-xl p-5 animate-fade-in-up">
-            <h3 className="text-xl font-bold text-darkGray dark:text-gray-100 mb-3">Xogta Lacagaha Mushaharka Bishaan</h3>
-            <div className="flex flex-wrap gap-8">
-              <div>
-                <span className="block text-mediumGray dark:text-gray-400">La Bixiyay Bishaan</span>
-                <span className="text-2xl font-bold text-accent">{totalPaidThisMonth.toLocaleString()} ETB</span>
-              </div>
-              <div>
-                <span className="block text-mediumGray dark:text-gray-400">Hadhay Bishaan</span>
-                <span className={`text-2xl font-bold ${salaryRemaining < 0 ? 'text-redError' : 'text-primary'}`}>{salaryRemaining < 0 ? `-${Math.abs(salaryRemaining).toLocaleString()} ETB` : `${salaryRemaining.toLocaleString()} ETB`}</span>
-              </div>
-              <div>
-                <span className="block text-mediumGray dark:text-gray-400">Kasbaday Bishaan</span>
-                <span className="text-2xl font-bold text-primary">{earnedThisMonth.toLocaleString()} ETB</span>
-              </div>
-              {isOverpaidBasedOnWork && (
-                <div>
-                  <span className="block text-mediumGray dark:text-gray-400">Overpaid</span>
-                  <span className="text-2xl font-bold text-redError">-{overpaidAmount.toLocaleString()} ETB</span>
-                </div>
-              )}
-            </div>
-            {isOverpaidDays && (
-              <div className="mt-3 p-3 bg-redError/10 rounded-lg text-redError font-semibold">
-                Shaqaalahan waxaa loo bixiyay lacag ka badan maalmaha uu shaqeeyay bishaan! (La bixiyay: {daysPaid} maalmood, Shaqeeyay: {daysWorked} maalmood)
               </div>
             )}
           </div>
@@ -987,6 +1084,7 @@ const EmployeeDetailsPage: React.FC = () => {
         </div>
       )}
         </div>
+        </div>
       </div>
       {toastMessage && (
         <Toast message={toastMessage.message} type={toastMessage.type} onClose={() => setToastMessage(null)} />
@@ -996,4 +1094,3 @@ const EmployeeDetailsPage: React.FC = () => {
 };
 
 export default EmployeeDetailsPage;
-``
