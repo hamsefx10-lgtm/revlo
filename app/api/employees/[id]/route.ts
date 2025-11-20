@@ -7,9 +7,9 @@ import { Decimal } from '@prisma/client/runtime/library'; // MUHIIM: Import Deci
 import { getSessionCompanyId } from '@/app/api/employees/auth';
 
 // GET /api/employees/[id] - Soo deji shaqaale gaar ah
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const companyId = await getSessionCompanyId();
 
     const employee = await prisma.employee.findFirst({
@@ -43,7 +43,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     return NextResponse.json({ employee: processedEmployee }, { status: 200 });
   } catch (error) {
-    console.error(`Cilad ayaa dhacday marka shaqaalaha ${params.id} la soo gelinayay:`, error);
+    console.error('Cilad ayaa dhacday marka shaqaalaha la soo gelinayay:', error);
     return NextResponse.json(
       { message: 'Cilad server ayaa dhacday. Fadlan isku day mar kale.' },
       { status: 500 }
@@ -52,9 +52,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 // PUT /api/employees/[id] - Cusboonaysii shaqaale gaar ah
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const companyId = await getSessionCompanyId();
     const body = await request.json();
 
@@ -110,9 +110,9 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 // DELETE /api/employees/[id] - Tirtir shaqaale gaar ah
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const companyId = await getSessionCompanyId();
 
     // Verify employee exists and belongs to company

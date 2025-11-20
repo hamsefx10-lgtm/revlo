@@ -149,6 +149,7 @@ export default function AddExpensePage() {
   { value: 'Transport', label: 'Transport (Mashruuc)' },
   { value: 'Consultancy', label: 'La-talin (Mashruuc)' },
   { value: 'Equipment Rental', label: 'Kirada Qalabka (Mashruuc)' },
+  { value: 'Utilities', label: 'Adeegyada Guud (Mashruuc)' },
 ];
 // Equipment Rental fields
 const [equipmentName, setEquipmentName] = useState('');
@@ -393,6 +394,9 @@ const [consultancyFee, setConsultancyFee] = useState('');
         if (!supplierName.trim()) errors.supplierName = 'Magaca kiriyaha waa waajib.';
         if (!selectedProject) errors.selectedProject = 'Mashruuca waa waajib.';
         if (!selectedBankAccount) errors.selectedBankAccount = 'Bank account waa waajib.';
+      } else if (category === 'Utilities' && expenseType === 'project') {
+        if (typeof amount !== 'number' || amount <= 0) errors.amount = 'Qiimaha waa waajib.';
+        if (!description.trim()) errors.description = 'Faahfaahinta adeegga waa waajib.';
       } else {
         const requiresCommonAmount = !['Material', 'Labor', 'Company Expense'].includes(category); 
         if (requiresCommonAmount && (typeof amount !== 'number' || amount <= 0)) {
@@ -439,7 +443,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
             case 'Salary':
                 if (!selectedEmployeeForSalary) errors.selectedEmployeeForSalary = 'Fadlan dooro shaqaale.';
                 if (typeof salaryPaymentAmount !== 'number' || salaryPaymentAmount <= 0) errors.salaryPaymentAmount = 'Qiimaha mushaharka waa waajib.';
-                if (typeof salaryPaymentAmount === 'number' && salaryPaymentAmount > currentSalaryRemaining) errors.salaryPaymentAmount = 'Lacagta la bixiyay ma dhaafi karto lacagta hadhay.';
+                // Removed validation: Allow overpayment - system will calculate negative remaining balance
                 if (!salaryPaymentDate) errors.salaryPaymentDate = 'Taariikhda bixinta mushaharka waa waajib.';
                 break;
             case 'Office Rent':
@@ -698,6 +702,13 @@ const [consultancyFee, setConsultancyFee] = useState('');
           expenseData.projectId = selectedProject;
           expenseData.bankAccountId = selectedBankAccount;
           break;
+      case 'Utilities':
+        expenseData.amount = amount;
+        expenseData.description = description.trim();
+        expenseData.category = 'Utilities';
+        expenseData.projectId = expenseType === 'project' ? selectedProject : undefined;
+        expenseData.companyExpenseType = expenseType === 'company' ? 'Utilities' : undefined;
+        break;
       case 'Company Expense':
         expenseData.category = 'Company Expense';
         expenseData.companyExpenseType = companyExpenseType;
@@ -1624,6 +1635,82 @@ const [consultancyFee, setConsultancyFee] = useState('');
             </div>
           )}
 
+          {/* Utilities form for project expenses */}
+          {expenseType === 'project' && category === 'Utilities' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 p-3 border border-dashed border-primary/30 rounded-lg bg-primary/5 animate-fade-in">
+              <h4 className="col-span-full text-base font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Adeegyada Guud (Mashruuc)</h4>
+              <div className="md:col-span-2">
+                <label htmlFor="paidFrom_utilities_project" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
+                <div className="relative">
+                  <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
+                  <select
+                    id="paidFrom_utilities_project"
+                    required
+                    value={paidFrom}
+                    onChange={(e) => setPaidFrom(e.target.value)}
+                    className={`w-full p-2 pl-8 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.paidFrom ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                  >
+                    <option value="">-- Dooro Akoonka --</option>
+                    {accounts.map(acc => (
+                      <option key={acc.id} value={acc.id}>{acc.name} {acc.balance !== undefined ? `($${Number(acc.balance).toLocaleString()})` : ''}</option>
+                    ))}
+                  </select>
+                  <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
+                </div>
+                {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paidFrom}</p>}
+              </div>
+              <div>
+                <label htmlFor="utilitiesAmount_project" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Qiimaha Adeegga ($) <span className="text-redError">*</span></label>
+                <input
+                  type="number"
+                  id="utilitiesAmount_project"
+                  required
+                  value={amount}
+                  onChange={(e) => setAmount(parseFloat(e.target.value) || '')}
+                  placeholder="Tusaale: 100"
+                  className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.amount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                />
+                {validationErrors.amount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.amount}</p>}
+              </div>
+              <div className="md:col-span-2">
+                <label htmlFor="utilitiesDescription_project" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Faahfaahinta Adeegga <span className="text-redError">*</span></label>
+                <input
+                  type="text"
+                  id="utilitiesDescription_project"
+                  required
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  placeholder="Tusaale: Internet, Biyaha, Telefoon, iwm"
+                  className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.description ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                />
+                {validationErrors.description && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.description}</p>}
+              </div>
+              <div>
+                <label htmlFor="utilitiesDate_project" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Taariikhda Kharashka <span className="text-redError">*</span></label>
+                <input
+                  type="date"
+                  id="utilitiesDate_project"
+                  required
+                  value={expenseDate}
+                  onChange={e => setExpenseDate(e.target.value)}
+                  className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.expenseDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                />
+                {validationErrors.expenseDate && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.expenseDate}</p>}
+              </div>
+              <div className="md:col-span-2">
+                <label htmlFor="utilitiesNote_project" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Fiiro Gaar Ah (Optional)</label>
+                <textarea
+                  id="utilitiesNote_project"
+                  value={note}
+                  onChange={e => setNote(e.target.value)}
+                  rows={2}
+                  placeholder="Wixii faahfaahin dheeraad ah ee adeegga..."
+                  className="w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary"
+                ></textarea>
+              </div>
+            </div>
+          )}
+
           {/* Transport form only shown for project expenses, not duplicated */}
 
           {category === 'Company Expense' && (
@@ -1739,18 +1826,35 @@ const [consultancyFee, setConsultancyFee] = useState('');
                             </div>
                             
                             {/* Remaining Amount */}
-                            <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm font-medium text-green-800 dark:text-green-300">Lacagta Hadhay:</span>
-                                    <span className="text-lg font-bold text-green-900 dark:text-green-200">{currentSalaryRemaining.toLocaleString()} ETB</span>
-                                </div>
-                                {typeof salaryPaymentAmount === 'number' && salaryPaymentAmount > 0 && (
-                                    <div className="flex justify-between items-center mt-2 pt-2 border-t border-green-200 dark:border-green-700">
-                                        <span className="text-sm font-medium text-green-800 dark:text-green-300">Kadib Bixinta:</span>
-                                        <span className="text-lg font-bold text-green-900 dark:text-green-200">{newSalaryRemaining.toLocaleString()} ETB</span>
+                            {(() => {
+                                const isOverpayment = newSalaryRemaining < 0;
+                                const bgColor = isOverpayment ? 'bg-orange-50 dark:bg-orange-900/20' : 'bg-green-50 dark:bg-green-900/20';
+                                const borderColor = isOverpayment ? 'border-orange-200 dark:border-orange-700' : 'border-green-200 dark:border-green-700';
+                                const textColor = isOverpayment ? 'text-orange-800 dark:text-orange-300' : 'text-green-800 dark:text-green-300';
+                                const amountColor = isOverpayment ? 'text-orange-900 dark:text-orange-200' : 'text-green-900 dark:text-green-200';
+                                
+                                return (
+                                    <div className={`p-3 ${bgColor} rounded-lg border ${borderColor}`}>
+                                        <div className="flex justify-between items-center">
+                                            <span className={`text-sm font-medium ${textColor}`}>Lacagta Hadhay:</span>
+                                            <span className={`text-lg font-bold ${amountColor}`}>{currentSalaryRemaining.toLocaleString()} ETB</span>
+                                        </div>
+                                        {typeof salaryPaymentAmount === 'number' && salaryPaymentAmount > 0 && (
+                                            <div className={`flex justify-between items-center mt-2 pt-2 border-t ${borderColor}`}>
+                                                <span className={`text-sm font-medium ${textColor}`}>
+                                                    {isOverpayment ? 'Kadib Bixinta (Overpayment):' : 'Kadib Bixinta:'}
+                                                </span>
+                                                <span className={`text-lg font-bold ${amountColor}`}>
+                                                    {newSalaryRemaining.toLocaleString()} ETB
+                                                    {isOverpayment && (
+                                                        <span className="text-xs ml-1 text-orange-600 dark:text-orange-400">(Waa ka badan)</span>
+                                                    )}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-                            </div>
+                                );
+                            })()}
                         </div>
                     )}
                 </div>

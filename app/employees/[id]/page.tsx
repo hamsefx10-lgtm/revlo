@@ -1,14 +1,15 @@
 // app/employees/[id]/page.tsx - Employee Details Page (10000% Design - API Integration)
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation'; // To get employee ID from URL and for navigation
+import { useParams, useRouter, useSearchParams } from 'next/navigation'; // To get employee ID from URL and for navigation
 import Layout from '../../../components/layouts/Layout';
 import { 
   ArrowLeft, User as UserIcon, Building, Mail, Phone, MapPin, MessageSquare, Briefcase, DollarSign, Calendar,
   Eye, Edit, Trash2, Loader2, Info as InfoIcon, CheckCircle, XCircle, Plus, Tag as TagIcon, Coins, Clock as ClockIcon,
-  ClipboardList, TrendingUp, FastForward // For work description icon, trending up icon, and advance payment icon
+  ClipboardList, TrendingUp, FastForward, ChevronLeft, ChevronRight, Check, X, Calendar as CalendarIcon, 
+  Percent, Zap, Download, RefreshCw, CalendarDays, AlertCircle // For attendance calendar advanced features
 } from 'lucide-react';
 import Toast from '../../../components/common/Toast'; // Import Toast component
 import { calculateEmployeeSalary, calculateEmployeeDays } from '@/lib/utils';
@@ -85,14 +86,35 @@ const EmployeeDetailsPage: React.FC = () => {
   };
   const { id } = useParams(); // Get employee ID from URL
   const router = useRouter(); // For redirection after delete
+  const searchParams = useSearchParams(); // Get query parameters
   const [employee, setEmployee] = useState<Employee | null>(null); // State for employee data
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('Overview'); // For tab navigation
+  const [activeTab, setActiveTab] = useState(() => {
+    // Initialize activeTab from URL query parameter if present
+    if (typeof window !== 'undefined') {
+      const tabParam = new URLSearchParams(window.location.search).get('tab');
+      if (tabParam && ['Overview', 'Attendance', 'Labor Records', 'Payments', 'Transactions'].includes(tabParam)) {
+        return tabParam;
+      }
+    }
+    return 'Overview';
+  }); // For tab navigation
   const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [salaryExpenses, setSalaryExpenses] = useState<Expense[]>([]);
   const [expensesLoading, setExpensesLoading] = useState(false);
   const [salarySummary, setSalarySummary] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
+  // Attendance state
+  // Initialize attendance date to employee start date if available, otherwise current date
+  const [attendanceCurrentDate, setAttendanceCurrentDate] = useState(() => {
+    // Will be updated when employee loads
+    return new Date();
+  });
+  const [attendance, setAttendance] = useState<Array<{ date: string; worked: boolean }>>([]);
+  const [attendanceLoading, setAttendanceLoading] = useState(false);
+  const [attendanceError, setAttendanceError] = useState<string | null>(null);
+  const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
+  const [selectionMode, setSelectionMode] = useState<'worked' | 'notWorked' | null>(null);
   // Mobile-friendly view modes similar to Project page
   const [viewModes, setViewModes] = useState<{ labor: 'list' | 'board' }>(() => ({
     labor: (typeof window !== 'undefined' && window.innerWidth < 768) ? 'board' : 'list'
@@ -181,7 +203,15 @@ const EmployeeDetailsPage: React.FC = () => {
         employeeData.earnedThisMonth = employeeData.laborRecords.reduce((sum: number, record: any) => sum + record.agreedWage, 0);
       }
 
-      setEmployee(employeeData); 
+      setEmployee(employeeData);
+      
+      // Initialize attendance date to employee start date if available
+      if (employeeData.startDate && employeeData.category === 'COMPANY') {
+        const startDate = new Date(employeeData.startDate);
+        // Set to start of that month
+        const initialDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+        setAttendanceCurrentDate(initialDate);
+      } 
     } catch (error: any) {
       console.error('Error fetching employee details:', error);
       setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka faahfaahinta shaqaalaha la soo gelinayay.', type: 'error' });
@@ -210,6 +240,7 @@ const EmployeeDetailsPage: React.FC = () => {
     }
   };
 
+
   useEffect(() => {
     if (id) {
       fetchEmployeeDetails(); // Fetch employee details when ID is available
@@ -219,6 +250,210 @@ const EmployeeDetailsPage: React.FC = () => {
   // (moved above)
     // eslint-disable-next-line
   }, [id]);
+
+  // Check for tab parameter in URL and set active tab
+  useEffect(() => {
+    if (searchParams) {
+      const tabParam = searchParams.get('tab');
+      if (tabParam && ['Overview', 'Attendance', 'Labor Records', 'Payments', 'Transactions'].includes(tabParam)) {
+        setActiveTab(tabParam);
+      }
+    }
+  }, [searchParams]);
+
+
+  // Attendance functions
+  const fetchAttendance = async () => {
+    if (!id || !employee || employee.category !== 'COMPANY') return;
+    setAttendanceLoading(true);
+    setAttendanceError(null);
+    try {
+      const month = attendanceCurrentDate.getMonth() + 1;
+      const year = attendanceCurrentDate.getFullYear();
+      const monthStr = month.toString().padStart(2, '0');
+      const response = await fetch(`/api/employees/${id}/attendance?month=${monthStr}&year=${year}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to fetch attendance: ${response.status}`);
+      }
+      const data = await response.json();
+      setAttendance(data.attendance || []);
+    } catch (error) {
+      console.error('Error fetching attendance:', error);
+      setAttendanceError(error instanceof Error ? error.message : 'Failed to load attendance data');
+    } finally {
+      setAttendanceLoading(false);
+    }
+  };
+
+  const updateAttendance = async (date: string, worked: boolean) => {
+    if (!id) return;
+    try {
+      const response = await fetch(`/api/employees/${id}/attendance`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date, worked }),
+      });
+      if (!response.ok) throw new Error('Failed to update attendance');
+      
+      // Update local state immediately for instant UI feedback
+      setAttendance((prev) => {
+        const existing = prev.find((a) => a.date === date);
+        if (existing) {
+          return prev.map((a) => (a.date === date ? { ...a, worked } : a));
+        } else {
+          return [...prev, { date, worked }];
+        }
+      });
+      
+      // Refresh employee data to sync with backend (live calculation)
+      // This ensures overview tab and attendance tab stay in sync
+      await Promise.all([
+        fetchEmployeeDetails(),
+        fetchSalarySummary()
+      ]);
+      
+      setToastMessage({ 
+        message: `Maalinta ${new Date(date).toLocaleDateString('so-SO')} waa la cusbooneysiiyay!`, 
+        type: 'success' 
+      });
+    } catch (error) {
+      console.error('Error updating attendance:', error);
+      setToastMessage({ 
+        message: 'Cilad ayaa dhacday marka attendance la cusbooneysiinayay.', 
+        type: 'error' 
+      });
+    }
+  };
+
+  const bulkUpdateAttendance = async (dates: string[], worked: boolean) => {
+    if (!id) return;
+    try {
+      const response = await fetch(`/api/employees/${id}/attendance`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dates, worked }),
+      });
+      if (!response.ok) throw new Error('Failed to update attendance');
+      
+      await fetchAttendance();
+      setSelectedDates(new Set());
+      setSelectionMode(null);
+      // Refresh employee data
+      fetchEmployeeDetails();
+      fetchSalarySummary();
+      setToastMessage({ message: `${dates.length} maalmood ayaa la cusbooneysiiyay!`, type: 'success' });
+    } catch (error) {
+      console.error('Error bulk updating attendance:', error);
+      setToastMessage({ message: 'Cilad ayaa dhacday marka attendance la cusbooneysiinayay.', type: 'error' });
+    }
+  };
+
+  // Advanced Quick Actions
+  const markAllWeekdays = async () => {
+    if (!id || !employee) return;
+    const month = attendanceCurrentDate.getMonth();
+    const year = attendanceCurrentDate.getFullYear();
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    const weekdays: string[] = [];
+    
+    for (let day = 1; day <= lastDay; day++) {
+      const date = new Date(year, month, day);
+      const dayOfWeek = date.getDay();
+      // 0 = Sunday, 6 = Saturday - exclude weekends
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        weekdays.push(date.toISOString().split('T')[0]);
+      }
+    }
+    
+    if (weekdays.length > 0) {
+      await bulkUpdateAttendance(weekdays, true);
+    }
+  };
+
+  const markAllWeekends = async () => {
+    if (!id || !employee) return;
+    const month = attendanceCurrentDate.getMonth();
+    const year = attendanceCurrentDate.getFullYear();
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    const weekends: string[] = [];
+    
+    for (let day = 1; day <= lastDay; day++) {
+      const date = new Date(year, month, day);
+      const dayOfWeek = date.getDay();
+      // 0 = Sunday, 6 = Saturday
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        weekends.push(date.toISOString().split('T')[0]);
+      }
+    }
+    
+    if (weekends.length > 0) {
+      await bulkUpdateAttendance(weekends, true);
+    }
+  };
+
+  const clearMonth = async () => {
+    if (!id || !employee) return;
+    if (!window.confirm('Ma hubtaa inaad tirtirto dhammaan attendance-ka bishan?')) return;
+    
+    const month = attendanceCurrentDate.getMonth();
+    const year = attendanceCurrentDate.getFullYear();
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    const allDates: string[] = [];
+    
+    for (let day = 1; day <= lastDay; day++) {
+      const date = new Date(year, month, day);
+      allDates.push(date.toISOString().split('T')[0]);
+    }
+    
+    // Delete all attendance records for this month
+    try {
+      await Promise.all(
+        allDates.map(async (dateStr) => {
+          const response = await fetch(`/api/employees/${id}/attendance?date=${dateStr}`, {
+            method: 'DELETE',
+          });
+          return response;
+        })
+      );
+      await fetchAttendance();
+      fetchEmployeeDetails();
+      fetchSalarySummary();
+      setToastMessage({ message: 'Attendance-ka bishan waa la tirtiray!', type: 'success' });
+    } catch (error) {
+      console.error('Error clearing month:', error);
+      setToastMessage({ message: 'Cilad ayaa dhacday marka attendance la tirtirayay.', type: 'error' });
+    }
+  };
+
+  const markCurrentMonth = async () => {
+    if (!id || !employee) return;
+    const month = attendanceCurrentDate.getMonth();
+    const year = attendanceCurrentDate.getFullYear();
+    const today = new Date();
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    const dates: string[] = [];
+    
+    for (let day = 1; day <= lastDay; day++) {
+      const date = new Date(year, month, day);
+      // Only mark dates up to today
+      if (date <= today) {
+        dates.push(date.toISOString().split('T')[0]);
+      }
+    }
+    
+    if (dates.length > 0) {
+      await bulkUpdateAttendance(dates, true);
+    }
+  };
+
+  // Fetch attendance when tab is active and employee is loaded
+  useEffect(() => {
+    if (activeTab === 'Attendance' && employee && employee.category === 'COMPANY' && id) {
+      fetchAttendance();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, employee?.id, employee?.category, attendanceCurrentDate]);
 
   // Add refresh function to manually refresh data
   const refreshData = async () => {
@@ -323,7 +558,8 @@ const EmployeeDetailsPage: React.FC = () => {
   // Calculate days-related variables for advance payment calculation
   const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
   const dailyRate = employee.monthlySalary ? employee.monthlySalary / daysInMonth : 0;
-  const daysWorked = employee.daysWorkedThisMonth || 0;
+  // Use manual work days if available, otherwise use calculated days
+      const daysWorked = employee.daysWorkedThisMonth || 0;
   
   // Calculate previous months' salary owed (excluding current month)
   const previousMonthsOwed = monthsWorked > 1 ? (monthsWorked - 1) * Number(employee.monthlySalary || 0) : 0;
@@ -653,14 +889,29 @@ const EmployeeDetailsPage: React.FC = () => {
         )}
 
       {/* Tabs for Employee Details */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden animate-fade-in-up">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
         <div className="border-b border-lightGray dark:border-gray-700">
           <nav className="-mb-px flex space-x-2 md:space-x-8 px-3 md:px-6 lg:px-8 overflow-x-auto" aria-label="Tabs">
-            {['Overview', 'Labor Records', 'Payments', 'Transactions'].map((tab) => (
+            {['Overview', 'Attendance', 'Labor Records', 'Payments', 'Transactions'].map((tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`whitespace-nowrap py-3 md:py-4 px-2 md:px-1 border-b-2 font-medium text-sm md:text-lg focus:outline-none transition-colors duration-200
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  // Prevent any scroll behavior by maintaining scroll position
+                  const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+                  setActiveTab(tab);
+                  // Maintain scroll position after state update
+                  setTimeout(() => {
+                    window.scrollTo({ top: currentScroll, behavior: 'instant' });
+                  }, 0);
+                }}
+                onFocus={(e) => {
+                  // Prevent scroll when button gets focus
+                  e.target.blur();
+                }}
+                className={`whitespace-nowrap py-3 md:py-4 px-2 md:px-1 border-b-2 font-medium text-sm md:text-lg focus:outline-none focus-visible:outline-none transition-colors duration-200
                   ${activeTab === tab 
                     ? 'border-primary text-primary dark:text-gray-100' 
                     : 'border-transparent text-mediumGray dark:text-gray-400 hover:text-darkGray dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
@@ -673,7 +924,7 @@ const EmployeeDetailsPage: React.FC = () => {
         </div>
 
         {/* Tab Content */}
-        <div className="p-4 md:p-6 lg:p-8">
+        <div id="tab-content" className="p-4 md:p-6 lg:p-8 min-h-[400px] transition-opacity duration-200" style={{ contain: 'layout style paint' }}>
           {activeTab === 'Overview' && (
             <div>
               <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-6">Macluumaadka Guud</h3>
@@ -860,11 +1111,502 @@ const EmployeeDetailsPage: React.FC = () => {
                       ))}
                     </div>
                   </div>
-              </div>
-            )}
-          </div>
+                </div>
+              )}
+            </div>
         )}
-      {/* <-- HALKAAS KALIYA HAL ) */}
+
+      {/* Attendance Tab - Advanced Design with Summary Cards */}
+      {activeTab === 'Attendance' && employee && employee.category === 'COMPANY' && (
+        <div className="w-full space-y-6">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            <div>
+              <h3 className="text-2xl md:text-3xl font-bold text-darkGray dark:text-gray-100 mb-2 flex items-center gap-2">
+                <CalendarIcon className="text-primary" size={28} />
+                Maalmaha Shaqada
+              </h3>
+              <p className="text-sm md:text-base text-mediumGray dark:text-gray-400">
+                Xusuusi maalmaha shaqaalaha uu shaqeeyay iyo kuwa aan u shaqayn. 
+                Isticmaal quick actions si aad u dhaqso u xusid maalmaha badan.
+              </p>
+            </div>
+            <button
+              onClick={fetchAttendance}
+              disabled={attendanceLoading}
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <RefreshCw className={`w-4 h-4 ${attendanceLoading ? 'animate-spin' : ''}`} />
+              {attendanceLoading ? 'Waa la soo gelinayaa...' : 'Cusboonaysii'}
+            </button>
+          </div>
+
+          {attendanceLoading && attendance.length === 0 ? (
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-8 w-full">
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="animate-spin text-primary mb-4" size={48} />
+                <span className="text-lg text-gray-600 dark:text-gray-400">Soo gelinaya attendance...</span>
+              </div>
+            </div>
+          ) : attendanceError ? (
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-8 w-full">
+              <div className="flex flex-col items-center justify-center py-12">
+                <AlertCircle className="text-redError mb-4" size={48} />
+                <p className="text-red-600 dark:text-red-400 mb-6 text-center text-lg">{attendanceError}</p>
+                <button
+                  onClick={fetchAttendance}
+                  className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                >
+                  Isku Day Mar Kale
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* 4-Section Grid Layout - Cards Always Visible */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 h-full">
+                {/* Section 1: Summary Cards - Top Left (Always Active) */}
+                {(() => {
+                  const workedDays = attendance.filter((a) => a.worked === true).length;
+                  const notWorkedDays = attendance.filter((a) => a.worked === false).length;
+                  const totalDays = attendance.length;
+                  const month = attendanceCurrentDate.getMonth();
+                  const year = attendanceCurrentDate.getFullYear();
+                  const daysInMonth = new Date(year, month + 1, 0).getDate();
+                  const today = new Date();
+                  const currentDay = today.getDate();
+                  const isCurrentMonth = today.getMonth() === month && today.getFullYear() === year;
+                  const expectedDays = isCurrentMonth ? currentDay : daysInMonth;
+                  const attendancePercentage = expectedDays > 0 ? Math.round((workedDays / expectedDays) * 100) : 0;
+                  const dailyRate = employee.monthlySalary ? employee.monthlySalary / daysInMonth : 0;
+                  const earnedFromAttendance = workedDays * dailyRate;
+                  
+                  // Live calculation: Compare with employee overview data
+                  const employeeEarnedThisMonth = employee.earnedThisMonth || 0;
+                  const difference = earnedFromAttendance - employeeEarnedThisMonth;
+                  const isSynced = Math.abs(difference) < 0.01; // Account for floating point
+
+                  return (
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 border border-gray-200 dark:border-gray-700">
+                      <h4 className="text-xs font-semibold text-darkGray dark:text-gray-100 mb-2 flex items-center gap-1.5">
+                        <Percent className="w-3.5 h-3.5 text-primary" />
+                        Statistics (Always Active)
+                      </h4>
+                      <div className="grid grid-cols-2 gap-1.5">
+                    {/* Worked Days - Ultra Compact */}
+                    <div className="bg-white dark:bg-gray-800 p-2 rounded-md shadow-sm border-l-2 border-green-500 hover:shadow transition-all">
+                      <div className="flex items-center justify-between mb-0.5">
+                        <CheckCircle className="w-3 h-3 text-green-600 dark:text-green-400" />
+                        <span className="text-[10px] text-mediumGray dark:text-gray-400">Shaqeyay</span>
+                      </div>
+                      <p className="text-lg font-bold text-green-600 dark:text-green-400">{workedDays}</p>
+                      <p className="text-[9px] text-mediumGray dark:text-gray-400">
+                        /{expectedDays}
+                      </p>
+                    </div>
+
+                    {/* Not Worked Days - Ultra Compact */}
+                    <div className="bg-white dark:bg-gray-800 p-2 rounded-md shadow-sm border-l-2 border-red-500 hover:shadow transition-all">
+                      <div className="flex items-center justify-between mb-0.5">
+                        <XCircle className="w-3 h-3 text-red-600 dark:text-red-400" />
+                        <span className="text-[10px] text-mediumGray dark:text-gray-400">Ma Shaqayn</span>
+                      </div>
+                      <p className="text-lg font-bold text-red-600 dark:text-red-400">{notWorkedDays}</p>
+                      <p className="text-[9px] text-mediumGray dark:text-gray-400">
+                        {expectedDays - workedDays - notWorkedDays} xusan
+                      </p>
+                    </div>
+
+                    {/* Attendance Percentage - Ultra Compact */}
+                    <div className="bg-white dark:bg-gray-800 p-2 rounded-md shadow-sm border-l-2 border-primary hover:shadow transition-all">
+                      <div className="flex items-center justify-between mb-0.5">
+                        <Percent className="w-3 h-3 text-primary" />
+                        <span className="text-[10px] text-mediumGray dark:text-gray-400">Percentage</span>
+                      </div>
+                      <p className="text-lg font-bold text-primary">{attendancePercentage}%</p>
+                      <div className="mt-1 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1">
+                        <div 
+                          className={`h-1 rounded-full transition-all duration-500 ${
+                            attendancePercentage >= 80 ? 'bg-green-500' : 
+                            attendancePercentage >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                          }`}
+                          style={{ width: `${Math.min(attendancePercentage, 100)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Earned from Attendance - Ultra Compact with Live Sync Indicator */}
+                    <div className="bg-white dark:bg-gray-800 p-2 rounded-md shadow-sm border-l-2 border-secondary hover:shadow transition-all">
+                      <div className="flex items-center justify-between mb-0.5">
+                        <DollarSign className="w-3 h-3 text-secondary" />
+                        <div className="flex items-center gap-0.5" title={isSynced ? "Waa la isku xidhay" : "Ma isku xidhnayn"}>
+                          {isSynced ? (
+                            <CheckCircle className="w-2.5 h-2.5 text-green-500" />
+                          ) : (
+                            <AlertCircle className="w-2.5 h-2.5 text-orange-500" />
+                          )}
+                          <span className="text-[10px] text-mediumGray dark:text-gray-400">Kasbashada</span>
+                        </div>
+                      </div>
+                      <p className="text-lg font-bold text-secondary">
+                        {earnedFromAttendance.toLocaleString()} ETB
+                      </p>
+                      <div className="flex items-center justify-between mt-0.5">
+                        <p className="text-[9px] text-mediumGray dark:text-gray-400">
+                          {dailyRate.toLocaleString()}/maalin
+                        </p>
+                        {!isSynced && difference > 0 && (
+                          <span className="text-[9px] text-green-600 font-medium">
+                            +{difference.toFixed(0)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Section 2: Quick Actions - Top Right */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <Zap className="text-accent w-3.5 h-3.5" />
+                  <h4 className="text-xs font-semibold text-darkGray dark:text-gray-100">Quick Actions</h4>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
+                  <button
+                    onClick={markAllWeekdays}
+                    className="flex items-center justify-center gap-1 px-2 py-1 bg-green-500/10 text-green-700 dark:text-green-400 rounded hover:bg-green-500/20 transition-colors text-[10px] font-medium"
+                    title="Mark All Weekdays"
+                  >
+                    <CalendarDays size={12} />
+                    <span className="hidden sm:inline">Maalmo Shaqo</span>
+                    <span className="sm:hidden">Is-Sab</span>
+                  </button>
+                  <button
+                    onClick={markAllWeekends}
+                    className="flex items-center justify-center gap-1 px-2 py-1 bg-blue-500/10 text-blue-700 dark:text-blue-400 rounded hover:bg-blue-500/20 transition-colors text-[10px] font-medium"
+                    title="Mark All Weekends"
+                  >
+                    <CalendarDays size={12} />
+                    <span className="hidden sm:inline">Sabtida</span>
+                    <span className="sm:hidden">Ax-Sab</span>
+                  </button>
+                  <button
+                    onClick={markCurrentMonth}
+                    className="flex items-center justify-center gap-1 px-2 py-1 bg-primary/10 text-primary rounded hover:bg-primary/20 transition-colors text-[10px] font-medium"
+                    title="Mark Current Month"
+                  >
+                    <Calendar size={12} />
+                    <span className="hidden sm:inline">Bishan</span>
+                    <span className="sm:hidden">Bishan</span>
+                  </button>
+                  <button
+                    onClick={clearMonth}
+                    className="flex items-center justify-center gap-1 px-2 py-1 bg-red-500/10 text-red-700 dark:text-red-400 rounded hover:bg-red-500/20 transition-colors text-[10px] font-medium"
+                    title="Clear Month"
+                  >
+                    <X size={12} />
+                    <span className="hidden sm:inline">Tirtir</span>
+                    <span className="sm:hidden">Tirtir</span>
+                  </button>
+                  </div>
+                </div>
+
+                {/* Section 3: Calendar - Bottom Left */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-3 border border-gray-200 dark:border-gray-700">
+                  {/* Live Calculation Notice */}
+                  {(() => {
+                const workedDays = attendance.filter((a) => a.worked === true).length;
+                const month = attendanceCurrentDate.getMonth();
+                const year = attendanceCurrentDate.getFullYear();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const dailyRate = employee.monthlySalary ? employee.monthlySalary / daysInMonth : 0;
+                const earnedFromAttendance = workedDays * dailyRate;
+                const employeeEarnedThisMonth = employee.earnedThisMonth || 0;
+                const isCurrentMonth = new Date().getMonth() === month && new Date().getFullYear() === year;
+                
+                if (isCurrentMonth && Math.abs(earnedFromAttendance - employeeEarnedThisMonth) > 0.01) {
+                  return (
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-2 mb-3 flex items-center gap-2">
+                      <InfoIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                      <p className="text-xs text-blue-700 dark:text-blue-300">
+                        <span className="font-medium">Live Calculation:</span> Kasbashada attendance-ka ({earnedFromAttendance.toLocaleString()} ETB) 
+                        {earnedFromAttendance > employeeEarnedThisMonth ? ' ka badan' : ' ka yar'} 
+                        yahay overview-ka ({employeeEarnedThisMonth.toLocaleString()} ETB). 
+                        <span className="font-medium"> Refresh samee</span> si aad u isku xidho.
+                      </p>
+                    </div>
+                  );
+                }
+                    return null;
+                  })()}
+
+                  {/* Calendar Container - Ultra Compact */}
+                  <div className="w-full overflow-x-auto">
+                {/* Calendar Header with Month/Year Navigation */}
+                {(() => {
+                  // Check if current month has any worked days
+                  const currentMonthWorkedDays = attendance.filter((a) => {
+                    const recordDate = new Date(a.date);
+                    return recordDate.getMonth() === attendanceCurrentDate.getMonth() &&
+                           recordDate.getFullYear() === attendanceCurrentDate.getFullYear() &&
+                           a.worked === true;
+                  }).length;
+                  const hasWorkedDays = currentMonthWorkedDays > 0;
+                  
+                  return (
+                    <div className="flex items-center justify-between mb-2">
+                      <button
+                        onClick={() => {
+                          const newDate = new Date(attendanceCurrentDate.getFullYear(), attendanceCurrentDate.getMonth() - 1, 1);
+                          // Allow going back to employee start date
+                          const minDate = employee?.startDate ? new Date(employee.startDate) : new Date(2020, 0, 1);
+                          minDate.setDate(1); // Start of month
+                          if (newDate >= minDate) {
+                            setAttendanceCurrentDate(newDate);
+                          }
+                        }}
+                        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                        title="Bil Hore"
+                      >
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                      </button>
+                      <div className={`flex flex-col items-center px-3 py-1.5 rounded-md transition-colors ${
+                        hasWorkedDays ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : ''
+                      }`}>
+                        <h3 className={`text-sm md:text-base font-semibold ${
+                          hasWorkedDays 
+                            ? 'text-green-700 dark:text-green-300' 
+                            : 'text-gray-800 dark:text-white'
+                        }`}>
+                          {['Janayo', 'Febraayo', 'Maarso', 'Abriil', 'Mayo', 'Juunyo', 'Luuliyo', 'Agoosto', 'Sebtembar', 'Oktoobar', 'Nofembar', 'Desembar'][attendanceCurrentDate.getMonth()]} {attendanceCurrentDate.getFullYear()}
+                        </h3>
+                        {employee?.startDate && (() => {
+                          const startDate = new Date(employee.startDate);
+                          const monthsWorked = (attendanceCurrentDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                                              (attendanceCurrentDate.getMonth() - startDate.getMonth());
+                          return (
+                            <p className={`text-[10px] mt-0.5 ${
+                              hasWorkedDays 
+                                ? 'text-green-600 dark:text-green-400' 
+                                : 'text-gray-500 dark:text-gray-400'
+                            }`}>
+                              Bilka {monthsWorked + 1}aad
+                              {hasWorkedDays && ` • ${currentMonthWorkedDays} maalmo`}
+                            </p>
+                          );
+                        })()}
+                      </div>
+                      <button
+                        onClick={() => {
+                          const newDate = new Date(attendanceCurrentDate.getFullYear(), attendanceCurrentDate.getMonth() + 1, 1);
+                          const today = new Date();
+                          // Don't allow going to future months
+                          if (newDate <= new Date(today.getFullYear(), today.getMonth() + 1, 0)) {
+                            setAttendanceCurrentDate(newDate);
+                          }
+                        }}
+                        className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                        title="Bil Xiga"
+                      >
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  );
+                })()}
+
+                {/* Selection Mode Toggle - Ultra Compact */}
+                <div className="flex flex-wrap gap-1.5 mb-2 p-2 bg-gray-50 dark:bg-gray-700/50 rounded-md">
+                  <button
+                    onClick={() => {
+                      setSelectionMode(selectionMode === 'worked' ? null : 'worked');
+                      setSelectedDates(new Set());
+                    }}
+                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all ${
+                      selectionMode === 'worked'
+                        ? 'bg-green-500 text-white shadow'
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
+                    }`}
+                  >
+                    <Check className="w-3 h-3 inline-block mr-0.5" />
+                    Shaqey
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectionMode(selectionMode === 'notWorked' ? null : 'notWorked');
+                      setSelectedDates(new Set());
+                    }}
+                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition-all ${
+                      selectionMode === 'notWorked'
+                        ? 'bg-red-500 text-white shadow'
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
+                    }`}
+                  >
+                    <X className="w-3 h-3 inline-block mr-0.5" />
+                    Ma Shaqeynin
+                  </button>
+                  {selectionMode && selectedDates.size > 0 && (
+                    <button
+                      onClick={() => {
+                        const datesArray = Array.from(selectedDates);
+                        bulkUpdateAttendance(datesArray, selectionMode === 'worked');
+                      }}
+                      className="px-2.5 py-1 bg-blue-500 text-white rounded text-[11px] font-medium hover:bg-blue-600 transition-colors shadow"
+                    >
+                      Cusbooneysii ({selectedDates.size})
+                    </button>
+                  )}
+                </div>
+
+                {/* Calendar Grid - Ultra Compact */}
+                <div className="grid grid-cols-7 gap-0.5 mb-1.5">
+                  {['Axad', 'Isniin', 'Talaado', 'Arbaco', 'Khamiis', 'Jimco', 'Sabti'].map((day) => (
+                    <div key={day} className="text-center text-[10px] font-semibold text-gray-600 dark:text-gray-400 py-0.5">
+                      {day.substring(0, 3)}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-7 gap-0.5 min-w-[240px]">
+                  {(() => {
+                    const month = attendanceCurrentDate.getMonth();
+                    const year = attendanceCurrentDate.getFullYear();
+                    const firstDay = new Date(year, month, 1);
+                    const lastDay = new Date(year, month + 1, 0);
+                    const daysInMonth = lastDay.getDate();
+                    const startingDayOfWeek = firstDay.getDay();
+                    const days: (Date | null)[] = [];
+                    
+                    for (let i = 0; i < startingDayOfWeek; i++) {
+                      days.push(null);
+                    }
+                    for (let day = 1; day <= daysInMonth; day++) {
+                      days.push(new Date(year, month, day));
+                    }
+
+                    return days.map((date, index) => {
+                      if (!date) {
+                        return <div key={`empty-${index}`} className="aspect-square" />;
+                      }
+
+                      const dateStr = date.toISOString().split('T')[0];
+                      const record = attendance.find((a) => a.date === dateStr);
+                      const status = record ? record.worked : null;
+                      const isSelected = selectedDates.has(dateStr);
+                      const isToday = dateStr === new Date().toISOString().split('T')[0];
+                      const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+
+                      let bgColor = 'bg-gray-50 dark:bg-gray-700';
+                      let textColor = 'text-gray-700 dark:text-gray-300';
+                      let borderColor = 'border-gray-200 dark:border-gray-600';
+
+                      if (isSelected) {
+                        bgColor = selectionMode === 'worked' ? 'bg-green-300 dark:bg-green-700' : 'bg-red-300 dark:bg-red-700';
+                        borderColor = 'border-blue-500 border-3';
+                      } else if (status === true) {
+                        bgColor = 'bg-green-100 dark:bg-green-900/40';
+                        textColor = 'text-green-800 dark:text-green-200';
+                        borderColor = 'border-green-300 dark:border-green-700';
+                      } else if (status === false) {
+                        bgColor = 'bg-red-100 dark:bg-red-900/40';
+                        textColor = 'text-red-800 dark:text-red-200';
+                        borderColor = 'border-red-300 dark:border-red-700';
+                      } else if (isWeekend) {
+                        bgColor = 'bg-gray-100 dark:bg-gray-600';
+                      }
+
+                      if (isToday) {
+                        borderColor = 'border-blue-500 border-3';
+                        bgColor += ' ring-2 ring-blue-300 dark:ring-blue-600';
+                      }
+
+                      return (
+                        <button
+                          key={dateStr}
+                          onClick={() => {
+                            if (selectionMode) {
+                              setSelectedDates((prev) => {
+                                const newSet = new Set(prev);
+                                if (newSet.has(dateStr)) {
+                                  newSet.delete(dateStr);
+                                } else {
+                                  newSet.add(dateStr);
+                                }
+                                return newSet;
+                              });
+                            } else {
+                              const currentStatus = status;
+                              let newStatus: boolean;
+                              if (currentStatus === null) {
+                                newStatus = true;
+                              } else if (currentStatus === true) {
+                                newStatus = false;
+                              } else {
+                                newStatus = true;
+                              }
+                              updateAttendance(dateStr, newStatus);
+                            }
+                          }}
+                          className={`aspect-square rounded border ${bgColor} ${textColor} ${borderColor} hover:scale-105 hover:shadow transition-all duration-150 flex items-center justify-center font-medium text-[10px] cursor-pointer ${
+                            isToday ? 'ring-1 ring-blue-400' : ''
+                          }`}
+                          title={dateStr}
+                        >
+                          <div className="flex flex-col items-center justify-center gap-0">
+                            <span className="text-[10px] leading-tight">{date.getDate()}</span>
+                            {status === true && (
+                              <Check className="w-2 h-2 text-green-600 dark:text-green-400 mt-0" />
+                            )}
+                            {status === false && (
+                              <X className="w-2 h-2 text-red-600 dark:text-red-400 mt-0" />
+                            )}
+                          </div>
+                        </button>
+                      );
+                    });
+                  })()}
+                </div>
+
+                {/* Legend - Ultra Compact */}
+                <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 text-[10px]">
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-green-100 dark:bg-green-900/40 border border-green-300 dark:border-green-700 rounded"></div>
+                      <span className="font-medium text-gray-700 dark:text-gray-300">Shaqey</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-red-100 dark:bg-red-900/40 border border-red-300 dark:border-red-700 rounded"></div>
+                      <span className="font-medium text-gray-700 dark:text-gray-300">Ma Shaqeynin</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded"></div>
+                      <span className="font-medium text-gray-700 dark:text-gray-300">Lama Xusin</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-gray-100 dark:bg-gray-700 border border-gray-400 rounded"></div>
+                      <span className="font-medium text-gray-700 dark:text-gray-300">Sabti</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'Attendance' && employee && employee.category === 'PROJECT' && (
+        <div className="text-center p-8">
+          <InfoIcon className="w-16 h-16 mx-auto mb-4 text-mediumGray dark:text-gray-400" />
+          <p className="text-lg text-mediumGray dark:text-gray-400">
+            Maalmaha shaqada waxay u shaqeeyaan shaqaalaha PROJECT marka ay shaqo ka samaystaan mashruucyada.
+            Maalmaha shaqada waa la xisaabiyaa marka labor record la sameeyo.
+          </p>
+        </div>
+      )}
+
       {activeTab === 'Labor Records' && employee.category === 'PROJECT' && (
         <div>
           <div className="flex items-center justify-between mb-3">
@@ -1093,4 +1835,20 @@ const EmployeeDetailsPage: React.FC = () => {
   );
 };
 
-export default EmployeeDetailsPage;
+// Wrapper component to handle Suspense for useSearchParams
+const EmployeeDetailsPageWrapper: React.FC = () => {
+  return (
+    <Suspense fallback={
+      <Layout>
+        <div className="flex items-center justify-center min-h-[400px] text-darkGray dark:text-gray-100">
+          <Loader2 className="animate-spin mr-2" size={24} />
+          <span>Loading...</span>
+        </div>
+      </Layout>
+    }>
+      <EmployeeDetailsPage />
+    </Suspense>
+  );
+};
+
+export default EmployeeDetailsPageWrapper;

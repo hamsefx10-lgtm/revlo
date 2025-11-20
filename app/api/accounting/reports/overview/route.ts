@@ -16,17 +16,54 @@ export async function GET(request: Request) {
       _sum: { amount: true },
       where: { companyId, type: { in: ['EXPENSE', 'TRANSFER_OUT', 'DEBT_TAKEN'] }, category: { not: 'FIXED_ASSET_PURCHASE' } },
     });
-    const totalIncome = incomeResult._sum.amount ? Number(incomeResult._sum.amount) : 0;
-    const totalExpenses = expenseResult._sum.amount ? Number(expenseResult._sum.amount) : 0;
-    const netProfit = totalIncome - totalExpenses;
-
-    // Projects
+    // Money In (Lacagta Soo Galaysa) - All money received
+    // This includes: INCOME transactions, TRANSFER_IN, DEBT_REPAID (when customer repays us), and all Payments
+    // Get payments through projects (Payment table)
+    const projects = await prisma.project.findMany({
+      where: { companyId },
+      select: { id: true },
+    });
+    const projectIds = projects.map(p => p.id);
+    
+    const paymentsReceived = await prisma.payment.aggregate({
+      _sum: { amount: true },
+      where: { 
+        projectId: { in: projectIds }
+      },
+    });
+    
+    // Money In from transactions (INCOME, DEBT_REPAID when customer repays, TRANSFER_IN)
+    const moneyInFromTransactions = incomeResult._sum.amount ? Number(incomeResult._sum.amount) : 0;
+    // Money In from payments (direct payments to projects/customers)
+    const moneyInFromPayments = paymentsReceived._sum.amount ? Number(paymentsReceived._sum.amount) : 0;
+    // Total Money In = Transactions (INCOME, DEBT_REPAID, TRANSFER_IN) + Direct Payments
+    const totalMoneyIn = moneyInFromTransactions + moneyInFromPayments;
+    
+    // Money Out (Lacagta Baxaysa) - All money spent from Expense table
+    // This includes all expenses regardless of project or company
+    const allExpenses = await prisma.expense.aggregate({
+      _sum: { amount: true },
+      where: { companyId },
+    });
+    
+    // Total Money Out = All expenses from Expense table (most accurate)
+    const totalMoneyOut = allExpenses._sum.amount ? Number(allExpenses._sum.amount) : 0;
+    
+    // Profit (Faa'iidada) = Money In - Money Out (Simple Cash Flow Accounting)
+    // Lacagta soo galaysa - Lacagta baxaysa = Faa'iidada
+    const netProfit = totalMoneyIn - totalMoneyOut;
+    
+    // Legacy fields for compatibility
+    const totalIncome = totalMoneyIn;
+    const totalExpenses = totalMoneyOut;
+    
+    // Projects count
     const totalProjects = await prisma.project.count({ where: { companyId } });
     const activeProjects = await prisma.project.count({ where: { companyId, status: 'Active' } });
-    const completedProjects = await prisma.project.count({ where: { companyId, status: 'Completed' } });
+    const completedProjectsCount = await prisma.project.count({ where: { companyId, status: 'Completed' } });
     const onHoldProjects = await prisma.project.count({ where: { companyId, status: 'On Hold' } });
 
-    // Expenses breakdown
+    // Expenses breakdown - For display purposes
     const companyExpenses = await prisma.expense.aggregate({
       _sum: { amount: true },
       where: { companyId, projectId: null },
@@ -74,12 +111,16 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       stats: {
-        totalIncome,
-        totalExpenses,
-        netProfit,
+        totalIncome: totalMoneyIn, // Money In (Lacagta Soo Galaysa)
+        totalExpenses: totalMoneyOut, // Money Out (Lacagta Baxaysa)
+        netProfit, // Faa'iidada = Lacagta Soo Galaysa - Lacagta Baxaysa
+        totalMoneyIn, // Explicit field for clarity
+        totalMoneyOut, // Explicit field for clarity
+        moneyInFromTransactions, // Money from transactions
+        moneyInFromPayments, // Money from payments
         totalProjects,
         activeProjects,
-        completedProjects,
+        completedProjects: completedProjectsCount,
         onHoldProjects,
         companyExpenses: companyExpenses._sum.amount ? Number(companyExpenses._sum.amount) : 0,
         projectExpenses: projectExpenses._sum.amount ? Number(projectExpenses._sum.amount) : 0,

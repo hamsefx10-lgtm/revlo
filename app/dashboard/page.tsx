@@ -18,6 +18,8 @@ import {
   Search, // Search icon
   Factory, // Manufacturing icon
   Scale, // Debt icon
+  FileText, ClipboardList, // Quick actions icons
+  Trophy // Trophy icon for good profit
 } from 'lucide-react';
 
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from 'recharts';
@@ -443,39 +445,75 @@ export default function DashboardPage() {
         <h1 className="text-2xl lg:text-4xl font-bold text-darkGray dark:text-gray-100">Dashboard Overview</h1>
       </div>
       
-      {/* Financial Overview Cards Section */}
+      {/* Financial Overview Cards Section - Enhanced Design */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8 animate-fade-in-up">
-        <DashboardCard 
-          title="Faa'iidada Dhabta Ah"
-          value={formatCurrency(realizedProfitFromCompletedProjects)}
-          trend={realizedProfitFromCompletedProjects >= 0 ? 'up' : 'down'}
-          description="Faa'iidada dhabta ah ee laga helay mashaariicda la dhammaystiraay"
-          colorClass={realizedProfitFromCompletedProjects >= 0 ? 'text-secondary' : 'text-redError'} 
-          icon={<Banknote />} 
-        />
-        <DashboardCard 
-          title="Wadarta Kharashyada" 
-          value={formatCurrency(totalExpenses)} 
-          trend="down"
-          description="Kharashyada guud"
-          colorClass="text-redError" 
-          icon={<DollarSign />} 
-        />
-        <DashboardCard 
-          title="Wadarta Lacagta" 
-          value={formatCurrency(currentTotalBalance)} 
-          trend={currentTotalBalance >= 0 ? 'up' : 'down'}
-          description="Accounts-ka oo dhan"
-          colorClass="text-primary" 
-          icon={<Banknote />} 
-        />
-        <DashboardCard 
-          title="Mashaariicda Firfircoon" 
-          value={activeProjects.toLocaleString()} 
-          description="Mashaariic socota"
-          colorClass="text-accent" 
-          icon={<Briefcase />} 
-        />
+        {/* Card 1: Lacagaha la helay (Money Received) */}
+        <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-xl shadow-lg border-l-4 border-green-500 p-6 hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center justify-between mb-4">
+            <div className="bg-green-500/20 dark:bg-green-500/30 p-3 rounded-lg">
+              <TrendingUp size={24} className="text-green-600 dark:text-green-400" />
+            </div>
+            <span className="text-green-600 dark:text-green-400 text-2xl">↑</span>
+          </div>
+          <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1">Lacagaha la helay</h3>
+          <p className="text-2xl lg:text-3xl font-extrabold text-green-700 dark:text-green-300 mb-2">
+            {formatCurrency(totalIncome)}
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Dhammaan lacagaha soo galay</p>
+      </div>
+
+        {/* Card 2: Kharashyada (Expenses) */}
+        <div className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30 rounded-xl shadow-lg border-l-4 border-red-500 p-6 hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center justify-between mb-4">
+            <div className="bg-red-500/20 dark:bg-red-500/30 p-3 rounded-lg">
+              <TrendingDown size={24} className="text-red-600 dark:text-red-400" />
+            </div>
+            <span className="text-red-600 dark:text-red-400 text-2xl">↓</span>
+          </div>
+          <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1">Kharashyada</h3>
+          <p className="text-2xl lg:text-3xl font-extrabold text-red-700 dark:text-red-300 mb-2">
+            {formatCurrency(totalExpenses)}
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Kharashyada guud</p>
+        </div>
+
+        {/* Card 3: Faa'iidada Dhabta Ah (Realized Profit) */}
+        <div className={`bg-gradient-to-br ${netProfit >= 0 ? 'from-green-50 to-emerald-100 dark:from-green-900/30 dark:to-emerald-800/30' : 'from-red-50 to-orange-100 dark:from-red-900/30 dark:to-orange-800/30'} rounded-xl shadow-lg border-l-4 ${netProfit >= 0 ? 'border-green-500' : 'border-red-500'} p-6 hover:shadow-xl transition-all duration-300`}>
+          <div className="flex items-center justify-between mb-4">
+            <div className={`${netProfit >= 0 ? 'bg-green-500/20 dark:bg-green-500/30' : 'bg-red-500/20 dark:bg-red-500/30'} p-3 rounded-lg`}>
+              {netProfit >= 0 ? (
+                <CheckCircle size={24} className="text-green-600 dark:text-green-400" />
+              ) : (
+                <XCircle size={24} className="text-red-600 dark:text-red-400" />
+              )}
+            </div>
+            {netProfit >= 0 ? (
+              <span className="text-green-600 dark:text-green-400 text-2xl">✓</span>
+            ) : (
+              <span className="text-red-600 dark:text-red-400 text-2xl">✗</span>
+            )}
+          </div>
+          <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1">Faa'iidada Dhabta Ah</h3>
+          <p className={`text-2xl lg:text-3xl font-extrabold mb-2 ${netProfit >= 0 ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}`}>
+            {formatCurrency(netProfit)}
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Lacagta soo galaysa - Lacagta baxaysa</p>
+        </div>
+
+        {/* Card 4: Mashaariicda Firfircoon (Active Projects) */}
+        <div className="bg-gradient-to-br from-orange-50 to-amber-100 dark:from-orange-900/30 dark:to-amber-800/30 rounded-xl shadow-lg border-l-4 border-orange-500 p-6 hover:shadow-xl transition-all duration-300">
+          <div className="flex items-center justify-between mb-4">
+            <div className="bg-orange-500/20 dark:bg-orange-500/30 p-3 rounded-lg">
+              <Briefcase size={24} className="text-orange-600 dark:text-orange-400" />
+            </div>
+            <Zap size={20} className="text-orange-600 dark:text-orange-400" />
+          </div>
+          <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1">Mashaariicda Firfircoon</h3>
+          <p className="text-2xl lg:text-3xl font-extrabold text-orange-700 dark:text-orange-300 mb-2">
+            {activeProjects}
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Mashaariic socota</p>
+        </div>
       </div>
 
       {/* New Widgets Section */}
@@ -612,6 +650,120 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Quick Actions Section - Enhanced Design */}
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg mb-6 lg:mb-8 animate-fade-in-up border border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg lg:text-xl font-semibold text-darkGray dark:text-gray-100 mb-6 flex items-center gap-2">
+          <Zap size={24} className="text-orange-500 dark:text-orange-400" />
+          Ficillo Dhaqso leh
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <Link 
+            href="/expenses/add" 
+            className="bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/30 dark:to-emerald-800/30 p-4 rounded-lg border border-green-200 dark:border-green-700 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
+          >
+            <div className="bg-green-500/20 dark:bg-green-500/30 p-3 rounded-lg w-fit mb-3 group-hover:scale-110 transition-transform">
+              <Coins size={24} className="text-green-600 dark:text-green-400" />
+            </div>
+            <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">Lacag Dhexdhexaad</h4>
+            <p className="text-xs text-gray-600 dark:text-gray-400">Ku dar lacag dhexdhexaad</p>
+          </Link>
+
+          <Link 
+            href="/projects/add" 
+            className="bg-gradient-to-br from-blue-50 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-800/30 p-4 rounded-lg border border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
+          >
+            <div className="bg-blue-500/20 dark:bg-blue-500/30 p-3 rounded-lg w-fit mb-3 group-hover:scale-110 transition-transform">
+              <ClipboardList size={24} className="text-blue-600 dark:text-blue-400" />
+            </div>
+            <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">Mashruuc Cusub</h4>
+            <p className="text-xs text-gray-600 dark:text-gray-400">Abuur mashruuc cusub</p>
+          </Link>
+
+          <Link 
+            href="/inventory/store" 
+            className="bg-gradient-to-br from-orange-50 to-amber-100 dark:from-orange-900/30 dark:to-amber-800/30 p-4 rounded-lg border border-orange-200 dark:border-orange-700 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
+          >
+            <div className="bg-orange-500/20 dark:bg-orange-500/30 p-3 rounded-lg w-fit mb-3 group-hover:scale-110 transition-transform">
+              <Package size={24} className="text-orange-600 dark:text-orange-400" />
+            </div>
+            <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">Alaab Dhexdhexaad</h4>
+            <p className="text-xs text-gray-600 dark:text-gray-400">Maaree alaab</p>
+          </Link>
+
+          <Link 
+            href="/reports" 
+            className="bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-800/30 p-4 rounded-lg border border-purple-200 dark:border-purple-700 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
+          >
+            <div className="bg-purple-500/20 dark:bg-purple-500/30 p-3 rounded-lg w-fit mb-3 group-hover:scale-110 transition-transform">
+              <BarChartIcon size={24} className="text-purple-600 dark:text-purple-400" />
+            </div>
+            <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">Warbixin</h4>
+            <p className="text-xs text-gray-600 dark:text-gray-400">Eeg warbixino</p>
+          </Link>
+        </div>
+      </div>
+
+      {/* Smart Notifications Section - Enhanced Design */}
+      <div className="bg-gradient-to-br from-orange-50 to-amber-100 dark:from-orange-900/30 dark:to-amber-800/30 p-6 rounded-xl shadow-lg mb-6 lg:mb-8 animate-fade-in-up border border-orange-200 dark:border-orange-700">
+        <h3 className="text-lg lg:text-xl font-semibold text-darkGray dark:text-gray-100 mb-6 flex items-center gap-2">
+          <Bell size={24} className="text-orange-600 dark:text-orange-400" />
+          Digniino Smart ah
+        </h3>
+        <div className="space-y-4">
+          {/* Good Profit Notification */}
+          {netProfit > 0 && (
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-l-4 border-yellow-500 shadow-md hover:shadow-lg transition-shadow">
+              <div className="flex items-start gap-4">
+                <div className="bg-yellow-500/20 dark:bg-yellow-500/30 p-3 rounded-lg">
+                  <Trophy size={24} className="text-yellow-600 dark:text-yellow-400" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-1">Faa'iido Wanaagsan!</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Waxaad heshay <span className="font-bold text-green-600 dark:text-green-400">{formatCurrency(netProfit)}</span> faa'iido dhab ah
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* No Warnings Notification */}
+          {lowStockItems === 0 && overdueProjects === 0 && (
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-l-4 border-green-500 shadow-md hover:shadow-lg transition-shadow">
+              <div className="flex items-start gap-4">
+                <div className="bg-green-500/20 dark:bg-green-500/30 p-3 rounded-lg">
+                  <CheckCircle size={24} className="text-green-600 dark:text-green-400" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-1">Wax Digniin Ah Ma Jiraan</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Ganacsigaagu wuxuu ku jiraa xaalad wanaagsan
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Low Stock Warning */}
+          {lowStockItems > 0 && (
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-l-4 border-red-500 shadow-md hover:shadow-lg transition-shadow">
+              <div className="flex items-start gap-4">
+                <div className="bg-red-500/20 dark:bg-red-500/30 p-3 rounded-lg">
+                  <Package size={24} className="text-red-600 dark:text-red-400" />
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-1">Digniin: Alaab Yar!</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <span className="font-bold">{lowStockItems} Alaab</span> ayaa stock-geedu hooseeyaa. Fadlan dib u buuxi.
+                  </p>
+                  <Link href="/inventory/store?status=Low Stock" className="text-primary text-xs font-medium hover:underline mt-2 block">Fiiri &rarr;</Link>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Alerts and Quick Insights */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8 animate-fade-in-up">

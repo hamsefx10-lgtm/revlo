@@ -16,10 +16,11 @@ export async function GET(request: Request) {
     }
     const { companyId } = sessionData;
 
-    // Financial stats filtered by companyId
+    // Financial stats filtered by companyId - Using same calculation as reports overview
+    // Money In (Lacagta Soo Galaysa) - All money received
     const [incomeAgg, expensesAgg, projectsAgg, bankAgg, mobileAgg, cashAgg, lowStockAgg, overdueAgg, completedAgg, activeAgg] = await Promise.all([
-      prisma.transaction.aggregate({ _sum: { amount: true }, where: { type: 'INCOME', companyId } }),
-      prisma.transaction.aggregate({ _sum: { amount: true }, where: { type: 'EXPENSE', companyId } }),
+      prisma.transaction.aggregate({ _sum: { amount: true }, where: { companyId, type: { in: ['INCOME', 'TRANSFER_IN', 'DEBT_REPAID'] } } }),
+      prisma.transaction.aggregate({ _sum: { amount: true }, where: { companyId, type: { in: ['EXPENSE', 'TRANSFER_OUT', 'DEBT_TAKEN'] }, category: { not: 'FIXED_ASSET_PURCHASE' } } }),
       prisma.project.count({ where: { companyId } }),
       prisma.account.aggregate({ _sum: { balance: true }, where: { type: 'BANK', companyId } }),
       prisma.account.aggregate({ _sum: { balance: true }, where: { type: 'MOBILE_MONEY', companyId } }),
@@ -29,6 +30,37 @@ export async function GET(request: Request) {
       prisma.project.aggregate({ _sum: { agreementAmount: true }, where: { status: 'Completed', companyId } }),
       prisma.project.aggregate({ _sum: { agreementAmount: true }, where: { status: 'Active', companyId } }),
     ]);
+
+    // Get all expenses from Expense table (more accurate)
+    const allExpenses = await prisma.expense.aggregate({
+      _sum: { amount: true },
+      where: { companyId },
+    });
+
+    // Get payments through projects (Money In from Payments)
+    const projects = await prisma.project.findMany({
+      where: { companyId },
+      select: { id: true },
+    });
+    const projectIds = projects.map(p => p.id);
+    
+    const paymentsReceived = await prisma.payment.aggregate({
+      _sum: { amount: true },
+      where: { 
+        projectId: { in: projectIds }
+      },
+    });
+
+    // Money In calculation
+    const moneyInFromTransactions = incomeAgg._sum.amount ? Number(incomeAgg._sum.amount) : 0;
+    const moneyInFromPayments = paymentsReceived._sum.amount ? Number(paymentsReceived._sum.amount) : 0;
+    const totalMoneyIn = moneyInFromTransactions + moneyInFromPayments;
+
+    // Money Out calculation - Use Expense table (more accurate than transactions)
+    const totalMoneyOut = allExpenses._sum.amount ? Number(allExpenses._sum.amount) : 0;
+
+    // Profit (Faa'iidada Dhabta Ah) = Money In - Money Out
+    const realizedProfit = totalMoneyIn - totalMoneyOut;
 
     // Monthly financial data (filtered by companyId)
     const monthlyFinancialData = await prisma.$queryRaw`SELECT to_char("transactionDate", 'Mon YYYY') as month, SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END) as income, SUM(CASE WHEN type = 'EXPENSE' THEN amount ELSE 0 END) as expenses, SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END) - SUM(CASE WHEN type = 'EXPENSE' THEN amount ELSE 0 END) as profit FROM "transactions" WHERE "companyId" = ${companyId} GROUP BY month ORDER BY min("transactionDate") DESC LIMIT 12`;
@@ -148,9 +180,9 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json({
-      totalIncome: Number(incomeAgg._sum.amount) || 0,
-      totalExpenses: Number(expensesAgg._sum.amount) || 0,
-      netProfit: Number(completedAgg._sum.agreementAmount) || 0, // Only realized profit from completed projects
+      totalIncome: totalMoneyIn, // Money In (Lacagta Soo Galaysa)
+      totalExpenses: totalMoneyOut, // Money Out (Lacagta Baxaysa)
+      netProfit: realizedProfit, // Faa'iidada Dhabta Ah = Money In - Money Out
       totalProjects: projectsAgg,
       activeProjects: statusCounts.find((s: any) => s.status === 'Active')?._count.status || 0,
       completedProjects: statusCounts.find((s: any) => s.status === 'Completed')?._count.status || 0,
@@ -160,7 +192,7 @@ export async function GET(request: Request) {
       totalCashBalance: Number(cashAgg._sum.balance) || 0,
       lowStockItems: lowStockAgg,
       overdueProjects: overdueAgg,
-      realizedProfitFromCompletedProjects: Number(completedAgg._sum.agreementAmount) || 0,
+      realizedProfitFromCompletedProjects: realizedProfit, // Use calculated profit (same as netProfit)
       potentialProfitFromActiveProjects: Number(activeAgg._sum.agreementAmount) || 0,
       monthlyFinancialData,
       projectStatusBreakdown,

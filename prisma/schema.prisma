@@ -240,8 +240,23 @@ model Employee {
   laborRecords        ProjectLabor[]
   transactions        Transaction[]
   workOrders          WorkOrder[]
+  attendance          EmployeeAttendance[]
 
   @@map("employees")
+}
+
+model EmployeeAttendance {
+  id         String   @id @default(uuid()) @map("_id")
+  employeeId String
+  date       DateTime @db.Date
+  worked     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, date])
+  @@map("employee_attendance")
+  @@index([employeeId, date])
 }
 
 model ExpenseCategory {

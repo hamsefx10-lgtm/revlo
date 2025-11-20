@@ -409,21 +409,8 @@ export default function EmployeesPage() {
   };
 
   const handleRecordPayment = (id: string) => {
-    const employee = employees.find(emp => emp.id === id);
-    if (employee) {
-      setToastMessage({ 
-        message: `Recording payment for ${employee.fullName}. This will open the salary payment form.`, 
-        type: 'info' 
-      });
-      // TODO: Open modal or navigate to payment recording form
-      // For now, we'll show a success message
-      setTimeout(() => {
-        setToastMessage({ 
-          message: `Payment recorded successfully for ${employee.fullName}!`, 
-          type: 'success' 
-        });
-      }, 2000);
-    }
+    // Navigate to employee detail page and open Attendance tab
+    router.push(`/employees/${id}?tab=Attendance`);
   };
 
 

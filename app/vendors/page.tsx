@@ -176,10 +176,10 @@ export default function VendorsPage() {
                 <div className="bg-primary/10 p-3 rounded-lg">
                   <Users className="text-primary" size={24} />
                 </div>
-                <div>
+              <div>
                   <p className="text-sm text-mediumGray dark:text-gray-400 mb-1">Wadarta Iibiyayaasha</p>
                   <p className="text-2xl font-bold text-darkGray dark:text-gray-100">{totalVendors}</p>
-                </div>
+              </div>
               </div>
             </div>
           </div>
@@ -191,10 +191,10 @@ export default function VendorsPage() {
                 <div className="bg-green-500/10 p-3 rounded-lg">
                   <Package className="text-green-500" size={24} />
                 </div>
-                <div>
+              <div>
                   <p className="text-sm text-mediumGray dark:text-gray-400 mb-1">Alaab</p>
                   <p className="text-2xl font-bold text-darkGray dark:text-gray-100">{materialVendors}</p>
-                </div>
+              </div>
               </div>
             </div>
           </div>
@@ -206,10 +206,10 @@ export default function VendorsPage() {
                 <div className="bg-purple-500/10 p-3 rounded-lg">
                   <Wrench className="text-purple-500" size={24} />
                 </div>
-                <div>
+              <div>
                   <p className="text-sm text-mediumGray dark:text-gray-400 mb-1">Adeegyada</p>
                   <p className="text-2xl font-bold text-darkGray dark:text-gray-100">{serviceVendors}</p>
-                </div>
+              </div>
               </div>
             </div>
           </div>
@@ -221,10 +221,10 @@ export default function VendorsPage() {
                 <div className="bg-accent/10 p-3 rounded-lg">
                   <Tag className="text-accent" size={24} />
                 </div>
-                <div>
+              <div>
                   <p className="text-sm text-mediumGray dark:text-gray-400 mb-1">Kale</p>
                   <p className="text-2xl font-bold text-darkGray dark:text-gray-100">{otherVendors}</p>
-                </div>
+              </div>
               </div>
             </div>
           </div>
