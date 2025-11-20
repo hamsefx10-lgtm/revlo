@@ -128,7 +128,7 @@ function exportPDF(data: DailyReport) {
     doc.text('Project Expenses', 105, yPos, { align: 'center' });
     yPos += 8;
     
-    autoTable(doc, {
+  autoTable(doc, {
       startY: yPos,
       head: [['Project', 'Category', 'Description', 'Amount']],
       body: data.projectExpenses.map(e => [
@@ -157,7 +157,7 @@ function exportPDF(data: DailyReport) {
     doc.text('Company Expenses', 105, yPos, { align: 'center' });
     yPos += 8;
     
-    autoTable(doc, {
+  autoTable(doc, {
       startY: yPos,
       head: [['Category', 'Description', 'Amount']],
       body: data.companyExpenses.map(e => [
@@ -287,9 +287,9 @@ export default function DailyReportPage() {
                   <div className="text-sm font-bold">D-{report.date.replace(/-/g, '')}</div>
                 </div>
               </div>
-            </div>
-          </div>
         </div>
+        </div>
+      </div>
 
         {/* Main Content Container */}
         <div className="bg-white dark:bg-gray-800 rounded-b-xl print:rounded-none shadow-lg print:shadow-none overflow-hidden">
@@ -372,8 +372,8 @@ export default function DailyReportPage() {
                 {netFlow >= 0 ? '+' : ''}{netFlow.toLocaleString()}
               </div>
               <div className={`text-xs font-semibold mt-1 ${netFlow >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'}`}>ETB</div>
-            </div>
-          </div>
+        </div>
+      </div>
 
           {/* Transactions Sections */}
           <div className="p-8 space-y-8 print:p-4">
@@ -397,24 +397,24 @@ export default function DailyReportPage() {
                       <tr>
                         <th className="px-6 py-4 text-left text-sm font-bold text-orange-900 dark:text-orange-100 uppercase tracking-wider">Mashruuc</th>
                         <th className="px-6 py-4 text-right text-sm font-bold text-orange-900 dark:text-orange-100 uppercase tracking-wider">Qiime</th>
-                      </tr>
-                    </thead>
+                </tr>
+              </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {report.debtsCollected.map((d, i) => (
                         <tr key={i} className="hover:bg-orange-50 dark:hover:bg-orange-900/10">
                           <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-300">{d.project}</td>
                           <td className="px-6 py-4 text-sm font-semibold text-right text-gray-900 dark:text-gray-300">{d.amount.toLocaleString()} ETB</td>
-                        </tr>
-                      ))}
+                  </tr>
+                ))}
                       <tr className="bg-orange-100 dark:bg-orange-900/30 font-bold border-t-2 border-orange-300 dark:border-orange-700">
                         <td className="px-6 py-4 text-sm text-orange-900 dark:text-orange-100">WADARTA</td>
                         <td className="px-6 py-4 text-sm text-right text-orange-700 dark:text-orange-300">{report.debtsCollected.reduce((sum, d) => sum + d.amount, 0).toLocaleString()} ETB</td>
                       </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
+              </tbody>
+            </table>
+            </div>
+          </div>
+        )}
 
             {/* Project Expenses */}
             {report.projectExpenses.length > 0 && (
@@ -427,9 +427,9 @@ export default function DailyReportPage() {
                     </h2>
                     <div className="bg-white/30 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold">
                       {report.projectExpenses.length} Item(s)
-                    </div>
-                  </div>
-                </div>
+          </div>
+          </div>
+        </div>
                 <div className="bg-white dark:bg-gray-800">
                   <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-blue-50 dark:bg-blue-900/20">
@@ -438,25 +438,25 @@ export default function DailyReportPage() {
                         <th className="px-4 py-3 text-left text-xs font-bold text-blue-900 dark:text-blue-100 uppercase">Category</th>
                         <th className="px-4 py-3 text-left text-xs font-bold text-blue-900 dark:text-blue-100 uppercase hidden md:table-cell">Description</th>
                         <th className="px-4 py-3 text-right text-xs font-bold text-blue-900 dark:text-blue-100 uppercase">Amount</th>
-                      </tr>
-                    </thead>
+              </tr>
+            </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                      {report.projectExpenses.map((e, i) => (
+              {report.projectExpenses.map((e, i) => (
                         <tr key={i} className="hover:bg-blue-50 dark:hover:bg-blue-900/10">
                           <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300">{e.project}</td>
                           <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300">{e.category}</td>
                           <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden md:table-cell">{e.description}</td>
                           <td className="px-4 py-3 text-xs font-semibold text-right text-gray-900 dark:text-gray-300">{e.amount.toLocaleString()} ETB</td>
-                        </tr>
-                      ))}
+                </tr>
+              ))}
                       <tr className="bg-blue-100 dark:bg-blue-900/30 font-bold border-t-2 border-blue-300 dark:border-blue-700">
                         <td colSpan={3} className="px-4 py-3 text-xs text-blue-900 dark:text-blue-100">WADARTA KHARASHYADA MASHRUUCYADA</td>
                         <td className="px-4 py-3 text-xs text-right text-blue-700 dark:text-blue-300">{report.totalProjectExpenses.toLocaleString()} ETB</td>
                       </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+            </tbody>
+          </table>
+        </div>
+      </div>
             )}
 
             {/* Company Expenses */}
@@ -480,24 +480,24 @@ export default function DailyReportPage() {
                         <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase">Category</th>
                         <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase hidden md:table-cell">Description</th>
                         <th className="px-4 py-3 text-right text-xs font-bold text-green-900 dark:text-green-100 uppercase">Amount</th>
-                      </tr>
-                    </thead>
+              </tr>
+            </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                      {report.companyExpenses.map((e, i) => (
+              {report.companyExpenses.map((e, i) => (
                         <tr key={i} className="hover:bg-green-50 dark:hover:bg-green-900/10">
                           <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300">{e.category}</td>
                           <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden md:table-cell">{e.description}</td>
                           <td className="px-4 py-3 text-xs font-semibold text-right text-gray-900 dark:text-gray-300">{e.amount.toLocaleString()} ETB</td>
-                        </tr>
-                      ))}
+                </tr>
+              ))}
                       <tr className="bg-green-100 dark:bg-green-900/30 font-bold border-t-2 border-green-300 dark:border-green-700">
                         <td colSpan={2} className="px-4 py-3 text-xs text-green-900 dark:text-green-100">WADARTA KHARASHYADA SHIRKADDA</td>
                         <td className="px-4 py-3 text-xs text-right text-green-700 dark:text-green-300">{report.totalCompanyExpenses.toLocaleString()} ETB</td>
                       </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+            </tbody>
+          </table>
+        </div>
+      </div>
             )}
 
             {/* No Data Message */}
@@ -506,9 +506,9 @@ export default function DailyReportPage() {
                 <FileText size={48} className="mx-auto mb-4 text-gray-400" />
                 <h3 className="text-xl font-bold text-gray-600 dark:text-gray-400 mb-2">Ma jiro dhaqdhaqaaq maanta</h3>
                 <p className="text-gray-500 dark:text-gray-500">Maanta lama samayn wax dhaqdhaqaaq ah oo macquul ah.</p>
-              </div>
+        </div>
             )}
-          </div>
+      </div>
 
           {/* Action Buttons Footer */}
           <div className="border-t-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-6 flex justify-end gap-3 print:hidden">
@@ -524,9 +524,9 @@ export default function DailyReportPage() {
             >
               <Printer size={18} /> Print Report
             </button>
+            </div>
           </div>
         </div>
-      </div>
       
       {/* Print-specific styles */}
       <style jsx global>{`
