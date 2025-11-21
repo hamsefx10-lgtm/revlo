@@ -53,8 +53,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
 // PUT /api/employees/[id] - Cusboonaysii shaqaale gaar ah
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  let employeeId: string;
   try {
     const { id } = await params;
+    employeeId = id;
     const companyId = await getSessionCompanyId();
     const body = await request.json();
 
@@ -101,7 +103,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       { status: 200 }
     );
   } catch (error) {
-    console.error(`Cilad ayaa dhacday marka shaqaalaha ${params.id} la cusboonaysiinayay:`, error);
+    console.error(`Cilad ayaa dhacday marka shaqaalaha ${employeeId || 'unknown'} la cusboonaysiinayay:`, error);
     return NextResponse.json(
       { message: 'Cilad server ayaa dhacday. Fadlan isku day mar kale.' },
       { status: 500 }
@@ -111,8 +113,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
 // DELETE /api/employees/[id] - Tirtir shaqaale gaar ah
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  let employeeId: string;
   try {
     const { id } = await params;
+    employeeId = id;
     const companyId = await getSessionCompanyId();
 
     // Verify employee exists and belongs to company
@@ -186,7 +190,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       { status: 200 }
     );
   } catch (error) {
-    console.error(`Cilad ayaa dhacday marka shaqaalaha ${params.id} la tirtirayay:`, error);
+    console.error(`Cilad ayaa dhacday marka shaqaalaha ${employeeId || 'unknown'} la tirtirayay:`, error);
     return NextResponse.json(
       { message: 'Cilad server ayaa dhacday. Fadlan isku day mar kale.' },
       { status: 500 }
