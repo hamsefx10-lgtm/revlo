@@ -1,0 +1,59 @@
+﻿// app/api/employees/salary-summary/route.ts - Salary Summary API Route
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/db';
+import { getSessionCompanyId } from '../auth';
+
+// GET /api/employees/salary-summary - Soo deji warbixinta mushaharka shaqaalaha
+export async function GET(request: Request) {
+  try {
+    const companyId = await getSessionCompanyId();
+    
+    const employees = await prisma.employee.findMany({
+      where: { companyId },
+      select: {
+        id: true,
+        fullName: true,
+        monthlySalary: true,
+        salaryPaidThisMonth: true,
+        overpaidAmount: true,
+        lastPaymentDate: true,
+        startDate: true,
+        isActive: true,
+      },
+    });
+
+    const today = new Date();
+    const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+    const currentDayOfMonth = today.getDate();
+
+    const summary = employees.map((emp: any) => {
+      const monthlySalaryNum = emp.monthlySalary ? emp.monthlySalary.toNumber() : null;
+      const salaryPaidThisMonthNum = emp.salaryPaidThisMonth ? emp.salaryPaidThisMonth.toNumber() : null;
+      const overpaidAmountNum = emp.overpaidAmount ? emp.overpaidAmount.toNumber() : null;
+      const dailyRate = monthlySalaryNum ? monthlySalaryNum / daysInMonth : null;
+      const earnedThisMonth = dailyRate ? dailyRate * currentDayOfMonth : null;
+      
+      return {
+        employeeId: emp.id,
+        fullName: emp.fullName,
+        monthlySalary: monthlySalaryNum,
+        salaryPaidThisMonth: salaryPaidThisMonthNum,
+        overpaidAmount: overpaidAmountNum,
+        dailyRate,
+        earnedThisMonth,
+        daysWorkedThisMonth: currentDayOfMonth,
+        lastPaymentDate: emp.lastPaymentDate,
+        startDate: emp.startDate,
+        isActive: emp.isActive,
+      };
+    });
+
+    return NextResponse.json({ summary }, { status: 200 });
+  } catch (error) {
+    console.error('Cilad ayaa dhacday marka warbixinta mushaharka la soo gelinayay:', error);
+    return NextResponse.json(
+      { message: 'Cilad server ayaa dhacday. Fadlan isku day mar kale.' },
+      { status: 500 }
+    );
+  }
+}

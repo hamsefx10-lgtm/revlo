@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Layout from '../../../components/layouts/Layout';
-import { Download, Printer, Loader2, TrendingUp, TrendingDown, DollarSign, Receipt, FileText, XCircle, Wallet } from 'lucide-react';
+import { Download, Printer, Loader2, TrendingUp, TrendingDown, DollarSign, Receipt, FileText, XCircle, Wallet, Calendar, HelpCircle, X } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -210,24 +210,90 @@ export default function DailyReportPage() {
   const [report, setReport] = useState<DailyReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    // Default to today's date in YYYY-MM-DD format
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
+  const [showHelp, setShowHelp] = useState(false);
+  const [isChangingDate, setIsChangingDate] = useState(false);
+
+  // Optimized date change handler
+  const handleDateChange = (newDate: string) => {
+    setIsChangingDate(true);
+    setSelectedDate(newDate);
+    // Reset the flag after a short delay
+    setTimeout(() => setIsChangingDate(false), 500);
+  };
 
   useEffect(() => {
     async function fetchReport() {
       setLoading(true);
       setError('');
       try {
-        const res = await fetch('/api/reports/daily');
+        // Add cache busting and faster fetch
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+        
+        const res = await fetch(`/api/reports/daily?date=${selectedDate}&t=${Date.now()}`, {
+          signal: controller.signal,
+          cache: 'no-cache',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        });
+        
+        clearTimeout(timeoutId);
+        
         if (!res.ok) throw new Error('Xogta lama helin');
         const data: DailyReport = await res.json();
         setReport(data);
       } catch (err) {
-        setError('Cilad ayaa dhacday ama xog lama helin.');
+        if (err instanceof Error && err.name === 'AbortError') {
+          setError('Waqtiga dhameeyay. Isku day mar kale.');
+        } else {
+          setError('Cilad ayaa dhacday ama xog lama helin.');
+        }
       } finally {
         setLoading(false);
       }
     }
+    
+    // Immediate fetch for faster response
     fetchReport();
-  }, []);
+  }, [selectedDate]);
+
+  // Keyboard shortcuts for date navigation
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.target && (e.target as HTMLElement).tagName === 'INPUT') return; // Don't trigger when typing in inputs
+      if (loading || isChangingDate) return; // Don't trigger when loading or changing
+      
+      if (e.key === 'ArrowLeft') {
+        // Previous day
+        const currentDate = new Date(selectedDate);
+        currentDate.setDate(currentDate.getDate() - 1);
+        handleDateChange(currentDate.toISOString().split('T')[0]);
+      } else if (e.key === 'ArrowRight') {
+        // Next day (if not future)
+        const currentDate = new Date(selectedDate);
+        const tomorrow = new Date(currentDate);
+        tomorrow.setDate(currentDate.getDate() + 1);
+        const today = new Date();
+        if (tomorrow <= today) {
+          handleDateChange(tomorrow.toISOString().split('T')[0]);
+        }
+      } else if (e.key === 'Home') {
+        // Today
+        const today = new Date().toISOString().split('T')[0];
+        handleDateChange(today);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [selectedDate, loading, isChangingDate]);
 
   if (loading) {
     return (
@@ -262,8 +328,244 @@ export default function DailyReportPage() {
 
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto pb-8 print:max-w-full">
-        {/* Beautiful Header */}
+      <div className="max-w-6xl mx-auto pb-8 print:max-w-full pt-16 print:pt-0">
+        {/* FIXED Date Picker Section - Always Visible */}
+        <div className="mb-3 print:hidden bg-white dark:bg-gray-800 fixed top-0 left-0 right-0 z-50 shadow-md border-b border-blue-300">
+          <div className="py-2 px-4">
+            <div className="flex items-center justify-between max-w-6xl mx-auto">
+              <div className="flex items-center gap-2">
+                <Calendar className="text-blue-600 dark:text-blue-400" size={18} />
+                <span className="text-base font-semibold text-gray-800 dark:text-gray-200">
+                  Dooro Taariikhda Warbixinta
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-1">
+                {/* Quick Access Buttons */}
+                <button
+                  onClick={() => {
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    handleDateChange(yesterday.toISOString().split('T')[0]);
+                  }}
+                  disabled={loading || isChangingDate}
+                  className="px-2 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded text-xs transition disabled:opacity-50"
+                >
+                  Shalay
+                </button>
+                
+                {/* Navigation Buttons */}
+                <button
+                  onClick={() => {
+                    const currentDate = new Date(selectedDate);
+                    currentDate.setDate(currentDate.getDate() - 1);
+                    handleDateChange(currentDate.toISOString().split('T')[0]);
+                  }}
+                  disabled={loading || isChangingDate}
+                  className="p-1 bg-blue-100 dark:bg-blue-800 hover:bg-blue-200 dark:hover:bg-blue-700 text-blue-800 dark:text-blue-200 rounded transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  title="Maalinta hore"
+                >
+                  ←
+                </button>
+                
+                {/* Compact Date Input */}
+                <input
+                  type="date"
+                  id="main-report-date"
+                  value={selectedDate}
+                  onChange={(e) => handleDateChange(e.target.value)}
+                  max={new Date().toISOString().split('T')[0]}
+                  disabled={loading || isChangingDate}
+                  className="px-2 py-1 border border-blue-400 dark:border-blue-600 rounded focus:ring-1 focus:ring-blue-300 focus:border-blue-600 dark:bg-gray-700 dark:text-white text-sm font-medium min-w-[120px] text-center bg-blue-50 dark:bg-blue-900/20 disabled:opacity-50"
+                />
+                
+                <button
+                  onClick={() => {
+                    const currentDate = new Date(selectedDate);
+                    const tomorrow = new Date(currentDate);
+                    tomorrow.setDate(currentDate.getDate() + 1);
+                    const today = new Date();
+                    if (tomorrow <= today) {
+                      handleDateChange(tomorrow.toISOString().split('T')[0]);
+                    }
+                  }}
+                  disabled={loading || isChangingDate || selectedDate >= new Date().toISOString().split('T')[0]}
+                  className="p-1 bg-blue-100 dark:bg-blue-800 hover:bg-blue-200 dark:hover:bg-blue-700 text-blue-800 dark:text-blue-200 rounded transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  title="Maalinta xigta"
+                >
+                  →
+                </button>
+                
+                {/* Today Button */}
+                <button
+                  onClick={() => {
+                    const today = new Date().toISOString().split('T')[0];
+                    handleDateChange(today);
+                  }}
+                  disabled={loading || isChangingDate}
+                  className={`px-2 py-1 rounded font-medium transition text-xs disabled:opacity-50 ${
+                    selectedDate === new Date().toISOString().split('T')[0]
+                      ? 'bg-green-600 text-white'
+                      : 'bg-green-100 dark:bg-green-800 hover:bg-green-200 dark:hover:bg-green-700 text-green-800 dark:text-green-200'
+                  }`}
+                >
+                  Maanta
+                </button>
+              </div>
+            </div>
+            
+            {(loading || isChangingDate) && (
+              <div className="flex items-center gap-1 ml-2 text-blue-600 dark:text-blue-400">
+                <Loader2 className="animate-spin" size={14} />
+                <span className="text-xs font-medium">
+                  {isChangingDate ? 'Beddelaya...' : 'Loading...'}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Old Enhanced Date Picker Section - Hidden */}
+        <div className="mb-6 print:hidden hidden">
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl shadow-lg p-6 border-2 border-blue-200 dark:border-blue-700">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-blue-600 text-white rounded-full shadow-lg">
+                  <Calendar size={24} />
+                </div>
+                <div>
+                  <label htmlFor="report-date" className="block text-lg font-bold text-gray-800 dark:text-gray-200 mb-1">
+                    Dooro Taariikhda Warbixinta
+                  </label>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Dooro taariikh kasta si aad u hesho warbixinta maalintaas oo dhamaystiran
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full lg:w-auto">
+                {/* Quick Navigation Buttons */}
+                <div className="flex gap-2 flex-wrap">
+                  <button
+                    onClick={() => {
+                      const yesterday = new Date();
+                      yesterday.setDate(yesterday.getDate() - 1);
+                      setSelectedDate(yesterday.toISOString().split('T')[0]);
+                    }}
+                    className="px-3 py-2 bg-blue-100 dark:bg-blue-800 hover:bg-blue-200 dark:hover:bg-blue-700 text-blue-800 dark:text-blue-200 rounded-lg font-semibold transition text-sm"
+                  >
+                    Shalay
+                  </button>
+                  <button
+                    onClick={() => {
+                      const today = new Date().toISOString().split('T')[0];
+                      setSelectedDate(today);
+                    }}
+                    className={`px-3 py-2 rounded-lg font-semibold transition text-sm ${
+                      selectedDate === new Date().toISOString().split('T')[0]
+                        ? 'bg-blue-600 text-white shadow-lg'
+                        : 'bg-blue-100 dark:bg-blue-800 hover:bg-blue-200 dark:hover:bg-blue-700 text-blue-800 dark:text-blue-200'
+                    }`}
+                  >
+                    Maanta
+                  </button>
+                  <button
+                    onClick={() => {
+                      const weekAgo = new Date();
+                      weekAgo.setDate(weekAgo.getDate() - 7);
+                      setSelectedDate(weekAgo.toISOString().split('T')[0]);
+                    }}
+                    className="px-3 py-2 bg-blue-100 dark:bg-blue-800 hover:bg-blue-200 dark:hover:bg-blue-700 text-blue-800 dark:text-blue-200 rounded-lg font-semibold transition text-sm"
+                  >
+                    Toddobaad ka hor
+                  </button>
+                </div>
+                
+                {/* Date Input */}
+                <div className="flex items-center gap-3">
+                  <input
+                    type="date"
+                    id="report-date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    max={new Date().toISOString().split('T')[0]} // Can't select future dates
+                    className="px-4 py-3 border-2 border-blue-300 dark:border-blue-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-lg font-semibold shadow-md min-w-[160px]"
+                  />
+                  {loading && (
+                    <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                      <Loader2 className="animate-spin" size={20} />
+                      <span className="text-sm font-medium">Soo qaadaya...</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            {/* Selected Date Display */}
+            <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-700">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-blue-600 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    Warbixinta: <span className="text-blue-700 dark:text-blue-300 font-bold">{report?.date || selectedDate}</span>
+                  </span>
+                </div>
+                <div className="flex items-center gap-4">
+                  {report && (
+                    <div className="text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-3 py-1 rounded-full border">
+                      Waqtiga cusbooneysiin: {new Date().toLocaleTimeString('so-SO')}
+                    </div>
+                  )}
+                  <button
+                    onClick={() => setShowHelp(!showHelp)}
+                    className="text-xs text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 px-3 py-1 rounded-full border border-blue-200 dark:border-blue-700 transition flex items-center gap-1"
+                  >
+                    <HelpCircle size={12} />
+                    Caawimo
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Help Modal */}
+        {showHelp && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 print:hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">Caawimada Isticmaalka</h3>
+                <button
+                  onClick={() => setShowHelp(false)}
+                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition"
+                >
+                  <X size={20} className="text-gray-500" />
+                </button>
+              </div>
+              <div className="space-y-4 text-sm text-gray-600 dark:text-gray-400">
+                <div>
+                  <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Keyboard Shortcuts:</h4>
+                  <ul className="space-y-1 ml-4">
+                    <li>• <kbd className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs">←</kbd> Maalinta hore</li>
+                    <li>• <kbd className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs">→</kbd> Maalinta xigta</li>
+                    <li>• <kbd className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs">Home</kbd> Maanta</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Waxyaabaha Muhiimka ah:</h4>
+                  <ul className="space-y-1 ml-4">
+                    <li>• Warbixinta waxay soo bandhigtaa dhammaan dhaqdhaqaaqyada maalinta</li>
+                    <li>• Waxaad download garayn kartaa PDF ama print garayn kartaa</li>
+                    <li>• Balances-ka waxay muujinayaan xaaladda lacagaha</li>
+                    <li>• Ma dooran kartid taariikhyo mustaqbalka ah</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Beautiful Header with Selected Date */}
         <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white rounded-t-xl print:rounded-none shadow-xl print:shadow-none mb-6 print:mb-2 overflow-hidden">
           <div className="relative px-8 py-10 print:py-6">
             {/* Decorative pattern */}
@@ -276,6 +578,20 @@ export default function DailyReportPage() {
               <div>
                 <h1 className="text-4xl font-extrabold mb-2 tracking-tight">Birshiil Work Shop</h1>
                 <div className="text-blue-100 text-lg">Warbixinta Maalinlaha ah</div>
+                {/* Selected Date Display */}
+                <div className="mt-3 flex items-center gap-2">
+                  <Calendar size={16} className="text-blue-200" />
+                  <span className="text-blue-200 text-sm">
+                    Warbixinta: <span className="font-bold text-white">
+                      {new Date(selectedDate).toLocaleDateString('so-SO', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                      })}
+                    </span>
+                  </span>
+                </div>
               </div>
               <div className="flex flex-col md:items-end gap-3">
                 <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded-xl px-6 py-3 text-center print:bg-white/10">
@@ -510,20 +826,67 @@ export default function DailyReportPage() {
             )}
       </div>
 
-          {/* Action Buttons Footer */}
-          <div className="border-t-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-6 flex justify-end gap-3 print:hidden">
-            <button 
-              onClick={() => exportPDF(report)} 
-              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-3 rounded-lg flex items-center gap-2 transition font-bold shadow-lg"
-            >
-              <Download size={18} /> Download PDF
-            </button>
-            <button 
-              onClick={() => window.print()} 
-              className="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-8 py-3 rounded-lg flex items-center gap-2 transition font-bold shadow-lg"
-            >
-              <Printer size={18} /> Print Report
-            </button>
+          {/* Enhanced Action Buttons Footer */}
+          <div className="border-t-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-6 print:hidden">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              {/* Date Navigation */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const currentDate = new Date(selectedDate);
+                    currentDate.setDate(currentDate.getDate() - 1);
+                    setSelectedDate(currentDate.toISOString().split('T')[0]);
+                  }}
+                  disabled={loading}
+                  className="p-2 bg-blue-100 dark:bg-blue-800 hover:bg-blue-200 dark:hover:bg-blue-700 text-blue-800 dark:text-blue-200 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Maalinta hore"
+                >
+                  ←
+                </button>
+                <span className="text-sm font-semibold text-gray-600 dark:text-gray-400 px-3">
+                  {new Date(selectedDate).toLocaleDateString('so-SO', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}
+                </span>
+                <button
+                  onClick={() => {
+                    const currentDate = new Date(selectedDate);
+                    const tomorrow = new Date(currentDate);
+                    tomorrow.setDate(currentDate.getDate() + 1);
+                    const today = new Date();
+                    if (tomorrow <= today) {
+                      setSelectedDate(tomorrow.toISOString().split('T')[0]);
+                    }
+                  }}
+                  disabled={loading || selectedDate >= new Date().toISOString().split('T')[0]}
+                  className="p-2 bg-blue-100 dark:bg-blue-800 hover:bg-blue-200 dark:hover:bg-blue-700 text-blue-800 dark:text-blue-200 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Maalinta xigta"
+                >
+                  →
+                </button>
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => exportPDF(report)} 
+                  disabled={loading || !report}
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Download size={18} /> Download PDF
+                </button>
+                <button 
+                  onClick={() => window.print()} 
+                  disabled={loading || !report}
+                  className="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Printer size={18} /> Print Report
+                </button>
+              </div>
+            </div>
             </div>
           </div>
         </div>
