@@ -53,7 +53,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
 // PUT /api/employees/[id] - Cusboonaysii shaqaale gaar ah
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  let employeeId: string;
+  let employeeId: string = 'unknown';
   try {
     const { id } = await params;
     employeeId = id;
@@ -103,7 +103,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       { status: 200 }
     );
   } catch (error) {
-    console.error(`Cilad ayaa dhacday marka shaqaalaha ${employeeId || 'unknown'} la cusboonaysiinayay:`, error);
+    console.error(`Cilad ayaa dhacday marka shaqaalaha ${employeeId} la cusboonaysiinayay:`, error);
     return NextResponse.json(
       { message: 'Cilad server ayaa dhacday. Fadlan isku day mar kale.' },
       { status: 500 }
@@ -113,7 +113,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
 // DELETE /api/employees/[id] - Tirtir shaqaale gaar ah
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  let employeeId: string;
+  let employeeId: string = 'unknown';
   try {
     const { id } = await params;
     employeeId = id;
@@ -190,7 +190,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       { status: 200 }
     );
   } catch (error) {
-    console.error(`Cilad ayaa dhacday marka shaqaalaha ${employeeId || 'unknown'} la tirtirayay:`, error);
+    console.error(`Cilad ayaa dhacday marka shaqaalaha ${employeeId} la tirtirayay:`, error);
     return NextResponse.json(
       { message: 'Cilad server ayaa dhacday. Fadlan isku day mar kale.' },
       { status: 500 }
