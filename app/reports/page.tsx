@@ -273,7 +273,7 @@ export default function ReportsOverviewPage() {
         <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md text-center border-l-4 border-secondary">
           <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Faa'iidada Mashaariicda</h4>
           <p className={`text-xl md:text-3xl font-extrabold ${(stats.realizedProfit ?? stats.netProfit) >= 0 ? 'text-secondary' : 'text-redError'}`}>
-            {formatCurrency(stats.realizedProfit ?? stats.netProfit || 0)}
+            {formatCurrency((stats.realizedProfit ?? stats.netProfit) || 0)}
           </p>
           <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">
             Faa'iidada dhabta ah {stats.completedProjects > 0 ? `(${stats.completedProjects} mashruuc dhammaystiran)` : '(Mashruuc dhammaystiran ma jiro)'}
