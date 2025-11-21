@@ -445,74 +445,36 @@ export default function DashboardPage() {
         <h1 className="text-2xl lg:text-4xl font-bold text-darkGray dark:text-gray-100">Dashboard Overview</h1>
       </div>
       
-      {/* Financial Overview Cards Section - Enhanced Design */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8 animate-fade-in-up">
+      {/* Financial Overview Cards Section - Matching Reports Design */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8 animate-fade-in-up">
         {/* Card 1: Lacagaha la helay (Money Received) */}
-        <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-xl shadow-lg border-l-4 border-green-500 p-6 hover:shadow-xl transition-all duration-300">
-          <div className="flex items-center justify-between mb-4">
-            <div className="bg-green-500/20 dark:bg-green-500/30 p-3 rounded-lg">
-              <TrendingUp size={24} className="text-green-600 dark:text-green-400" />
-            </div>
-            <span className="text-green-600 dark:text-green-400 text-2xl">↑</span>
-          </div>
-          <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1">Lacagaha la helay</h3>
-          <p className="text-2xl lg:text-3xl font-extrabold text-green-700 dark:text-green-300 mb-2">
-            {formatCurrency(totalIncome)}
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">Dhammaan lacagaha soo galay</p>
+        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md text-center border-l-4 border-secondary">
+          <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Lacagaha la helay</h4>
+          <p className="text-xl md:text-3xl font-extrabold text-secondary">{formatCurrency(totalIncome)}</p>
+          <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Dhammaan lacagaha soo galay</p>
       </div>
 
         {/* Card 2: Kharashyada (Expenses) */}
-        <div className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30 rounded-xl shadow-lg border-l-4 border-red-500 p-6 hover:shadow-xl transition-all duration-300">
-          <div className="flex items-center justify-between mb-4">
-            <div className="bg-red-500/20 dark:bg-red-500/30 p-3 rounded-lg">
-              <TrendingDown size={24} className="text-red-600 dark:text-red-400" />
-            </div>
-            <span className="text-red-600 dark:text-red-400 text-2xl">↓</span>
-          </div>
-          <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1">Kharashyada</h3>
-          <p className="text-2xl lg:text-3xl font-extrabold text-red-700 dark:text-red-300 mb-2">
-            {formatCurrency(totalExpenses)}
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">Kharashyada guud</p>
+        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md text-center border-l-4 border-redError">
+          <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Kharashyada</h4>
+          <p className="text-xl md:text-3xl font-extrabold text-redError">{formatCurrency(totalExpenses)}</p>
+          <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Kharashyada guud</p>
         </div>
 
         {/* Card 3: Faa'iidada Dhabta Ah (Realized Profit) */}
-        <div className={`bg-gradient-to-br ${netProfit >= 0 ? 'from-green-50 to-emerald-100 dark:from-green-900/30 dark:to-emerald-800/30' : 'from-red-50 to-orange-100 dark:from-red-900/30 dark:to-orange-800/30'} rounded-xl shadow-lg border-l-4 ${netProfit >= 0 ? 'border-green-500' : 'border-red-500'} p-6 hover:shadow-xl transition-all duration-300`}>
-          <div className="flex items-center justify-between mb-4">
-            <div className={`${netProfit >= 0 ? 'bg-green-500/20 dark:bg-green-500/30' : 'bg-red-500/20 dark:bg-red-500/30'} p-3 rounded-lg`}>
-              {netProfit >= 0 ? (
-                <CheckCircle size={24} className="text-green-600 dark:text-green-400" />
-              ) : (
-                <XCircle size={24} className="text-red-600 dark:text-red-400" />
-              )}
-            </div>
-            {netProfit >= 0 ? (
-              <span className="text-green-600 dark:text-green-400 text-2xl">✓</span>
-            ) : (
-              <span className="text-red-600 dark:text-red-400 text-2xl">✗</span>
-            )}
-          </div>
-          <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1">Faa'iidada Dhabta Ah</h3>
-          <p className={`text-2xl lg:text-3xl font-extrabold mb-2 ${netProfit >= 0 ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}`}>
+        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md text-center border-l-4 border-secondary">
+          <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Faa'iidada Dhabta Ah</h4>
+          <p className={`text-xl md:text-3xl font-extrabold ${netProfit >= 0 ? 'text-secondary' : 'text-redError'}`}>
             {formatCurrency(netProfit)}
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">Lacagta soo galaysa - Lacagta baxaysa</p>
+          <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Lacagta soo galaysa - Lacagta baxaysa</p>
         </div>
 
         {/* Card 4: Mashaariicda Firfircoon (Active Projects) */}
-        <div className="bg-gradient-to-br from-orange-50 to-amber-100 dark:from-orange-900/30 dark:to-amber-800/30 rounded-xl shadow-lg border-l-4 border-orange-500 p-6 hover:shadow-xl transition-all duration-300">
-          <div className="flex items-center justify-between mb-4">
-            <div className="bg-orange-500/20 dark:bg-orange-500/30 p-3 rounded-lg">
-              <Briefcase size={24} className="text-orange-600 dark:text-orange-400" />
-            </div>
-            <Zap size={20} className="text-orange-600 dark:text-orange-400" />
-          </div>
-          <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-1">Mashaariicda Firfircoon</h3>
-          <p className="text-2xl lg:text-3xl font-extrabold text-orange-700 dark:text-orange-300 mb-2">
-            {activeProjects}
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">Mashaariic socota</p>
+        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md text-center border-l-4 border-primary">
+          <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Mashaariicda Firfircoon</h4>
+          <p className="text-xl md:text-3xl font-extrabold text-primary">{activeProjects}</p>
+          <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Mashaariic socota</p>
         </div>
       </div>
 
@@ -765,134 +727,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Alerts and Quick Insights */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-6 lg:mb-8 animate-fade-in-up">
-        {lowStockItems > 0 && (
-          <div className="bg-redError/10 p-4 lg:p-6 rounded-xl shadow-md border border-redError flex items-center space-x-3 lg:space-x-4 animate-pulse-subtle group">
-            <Package size={24} className="text-redError flex-shrink-0 group-hover:scale-110 transition-transform duration-200"/>
-            <div>
-              <h4 className="text-base lg:text-lg font-semibold text-darkGray dark:text-gray-100">Digniin: Alaab Yar!</h4>
-              <p className="text-xs lg:text-sm text-mediumGray dark:text-gray-400">
-                <span className="font-bold">{lowStockItems} Alaab</span> ayaa stock-geedu hooseeyaa. Fadlan dib u buuxi.
-              </p>
-              <Link href="/inventory/store?status=Low Stock" className="text-primary text-xs lg:text-sm font-medium hover:underline mt-2 block">Fiiri &rarr;</Link>
-            </div>
-          </div>
-        )}
-        {overdueProjects > 0 && (
-          <div className="bg-redError/10 p-4 lg:p-6 rounded-xl shadow-md border border-redError flex items-center space-x-3 lg:space-x-4 animate-pulse-subtle group">
-            <XCircle size={24} className="text-redError flex-shrink-0 group-hover:scale-110 transition-transform duration-200"/>
-            <div>
-              <h4 className="text-base lg:text-lg font-semibold text-darkGray dark:text-gray-100">Digniin: Mashaariic Dib U Dhacday!</h4>
-              <p className="text-xs lg:text-sm text-mediumGray dark:text-gray-400">
-                <span className="font-bold">{overdueProjects} Mashruuc</span> ayaa deadline-kiisa dhaafay.
-              </p>
-              <Link href="/projects?status=Overdue" className="text-primary text-xs lg:text-sm font-medium hover:underline mt-2 block">Fiiri &rarr;</Link>
-            </div>
-          </div>
-        )}
-        {/* New Insight: Healthy Profit Margin */}
-        {realizedProfitFromCompletedProjects > totalExpenses * 0.1 && (
-            <div className="bg-secondary/10 p-4 lg:p-6 rounded-xl shadow-md border border-secondary flex items-center space-x-3 lg:space-x-4 animate-fade-in group">
-                <Zap size={24} className="text-secondary flex-shrink-0 group-hover:scale-110 transition-transform duration-200"/>
-                <div>
-                    <h4 className="text-base lg:text-lg font-semibold text-darkGray dark:text-gray-100">Faa'iido Wanaagsan!</h4>
-                    <p className="text-xs lg:text-sm text-mediumGray dark:text-gray-400">
-                        Ganacsigaagu wuxuu ku socdaa waddo sax ah. Sii wad shaqada wanaagsan!
-                    </p>
-                    <Link href="/reports/profit-loss" className="text-primary text-xs lg:text-sm font-medium hover:underline mt-2 block">Fiiri Warbixinta Faa'iidada &rarr;</Link>
-                </div>
-            </div>
-        )}
-        {/* New Insight: Upcoming Payments */}
-        {(projectStatusBreakdown.find(s => s.name === 'Upcoming')?.value ?? 0) > 0 && (
-            <div className="bg-primary/10 p-4 lg:p-6 rounded-xl shadow-md border border-primary flex items-center space-x-3 lg:space-x-4 animate-fade-in group">
-                <Clock size={24} className="text-primary flex-shrink-0 group-hover:scale-110 transition-transform duration-200"/>
-                <div>
-                    <h4 className="text-base lg:text-lg font-semibold text-darkGray dark:text-gray-100">Lacago Soo Socda!</h4>
-                    <p className="text-xs lg:text-sm text-mediumGray dark:text-gray-400">
-                        Waxaa jira <span className="font-bold">{projectStatusBreakdown.find(s => s.name === 'Upcoming')?.value} Lacag</span> oo la sugayo.
-                    </p>
-                    <Link href="/reports/payment-schedule" className="text-primary text-xs lg:text-sm font-medium hover:underline mt-2 block">Fiiri Jadwalka Lacagaha &rarr;</Link>
-                </div>
-            </div>
-        )}
-      </div>
 
 
 
-      {/* Business Health Monitor */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md animate-fade-in-up mb-8">
-        <h3 className="text-xl font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
-          <Activity className="mr-2 text-primary" size={24} />
-          Xaaladda Ganacsiga
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="text-center p-4 bg-primary/10 rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors duration-300">
-            <Banknote className="mx-auto mb-2 text-primary" size={24} />
-            <h4 className="font-semibold text-darkGray dark:text-gray-100">Cash Flow</h4>
-            <p className="text-sm text-mediumGray dark:text-gray-400">
-              {currentTotalBalance > 0 ? 'Wanaagsan' : 'Khatar'}
-            </p>
-          </div>
-          <div className="text-center p-4 bg-accent/10 rounded-lg border border-accent/20 hover:bg-accent/20 transition-colors duration-300">
-            <TrendingUp className="mx-auto mb-2 text-accent" size={24} />
-            <h4 className="font-semibold text-darkGray dark:text-gray-100">Growth</h4>
-            <p className="text-sm text-mediumGray dark:text-gray-400">
-              {completedProjects > 0 ? 'Socota' : 'Bilaaw'}
-            </p>
-          </div>
-          <div className="text-center p-4 bg-secondary/10 rounded-lg border border-secondary/20 hover:bg-secondary/20 transition-colors duration-300">
-            <Zap className="mx-auto mb-2 text-secondary" size={24} />
-            <h4 className="font-semibold text-darkGray dark:text-gray-100">Efficiency</h4>
-            <p className="text-sm text-mediumGray dark:text-gray-400">
-              {totalProjects > 0 ? ((completedProjects / totalProjects) * 100).toFixed(0) + '%' : '0%'}
-            </p>
-          </div>
-          <div className="text-center p-4 bg-green-500/10 rounded-lg border border-green-500/20 hover:bg-green-500/20 transition-colors duration-300">
-            <Target className="mx-auto mb-2 text-green-500" size={24} />
-            <h4 className="font-semibold text-darkGray dark:text-gray-100">Performance</h4>
-            <p className="text-sm text-mediumGray dark:text-gray-400">
-              {overdueProjects === 0 ? 'Wanaagsan' : 'Waa la saxay'}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Stats Widget */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md animate-fade-in-up mb-8">
-        <h3 className="text-xl font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
-          <BarChartIcon className="mr-2 text-primary" size={24} />
-          Tirakoob Dhaqso leh
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center p-4 bg-primary/10 rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors duration-300">
-            <Briefcase className="mx-auto mb-2 text-primary" size={24} />
-            <div className="text-2xl font-bold text-darkGray dark:text-gray-100">{totalProjects}</div>
-            <div className="text-sm text-mediumGray dark:text-gray-400">Mashaariic Guud</div>
-          </div>
-          <div className="text-center p-4 bg-secondary/10 rounded-lg border border-secondary/20 hover:bg-secondary/20 transition-colors duration-300">
-            <CheckCircle className="mx-auto mb-2 text-secondary" size={24} />
-            <div className="text-2xl font-bold text-darkGray dark:text-gray-100">{completedProjects}</div>
-            <div className="text-sm text-mediumGray dark:text-gray-400">Dhammaystiran</div>
-          </div>
-          <div className="text-center p-4 bg-accent/10 rounded-lg border border-accent/20 hover:bg-accent/20 transition-colors duration-300">
-            <Factory className="mx-auto mb-2 text-accent" size={24} />
-            <div className="text-2xl font-bold text-darkGray dark:text-gray-100">0</div>
-            <div className="text-sm text-mediumGray dark:text-gray-400">Amarka Warshadaha</div>
-          </div>
-          <div className="text-center p-4 bg-accent/10 rounded-lg border border-accent/20 hover:bg-accent/20 transition-colors duration-300">
-            <Activity className="mx-auto mb-2 text-accent" size={24} />
-            <div className="text-2xl font-bold text-darkGray dark:text-gray-100">{activeProjects}</div>
-            <div className="text-sm text-mediumGray dark:text-gray-400">Firfircoon</div>
-          </div>
-          <div className="text-center p-4 bg-redError/10 rounded-lg border border-redError/20 hover:bg-redError/20 transition-colors duration-300">
-            <XCircle className="mx-auto mb-2 text-redError" size={24} />
-            <div className="text-2xl font-bold text-darkGray dark:text-gray-100">{overdueProjects}</div>
-            <div className="text-sm text-mediumGray dark:text-gray-400">Dib u Dhacay</div>
-          </div>
-        </div>
-      </div>
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -970,71 +807,27 @@ export default function DashboardPage() {
         <Link href="/accounting" className="mt-4 block text-primary hover:underline text-sm font-medium">Fiiri Dhammaan Dhaqdhaqaaqa &rarr;</Link>
       </div>
 
-      {/* Transaction Links Section */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md animate-fade-in-up mb-8">
-        <h3 className="text-xl font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
-          <DollarSign className="mr-2 text-primary" size={24} />
-          Xiriirka Lacagaha
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100">Lacagaha Dhexdhexaad</h4>
-            <div className="space-y-3">
-              <Link href="/accounting/transactions?type=INCOME" className="block p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors duration-300">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <ArrowUpRight className="text-green-600 dark:text-green-400" size={20} />
-                    <div>
-                      <p className="font-semibold text-green-800 dark:text-green-200">Dakhliga</p>
-                      <p className="text-sm text-green-600 dark:text-green-400">Lacagaha la helay</p>
-                    </div>
-                  </div>
-                  <span className="text-green-600 dark:text-green-400 font-bold">{formatCurrency(totalIncome)}</span>
-                </div>
-              </Link>
-              <Link href="/accounting/transactions?type=EXPENSE" className="block p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors duration-300">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <ArrowDownLeft className="text-red-600 dark:text-red-400" size={20} />
-                    <div>
-                      <p className="font-semibold text-red-800 dark:text-red-200">Kharashyada</p>
-                      <p className="text-sm text-red-600 dark:text-red-400">Lacagaha la bixiyay</p>
-                    </div>
-                  </div>
-                  <span className="text-red-600 dark:text-red-400 font-bold">{formatCurrency(totalExpenses)}</span>
-                </div>
-              </Link>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100">Mashaariicda</h4>
-            <div className="space-y-3">
-              <Link href="/projects?status=Completed" className="block p-4 bg-secondary/10 rounded-lg border border-secondary/20 hover:bg-secondary/20 transition-colors duration-300">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <CheckCircle className="text-secondary" size={20} />
-                    <div>
-                      <p className="font-semibold text-darkGray dark:text-gray-100">Mashaariic Dhammaystiran</p>
-                      <p className="text-sm text-mediumGray dark:text-gray-400">Faa'iidada dhabta ah</p>
-                    </div>
-                  </div>
-                  <span className="text-secondary font-bold">{formatCurrency(realizedProfitFromCompletedProjects)}</span>
-                </div>
-              </Link>
-              <Link href="/projects?status=Active" className="block p-4 bg-accent/10 rounded-lg border border-accent/20 hover:bg-accent/20 transition-colors duration-300">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <Activity className="text-accent" size={20} />
-                    <div>
-                      <p className="font-semibold text-darkGray dark:text-gray-100">Mashaariic Firfircoon</p>
-                      <p className="text-sm text-mediumGray dark:text-gray-400">Faa'iidada suurtagal ah</p>
-                    </div>
-                  </div>
-                  <span className="text-accent font-bold">{formatCurrency(potentialProfitFromActiveProjects)}</span>
-                </div>
-              </Link>
-            </div>
-          </div>
+      {/* Summary Cards Section - Matching Reports Design */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8 animate-fade-in-up">
+        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md text-center border-l-4 border-secondary">
+          <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Mashaariic Guud</h4>
+          <p className="text-xl md:text-3xl font-extrabold text-secondary">{totalProjects}</p>
+          <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Dhammaan mashaariicda</p>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md text-center border-l-4 border-primary">
+          <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Dhammaystiran</h4>
+          <p className="text-xl md:text-3xl font-extrabold text-primary">{completedProjects}</p>
+          <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Mashaariic la dhammaystiray</p>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md text-center border-l-4 border-accent">
+          <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Hantida Guud</h4>
+          <p className="text-xl md:text-3xl font-extrabold text-accent">{formatCurrency(currentTotalBalance)}</p>
+          <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Bank + Mobile + Cash</p>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md text-center border-l-4 border-redError">
+          <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Dib u Dhacay</h4>
+          <p className="text-xl md:text-3xl font-extrabold text-redError">{overdueProjects}</p>
+          <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Mashaariic dib u dhacay</p>
         </div>
       </div>
 
@@ -1045,71 +838,6 @@ export default function DashboardPage() {
 
 
 
-      {/* Smart Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md animate-fade-in-up mb-8">
-        <h3 className="text-xl font-semibold text-darkGray dark:text-gray-100 mb-4">⚡ Ficillo Dhaqso leh</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Link href="/accounting/transactions/add" className="group flex flex-col items-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200 dark:border-green-800 hover:shadow-lg transition-all duration-300 hover:scale-105">
-            <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">💰</div>
-            <span className="text-sm font-medium text-green-800 dark:text-green-200">Lacag Dhexdhexaad</span>
-          </Link>
-          <Link href="/projects/add" className="group flex flex-col items-center p-4 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg border border-blue-200 dark:border-blue-800 hover:shadow-lg transition-all duration-300 hover:scale-105">
-            <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">📋</div>
-            <span className="text-sm font-medium text-blue-800 dark:text-blue-200">Mashruuc Cusub</span>
-          </Link>
-          <Link href="/inventory/store/add" className="group flex flex-col items-center p-4 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 rounded-lg border border-orange-200 dark:border-orange-800 hover:shadow-lg transition-all duration-300 hover:scale-105">
-            <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">📦</div>
-            <span className="text-sm font-medium text-orange-800 dark:text-orange-200">Alaab Dhexdhexaad</span>
-          </Link>
-          <Link href="/reports" className="group flex flex-col items-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border border-purple-200 dark:border-purple-800 hover:shadow-lg transition-all duration-300 hover:scale-105">
-            <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">📊</div>
-            <span className="text-sm font-medium text-purple-800 dark:text-purple-200">Warbixin</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* Smart Notifications Panel */}
-      <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-6 rounded-xl text-white animate-fade-in-up mb-8">
-        <h3 className="text-xl font-semibold mb-4">🔔 Digniino Smart ah</h3>
-        <div className="space-y-3">
-          {lowStockItems > 0 && (
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 flex items-center space-x-3">
-              <div className="text-2xl">⚠️</div>
-              <div>
-                <p className="font-semibold">Alaab Yar!</p>
-                <p className="text-sm opacity-90">{lowStockItems} alaab ayaa stock-geedu hooseeyaa</p>
-              </div>
-            </div>
-          )}
-          {overdueProjects > 0 && (
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 flex items-center space-x-3">
-              <div className="text-2xl">🚨</div>
-              <div>
-                <p className="font-semibold">Mashaariic Dib u Dhacay!</p>
-                <p className="text-sm opacity-90">{overdueProjects} mashruuc ayaa deadline-kiisa dhaafay</p>
-              </div>
-            </div>
-          )}
-          {realizedProfitFromCompletedProjects > 100000 && (
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 flex items-center space-x-3">
-              <div className="text-2xl">🎉</div>
-              <div>
-                <p className="font-semibold">Faa'iido Wanaagsan!</p>
-                <p className="text-sm opacity-90">Waxaad heshay {formatCurrency(realizedProfitFromCompletedProjects)} faa'iido dhab ah</p>
-              </div>
-            </div>
-          )}
-          {lowStockItems === 0 && overdueProjects === 0 && (
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 flex items-center space-x-3">
-              <div className="text-2xl">✅</div>
-              <div>
-                <p className="font-semibold">Wax Digniin Ah Ma Jiraan</p>
-                <p className="text-sm opacity-90">Ganacsigaagu wuxuu ku jiraa xaalad wanaagsan</p>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
 
       {/* Quick Add Floating Button (already in Layout.tsx) */}
     </Layout>
