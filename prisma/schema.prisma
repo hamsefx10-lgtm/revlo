@@ -78,6 +78,7 @@ model Company {
   accounts                Account[]
   billOfMaterials         BillOfMaterial[]
   chatRooms               ChatRoom[]
+  companyLabors           CompanyLabor[]
   costTracking            CostTracking[]
   customers               Customer[]
   employees               Employee[]
@@ -185,6 +186,23 @@ model ProjectLabor {
   @@map("project_labor")
 }
 
+model CompanyLabor {
+  id                 String   @id @default(uuid()) @map("_id")
+  agreedWage         Decimal? @db.Decimal(10, 2)
+  paidAmount         Decimal  @db.Decimal(10, 2)
+  remainingWage      Decimal? @db.Decimal(10, 2)
+  dateWorked         DateTime @default(now())
+  employeeId         String
+  description        String?
+  paidFrom           String
+  previousPaidAmount Decimal? @db.Decimal(10, 2)
+  companyId          String
+  employee           Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  company            Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("company_labor")
+}
+
 model ProjectDocument {
   id         String   @id @default(uuid()) @map("_id")
   name       String
@@ -238,6 +256,7 @@ model Employee {
   company             Company          @relation(fields: [companyId], references: [id])
   expenses            Expense[]
   laborRecords        ProjectLabor[]
+  companyLaborRecords CompanyLabor[]
   transactions        Transaction[]
   workOrders          WorkOrder[]
   attendance          EmployeeAttendance[]

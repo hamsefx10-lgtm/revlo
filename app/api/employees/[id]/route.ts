@@ -74,20 +74,43 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       return NextResponse.json({ message: 'Email-ka aan sax ahayn.' }, { status: 400 });
     }
 
+    // Prepare update data
+    const updateData: any = {
+      fullName: body.fullName,
+      email: body.email,
+      phone: body.phone,
+      role: body.role,
+      isActive: body.isActive,
+    };
+
+    // Handle category if provided
+    if (body.category !== undefined) {
+      updateData.category = body.category;
+    }
+
+    // Handle monthlySalary
+    if (body.monthlySalary !== undefined) {
+      updateData.monthlySalary = body.monthlySalary ? new Decimal(body.monthlySalary) : null;
+    }
+
+    // Handle salaryPaidThisMonth
+    if (body.salaryPaidThisMonth !== undefined) {
+      updateData.salaryPaidThisMonth = body.salaryPaidThisMonth ? new Decimal(body.salaryPaidThisMonth) : undefined;
+    }
+
+    // Handle overpaidAmount
+    if (body.overpaidAmount !== undefined) {
+      updateData.overpaidAmount = body.overpaidAmount ? new Decimal(body.overpaidAmount) : undefined;
+    }
+
+    // Handle startDate - convert ISO string to Date or set to null
+    if (body.startDate !== undefined) {
+      updateData.startDate = body.startDate ? new Date(body.startDate) : null;
+    }
+
     const updatedEmployee = await prisma.employee.update({
       where: { id },
-      data: {
-        fullName: body.fullName,
-        email: body.email,
-        phone: body.phone,
-        role: body.role,
-        category: body.category,
-        monthlySalary: body.monthlySalary ? new Decimal(body.monthlySalary) : undefined,
-        salaryPaidThisMonth: body.salaryPaidThisMonth ? new Decimal(body.salaryPaidThisMonth) : undefined,
-        overpaidAmount: body.overpaidAmount ? new Decimal(body.overpaidAmount) : undefined,
-        isActive: body.isActive,
-        startDate: body.startDate,
-      },
+      data: updateData,
     });
 
     // Convert Decimal fields to Number for response

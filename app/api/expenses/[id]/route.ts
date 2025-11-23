@@ -108,6 +108,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       receiptUrl: expense.receiptUrl || undefined,
       materials: expense.materials || [],
       materialDate: expense.materialDate || undefined,
+      transportType: expense.transportType || undefined,
       employee: expense.employee ? {
         id: expense.employee.id,
         fullName: expense.employee.fullName,
@@ -180,11 +181,29 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     }
 
     // 1. Refund old account balance (add back the amount that was deducted)
-    if (existingExpense.paidFrom && existingExpense.amount) {
+    // For Company Labor, we need to get the paid amount from CompanyLabor record
+    let oldAmount = Number(existingExpense.amount);
+    if (existingExpense.category === 'Company Labor' && existingExpense.employeeId) {
+      const oldCompanyLabor = await prisma.companyLabor.findFirst({
+        where: {
+          employeeId: existingExpense.employeeId,
+          companyId: companyId,
+        },
+        orderBy: { dateWorked: 'desc' },
+      });
+      if (oldCompanyLabor && oldCompanyLabor.paidAmount) {
+        const oldPaidAmount = typeof oldCompanyLabor.paidAmount === 'object' && 'toNumber' in oldCompanyLabor.paidAmount 
+          ? oldCompanyLabor.paidAmount.toNumber() 
+          : Number(oldCompanyLabor.paidAmount);
+        oldAmount = oldPaidAmount;
+      }
+    }
+
+    if (existingExpense.paidFrom && oldAmount) {
       await prisma.account.update({
         where: { id: existingExpense.paidFrom },
         data: {
-          balance: { increment: Number(existingExpense.amount) }, // Soo celi lacagta hore
+          balance: { increment: oldAmount }, // Soo celi lacagta hore
         },
       });
     }
@@ -197,6 +216,58 @@ export async function PUT(request: Request, { params }: { params: { id: string }
           salaryPaidThisMonth: { decrement: Number(existingExpense.amount) },
         },
       });
+    }
+
+    // 3. Handle Company Labor updates - find and update CompanyLabor record
+    if (body.category === 'Company Labor' && body.employeeId) {
+      const existingCompanyLabor = await prisma.companyLabor.findFirst({
+        where: {
+          employeeId: body.employeeId,
+          companyId: companyId,
+        },
+        orderBy: { dateWorked: 'desc' },
+      });
+
+      if (existingCompanyLabor) {
+        // Update existing CompanyLabor record
+        const agreedWage = body.agreedWage ? Number(body.agreedWage) : (typeof existingCompanyLabor.agreedWage === 'object' && 'toNumber' in existingCompanyLabor.agreedWage ? existingCompanyLabor.agreedWage.toNumber() : Number(existingCompanyLabor.agreedWage || 0));
+        const paidAmount = body.laborPaidAmount ? Number(body.laborPaidAmount) : (typeof existingCompanyLabor.paidAmount === 'object' && 'toNumber' in existingCompanyLabor.paidAmount ? existingCompanyLabor.paidAmount.toNumber() : Number(existingCompanyLabor.paidAmount || 0));
+        const remainingWage = agreedWage ? (agreedWage - paidAmount) : (typeof existingCompanyLabor.remainingWage === 'object' && 'toNumber' in existingCompanyLabor.remainingWage ? existingCompanyLabor.remainingWage.toNumber() : Number(existingCompanyLabor.remainingWage || 0));
+
+        await prisma.companyLabor.update({
+          where: { id: existingCompanyLabor.id },
+          data: {
+            agreedWage: agreedWage,
+            paidAmount: paidAmount,
+            remainingWage: remainingWage,
+            description: body.description || existingCompanyLabor.description,
+            dateWorked: body.expenseDate ? new Date(body.expenseDate) : existingCompanyLabor.dateWorked,
+            paidFrom: body.paidFrom || existingCompanyLabor.paidFrom,
+          },
+        });
+        // Update expense amount to match laborPaidAmount
+        body.amount = paidAmount;
+      } else if (body.agreedWage && body.laborPaidAmount) {
+        // Create new CompanyLabor record if it doesn't exist
+        const agreedWage = Number(body.agreedWage);
+        const paidAmount = Number(body.laborPaidAmount);
+        const remainingWage = agreedWage - paidAmount;
+
+        await prisma.companyLabor.create({
+          data: {
+            companyId,
+            employeeId: body.employeeId,
+            agreedWage,
+            paidAmount,
+            remainingWage,
+            description: body.description || '',
+            paidFrom: body.paidFrom,
+            dateWorked: body.expenseDate ? new Date(body.expenseDate) : new Date(),
+          },
+        });
+        // Update expense amount to match laborPaidAmount
+        body.amount = paidAmount;
+      }
     }
 
     const updatedExpense = await prisma.expense.update({

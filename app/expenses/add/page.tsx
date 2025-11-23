@@ -47,7 +47,8 @@ export default function AddExpensePage() {
   const [invoiceNumber, setInvoiceNumber] = useState('');
   const [wage, setWage] = useState<number | ''>('');
   const [laborPaidAmount, setLaborPaidAmount] = useState<number | ''>('');
-  const [transportType, setTransportType] = useState(''); 
+  const [transportType, setTransportType] = useState('');
+  const [taxiXamaalType, setTaxiXamaalType] = useState(''); // 'Taxi' or 'Xamaal' 
   
   // Company Expense specific fields (now includes Debt/Repayment)
   const [companyExpenseType, setCompanyExpenseType] = useState(''); 
@@ -127,6 +128,7 @@ export default function AddExpensePage() {
   const [allCustomers, setAllCustomers] = useState<any[]>([]); // All customers for Debt (lending)
   const [vendors, setVendors] = useState<any[]>([]); // NEW: For vendor payment tracking
   const [projectLabors, setProjectLabors] = useState<any[]>([]);
+  const [companyLabors, setCompanyLabors] = useState<any[]>([]);
   const paidFromOptions = ['Cash', 'CBE', 'Ebirr'];
   
   // Fetch project labor records for wage tracking
@@ -141,12 +143,26 @@ export default function AddExpensePage() {
       console.error('Error fetching project labors:', error);
     }
   };
+
+  // Fetch company labor records for wage tracking
+  const fetchCompanyLabors = async () => {
+    try {
+      const res = await fetch('/api/company-labors');
+      if (res.ok) {
+        const data = await res.json();
+        setCompanyLabors(data.companyLabors || []);
+      }
+    } catch (error) {
+      console.error('Error fetching company labors:', error);
+    }
+  };
   // Project expense categories: used when expenseType === 'project'
   const projectExpenseCategories = [
   { value: '', label: '-- Dooro Nooca Kharashka Mashruuca --' },
   { value: 'Material', label: 'Alaab (Mashruuc)' },
   { value: 'Labor', label: 'Shaqaale (Mashruuc)' },
   { value: 'Transport', label: 'Transport (Mashruuc)' },
+  { value: 'Taxi/Xamaal', label: 'Taxi/Xamaal (Mashruuc)' },
   { value: 'Consultancy', label: 'La-talin (Mashruuc)' },
   { value: 'Equipment Rental', label: 'Kirada Qalabka (Mashruuc)' },
   { value: 'Utilities', label: 'Adeegyada Guud (Mashruuc)' },
@@ -166,11 +182,13 @@ const [consultancyFee, setConsultancyFee] = useState('');
   const companyExpenseCategories = [
     { value: '', label: '-- Dooro Nooca Kharashka Shirkadda --' },
     { value: 'Salary', label: 'Mushahar' },
+    { value: 'Company Labor', label: 'Shaqaale (Shirkad)' },
     { value: 'Office Rent', label: 'Kirada Xafiiska' },
     { value: 'Electricity', label: 'Koronto' },
     { value: 'Utilities', label: 'Adeegyada Guud' },
     { value: 'Marketing', label: 'Suuqgeyn' },
     { value: 'Material', label: 'Alaab (Kharashka Shirkadda)' }, 
+    { value: 'Taxi/Xamaal', label: 'Taxi/Xamaal (Shirkad)' },
     { value: 'Maintenance & Repairs', label: 'Dayactirka iyo Hagaajinta' },
     { value: 'Travel & Accommodation', label: 'Socodka iyo Hoyga' },
     { value: 'Debt', label: 'Deyn (Macmiilka La Siiyay)' }, 
@@ -284,6 +302,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
         setVendors([]);
       });
     fetchProjectLabors();
+    fetchCompanyLabors();
   }, []);
 
   // --- Calculations ---
@@ -293,7 +312,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
     return sum + (qty * price);
   }, 0);
 
-  // Auto-fill wage information when employee and project are selected
+  // Auto-fill wage information when employee and project are selected (for project labor)
   useEffect(() => {
     if (selectedEmployeeForSalary && selectedProject && category === 'Labor') {
       // Find previous labor records for this employee and project
@@ -329,6 +348,42 @@ const [consultancyFee, setConsultancyFee] = useState('');
       setPreviousWageInfo(null);
     }
   }, [selectedEmployeeForSalary, selectedProject, category, projectLabors]);
+
+  // Auto-fill wage information when employee is selected (for company labor)
+  useEffect(() => {
+    if (selectedEmployeeForSalary && expenseType === 'company' && companyExpenseType === 'Company Labor') {
+      // Find previous labor records for this employee
+      const previousRecords = companyLabors.filter(labor => 
+        labor.employeeId === selectedEmployeeForSalary
+      );
+      
+      if (previousRecords.length > 0) {
+        // Calculate total agreed wage and total paid
+        const totalAgreedWage = previousRecords.reduce((sum, record) => sum + (record.agreedWage || 0), 0);
+        const totalPaid = previousRecords.reduce((sum, record) => sum + (record.paidAmount || 0), 0);
+        const remaining = totalAgreedWage - totalPaid;
+        
+        setPreviousWageInfo({
+          agreedWage: totalAgreedWage,
+          totalPaid: totalPaid,
+          remaining: remaining
+        });
+        
+        // Auto-fill the wage field with remaining amount
+        if (remaining > 0) {
+          setWage(remaining);
+        } else {
+          setWage('');
+        }
+      } else {
+        // No previous records, clear wage info
+        setPreviousWageInfo(null);
+        setWage('');
+      }
+    } else if (expenseType === 'company' && companyExpenseType === 'Company Labor') {
+      setPreviousWageInfo(null);
+    }
+  }, [selectedEmployeeForSalary, expenseType, companyExpenseType, companyLabors]);
 
   const laborRemainingAmount = (typeof wage === 'number' ? wage : 0) - (typeof laborPaidAmount === 'number' ? laborPaidAmount : 0);
 
@@ -398,7 +453,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
         if (typeof amount !== 'number' || amount <= 0) errors.amount = 'Qiimaha waa waajib.';
         if (!description.trim()) errors.description = 'Faahfaahinta adeegga waa waajib.';
       } else {
-        const requiresCommonAmount = !['Material', 'Labor', 'Company Expense'].includes(category); 
+        const requiresCommonAmount = !['Material', 'Labor', 'Company Expense', 'Company Labor', 'Taxi/Xamaal'].includes(category); 
         if (requiresCommonAmount && (typeof amount !== 'number' || amount <= 0)) {
           errors.amount = 'Qiimaha waa inuu noqdaa nambar wanaagsan.';
         }
@@ -437,6 +492,10 @@ const [consultancyFee, setConsultancyFee] = useState('');
       case 'Transport':
         if (!transportType.trim()) errors.transportType = 'Nooca gaadiidka waa waajib.';
         break;
+      case 'Taxi/Xamaal':
+        if (!taxiXamaalType.trim()) errors.taxiXamaalType = 'Fadlan dooro Taxi ama Xamaal.';
+        if (typeof amount !== 'number' || amount <= 0) errors.amount = 'Qiimaha waa waajib.';
+        break;
       case 'Company Expense':
         if (!companyExpenseType) errors.companyExpenseType = 'Nooca kharashka shirkadda waa waajib.';
         switch (companyExpenseType) { 
@@ -445,6 +504,20 @@ const [consultancyFee, setConsultancyFee] = useState('');
                 if (typeof salaryPaymentAmount !== 'number' || salaryPaymentAmount <= 0) errors.salaryPaymentAmount = 'Qiimaha mushaharka waa waajib.';
                 // Removed validation: Allow overpayment - system will calculate negative remaining balance
                 if (!salaryPaymentDate) errors.salaryPaymentDate = 'Taariikhda bixinta mushaharka waa waajib.';
+                break;
+            case 'Company Labor':
+                if (!selectedEmployeeForSalary) errors.selectedEmployeeForSalary = 'Shaqaale waa waajib.';
+                if (!workDescription.trim()) errors.workDescription = 'Sharaxaadda shaqada waa waajib.';
+                // Wage validation: allow readonly wage from previous contract
+                const selectedEmpCompany = employees.find(emp => emp.id === selectedEmployeeForSalary);
+                const lastCompanyContract = selectedEmpCompany?.companyLaborRecords?.length ? selectedEmpCompany.companyLaborRecords[selectedEmpCompany.companyLaborRecords.length - 1] : null;
+                if (lastCompanyContract && lastCompanyContract.agreedWage != null) {
+                  // Wage is readonly and valid
+                } else {
+                  if (typeof wage !== 'number' || wage <= 0) errors.wage = 'Mushaharku waa inuu noqdaa nambar wanaagsan.';
+                }
+                if (typeof laborPaidAmount !== 'number' || laborPaidAmount < 0) errors.laborPaidAmount = 'Lacagta la bixiyay waa inuu noqdaa nambar wanaagsan.';
+                if (typeof laborPaidAmount === 'number' && typeof wage === 'number' && laborPaidAmount > wage) errors.laborPaidAmount = 'Lacagta la bixiyay ma dhaafi karto mushaharka.';
                 break;
             case 'Office Rent':
                 if (typeof amount !== 'number' || amount <= 0) errors.amount = 'Qiimaha waa waajib.';
@@ -592,7 +665,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
 
     // Build description based on category/subtype, matching backend requirements
     let description = '';
-    if (category === 'Labor') {
+    if (category === 'Labor' || (expenseType === 'company' && companyExpenseType === 'Company Labor')) {
       description = workDescription.trim();
     } else if (category === 'Material') {
       description = `Material expense - ${expenseDate}`;
@@ -602,6 +675,9 @@ const [consultancyFee, setConsultancyFee] = useState('');
     } else if (category === 'Company Expense') {
       // Always use user-entered description for all Company Expense types except Salary
       description = (typeof description === 'string' ? description.trim() : '');
+    } else if (category === 'Taxi/Xamaal') {
+      // Use user-entered description or default
+      description = description || `Taxi/Xamaal - ${taxiXamaalType}`;
     } else {
       description = '';
     }
@@ -687,6 +763,11 @@ const [consultancyFee, setConsultancyFee] = useState('');
         expenseData.amount = amount;
         expenseData.transportType = transportType;
         break;
+      case 'Taxi/Xamaal':
+        expenseData.amount = amount;
+        expenseData.transportType = taxiXamaalType; // Reuse transportType field in backend
+        expenseData.description = description || `Taxi/Xamaal - ${taxiXamaalType}`;
+        break;
       case 'Consultancy':
         expenseData.amount = consultancyFee ? Number(consultancyFee) : 0;
         expenseData.consultantName = consultantName;
@@ -718,6 +799,16 @@ const [consultancyFee, setConsultancyFee] = useState('');
             expenseData.employeeId = selectedEmployeeForSalary;
             expenseData.subCategory = 'Salary';
             expenseData.expenseDate = salaryPaymentDate; // Use the salary payment date
+            break;
+          case 'Company Labor':
+            // For Company Labor, send fields matching CompanyLabor model
+            expenseData.category = 'Company Labor';
+            expenseData.employeeId = selectedEmployeeForSalary;
+            expenseData.agreedWage = wage;
+            expenseData.laborPaidAmount = laborPaidAmount;
+            expenseData.description = workDescription;
+            expenseData.paidFrom = paidFrom;
+            expenseData.expenseDate = expenseDate;
             break;
           case 'Office Rent':
             expenseData.amount = amount;
@@ -888,7 +979,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
         // Clear form
         setCategory(''); setAmount(''); setPaidFrom('Cash'); setExpenseDate(new Date().toISOString().split('T')[0]); setNote(''); setSelectedProject('');
         setMaterials([{ id: 1, name: '', qty: '', price: '', unit: '' }]);
-  setSelectedEmployeeForSalary(''); setWorkDescription(''); setWage(''); setLaborPaidAmount(''); setTransportType('');
+  setSelectedEmployeeForSalary(''); setWorkDescription(''); setWage(''); setLaborPaidAmount(''); setTransportType(''); setTaxiXamaalType('');
         setCompanyExpenseType(''); setLenderName(''); setLoanDate(''); setReceiptImage(null);
         setSelectedEmployeeForSalary(''); setSalaryPaymentAmount('');
         setOfficeRentPeriod(''); setElectricityMeterReading(''); setMarketingCampaignName('');
@@ -900,8 +991,52 @@ const [consultancyFee, setConsultancyFee] = useState('');
         router.push('/expenses');
         return;
       }
+      // If Company Labor, submit to /api/expenses/company with all required backend fields
+      if (expenseType === 'company' && companyExpenseType === 'Company Labor') {
+        const companyLaborPayload = {
+          employeeId: expenseData.employeeId,
+          agreedWage: expenseData.agreedWage,
+          laborPaidAmount: expenseData.laborPaidAmount,
+          description: expenseData.description,
+          paidFrom: expenseData.paidFrom,
+          expenseDate: expenseData.expenseDate,
+          category: 'Company Labor',
+          amount: expenseData.laborPaidAmount,
+          note: expenseData.note || '',
+          receiptUrl: receiptUrl,
+          startNewAgreement: Boolean((window as any)._startNewAgreement || false),
+        };
+        // Submit to /api/expenses/company (this creates both CompanyLabor and Expense records)
+        const expenseRes = await fetch('/api/expenses/company', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(companyLaborPayload),
+        });
+        const expenseDataRes = await expenseRes.json();
+        if (!expenseRes.ok) {
+          const errorMsg = expenseDataRes.message || (typeof expenseDataRes === 'string' ? expenseDataRes : JSON.stringify(expenseDataRes)) || 'Failed to record expense';
+          console.error('Backend error response (expense):', expenseDataRes);
+          setToastMessage({ message: errorMsg, type: 'error' });
+          setLoading(false);
+          return;
+        }
+        setToastMessage({ message: 'Shaqaale shirkad iyo kharashkiisa si guul leh ayaa loo diiwaan geliyay!', type: 'success' });
+        // Clear form
+        setCategory(''); setAmount(''); setPaidFrom('Cash'); setExpenseDate(new Date().toISOString().split('T')[0]); setNote(''); setSelectedProject('');
+        setMaterials([{ id: 1, name: '', qty: '', price: '', unit: '' }]);
+        setSelectedEmployeeForSalary(''); setWorkDescription(''); setWage(''); setLaborPaidAmount(''); setTransportType(''); setTaxiXamaalType('');
+        setCompanyExpenseType(''); setLenderName(''); setLoanDate(''); setReceiptImage(null);
+        setSelectedEmployeeForSalary(''); setSalaryPaymentAmount('');
+        setOfficeRentPeriod(''); setElectricityMeterReading(''); setMarketingCampaignName('');
+        setSelectedVehicle(''); setVehicleName(''); setFuelType(''); setFuelQuantity(''); setFuelPricePerLiter(''); setFuelStation(''); setOdometerReading(''); setFuelPurpose('');
+        setSelectedVendor(''); setPaymentStatus('UNPAID'); setInvoiceNumber('');
+        setAllCustomers([]);
+        setValidationErrors({});
+        router.push('/expenses');
+        return;
+      }
       // Otherwise, submit as normal
-      const endpoint = expenseType === 'project' ? '/api/expenses/project' : '/api/expenses';
+      const endpoint = expenseType === 'project' ? '/api/expenses/project' : '/api/expenses/company';
       
       // Add receipt URL to expense data
       const finalExpenseData = {
@@ -1043,8 +1178,14 @@ const [consultancyFee, setConsultancyFee] = useState('');
                 className="w-full p-3 border border-lightGray dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 mb-4"
                 value={companyExpenseType}
                 onChange={e => {
-                  setCompanyExpenseType(e.target.value);
-                  setCategory(e.target.value ? 'Company Expense' : '');
+                  const selectedValue = e.target.value;
+                  setCompanyExpenseType(selectedValue);
+                  // Taxi/Xamaal works directly, not under Company Expense
+                  if (selectedValue === 'Taxi/Xamaal') {
+                    setCategory('Taxi/Xamaal');
+                  } else {
+                    setCategory(selectedValue ? 'Company Expense' : '');
+                  }
                 }}
                 title="Dooro Nooca Kharashka Shirkadda"
               >
@@ -1376,6 +1517,126 @@ const [consultancyFee, setConsultancyFee] = useState('');
                 <label htmlFor="note" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Fiiro Gaar Ah (Optional)</label>
                 <textarea
                   id="note"
+                  value={note}
+                  onChange={e => setNote(e.target.value)}
+                  className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Wixi faahfaahin dheeraad ah ee kharashka..."
+                  rows={2}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Taxi/Xamaal Form - Simplified transport form without vehicle selection */}
+          {((expenseType === 'project' && category === 'Taxi/Xamaal') || (expenseType === 'company' && category === 'Taxi/Xamaal')) && (
+            <div className="p-4 border border-primary/20 rounded-lg bg-primary/5 animate-fade-in">
+              <h3 className="text-lg font-bold text-primary dark:text-blue-300 mb-2">
+                {expenseType === 'project' ? 'Faahfaahinta Taxi/Xamaal Mashruuca' : 'Faahfaahinta Taxi/Xamaal Shirkadda'}
+              </h3>
+              
+              <div className="mb-4">
+                <label htmlFor="taxiXamaalType" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Nooca *</label>
+                <select
+                  id="taxiXamaalType"
+                  value={taxiXamaalType}
+                  onChange={e => setTaxiXamaalType(e.target.value)}
+                  className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                  required
+                >
+                  <option value="">-- Dooro Taxi ama Xamaal --</option>
+                  <option value="Taxi">Taxi</option>
+                  <option value="Xamaal">Xamaal</option>
+                </select>
+                {validationErrors.taxiXamaalType && (
+                  <span className="text-red-500 text-sm mt-1 block">{validationErrors.taxiXamaalType}</span>
+                )}
+              </div>
+
+              <div className="mb-4">
+                <label htmlFor="amount_taxi" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Qiimaha ($) *</label>
+                <input
+                  type="number"
+                  id="amount_taxi"
+                  value={amount}
+                  onChange={e => setAmount(Number(e.target.value))}
+                  className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Tusaale: 50.00"
+                  required
+                  min={0}
+                  step="any"
+                />
+                {validationErrors.amount && (
+                  <span className="text-red-500 text-sm mt-1 block">{validationErrors.amount}</span>
+                )}
+              </div>
+
+              <div className="mb-4">
+                <label htmlFor="description_taxi" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Faahfaahinta (Optional)</label>
+                <input
+                  type="text"
+                  id="description_taxi"
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Tusaale: Socodka goobta alaabta"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label htmlFor="paidFrom_taxi" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Akoonka Laga Jarayo *</label>
+                <select
+                  id="paidFrom_taxi"
+                  value={paidFrom}
+                  onChange={e => setPaidFrom(e.target.value)}
+                  className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                  required
+                >
+                  <option value="">-- Dooro Akoonka --</option>
+                  {accounts.map(acc => (
+                    <option key={acc.id} value={acc.id}>{acc.name}</option>
+                  ))}
+                </select>
+                {validationErrors.paidFrom && (
+                  <span className="text-red-500 text-sm mt-1 block">{validationErrors.paidFrom}</span>
+                )}
+              </div>
+
+              <div className="mb-4">
+                <label htmlFor="expenseDate_taxi" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Kharashka *</label>
+                <input
+                  type="date"
+                  id="expenseDate_taxi"
+                  value={expenseDate}
+                  onChange={e => setExpenseDate(e.target.value)}
+                  className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                  required
+                />
+                {validationErrors.expenseDate && (
+                  <span className="text-red-500 text-sm mt-1 block">{validationErrors.expenseDate}</span>
+                )}
+              </div>
+
+              {expenseType === 'project' && (
+                <div className="mb-4">
+                  <label htmlFor="selectedProject_taxi" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Mashruuca La Xiriira (Optional)</label>
+                  <select
+                    id="selectedProject_taxi"
+                    value={selectedProject}
+                    onChange={e => setSelectedProject(e.target.value)}
+                    className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="">-- No Project --</option>
+                    {projects.map(proj => (
+                      <option key={proj.id} value={proj.id}>{proj.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className="mb-4">
+                <label htmlFor="note_taxi" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Fiiro Gaar Ah (Optional)</label>
+                <textarea
+                  id="note_taxi"
                   value={note}
                   onChange={e => setNote(e.target.value)}
                   className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
@@ -1857,6 +2118,141 @@ const [consultancyFee, setConsultancyFee] = useState('');
                             })()}
                         </div>
                     )}
+                </div>
+              )}
+
+              {/* Company Labor Specific Fields */}
+              {companyExpenseType === 'Company Labor' && (
+                <div className="p-4 border border-primary/20 rounded-lg bg-primary/5 animate-fade-in">
+                  <h3 className="text-lg font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Shaqaalaha Shirkadda</h3>
+                  <div>
+                    <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Shaqaale <span className="text-redError">*</span></label>
+                    <select value={selectedEmployeeForSalary} onChange={e => setSelectedEmployeeForSalary(e.target.value)} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100" required title="Dooro Shaqaale">
+                      <option value="">-- Dooro Shaqaale --</option>
+                      {employees.map(emp => <option key={emp.id} value={emp.id}>{emp.fullName}</option>)}
+                    </select>
+                    {validationErrors.selectedEmployeeForSalary && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.selectedEmployeeForSalary}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Mushaharka La Ogolaaday (Agreed)</label>
+                    {previousWageInfo ? (
+                      <>
+                        <div className="mb-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <div className="text-sm text-blue-800 dark:text-blue-300">
+                            <div className="flex justify-between">
+                              <span>Mushaharka Hore:</span>
+                              <span className="font-medium">{previousWageInfo.agreedWage.toLocaleString()} ETB</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Lacagta La Bixiyay:</span>
+                              <span className="font-medium">{previousWageInfo.totalPaid.toLocaleString()} ETB</span>
+                            </div>
+                            <div className="flex justify-between border-t border-blue-300 dark:border-blue-700 pt-1 mt-1">
+                              <span className="font-medium">Inta Dhiman (Remaining):</span>
+                              <span className="font-bold text-red-600 dark:text-red-400">{previousWageInfo.remaining.toLocaleString()} ETB</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm text-mediumGray dark:text-gray-400 mb-1">Agreed (readonly)</label>
+                            <input type="number" value={previousWageInfo.agreedWage} readOnly className="w-full p-3 border rounded-lg bg-gray-100 dark:bg-gray-800 text-darkGray dark:text-gray-300 border-lightGray dark:border-gray-700" />
+                          </div>
+                          <div>
+                            <label className="block text-sm text-mediumGray dark:text-gray-400 mb-1">Remaining (before payment)</label>
+                            <input type="number" value={previousWageInfo.remaining} readOnly className="w-full p-3 border rounded-lg bg-gray-100 dark:bg-gray-800 text-darkGray dark:text-gray-300 border-lightGray dark:border-gray-700" />
+                          </div>
+                        </div>
+                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">Heshiis jira ayaa la bixinayaa; mushaharka lama beddeli karo halkan.</p>
+                        {previousWageInfo && (
+                          <div className="mt-3 p-3 rounded-md bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
+                            <label className="inline-flex items-center gap-2 text-sm text-yellow-800 dark:text-yellow-300">
+                              <input
+                                type="checkbox"
+                                checked={Boolean((window as any)._startNewAgreement || false)}
+                                onChange={e => {
+                                  (window as any)._startNewAgreement = e.target.checked;
+                                  if (e.target.checked) {
+                                    setWage('');
+                                  }
+                                  setLaborPaidAmount(laborPaidAmount as any);
+                                }}
+                              />
+                              Bilow heshiis cusub shirkadan (enter Agreed hoose)
+                            </label>
+                            {Boolean((window as any)._startNewAgreement || false) && (
+                              <div className="mt-3">
+                                <label className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Agreed cusub (ETB) <span className="text-redError">*</span></label>
+                                <input
+                                  type="number"
+                                  value={wage}
+                                  onChange={e => setWage(parseFloat(e.target.value) || '')}
+                                  className={`w-full p-3 border rounded-lg bg-white dark:bg-gray-700 text-darkGray dark:text-gray-100 ${validationErrors.wage ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                                  placeholder="Geli mushaharka la isku raacay"
+                                  min={0}
+                                  step="any"
+                                  required
+                                />
+                                <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">Heshiis cusub ayaa la abuurayaa—kan hore waa la dhammeeyay.</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <input 
+                          type="number"
+                          value={wage}
+                          onChange={e => setWage(parseFloat(e.target.value) || '')}
+                          className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 ${validationErrors.wage ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                          required
+                          placeholder="Mushaharka (Agreed Wage)"
+                          min={0}
+                          step="any"
+                        />
+                        <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">Tani waxay abuurtaa heshiis cusub haddii uusan jirin mid hore.</p>
+                      </>
+                    )}
+                    {validationErrors.wage && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.wage}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Lacagta Hadda La Bixiyay ($) <span className="text-redError">*</span></label>
+                    <input
+                      type="number"
+                      value={laborPaidAmount}
+                      onChange={e => setLaborPaidAmount(parseFloat(e.target.value) || '')}
+                      className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 ${validationErrors.laborPaidAmount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                      required
+                      placeholder="Lacagta la bixiyay"
+                      min={0}
+                      step="any"
+                      {...(previousWageInfo && !(window as any)._startNewAgreement ? { max: previousWageInfo.remaining } : {})}
+                    />
+                    {previousWageInfo && typeof laborPaidAmount === 'number' && (
+                      <p className="text-xs mt-1 text-mediumGray dark:text-gray-400">
+                        Ka dib bixintan: <span className="font-semibold">{Math.max(0, previousWageInfo.remaining - (laborPaidAmount || 0)).toLocaleString()} ETB</span> ayaa hadhay.
+                      </p>
+                    )}
+                    {validationErrors.laborPaidAmount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.laborPaidAmount}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Sharaxaadda Shaqada</label>
+                    <input type="text" value={workDescription} onChange={e => setWorkDescription(e.target.value)} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100" placeholder="Sharaxaadda Shaqada" title="Sharaxaadda Shaqada" />
+                    {validationErrors.workDescription && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.workDescription}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Shaqada</label>
+                    <input type="date" value={expenseDate} onChange={e => setExpenseDate(e.target.value)} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100" title="Taariikhda Shaqada" />
+                  </div>
+                  <div>
+                    <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
+                    <select value={paidFrom} onChange={e => setPaidFrom(e.target.value)} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100" required title="Dooro Akoonka">
+                      <option value="">-- Dooro Akoonka --</option>
+                      {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
+                    </select>
+                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paidFrom}</p>}
+                  </div>
                 </div>
               )}
 

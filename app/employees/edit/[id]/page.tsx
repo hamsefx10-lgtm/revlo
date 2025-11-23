@@ -27,6 +27,7 @@ export default function EditEmployeePage() {
   const [companyRole, setCompanyRole] = useState(''); // Role for company employee
   const [monthlySalary, setMonthlySalary] = useState<number | ''>(''); // Monthly salary for company employee
   const [salaryStartDate, setSalaryStartDate] = useState(''); // Salary start date
+  const [salaryStartTime, setSalaryStartTime] = useState(''); // Salary start time
 
   // Project Employee specific fields (these are for adding new labor records for an existing employee)
   // Note: This page primarily edits the main employee profile. Adding new labor records
@@ -67,11 +68,23 @@ export default function EditEmployeePage() {
         const data = await response.json();
         
         // Populate form fields with fetched data
-        setName(data.employee.fullName);
+        setFullName(data.employee.fullName);
         setEmail(data.employee.email || '');
         setPhone(data.employee.phone || '');
         setIsActive(data.employee.isActive);
-        setSalaryStartDate(data.employee.startDate ? new Date(data.employee.startDate).toISOString().split('T')[0] : '');
+        
+        // Parse startDate to separate date and time
+        if (data.employee.startDate) {
+          const startDateObj = new Date(data.employee.startDate);
+          setSalaryStartDate(startDateObj.toISOString().split('T')[0]);
+          // Extract time in HH:MM format
+          const hours = String(startDateObj.getHours()).padStart(2, '0');
+          const minutes = String(startDateObj.getMinutes()).padStart(2, '0');
+          setSalaryStartTime(`${hours}:${minutes}`);
+        } else {
+          setSalaryStartDate('');
+          setSalaryStartTime('');
+        }
 
         // Determine employee type and populate specific fields
         // If monthlySalary exists, it's a Company employee
@@ -110,10 +123,13 @@ export default function EditEmployeePage() {
       if (!companyRole) newErrors.companyRole = 'Doorka shirkadda waa waajib.';
       if (typeof monthlySalary !== 'number' || monthlySalary <= 0) newErrors.monthlySalary = 'Mushaharka bil kasta waa waajib oo waa inuu noqdaa nambar wanaagsan.';
       if (!salaryStartDate) newErrors.salaryStartDate = 'Taariikhda bilowga mushaharka waa waajib.';
+      if (!salaryStartTime) newErrors.salaryStartTime = 'Waqtiga bilowga mushaharka waa waajib.';
     } else { // Project Employee (editing core profile)
       // For project employees, we're editing their general profile, not a specific labor record.
       // We need to ensure they still have a role.
       if (!companyRole) newErrors.companyRole = 'Doorka shaqaalaha waa waajib.'; // Re-using companyRole for generic role
+      if (!salaryStartDate) newErrors.salaryStartDate = 'Taariikhda bilowga shaqada waa waajib.';
+      if (!salaryStartTime) newErrors.salaryStartTime = 'Waqtiga bilowga shaqada waa waajib.';
     }
     
     setValidationErrors(newErrors);
@@ -141,12 +157,21 @@ export default function EditEmployeePage() {
     };
 
     try {
+      // Combine date and time into ISO datetime string
+      let startDateTime: string | null = null;
+      if (salaryStartDate && salaryStartTime) {
+        const [hours, minutes] = salaryStartTime.split(':');
+        const dateTime = new Date(`${salaryStartDate}T${hours}:${minutes}:00`);
+        startDateTime = dateTime.toISOString();
+      }
+
       if (employeeType === 'Company') {
         employeeData = {
           ...employeeData,
           role: companyRole,
           monthlySalary: monthlySalary,
-          startDate: salaryStartDate,
+          startDate: startDateTime,
+          category: 'COMPANY',
           // salaryPaidThisMonth and daysWorkedThisMonth are updated via separate actions/APIs
         };
         // API call for updating an existing general employee
@@ -164,7 +189,8 @@ export default function EditEmployeePage() {
           ...employeeData,
           role: companyRole, // Use generic role for project employee profile
           monthlySalary: null, // Ensure monthlySalary is null for project employees
-          startDate: null, // Ensure startDate is null for project employees
+          startDate: startDateTime, // Allow project employees to have start date/time
+          category: 'PROJECT',
         };
         // API call for updating an existing general employee (who might be a project employee)
         const response = await fetch(`/api/employees/${id}`, {
@@ -332,19 +358,35 @@ export default function EditEmployeePage() {
               </div>
 
               {/* Salary Start Date */}
-              <div>
-                <label htmlFor="salaryStartDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Bilowga Mushaharka <span className="text-redError">*</span></label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
-                  <input
-                    type="date"
-                    id="salaryStartDate"
-                    value={salaryStartDate}
-                    onChange={(e) => setSalaryStartDate(e.target.value)}
-                    className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.salaryStartDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                  />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="salaryStartDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Bilowga Mushaharka <span className="text-redError">*</span></label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
+                    <input
+                      type="date"
+                      id="salaryStartDate"
+                      value={salaryStartDate}
+                      onChange={(e) => setSalaryStartDate(e.target.value)}
+                      className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.salaryStartDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    />
+                  </div>
+                  {validationErrors.salaryStartDate && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.salaryStartDate}</p>}
                 </div>
-                {validationErrors.salaryStartDate && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.salaryStartDate}</p>}
+                <div>
+                  <label htmlFor="salaryStartTime" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Waqtiga Bilowga Mushaharka <span className="text-redError">*</span></label>
+                  <div className="relative">
+                    <ClockIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
+                    <input
+                      type="time"
+                      id="salaryStartTime"
+                      value={salaryStartTime}
+                      onChange={(e) => setSalaryStartTime(e.target.value)}
+                      className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.salaryStartTime ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    />
+                  </div>
+                  {validationErrors.salaryStartTime && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.salaryStartTime}</p>}
+                </div>
               </div>
             </div>
           ) : ( // Project Employee Form (This section is for editing core profile, not adding new labor records)
@@ -371,6 +413,38 @@ export default function EditEmployeePage() {
                 </div>
                 {validationErrors.companyRole && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.companyRole}</p>}
               </div>
+              
+              {/* Project Employee Start Date and Time */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="projectStartDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Bilowga Shaqada <span className="text-redError">*</span></label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
+                    <input
+                      type="date"
+                      id="projectStartDate"
+                      value={salaryStartDate}
+                      onChange={(e) => setSalaryStartDate(e.target.value)}
+                      className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.salaryStartDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    />
+                  </div>
+                  {validationErrors.salaryStartDate && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.salaryStartDate}</p>}
+                </div>
+                <div>
+                  <label htmlFor="projectStartTime" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Waqtiga Bilowga Shaqada <span className="text-redError">*</span></label>
+                  <div className="relative">
+                    <ClockIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
+                    <input
+                      type="time"
+                      id="projectStartTime"
+                      value={salaryStartTime}
+                      onChange={(e) => setSalaryStartTime(e.target.value)}
+                      className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.salaryStartTime ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    />
+                  </div>
+                  {validationErrors.salaryStartTime && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.salaryStartTime}</p>}
+                </div>
+              </div>
             </div>
           )}
 
@@ -394,8 +468,5 @@ export default function EditEmployeePage() {
       )}
     </Layout>
   );
-}
-function setName(fullName: any) {
-  throw new Error('Function not implemented.');
 }
 

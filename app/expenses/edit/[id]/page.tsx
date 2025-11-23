@@ -42,7 +42,15 @@ export default function EditExpensePage() {
   const [workDescription, setWorkDescription] = useState('');
   const [wage, setWage] = useState<number | ''>('');
   const [laborPaidAmount, setLaborPaidAmount] = useState<number | ''>('');
-  const [transportType, setTransportType] = useState(''); 
+  const [transportType, setTransportType] = useState('');
+  const [taxiXamaalType, setTaxiXamaalType] = useState(''); // 'Taxi' or 'Xamaal'
+  
+  // Company Labor wage tracking
+  const [previousWageInfo, setPreviousWageInfo] = useState<{
+    agreedWage: number;
+    totalPaid: number;
+    remaining: number;
+  } | null>(null); 
 
   // Company Expense specific fields
   const [companyExpenseType, setCompanyExpenseType] = useState('');
@@ -123,6 +131,7 @@ export default function EditExpensePage() {
   const [employees, setEmployees] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
   const [vendors, setVendors] = useState<any[]>([]);
+  const [companyLabors, setCompanyLabors] = useState<any[]>([]);
 
   // Fetch existing expense data to populate the form
   useEffect(() => {
@@ -149,39 +158,104 @@ export default function EditExpensePage() {
             setMaterialDate(new Date(expense.materialDate).toISOString().split('T')[0]);
           }
 
-          // Determine expense type based on category
-          if (expense.category === 'Company Expense') {
+          // Determine expense type based on projectId and category
+          if (!expense.project?.id) {
+            // Company expense (no project)
             setExpenseType('company');
-            // Set company expense type based on description or other fields
-            if (expense.description && expense.description.includes('Salary')) {
-              setCompanyExpenseType('Salary');
-              // Populate salary fields
-              if (expense.employee?.id) setSelectedEmployeeForSalary(expense.employee.id);
-              if (expense.amount) setSalaryPaymentAmount(expense.amount);
-              if (expense.expenseDate) setSalaryPaymentDate(new Date(expense.expenseDate).toISOString().split('T')[0]);
-            } else if (expense.description && expense.description.includes('Office Rent')) {
-              setCompanyExpenseType('Office Rent');
-            } else if (expense.description && expense.description.includes('Electricity')) {
-              setCompanyExpenseType('Electricity');
-            } else if (expense.description && expense.description.includes('Marketing')) {
-              setCompanyExpenseType('Marketing');
-            } else if (expense.description && expense.description.includes('Debt')) {
-              setCompanyExpenseType('Debt Repayment');
-            } else if (expense.description && expense.description.includes('Maintenance')) {
-              setCompanyExpenseType('Maintenance');
-            } else if (expense.description && expense.description.includes('Insurance')) {
-              setCompanyExpenseType('Insurance');
-            } else if (expense.description && expense.description.includes('Legal')) {
-              setCompanyExpenseType('Legal');
-            } else if (expense.description && expense.description.includes('Travel')) {
-              setCompanyExpenseType('Travel');
-            } else if (expense.description && expense.description.includes('Fuel')) {
-              setCompanyExpenseType('Fuel');
+            
+            // Check if category is a direct company category (not "Company Expense")
+            const directCompanyCategories = ['Taxi/Xamaal', 'Company Labor', 'Material', 'Salary'];
+            if (directCompanyCategories.includes(expense.category)) {
+              // For direct categories, set companyExpenseType to the category
+              if (expense.category === 'Material') {
+                setCompanyExpenseType('Material');
+              } else if (expense.category === 'Company Labor') {
+                setCompanyExpenseType('Company Labor');
+                // Populate company labor fields
+                if (expense.employee?.id) {
+                  setSelectedEmployeeForSalary(expense.employee.id);
+                  // Fetch company labor records to get wage info
+                  fetch(`/api/company-labors`)
+                    .then(res => res.json())
+                    .then(data => {
+                      const labors = data.companyLabors || [];
+                      const employeeLabors = labors.filter((l: any) => l.employeeId === expense.employee.id);
+                      if (employeeLabors.length > 0) {
+                        const totalAgreedWage = employeeLabors.reduce((sum: number, record: any) => sum + (record.agreedWage || 0), 0);
+                        const totalPaid = employeeLabors.reduce((sum: number, record: any) => sum + (record.paidAmount || 0), 0);
+                        const remaining = totalAgreedWage - totalPaid;
+                        setPreviousWageInfo({
+                          agreedWage: totalAgreedWage,
+                          totalPaid: totalPaid,
+                          remaining: remaining
+                        });
+                        // Set wage and paid amount from the most recent record
+                        const latestLabor = employeeLabors[0];
+                        if (latestLabor.agreedWage) setWage(latestLabor.agreedWage);
+                        if (latestLabor.paidAmount) setLaborPaidAmount(latestLabor.paidAmount);
+                      }
+                    })
+                    .catch(err => console.error('Error fetching company labors:', err));
+                }
+                if (expense.description) setWorkDescription(expense.description);
+                if (expense.amount) setLaborPaidAmount(expense.amount);
+              } else if (expense.category === 'Taxi/Xamaal') {
+                setCompanyExpenseType('Taxi/Xamaal');
+                if (expense.transportType) {
+                  // transportType will be "Taxi" or "Xamaal"
+                  setTaxiXamaalType(expense.transportType);
+                }
+              } else if (expense.category === 'Salary') {
+                setCompanyExpenseType('Salary');
+                // Populate salary fields
+                if (expense.employee?.id) setSelectedEmployeeForSalary(expense.employee.id);
+                if (expense.amount) setSalaryPaymentAmount(expense.amount);
+                if (expense.expenseDate) setSalaryPaymentDate(new Date(expense.expenseDate).toISOString().split('T')[0]);
+              }
+              // Set category to match
+              setCategory(expense.category);
+            } else if (expense.category === 'Company Expense') {
+              // For "Company Expense" category, determine type from description or subCategory
+              setCategory('Company Expense');
+              if (expense.subCategory === 'Salary') {
+                setCompanyExpenseType('Salary');
+                if (expense.employee?.id) setSelectedEmployeeForSalary(expense.employee.id);
+                if (expense.amount) setSalaryPaymentAmount(expense.amount);
+                if (expense.expenseDate) setSalaryPaymentDate(new Date(expense.expenseDate).toISOString().split('T')[0]);
+              } else if (expense.description && expense.description.includes('Salary')) {
+                setCompanyExpenseType('Salary');
+                if (expense.employee?.id) setSelectedEmployeeForSalary(expense.employee.id);
+                if (expense.amount) setSalaryPaymentAmount(expense.amount);
+                if (expense.expenseDate) setSalaryPaymentDate(new Date(expense.expenseDate).toISOString().split('T')[0]);
+              } else if (expense.description && expense.description.includes('Office Rent') || expense.subCategory === 'Office Rent') {
+                setCompanyExpenseType('Office Rent');
+                // Try to extract office rent period from description if available
+                // Note: officeRentPeriod might not be stored in DB, so we'll leave it empty for now
+              } else if (expense.description && expense.description.includes('Electricity') || expense.subCategory === 'Electricity') {
+                setCompanyExpenseType('Electricity');
+                // Try to extract meter reading from description if available
+                // Note: electricityMeterReading might not be stored in DB
+              } else if (expense.description && expense.description.includes('Marketing') || expense.subCategory === 'Marketing') {
+                setCompanyExpenseType('Marketing');
+                // Try to extract campaign name from description if available
+                // Note: marketingCampaignName might not be stored in DB
+              } else if (expense.description && expense.description.includes('Debt') || expense.subCategory === 'Debt') {
+                setCompanyExpenseType('Debt');
+              } else if (expense.description && expense.description.includes('Maintenance') || expense.subCategory === 'Maintenance') {
+                setCompanyExpenseType('Maintenance & Repairs');
+              } else if (expense.description && expense.description.includes('Utilities') || expense.subCategory === 'Utilities') {
+                setCompanyExpenseType('Utilities');
+              } else {
+                setCompanyExpenseType('Other');
+              }
             } else {
-              setCompanyExpenseType('Other');
+              // Other company categories
+              setCategory(expense.category);
             }
           } else {
+            // Project expense
             setExpenseType('project');
+            setCategory(expense.category);
           }
 
           // Populate category-specific fields based on expense data
@@ -212,24 +286,27 @@ export default function EditExpensePage() {
   useEffect(() => {
     const fetchRelatedData = async () => {
       try {
-        const [projectsRes, accountsRes, employeesRes, customersRes, vendorsRes] = await Promise.all([
+        const [projectsRes, accountsRes, employeesRes, customersRes, vendorsRes, companyLaborsRes] = await Promise.all([
           fetch('/api/projects'),
           fetch('/api/accounting/accounts'),
           fetch('/api/employees'),
           fetch('/api/customers'),
-          fetch('/api/vendors')
+          fetch('/api/vendors'),
+          fetch('/api/company-labors')
         ]);
         const projectsData = await projectsRes.json();
         const accountsData = await accountsRes.json();
         const employeesData = await employeesRes.json();
         const customersData = await customersRes.json();
         const vendorsData = await vendorsRes.json();
+        const companyLaborsData = await companyLaborsRes.json();
 
         setProjects(projectsData.projects || []);
         setAccounts(accountsData.accounts || []);
         setEmployees(employeesData.employees || []);
         setCustomers(customersData.customers || []);
         setVendors(vendorsData.vendors || []);
+        setCompanyLabors(companyLaborsData.companyLabors || []);
       } catch (error) {
         console.error("Failed to fetch related data", error);
         setToastMessage({ message: "Cilad ayaa ka dhacday soo-gelinta xogta la xiriirta.", type: 'error' });
@@ -270,13 +347,15 @@ export default function EditExpensePage() {
 
     // Build description based on category/subtype, matching add page logic
     let finalDescription = '';
-    if (category === 'Labor') {
+    if (category === 'Labor' || (expenseType === 'company' && (companyExpenseType === 'Company Labor' || category === 'Company Labor'))) {
       finalDescription = workDescription.trim();
     } else if (category === 'Material') {
       finalDescription = `Material expense - ${expenseDate}`;
-    } else if (category === 'Company Expense' && companyExpenseType === 'Salary') {
+    } else if ((category === 'Company Expense' || category === 'Salary') && companyExpenseType === 'Salary') {
       const emp = employees.find(emp => emp.id === selectedEmployeeForSalary);
       finalDescription = `Salary payment${emp ? ' for ' + emp.fullName : ''} - ${expenseDate}`;
+    } else if (category === 'Taxi/Xamaal' || companyExpenseType === 'Taxi/Xamaal') {
+      finalDescription = description || `Taxi/Xamaal - ${taxiXamaalType}`;
     } else if (category === 'Company Expense') {
       finalDescription = description.trim() || '';
     } else {
@@ -290,10 +369,10 @@ export default function EditExpensePage() {
       note: note.trim() || undefined,
       projectId: expenseType === 'project' ? selectedProject : undefined,
       description: finalDescription,
-      amount: category === 'Material' ? totalMaterialCost : amount,
+      amount: category === 'Material' ? totalMaterialCost : (category === 'Company Labor' || companyExpenseType === 'Company Labor' ? laborPaidAmount : amount),
       materials: category === 'Material' ? materials.map(({id, ...rest}) => rest) : undefined,
       materialDate: category === 'Material' ? materialDate : undefined,
-      transportType: transportType || undefined,
+      transportType: (category === 'Taxi/Xamaal' || companyExpenseType === 'Taxi/Xamaal') ? taxiXamaalType : (transportType || undefined),
       consultantName: consultantName || undefined,
       consultancyType: consultancyType || undefined,
       consultancyFee: consultancyFee || undefined,
@@ -307,6 +386,14 @@ export default function EditExpensePage() {
       selectedEmployeeForSalary: selectedEmployeeForSalary || undefined,
       salaryPaymentAmount: salaryPaymentAmount || undefined,
       salaryPaymentDate: salaryPaymentDate || undefined,
+      // Company Labor fields
+      employeeId: (companyExpenseType === 'Company Labor' || category === 'Company Labor') ? selectedEmployeeForSalary : undefined,
+      agreedWage: (companyExpenseType === 'Company Labor' || category === 'Company Labor') ? wage : undefined,
+      laborPaidAmount: (companyExpenseType === 'Company Labor' || category === 'Company Labor') ? laborPaidAmount : undefined,
+      // Other company expense fields
+      officeRentPeriod: companyExpenseType === 'Office Rent' ? officeRentPeriod : undefined,
+      electricityMeterReading: companyExpenseType === 'Electricity' ? electricityMeterReading : undefined,
+      marketingCampaignName: companyExpenseType === 'Marketing' ? marketingCampaignName : undefined,
     };
 
     try {
@@ -343,14 +430,16 @@ export default function EditExpensePage() {
   const materialUnits = ['pcs', 'sq ft', 'sq m', 'Liter', 'kg', 'box', 'm'];
   const companyExpenseCategories = [
     { value: 'Salary', label: 'Mushahar', icon: Users },
+    { value: 'Company Labor', label: 'Shaqaale (Shirkad)', icon: Users },
     { value: 'Office Rent', label: 'Kirada Xafiiska', icon: Building },
     { value: 'Electricity', label: 'Koronto', icon: Info },
-    { value: 'Fuel', label: 'Shidaal', icon: Truck },
     { value: 'Utilities', label: 'Adeegyada Guud', icon: Home },
     { value: 'Marketing', label: 'Suuqgeyn', icon: DollarSign },
-    { value: 'Material', label: 'Alaab (Shirkadda)', icon: Package },
-    { value: 'Debt', label: 'Deyn (La Qaatay)', icon: Coins },
-    { value: 'Debt Repayment', label: 'Dib U Bixin Deynta', icon: Coins },
+    { value: 'Material', label: 'Alaab (Kharashka Shirkadda)', icon: Package },
+    { value: 'Taxi/Xamaal', label: 'Taxi/Xamaal (Shirkad)', icon: Truck },
+    { value: 'Maintenance & Repairs', label: 'Dayactirka iyo Hagaajinta', icon: Info },
+    { value: 'Travel & Accommodation', label: 'Socodka iyo Hoyga', icon: Home },
+    { value: 'Debt', label: 'Deyn (Macmiilka La Siiyay)', icon: Coins },
     { value: 'Other', label: 'Kale', icon: Info },
   ];
 
@@ -507,16 +596,31 @@ export default function EditExpensePage() {
           )}
 
           {/* Company Expense Forms */}
-          {category === 'Company Expense' && (
-            <div className="p-4 border border-primary/20 rounded-lg bg-primary/5 space-y-4">
-              <h3 className="text-lg font-bold text-primary dark:text-blue-300">Nooca Kharashka Shirkadda</h3>
-              
-              {/* Company Expense Type Display (Read-only) */}
+          {(category === 'Company Expense' || category === 'Company Labor' || category === 'Taxi/Xamaal' || category === 'Material') && expenseType === 'company' && (
+            <div className="p-4 border border-primary/20 rounded-lg bg-primary/5 animate-fade-in">
+              <h3 className="text-lg font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Kharashka Shirkadda</h3>
               <div>
-                <label className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-2">Nooca Kharashka</label>
-                <div className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-gray-900 dark:text-gray-100 flex items-center">
-                  <span>{companyExpenseType || 'Kale'}</span>
-                </div>
+                <label htmlFor="companyExpenseType" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Nooca Kharashka Shirkadda <span className="text-redError">*</span></label>
+                <select
+                  id="companyExpenseType"
+                  required
+                  value={companyExpenseType || category}
+                  onChange={(e) => {
+                    const selectedValue = e.target.value;
+                    setCompanyExpenseType(selectedValue);
+                    // For direct categories, set category directly
+                    if (selectedValue === 'Taxi/Xamaal' || selectedValue === 'Company Labor' || selectedValue === 'Material') {
+                      setCategory(selectedValue);
+                    } else {
+                      setCategory('Company Expense');
+                    }
+                  }}
+                  className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.companyExpenseType ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                >
+                  <option value="">-- Dooro Nooca Kharashka Shirkadda --</option>
+                  {companyExpenseCategories.map(cat => <option key={cat.value} value={cat.value}>{cat.label}</option>)}
+                </select>
+                {validationErrors.companyExpenseType && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.companyExpenseType}</p>}
               </div>
 
               {/* Salary Specific Fields */}
@@ -589,11 +693,328 @@ export default function EditExpensePage() {
                   </div>
                 </div>
               )}
+
+              {/* Company Labor Specific Fields */}
+              {(companyExpenseType === 'Company Labor' || category === 'Company Labor') && (
+                <div className="p-4 border border-primary/20 rounded-lg bg-primary/5 animate-fade-in mt-4">
+                  <h3 className="text-lg font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Shaqaalaha Shirkadda</h3>
+                  <div>
+                    <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Shaqaale <span className="text-redError">*</span></label>
+                    <select value={selectedEmployeeForSalary} onChange={e => setSelectedEmployeeForSalary(e.target.value)} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100" required>
+                      <option value="">-- Dooro Shaqaale --</option>
+                      {employees.map(emp => <option key={emp.id} value={emp.id}>{emp.fullName || emp.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Mushaharka La Ogolaaday (Agreed)</label>
+                    <input 
+                      type="number"
+                      value={wage}
+                      onChange={e => setWage(parseFloat(e.target.value) || '')}
+                      className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100"
+                      placeholder="Mushaharka (Agreed Wage)"
+                      min={0}
+                      step="any"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Lacagta Hadda La Bixiyay ($) <span className="text-redError">*</span></label>
+                    <input
+                      type="number"
+                      value={laborPaidAmount}
+                      onChange={e => setLaborPaidAmount(parseFloat(e.target.value) || '')}
+                      className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100"
+                      required
+                      placeholder="Lacagta la bixiyay"
+                      min={0}
+                      step="any"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Sharaxaadda Shaqada</label>
+                    <input type="text" value={workDescription} onChange={e => setWorkDescription(e.target.value)} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100" placeholder="Sharaxaadda Shaqada" />
+                  </div>
+                  <div>
+                    <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Shaqada</label>
+                    <input type="date" value={expenseDate} onChange={e => setExpenseDate(e.target.value)} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100" />
+                  </div>
+                  <div>
+                    <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
+                    <select value={paidFrom} onChange={e => setPaidFrom(e.target.value)} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100" required>
+                      <option value="">-- Dooro Akoonka --</option>
+                      {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {/* Taxi/Xamaal Form */}
+              {(companyExpenseType === 'Taxi/Xamaal' || category === 'Taxi/Xamaal') && (
+                <div className="p-4 border border-primary/20 rounded-lg bg-primary/5 animate-fade-in mt-4">
+                  <h3 className="text-lg font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Taxi/Xamaal Shirkadda</h3>
+                  <div className="mb-4">
+                    <label htmlFor="taxiXamaalType" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Nooca *</label>
+                    <select
+                      id="taxiXamaalType"
+                      value={taxiXamaalType}
+                      onChange={e => setTaxiXamaalType(e.target.value)}
+                      className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      required
+                    >
+                      <option value="">-- Dooro Taxi ama Xamaal --</option>
+                      <option value="Taxi">Taxi</option>
+                      <option value="Xamaal">Xamaal</option>
+                    </select>
+                  </div>
+                  <div className="mb-4">
+                    <label htmlFor="amount_taxi" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Qiimaha ($) *</label>
+                    <input
+                      type="number"
+                      id="amount_taxi"
+                      value={amount}
+                      onChange={e => setAmount(Number(e.target.value))}
+                      className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder="Tusaale: 50.00"
+                      required
+                      min={0}
+                      step="any"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label htmlFor="description_taxi" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Faahfaahinta (Optional)</label>
+                    <input
+                      type="text"
+                      id="description_taxi"
+                      value={description}
+                      onChange={e => setDescription(e.target.value)}
+                      className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      placeholder="Tusaale: Socodka goobta alaabta"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label htmlFor="paidFrom_taxi" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Akoonka Laga Jarayo *</label>
+                    <select
+                      id="paidFrom_taxi"
+                      value={paidFrom}
+                      onChange={e => setPaidFrom(e.target.value)}
+                      className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      required
+                    >
+                      <option value="">-- Dooro Akoonka --</option>
+                      {accounts.map(acc => (
+                        <option key={acc.id} value={acc.id}>{acc.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="mb-4">
+                    <label htmlFor="expenseDate_taxi" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Kharashka *</label>
+                    <input
+                      type="date"
+                      id="expenseDate_taxi"
+                      value={expenseDate}
+                      onChange={e => setExpenseDate(e.target.value)}
+                      className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Office Rent Specific Fields */}
+              {companyExpenseType === 'Office Rent' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 p-3 border border-dashed border-primary/30 rounded-lg bg-primary/5 animate-fade-in">
+                  <h4 className="col-span-full text-base font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Kirada Xafiiska</h4>
+                  <div className="md:col-span-2">
+                    <label htmlFor="paidFrom_officerent" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
+                    <div className="relative">
+                      <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
+                      <select
+                        id="paidFrom_officerent"
+                        required
+                        value={paidFrom}
+                        onChange={(e) => setPaidFrom(e.target.value)}
+                        className="w-full p-2 pl-8 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary"
+                      >
+                        <option value="">-- Dooro Akoonka --</option>
+                        {accounts.map(acc => (
+                          <option key={acc.id} value={acc.id}>{acc.name} {acc.balance !== undefined ? `(${Number(acc.balance).toLocaleString()} ETB)` : ''}</option>
+                        ))}
+                      </select>
+                      <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="officeRentAmount" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Qiimaha Kirada ($) <span className="text-redError">*</span></label>
+                    <input
+                      type="number"
+                      id="officeRentAmount"
+                      required
+                      value={amount}
+                      onChange={(e) => setAmount(parseFloat(e.target.value) || '')}
+                      placeholder="Tusaale: 1500"
+                      className="w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="officeRentPeriod" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Muddada Kirada <span className="text-redError">*</span></label>
+                    <select
+                      id="officeRentPeriod"
+                      required
+                      value={officeRentPeriod}
+                      onChange={(e) => setOfficeRentPeriod(e.target.value)}
+                      className="w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary appearance-none"
+                    >
+                      <option value="">-- Dooro Muddada --</option>
+                      <option value="Monthly">Monthly</option>
+                      <option value="Quarterly">Quarterly</option>
+                      <option value="Annually">Annually</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {/* Electricity Specific Fields */}
+              {companyExpenseType === 'Electricity' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 p-3 border border-dashed border-primary/30 rounded-lg bg-primary/5 animate-fade-in">
+                  <h4 className="col-span-full text-base font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Korontada</h4>
+                  <div className="md:col-span-2">
+                    <label htmlFor="paidFrom_electricity" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
+                    <select
+                      id="paidFrom_electricity"
+                      required
+                      value={paidFrom}
+                      onChange={(e) => setPaidFrom(e.target.value)}
+                      className="w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary"
+                    >
+                      <option value="">-- Dooro Akoonka --</option>
+                      {accounts.map(acc => (
+                        <option key={acc.id} value={acc.id}>{acc.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="electricityAmount" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Qiimaha Korontada ($) <span className="text-redError">*</span></label>
+                    <input
+                      type="number"
+                      id="electricityAmount"
+                      required
+                      value={amount}
+                      onChange={(e) => setAmount(parseFloat(e.target.value) || '')}
+                      placeholder="Tusaale: 500"
+                      className="w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="electricityMeterReading" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akhriska Mitirka <span className="text-redError">*</span></label>
+                    <input
+                      type="text"
+                      id="electricityMeterReading"
+                      required
+                      value={electricityMeterReading}
+                      onChange={(e) => setElectricityMeterReading(e.target.value)}
+                      placeholder="Tusaale: 12345"
+                      className="w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Marketing Specific Fields */}
+              {companyExpenseType === 'Marketing' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 p-3 border border-dashed border-primary/30 rounded-lg bg-primary/5 animate-fade-in">
+                  <h4 className="col-span-full text-base font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Suuqgeynta</h4>
+                  <div className="md:col-span-2">
+                    <label htmlFor="paidFrom_marketing" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
+                    <select
+                      id="paidFrom_marketing"
+                      required
+                      value={paidFrom}
+                      onChange={(e) => setPaidFrom(e.target.value)}
+                      className="w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary"
+                    >
+                      <option value="">-- Dooro Akoonka --</option>
+                      {accounts.map(acc => (
+                        <option key={acc.id} value={acc.id}>{acc.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="marketingAmount" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Qiimaha Ololaha ($) <span className="text-redError">*</span></label>
+                    <input
+                      type="number"
+                      id="marketingAmount"
+                      required
+                      value={amount}
+                      onChange={(e) => setAmount(parseFloat(e.target.value) || '')}
+                      placeholder="Tusaale: 1000"
+                      className="w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="marketingCampaignName" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Magaca Ololaha <span className="text-redError">*</span></label>
+                    <input
+                      type="text"
+                      id="marketingCampaignName"
+                      required
+                      value={marketingCampaignName}
+                      onChange={(e) => setMarketingCampaignName(e.target.value)}
+                      placeholder="Tusaale: Ololaha Xagaaga 2024"
+                      className="w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Utilities Form */}
+              {companyExpenseType === 'Utilities' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 p-3 border border-dashed border-primary/30 rounded-lg bg-primary/5 animate-fade-in">
+                  <h4 className="col-span-full text-base font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Adeegyada Guud</h4>
+                  <div className="md:col-span-2">
+                    <label htmlFor="paidFrom_utilities" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
+                    <select
+                      id="paidFrom_utilities"
+                      required
+                      value={paidFrom}
+                      onChange={(e) => setPaidFrom(e.target.value)}
+                      className="w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary"
+                    >
+                      <option value="">-- Dooro Akoonka --</option>
+                      {accounts.map(acc => (
+                        <option key={acc.id} value={acc.id}>{acc.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="utilitiesAmount" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Qiimaha Adeegga ($) <span className="text-redError">*</span></label>
+                    <input
+                      type="number"
+                      id="utilitiesAmount"
+                      required
+                      value={amount}
+                      onChange={(e) => setAmount(parseFloat(e.target.value) || '')}
+                      placeholder="Tusaale: 100"
+                      className="w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label htmlFor="utilitiesDescription" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Faahfaahinta Adeegga <span className="text-redError">*</span></label>
+                    <input
+                      type="text"
+                      id="utilitiesDescription"
+                      required
+                      value={description}
+                      onChange={e => setDescription(e.target.value)}
+                      placeholder="Tusaale: Internet, Biyaha, Telefoon, iwm"
+                      className="w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           )}
           
           {/* Other Categories */}
-          {category !== 'Material' && category !== 'Transport' && category !== 'Consultancy' && category !== 'Equipment Rental' && category !== 'Company Expense' && (
+          {category !== 'Material' && category !== 'Transport' && category !== 'Consultancy' && category !== 'Equipment Rental' && category !== 'Company Expense' && category !== 'Company Labor' && category !== 'Taxi/Xamaal' && (
              <div>
               <label htmlFor="amount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Qiimaha (ETB)</label>
               <input type="number" id="amount" value={amount} onChange={e => setAmount(parseFloat(e.target.value) || '')} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-gray-900 dark:text-gray-100"/>
