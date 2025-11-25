@@ -3,6 +3,15 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/db'; // Import Prisma Client
 import { getSessionCompanyId } from '@/app/api/expenses/auth';
 
+const toSafeNumber = (value: any, fallback = 0) => {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === 'object' && typeof value.toNumber === 'function') {
+    return value.toNumber();
+  }
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? fallback : parsed;
+};
+
 // GET /api/expenses/[id] - Soo deji kharash gaar ah
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
@@ -230,9 +239,15 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
       if (existingCompanyLabor) {
         // Update existing CompanyLabor record
-        const agreedWage = body.agreedWage ? Number(body.agreedWage) : (typeof existingCompanyLabor.agreedWage === 'object' && 'toNumber' in existingCompanyLabor.agreedWage ? existingCompanyLabor.agreedWage.toNumber() : Number(existingCompanyLabor.agreedWage || 0));
-        const paidAmount = body.laborPaidAmount ? Number(body.laborPaidAmount) : (typeof existingCompanyLabor.paidAmount === 'object' && 'toNumber' in existingCompanyLabor.paidAmount ? existingCompanyLabor.paidAmount.toNumber() : Number(existingCompanyLabor.paidAmount || 0));
-        const remainingWage = agreedWage ? (agreedWage - paidAmount) : (typeof existingCompanyLabor.remainingWage === 'object' && 'toNumber' in existingCompanyLabor.remainingWage ? existingCompanyLabor.remainingWage.toNumber() : Number(existingCompanyLabor.remainingWage || 0));
+        const agreedWage = body.agreedWage !== undefined && body.agreedWage !== null
+          ? Number(body.agreedWage)
+          : toSafeNumber(existingCompanyLabor.agreedWage);
+        const paidAmount = body.laborPaidAmount !== undefined && body.laborPaidAmount !== null
+          ? Number(body.laborPaidAmount)
+          : toSafeNumber(existingCompanyLabor.paidAmount);
+        const remainingWage = agreedWage
+          ? agreedWage - paidAmount
+          : toSafeNumber(existingCompanyLabor.remainingWage);
 
         await prisma.companyLabor.update({
           where: { id: existingCompanyLabor.id },
