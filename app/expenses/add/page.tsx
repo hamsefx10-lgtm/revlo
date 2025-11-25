@@ -793,6 +793,12 @@ const [consultancyFee, setConsultancyFee] = useState('');
       case 'Company Expense':
         expenseData.category = 'Company Expense';
         expenseData.companyExpenseType = companyExpenseType;
+        const shouldPersistSubCategory = companyExpenseType && !['Company Labor', 'Material'].includes(companyExpenseType);
+        if (shouldPersistSubCategory) {
+          expenseData.subCategory = companyExpenseType;
+        } else {
+          delete expenseData.subCategory;
+        }
         switch (companyExpenseType) {
           case 'Salary':
             expenseData.amount = salaryPaymentAmount;

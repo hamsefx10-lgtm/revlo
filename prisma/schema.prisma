@@ -18,29 +18,30 @@ model Wallet {
 }
 
 model User {
-  id            String         @id @default(uuid()) @map("_id")
-  email         String         @unique
-  password      String
-  fullName      String
-  role          Role           @default(MEMBER)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  companyId     String
-  TwoFAEnabled  Boolean        @default(false)
-  lastLogin     DateTime?
-  status        String         @default("Active")
-  phone         String         @default("")
-  chatFiles     ChatFile[]
-  chatMembers   ChatMember[]
-  chatMessages  ChatMessage[] @relation("MessageUser")
-  chatReactions ChatReaction[]
-  expenses      Expense[]
-  notifications Notification[]
-  tasksAssigned Task[]         @relation("AssignedTo")
-  transactions  Transaction[]
-  company       Company        @relation(fields: [companyId], references: [id])
-  wallet        Wallet?
-  projects      Project[]      @relation("ProjectMembers")
+  id             String           @id @default(uuid()) @map("_id")
+  email          String           @unique
+  password       String
+  fullName       String
+  role           Role             @default(MEMBER)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  companyId      String
+  TwoFAEnabled   Boolean          @default(false)
+  lastLogin      DateTime?
+  status         String           @default("Active")
+  phone          String           @default("")
+  chatFiles      ChatFile[]
+  chatMembers    ChatMember[]
+  chatMessages   ChatMessage[]    @relation("MessageUser")
+  chatReactions  ChatReaction[]
+  expenses       Expense[]
+  notifications  Notification[]
+  tasksAssigned  Task[]           @relation("AssignedTo")
+  transactions   Transaction[]
+  company        Company          @relation(fields: [companyId], references: [id])
+  wallet         Wallet?
+  projects       Project[]        @relation("ProjectMembers")
+  PendingExpense PendingExpense[]
 
   @@map("users")
 }
@@ -98,6 +99,7 @@ model Company {
   transactions            Transaction[]
   users                   User[]
   vendors                 Vendor[]
+  pendingExpenses         PendingExpense[]
   workOrders              WorkOrder[]
 
   @@map("companies")
@@ -235,25 +237,25 @@ model Payment {
 }
 
 model Employee {
-  id                  String           @id @default(uuid()) @map("_id")
+  id                  String               @id @default(uuid()) @map("_id")
   fullName            String
-  email               String?          @unique
+  email               String?              @unique
   phone               String?
   role                String
   monthlySalary       Decimal?
-  salaryPaidThisMonth Decimal          @default(0.0) @db.Decimal(12, 2)
+  salaryPaidThisMonth Decimal              @default(0.0) @db.Decimal(12, 2)
   lastPaymentDate     DateTime?
-  isActive            Boolean          @default(true)
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
+  isActive            Boolean              @default(true)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
   companyId           String
-  overpaidAmount      Decimal          @default(0.0) @db.Decimal(12, 2)
-  startDate           DateTime         @default(now())
-  category            EmployeeCategory @default(COMPANY)
+  overpaidAmount      Decimal              @default(0.0) @db.Decimal(12, 2)
+  startDate           DateTime             @default(now())
+  category            EmployeeCategory     @default(COMPANY)
   department          String?
   phoneNumber         String?
   position            String?
-  company             Company          @relation(fields: [companyId], references: [id])
+  company             Company              @relation(fields: [companyId], references: [id])
   expenses            Expense[]
   laborRecords        ProjectLabor[]
   companyLaborRecords CompanyLabor[]
@@ -274,8 +276,8 @@ model EmployeeAttendance {
   employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@unique([employeeId, date])
-  @@map("employee_attendance")
   @@index([employeeId, date])
+  @@map("employee_attendance")
 }
 
 model ExpenseCategory {
@@ -433,19 +435,19 @@ model Vendor {
 }
 
 model Account {
-  id           String        @id @default(uuid()) @map("_id")
-  name         String
-  balance      Float         @default(0.0)
-  currency     String        @default("USD")
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  companyId    String
-  description  String?
-  isActive     Boolean       @default(true)
-  type         String
-  company      Company       @relation(fields: [companyId], references: [id])
-  expenses     Expense[]
-  transactions Transaction[]
+  id               String        @id @default(uuid()) @map("_id")
+  name             String
+  balance          Float         @default(0.0)
+  currency         String        @default("USD")
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  companyId        String
+  description      String?
+  isActive         Boolean       @default(true)
+  type             String
+  company          Company       @relation(fields: [companyId], references: [id])
+  expenses         Expense[]
+  transactions     Transaction[]
   fromTransactions Transaction[] @relation("FromAccount")
   toTransactions   Transaction[] @relation("ToAccount")
 
@@ -505,6 +507,26 @@ model Notification {
   user            User?    @relation(fields: [userId], references: [id])
 
   @@map("notifications")
+}
+
+model PendingExpense {
+  id                 String    @id @default(uuid()) @map("_id")
+  telegramMessageId  String?
+  telegramChatId     String?
+  telegramSenderName String?
+  telegramSenderId   String?
+  originalMessage    String
+  parsedData         Json // { projectName, amount, category, description, accountNumber, etc }
+  status             String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  companyId          String
+  userId             String? // Approver
+  approvedAt         DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  company            Company   @relation(fields: [companyId], references: [id])
+  user               User?     @relation(fields: [userId], references: [id])
+
+  @@map("pending_expenses")
 }
 
 model PersonalizationSettings {
@@ -736,26 +758,26 @@ model ChatMember {
 }
 
 model ChatMessage {
-  id          String         @id @default(uuid()) @map("_id")
-  content     String
-  type        String         @default("text") // text, image, file
-  fileUrl     String?
-  fileName    String?
-  fileSize    Int?
-  isEdited    Boolean        @default(false)
-  isDeleted   Boolean        @default(false)
-  isPinned    Boolean        @default(false)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  senderId    String
-  chatRoomId  String
-  replyToId   String?
-  files       ChatFile[]
-  chatRoom    ChatRoom       @relation(fields: [chatRoomId], references: [id])
-  sender      User           @relation("MessageUser", fields: [senderId], references: [id])
-  replyTo     ChatMessage?   @relation("MessageReply", fields: [replyToId], references: [id])
-  replies     ChatMessage[]  @relation("MessageReply")
-  reactions   ChatReaction[]
+  id         String         @id @default(uuid()) @map("_id")
+  content    String
+  type       String         @default("text") // text, image, file
+  fileUrl    String?
+  fileName   String?
+  fileSize   Int?
+  isEdited   Boolean        @default(false)
+  isDeleted  Boolean        @default(false)
+  isPinned   Boolean        @default(false)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  senderId   String
+  chatRoomId String
+  replyToId  String?
+  files      ChatFile[]
+  chatRoom   ChatRoom       @relation(fields: [chatRoomId], references: [id])
+  sender     User           @relation("MessageUser", fields: [senderId], references: [id])
+  replyTo    ChatMessage?   @relation("MessageReply", fields: [replyToId], references: [id])
+  replies    ChatMessage[]  @relation("MessageReply")
+  reactions  ChatReaction[]
 
   @@map("chat_messages")
 }

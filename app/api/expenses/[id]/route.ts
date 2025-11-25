@@ -270,24 +270,34 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       }
     }
 
+    // Ensure expenseDate is properly formatted
+    let formattedExpenseDate = undefined;
+    if (body.expenseDate) {
+      if (typeof body.expenseDate === 'string') {
+        formattedExpenseDate = new Date(body.expenseDate);
+      } else if (body.expenseDate instanceof Date) {
+        formattedExpenseDate = body.expenseDate;
+      }
+    }
+
     const updatedExpense = await prisma.expense.update({
       where: { id },
       data: {
-        expenseDate: body.expenseDate,
-        category: body.category,
-        subCategory: body.subCategory,
-        description: body.description,
-        amount: body.amount,
-        paidFrom: body.paidFrom,
-        note: body.note,
-        approved: body.approved,
-        projectId: body.projectId,
-        employeeId: body.employeeId,
-        customerId: body.customerId,
-        materials: body.materials,
-        receiptUrl: body.receiptUrl,
+        expenseDate: formattedExpenseDate,
+        category: body.category || undefined,
+        subCategory: body.subCategory || undefined,
+        description: body.description || undefined,
+        amount: body.amount ? Number(body.amount) : undefined,
+        paidFrom: body.paidFrom || undefined,
+        note: body.note || undefined,
+        approved: body.approved !== undefined ? body.approved : undefined,
+        projectId: body.projectId || null,
+        employeeId: body.employeeId || null,
+        customerId: body.customerId || null,
+        materials: body.materials || undefined,
+        receiptUrl: body.receiptUrl || undefined,
         materialDate: body.materialDate ? new Date(body.materialDate) : undefined,
-        transportType: body.transportType,
+        transportType: body.transportType || undefined,
         consultantName: body.consultantName,
         consultancyType: body.consultancyType,
         consultancyFee: body.consultancyFee,
