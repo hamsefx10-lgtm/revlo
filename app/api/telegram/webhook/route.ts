@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
 
       // Parse the message
       const parsed = TelegramParser.parse(text);
-      const parsedJson = parsed as unknown as Prisma.JsonValue;
+      const parsedJson = parsed as Prisma.InputJsonValue;
       const validation = TelegramParser.validate(parsed);
 
       // Send review notification
