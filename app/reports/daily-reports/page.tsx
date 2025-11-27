@@ -10,6 +10,9 @@ import autoTable from 'jspdf-autotable';
 // Types for report data
 interface DailyReport {
   date: string;
+  companyName?: string;
+  companyLogoUrl?: string;
+  preparedBy?: string;
   balances: {
     previous: Record<string, number>;
     today: Record<string, number>;
@@ -17,6 +20,28 @@ interface DailyReport {
   totalPrev: number;
   totalToday: number;
   income: number;
+  incomeTransactions: Array<{
+    id: string;
+    description: string;
+    amount: number;
+    account: string;
+    project: string | null;
+    customer: string | null;
+    note: string | null;
+    transactionDate: string;
+    user: string | null;
+  }>;
+  transfers: Array<{
+    id: string;
+    description: string;
+    amount: number;
+    fromAccount: string;
+    toAccount: string;
+    transactionDate: string;
+    note: string | null;
+    user: string | null;
+    type: string;
+  }>;
   projectExpenses: Array<{
     date: string;
     project: string;
@@ -30,6 +55,14 @@ interface DailyReport {
     category: string;
     description: string;
     amount: number;
+    subCategory?: string | null;
+    employeeName?: string;
+    rentalPeriod?: string;
+    meterReading?: string;
+    campaignName?: string;
+    details?: string | null;
+    expenseType?: string;
+    note?: string | null;
   }>;
   totalProjectExpenses: number;
   totalCompanyExpenses: number;
@@ -40,170 +73,294 @@ interface DailyReport {
   }>;
 }
 
-function exportPDF(data: DailyReport) {
+async function exportPDF(data: DailyReport) {
   const doc = new jsPDF();
-  
-  // Header with gradient effect
-  doc.setFillColor(59, 130, 246);
-  doc.rect(0, 0, 210, 35, 'F');
-  
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(22);
-  doc.text('Birshiil Work Shop', 105, 15, { align: 'center' });
-  
-  doc.setFontSize(16);
-  doc.text('Daily Financial Report', 105, 25, { align: 'center' });
-  
-  // Date and Report Number
-  doc.setFontSize(10);
-  doc.text(`Date: ${data.date}`, 105, 32, { align: 'center' });
-  
-  let yPos = 45;
-  
-  // Balance Summary Section
-  if (data.balances && Object.keys(data.balances.today).length > 0) {
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(14);
-    doc.text('Account Balances', 14, yPos);
-    yPos += 10;
-    
-    // Create table for balances
-    const balanceData = Object.entries(data.balances.today).map(([name, value]) => [
-      name,
-      value.toLocaleString() + ' ETB'
-    ]);
-    
-    if (data.totalToday > 0) {
-      balanceData.push(['TOTAL ACCOUNTS', data.totalToday.toLocaleString() + ' ETB']);
-    }
-    
-    autoTable(doc, {
-      startY: yPos,
-      head: [['Account', 'Balance']],
-      body: balanceData,
-      theme: 'striped',
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [59, 130, 246], textColor: 255 },
-      margin: { left: 14 },
-      columnStyles: { 
-        0: { cellWidth: 'auto' },
-        1: { cellWidth: 'auto', halign: 'right' }
-      },
-    });
-    yPos = (doc as any).lastAutoTable.finalY + 15;
-  }
-  
-  // Debts Collected Section
-  if (data.debtsCollected.length > 0) {
-    doc.setTextColor(249, 115, 22);
-    doc.setFontSize(14);
-    doc.text('Debt Repaid / Advance Received', 105, yPos, { align: 'center' });
-    yPos += 8;
-    
-    autoTable(doc, {
-      startY: yPos,
-      head: [['Project', 'Amount']],
-      body: data.debtsCollected.map(d => [
-        d.project,
-        d.amount.toLocaleString() + ' ETB'
-      ]),
-      theme: 'striped',
-      styles: { fontSize: 9 },
-      headStyles: { fillColor: [249, 115, 22], textColor: 255 },
-      margin: { left: 14 },
-      columnStyles: { 1: { halign: 'right' } },
-    });
-    doc.setTextColor(0, 0, 0);
-    const debtTotal = data.debtsCollected.reduce((sum, d) => sum + d.amount, 0);
-    doc.setFont(undefined, 'bold');
-    doc.text(`Total: ${debtTotal.toLocaleString()} ETB`, 180, (doc as any).lastAutoTable.finalY + 10, { align: 'right' });
-    doc.setFont(undefined, 'normal');
-    yPos = (doc as any).lastAutoTable.finalY + 20;
-  }
-  
-  // Project Expenses Section
-  if (data.projectExpenses.length > 0) {
-    doc.setTextColor(59, 130, 246);
-    doc.setFontSize(14);
-    doc.text('Project Expenses', 105, yPos, { align: 'center' });
-    yPos += 8;
-    
-  autoTable(doc, {
-      startY: yPos,
-      head: [['Project', 'Category', 'Description', 'Amount']],
-      body: data.projectExpenses.map(e => [
-        e.project,
-        e.category,
-        e.description,
-        e.amount.toLocaleString() + ' ETB'
-      ]),
-      theme: 'striped',
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [59, 130, 246], textColor: 255 },
-      margin: { left: 14 },
-      columnStyles: { 3: { halign: 'right' } },
-    });
-    doc.setTextColor(0, 0, 0);
-    doc.setFont(undefined, 'bold');
-    doc.text(`Total: ${data.totalProjectExpenses.toLocaleString()} ETB`, 180, (doc as any).lastAutoTable.finalY + 10, { align: 'right' });
-    doc.setFont(undefined, 'normal');
-    yPos = (doc as any).lastAutoTable.finalY + 20;
-  }
+  const formatCurrency = (value: number) => `${value.toLocaleString()} ETB`;
 
-  // Company Expenses Section
-  if (data.companyExpenses.length > 0) {
+  const loadLogoAsDataUrl = async (logoUrl?: string) => {
+    if (!logoUrl) return null;
+    try {
+      const response = await fetch(logoUrl);
+      if (!response.ok) return null;
+      const blob = await response.blob();
+      return await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.warn('Unable to load logo:', error);
+      return null;
+    }
+  };
+
+  const renderDocument = (logoDataUrl?: string) => {
+    // Modern header
+    doc.setFillColor(248, 250, 252);
+    doc.rect(0, 0, 210, 32, 'F');
+    if (logoDataUrl) {
+      try {
+        doc.addImage(logoDataUrl, 'PNG', 172, 6, 22, 12);
+      } catch {
+        // fallback to initials if image fails
+        doc.setFillColor(59, 130, 246);
+        doc.circle(182, 12, 7, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        const initials = (data.companyName || 'BW').slice(0, 2).toUpperCase();
+        doc.text(initials, 182, 14, { align: 'center' });
+      }
+    } else {
+      const initials = (data.companyName || 'BW').slice(0, 2).toUpperCase();
+      doc.setFillColor(59, 130, 246);
+      doc.circle(182, 12, 7, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.text(initials, 182, 14, { align: 'center' });
+    }
+
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.text(data.companyName || 'Birshiil Work Shop', 14, 15, { align: 'left' });
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(71, 85, 105);
+    doc.text('Daily Financial Report', 14, 21);
+    doc.text(`Date: ${data.date}`, 14, 27);
+    doc.text(`Ref: D-${data.date.replace(/-/g, '')}`, 70, 27);
+    if (data.preparedBy) {
+      doc.text(`Prepared by: ${data.preparedBy}`, 150, 27, { align: 'right' });
+    }
+
+    let yPos = 40;
+
+    const renderTableSection = (
+      title: string,
+      color: [number, number, number],
+      head: string[][],
+      body: (string | number)[][],
+      totalText?: string
+    ) => {
+      if (!body.length) return;
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...color);
+      doc.setFontSize(13);
+      doc.text(title, 14, yPos);
+      yPos += 6;
+
+      autoTable(doc, {
+        startY: yPos,
+        head,
+        body,
+        theme: 'striped',
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: color, textColor: 255 },
+        margin: { left: 14, right: 14 },
+        columnStyles: { [head[0].length - 1]: { halign: 'right' } },
+      });
+
+      doc.setTextColor(15, 23, 42);
+      doc.setFont('helvetica', 'normal');
+      yPos = (doc as any).lastAutoTable.finalY + 10;
+
+      if (totalText) {
+        doc.setFont('helvetica', 'bold');
+        doc.text(totalText, 196, yPos, { align: 'right' });
+        doc.setFont('helvetica', 'normal');
+        yPos += 8;
+      }
+    };
+
+    // Project expenses
+    if (data.projectExpenses.length > 0) {
+      renderTableSection(
+        'Project Expenses',
+        [59, 130, 246],
+        [['Project', 'Category', 'Description', 'Amount']],
+        data.projectExpenses.map((e) => [
+          e.project,
+          e.category,
+          e.description,
+          formatCurrency(e.amount),
+        ]),
+        `Total: ${formatCurrency(data.totalProjectExpenses)}`
+      );
+    }
+
+    // Company expenses
+    if (data.companyExpenses.length > 0) {
+      renderTableSection(
+        'Company Expenses',
+        [34, 197, 94],
+        [['Nooca Kharashka', 'Faahfaahin', 'Qiimaha']],
+        data.companyExpenses.map((e) => {
+          let description = e.description || '';
+          if (e.details) description += ` (${e.details})`;
+          if (e.note) description += `\nFiiro: ${e.note}`;
+          return [e.category, description, formatCurrency(e.amount)];
+        }),
+        `Total: ${formatCurrency(data.totalCompanyExpenses)}`
+      );
+    }
+
+    // Debts collected
+    if (data.debtsCollected.length > 0) {
+      renderTableSection(
+        'Debt Repaid / Advance Received',
+        [249, 115, 22],
+        [['Project', 'Amount']],
+        data.debtsCollected.map((d) => [d.project, formatCurrency(d.amount)]),
+        `Total: ${formatCurrency(
+          data.debtsCollected.reduce((sum, d) => sum + d.amount, 0)
+        )}`
+      );
+    }
+
+    // Account balances after expenses
+    if (data.balances && Object.keys(data.balances.today).length > 0) {
+      const allAccounts = Array.from(
+        new Set([
+          ...Object.keys(data.balances.previous || {}),
+          ...Object.keys(data.balances.today || {}),
+        ])
+      );
+      const balanceRows = allAccounts.map((name) => [
+        name,
+        formatCurrency(data.balances.previous[name] || 0),
+        formatCurrency(data.balances.today[name] || 0),
+      ]);
+      balanceRows.push([
+        'TOTAL ACCOUNTS',
+        formatCurrency(data.totalPrev || 0),
+        formatCurrency(data.totalToday || 0),
+      ]);
+
+      renderTableSection(
+        'Account Balances',
+        [99, 102, 241],
+        [['Account', 'Previous', 'Today']],
+        balanceRows
+      );
+    }
+
+    // Income transactions (after balances)
+    doc.setFont('helvetica', 'bold');
     doc.setTextColor(34, 197, 94);
-    doc.setFontSize(14);
-    doc.text('Company Expenses', 105, yPos, { align: 'center' });
-    yPos += 8;
-    
-  autoTable(doc, {
-      startY: yPos,
-      head: [['Category', 'Description', 'Amount']],
-      body: data.companyExpenses.map(e => [
-        e.category,
-        e.description,
-        e.amount.toLocaleString() + ' ETB'
-      ]),
-      theme: 'striped',
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [34, 197, 94], textColor: 255 },
-      margin: { left: 14 },
-      columnStyles: { 2: { halign: 'right' } },
-    });
-    doc.setTextColor(0, 0, 0);
-    doc.setFont(undefined, 'bold');
-    doc.text(`Total: ${data.totalCompanyExpenses.toLocaleString()} ETB`, 180, (doc as any).lastAutoTable.finalY + 10, { align: 'right' });
-    doc.setFont(undefined, 'normal');
-    yPos = (doc as any).lastAutoTable.finalY + 20;
-  }
-  
-  // Final Summary
-  yPos += 10;
-  doc.setTextColor(0, 0, 0);
-  doc.setFontSize(12);
-  doc.text(`Income: +${data.income.toLocaleString()} ETB`, 14, yPos);
-  yPos += 8;
-  doc.text(`Total Expenses: ${data.totalExpenses.toLocaleString()} ETB`, 14, yPos);
-  yPos += 8;
-  
-  const netFlow = data.income - data.totalExpenses;
-  doc.setFontSize(14);
-  doc.setFont(undefined, 'bold');
-  if (netFlow >= 0) {
-    doc.setTextColor(34, 197, 94);
-  } else {
-    doc.setTextColor(239, 68, 68);
-  }
-  doc.text(`Net Flow: ${netFlow >= 0 ? '+' : ''}${netFlow.toLocaleString()} ETB`, 14, yPos);
-  
-  // Footer
-  const pageHeight = doc.internal.pageSize.getHeight();
-  doc.setTextColor(128, 128, 128);
-  doc.setFontSize(8);
-  doc.text('Generated by Birshiil Work Shop Management System', 105, pageHeight - 10, { align: 'center' });
-  
-  doc.save(`daily_report_${data.date}.pdf`);
+    doc.setFontSize(13);
+    doc.text('Dakhliga Maalinta', 14, yPos);
+    yPos += 6;
+    if (data.incomeTransactions.length > 0) {
+      const incomeRows = data.incomeTransactions.map((tx) => {
+        let description = tx.description || '';
+        if (tx.customer) description += ` | Macmiil: ${tx.customer}`;
+        if (tx.project) description += ` | Mashruuc: ${tx.project}`;
+        if (tx.note) description += `\nFiiro: ${tx.note}`;
+        return [description, tx.account || 'N/A', formatCurrency(tx.amount)];
+      });
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Sharaxaad', 'Akoon', 'Qiimaha']],
+        body: incomeRows,
+        theme: 'striped',
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [34, 197, 94], textColor: 255 },
+        margin: { left: 14, right: 14 },
+        columnStyles: { 2: { halign: 'right' } },
+      });
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(34, 197, 94);
+      doc.text(
+        `Wadarta: ${formatCurrency(data.income ?? 0)}`,
+        196,
+        (doc as any).lastAutoTable.finalY + 8,
+        { align: 'right' }
+      );
+      yPos = (doc as any).lastAutoTable.finalY + 14;
+    } else {
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(120, 120, 120);
+      doc.setFontSize(10);
+      doc.text('Ma jiro dakhli maalintan.', 14, yPos);
+      yPos += 10;
+    }
+
+    // Transfers
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(147, 51, 234);
+    doc.setFontSize(13);
+    doc.text('Wareejinta Lacagaha', 14, yPos);
+    yPos += 6;
+    if (data.transfers.length > 0) {
+      const transferRows = data.transfers.map((tx) => {
+        let description = tx.description || '';
+        if (tx.note) description += `\nFiiro: ${tx.note}`;
+        return [
+          tx.fromAccount || 'N/A',
+          tx.toAccount || 'N/A',
+          description,
+          formatCurrency(tx.amount),
+        ];
+      });
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Laga Wareejiyay', 'Loo Wareejiyay', 'Sharaxaad', 'Qiimaha']],
+        body: transferRows,
+        theme: 'striped',
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [147, 51, 234], textColor: 255 },
+        margin: { left: 14, right: 14 },
+        columnStyles: { 3: { halign: 'right' } },
+      });
+      yPos = (doc as any).lastAutoTable.finalY + 14;
+    } else {
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(120, 120, 120);
+      doc.setFontSize(10);
+      doc.text('Ma jirto wareejin lacag maalintan.', 14, yPos);
+      yPos += 10;
+    }
+
+    // Summary
+    doc.setDrawColor(226, 232, 240);
+    doc.line(14, yPos, 196, yPos);
+    yPos += 6;
+    const netFlow = (data.income ?? 0) - (data.totalExpenses ?? 0);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(30, 41, 59);
+    doc.text('Summary', 14, yPos);
+    yPos += 5;
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(71, 85, 105);
+    doc.text(`Dakhliga: ${formatCurrency(data.income ?? 0)}`, 14, yPos);
+    yPos += 5;
+    doc.text(`Kharashyada: ${formatCurrency(data.totalExpenses ?? 0)}`, 14, yPos);
+    yPos += 5;
+    const netFlowLabel = `${netFlow >= 0 ? '+' : '-'}${formatCurrency(Math.abs(netFlow))}`;
+    doc.text(`Net Flow: ${netFlowLabel}`, 14, yPos);
+
+    // Footer
+    const pageHeight = doc.internal.pageSize.getHeight();
+    doc.setFontSize(8);
+    doc.setTextColor(148, 163, 184);
+    doc.text(
+      `Prepared by ${data.preparedBy || 'System'} • Printed ${new Date().toLocaleString()}`,
+      14,
+      pageHeight - 12
+    );
+    doc.text('Powered by Revlo', 196, pageHeight - 12, { align: 'right' });
+
+    doc.save(`daily_report_${data.date}.pdf`);
+  };
+
+  const logoDataUrl = await loadLogoAsDataUrl(data.companyLogoUrl);
+  renderDocument(logoDataUrl || undefined);
 }
 
 export default function DailyReportPage() {
@@ -323,7 +480,12 @@ export default function DailyReportPage() {
   if (!report) return null;
 
   const netFlow = report.income - report.totalExpenses;
-  const hasData = report.income > 0 || report.totalExpenses > 0 || report.debtsCollected.length > 0;
+  const hasData = 
+    report.income > 0 ||
+    report.totalExpenses > 0 ||
+    report.debtsCollected.length > 0 ||
+    report.incomeTransactions.length > 0 ||
+    report.transfers.length > 0;
   const hasBalances = report.balances && Object.keys(report.balances.today).length > 0;
 
   return (
@@ -576,7 +738,7 @@ export default function DailyReportPage() {
             
             <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <h1 className="text-4xl font-extrabold mb-2 tracking-tight">Birshiil Work Shop</h1>
+                <h1 className="text-4xl font-extrabold mb-2 tracking-tight">{report.companyName || 'Birshiil Work Shop'}</h1>
                 <div className="text-blue-100 text-lg">Warbixinta Maalinlaha ah</div>
                 {/* Selected Date Display */}
                 <div className="mt-3 flex items-center gap-2">
@@ -602,6 +764,11 @@ export default function DailyReportPage() {
                   <div className="text-xs text-blue-100 uppercase">Warbixin No</div>
                   <div className="text-sm font-bold">D-{report.date.replace(/-/g, '')}</div>
                 </div>
+                {report.preparedBy && (
+                  <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-2 text-center text-white text-xs font-semibold">
+                    Diyaariyey: {report.preparedBy}
+                  </div>
+                )}
               </div>
         </div>
         </div>
@@ -609,49 +776,6 @@ export default function DailyReportPage() {
 
         {/* Main Content Container */}
         <div className="bg-white dark:bg-gray-800 rounded-b-xl print:rounded-none shadow-lg print:shadow-none overflow-hidden">
-          {/* Balance Section */}
-          {hasBalances && (
-            <div className="border-b border-gray-200 dark:border-gray-700">
-              <div className="p-6 bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20">
-                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
-                  <Wallet size={24} className="mr-2 text-purple-600" />
-                  Balances
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-white dark:bg-gray-700 rounded-lg p-4 border-2 border-purple-200 dark:border-purple-700">
-                    <div className="text-sm font-semibold text-purple-600 dark:text-purple-400 mb-3 uppercase tracking-wide">Previous Balance</div>
-                    {Object.entries(report.balances.previous).map(([name, value]) => (
-                      <div key={name} className="flex justify-between py-2 border-b border-gray-100 dark:border-gray-600 last:border-b-0">
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{name}</span>
-                        <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{value.toLocaleString()} ETB</span>
-                      </div>
-                    ))}
-                    {report.totalPrev > 0 && (
-                      <div className="flex justify-between py-2 mt-2 border-t-2 border-purple-300 dark:border-purple-600">
-                        <span className="text-sm font-bold text-gray-900 dark:text-gray-100">TOTAL ACC</span>
-                        <span className="text-lg font-extrabold text-red-600">{report.totalPrev.toLocaleString()} ETB</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="bg-white dark:bg-gray-700 rounded-lg p-4 border-2 border-purple-200 dark:border-purple-700">
-                    <div className="text-sm font-semibold text-purple-600 dark:text-purple-400 mb-3 uppercase tracking-wide">Today Balance</div>
-                    {Object.entries(report.balances.today).map(([name, value]) => (
-                      <div key={name} className="flex justify-between py-2 border-b border-gray-100 dark:border-gray-600 last:border-b-0">
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{name}</span>
-                        <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{value.toLocaleString()} ETB</span>
-                      </div>
-                    ))}
-                    {report.totalToday > 0 && (
-                      <div className="flex justify-between py-2 mt-2 border-t-2 border-purple-300 dark:border-purple-600">
-                        <span className="text-sm font-bold text-gray-900 dark:text-gray-100">TOTAL ACCOUNTS</span>
-                        <span className="text-lg font-extrabold text-red-600">{report.totalToday.toLocaleString()} ETB</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border-b border-gray-200 dark:border-gray-700">
@@ -693,6 +817,133 @@ export default function DailyReportPage() {
 
           {/* Transactions Sections */}
           <div className="p-8 space-y-8 print:p-4">
+            {/* Income Transactions Section */}
+            {report.incomeTransactions.length > 0 && (
+              <div className="border border-green-100 dark:border-green-900 rounded-xl overflow-hidden shadow-sm">
+                <div className="bg-white dark:bg-gray-900 px-6 py-4 border-b border-green-100 dark:border-green-900 flex flex-col gap-1">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-bold flex items-center text-green-700 dark:text-green-300">
+                      <TrendingUp size={24} className="mr-2 text-green-500" />
+                      Dakhliga Maanta (Faahfaahin)
+                    </h2>
+                    <div className="px-3 py-1 rounded-full text-sm font-bold bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-200">
+                      {report.incomeTransactions.length} item
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Waxa lagu tusayaa macmiilka, mashruuca iyo akoonka dakhligu ku dhacay.</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-green-50 dark:bg-green-900/20">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase">Sharaxaad</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase hidden md:table-cell">Macmiil</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase hidden lg:table-cell">Mashruuc</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase hidden md:table-cell">Akoon</th>
+                        <th className="px-4 py-3 text-right text-xs font-bold text-green-900 dark:text-green-100 uppercase">Qiimaha</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                      {report.incomeTransactions.map((tx, i) => (
+                        <tr key={tx.id || i} className="hover:bg-green-50 dark:hover:bg-green-900/10">
+                          <td className="px-4 py-3">
+                            <div className="text-xs text-gray-900 dark:text-gray-300 font-medium">{tx.description}</div>
+                            {tx.note && (
+                              <div className="text-xs text-gray-500 dark:text-gray-500 mt-1 italic">Fiiro: {tx.note}</div>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden md:table-cell">
+                            {tx.customer || '-'}
+                          </td>
+                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden lg:table-cell">
+                            {tx.project || '-'}
+                          </td>
+                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden md:table-cell">
+                            {tx.account}
+                          </td>
+                          <td className="px-4 py-3 text-xs font-semibold text-right text-gray-900 dark:text-gray-300">
+                            {tx.amount.toLocaleString()} ETB
+                          </td>
+                        </tr>
+                      ))}
+                      <tr className="bg-green-100 dark:bg-green-900/30 font-bold border-t-2 border-green-300 dark:border-green-700">
+                        <td colSpan={4} className="px-4 py-3 text-xs text-green-900 dark:text-green-100">WADARTA DAKHLIGA</td>
+                        <td className="px-4 py-3 text-xs text-right text-green-700 dark:text-green-300">{report.income.toLocaleString()} ETB</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+            {report.incomeTransactions.length === 0 && (
+              <div className="border border-green-100 dark:border-green-900 rounded-xl px-6 py-4 bg-white dark:bg-gray-800 flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 italic">
+                <TrendingUp size={20} className="text-green-500" />
+                <span>Ma jiro dakhli la diiwaangeliyay maalintan.</span>
+              </div>
+            )}
+
+            {/* Transfer Transactions Section */}
+            {report.transfers.length > 0 && (
+              <div className="border border-purple-100 dark:border-purple-900 rounded-xl overflow-hidden shadow-sm">
+                <div className="bg-white dark:bg-gray-900 px-6 py-4 border-b border-purple-100 dark:border-purple-900 flex flex-col gap-1">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-bold flex items-center text-purple-700 dark:text-purple-300">
+                      <Wallet size={24} className="mr-2 text-purple-500" />
+                      Wareejinta Lacagaha
+                    </h2>
+                    <div className="px-3 py-1 rounded-full text-sm font-bold bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200">
+                      {report.transfers.length} item
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Waxa lagu tusayaa sida lacagtu uga baxday akoon iyo meesha ay u gudubtay.</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-purple-50 dark:bg-purple-900/20">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-purple-900 dark:text-purple-100 uppercase">Laga Wareejiyay</th>
+                        <th className="px-4 py-3 text-center text-xs font-bold text-purple-900 dark:text-purple-100 uppercase">→</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-purple-900 dark:text-purple-100 uppercase">Loo Wareejiyay</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-purple-900 dark:text-purple-100 uppercase hidden md:table-cell">Sharaxaad</th>
+                        <th className="px-4 py-3 text-right text-xs font-bold text-purple-900 dark:text-purple-100 uppercase">Qiimaha</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                      {report.transfers.map((tx, i) => (
+                        <tr key={tx.id || i} className="hover:bg-purple-50 dark:hover:bg-purple-900/10">
+                          <td className="px-4 py-3 text-xs font-semibold text-gray-900 dark:text-gray-300">
+                            {tx.fromAccount}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30">
+                              <span className="text-purple-600 dark:text-purple-300 font-bold">→</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-xs font-semibold text-gray-900 dark:text-gray-300">
+                            {tx.toAccount}
+                          </td>
+                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden md:table-cell">
+                            {tx.description}
+                            {tx.note && (
+                              <div className="text-xs text-gray-500 dark:text-gray-500 mt-1 italic">Fiiro: {tx.note}</div>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-xs font-semibold text-right text-gray-900 dark:text-gray-300">
+                            {tx.amount.toLocaleString()} ETB
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+            {report.transfers.length === 0 && (
+              <div className="border border-purple-100 dark:border-purple-900 rounded-xl px-6 py-4 bg-white dark:bg-gray-800 flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 italic">
+                <Wallet size={20} className="text-purple-500" />
+                <span>Maalintan laguma samayn wax wareejin ah.</span>
+              </div>
+            )}
             {/* Debts Collected */}
             {report.debtsCollected.length > 0 && (
               <div className="border-2 border-orange-200 dark:border-orange-800 rounded-xl overflow-hidden">
@@ -793,16 +1044,26 @@ export default function DailyReportPage() {
                   <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-green-50 dark:bg-green-900/20">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase">Category</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase hidden md:table-cell">Description</th>
-                        <th className="px-4 py-3 text-right text-xs font-bold text-green-900 dark:text-green-100 uppercase">Amount</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase">Nooca Kharashka</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase hidden md:table-cell">Faahfaahin</th>
+                        <th className="px-4 py-3 text-right text-xs font-bold text-green-900 dark:text-green-100 uppercase">Qiimaha</th>
               </tr>
             </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {report.companyExpenses.map((e, i) => (
                         <tr key={i} className="hover:bg-green-50 dark:hover:bg-green-900/10">
-                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300">{e.category}</td>
-                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden md:table-cell">{e.description}</td>
+                          <td className="px-4 py-3">
+                            <div className="text-xs font-semibold text-gray-900 dark:text-gray-300">{e.category}</div>
+                            {e.details && (
+                              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">{e.details}</div>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden md:table-cell">
+                            {e.description}
+                            {e.note && (
+                              <div className="text-xs text-gray-500 dark:text-gray-500 mt-1 italic">Fiiro: {e.note}</div>
+                            )}
+                          </td>
                           <td className="px-4 py-3 text-xs font-semibold text-right text-gray-900 dark:text-gray-300">{e.amount.toLocaleString()} ETB</td>
                 </tr>
               ))}
@@ -825,6 +1086,50 @@ export default function DailyReportPage() {
         </div>
             )}
       </div>
+
+          {/* Account Balances Section (moved below expenses) */}
+          {hasBalances && (
+            <div className="px-8 pb-8 print:px-4">
+              <div className="rounded-xl border border-blue-100 dark:border-blue-900 bg-blue-50/40 dark:bg-blue-900/10 p-6">
+                <h2 className="text-xl font-bold text-blue-900 dark:text-blue-200 mb-4 flex items-center">
+                  <Wallet size={24} className="mr-2 text-blue-600" />
+                  Account Balances Snapshot
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-100 dark:border-blue-800 shadow-sm">
+                    <div className="text-sm font-semibold text-blue-600 dark:text-blue-300 mb-3 uppercase tracking-wide">Previous Day</div>
+                    {Object.entries(report.balances.previous).map(([name, value]) => (
+                      <div key={name} className="flex justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{name}</span>
+                        <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{value.toLocaleString()} ETB</span>
+                      </div>
+                    ))}
+                    {report.totalPrev > 0 && (
+                      <div className="flex justify-between py-2 mt-3 border-t border-blue-100 dark:border-blue-700">
+                        <span className="text-sm font-bold text-gray-900 dark:text-gray-100">TOTAL (Prev)</span>
+                        <span className="text-lg font-extrabold text-blue-600">{report.totalPrev.toLocaleString()} ETB</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-100 dark:border-blue-800 shadow-sm">
+                    <div className="text-sm font-semibold text-blue-600 dark:text-blue-300 mb-3 uppercase tracking-wide">Selected Day</div>
+                    {Object.entries(report.balances.today).map(([name, value]) => (
+                      <div key={name} className="flex justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{name}</span>
+                        <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{value.toLocaleString()} ETB</span>
+                      </div>
+                    ))}
+                    {report.totalToday > 0 && (
+                      <div className="flex justify-between py-2 mt-3 border-t border-blue-100 dark:border-blue-700">
+                        <span className="text-sm font-bold text-gray-900 dark:text-gray-100">TOTAL (Today)</span>
+                        <span className="text-lg font-extrabold text-blue-600">{report.totalToday.toLocaleString()} ETB</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Enhanced Action Buttons Footer */}
           <div className="border-t-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-6 print:hidden">

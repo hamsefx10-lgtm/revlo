@@ -1,7 +1,7 @@
 // app/projects/[id]/page.tsx - FINAL VERSION with List/Board View Options
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import Layout from '../../../components/layouts/Layout';
@@ -10,6 +10,7 @@ import {
     Calendar, Info, Tag, Wallet, BarChart2, AlertTriangle, Download, List, LayoutGrid
 } from 'lucide-react';
 import Toast from '../../../components/common/Toast';
+import { subscribeToExpenseChange } from '@/lib/client-events';
 
 // --- Project Data Interface (From Your Original Code) ---
 interface Project {
@@ -17,7 +18,16 @@ interface Project {
     agreementAmount: number; advancePaid: number; remainingAmount: number; projectType: string;
     status: 'Active' | 'Completed' | 'On Hold' | 'Cancelled' | 'Overdue' | 'Nearing Deadline';
     expectedCompletionDate?: string; actualCompletionDate?: string; notes?: string; createdAt: string; updatedAt: string;
-    expenses: { id: string; description: string; amount: number; category: string; expenseDate: string; receiptUrl?: string; }[];
+    expenses: {
+        id: string;
+        description: string;
+        amount: number;
+        category: string;
+        expenseDate: string;
+        receiptUrl?: string;
+        employeeId?: string;
+        employee?: { id: string; fullName?: string };
+    }[];
     materialsUsed: { id: string; name: string; quantityUsed: number; unit: string; leftoverQty: number; costPerUnit: number | string; dateUsed?: string; }[];
     laborRecords: { id: string; employeeId?: string; employeeName: string; workDescription: string; agreedWage: number; paidAmount: number; remainingWage: number; dateWorked?: string; }[];
     payments: { id: string; amount: number; paymentDate: string; paymentType: string; receivedIn: string; }[];
@@ -68,7 +78,7 @@ const ProjectDetailsPage: React.FC = () => {
 
     // --- API & EVENT HANDLERS (UNCHANGED) ---
     // --- Fetch Project Details ---
-    const fetchProjectDetails = async () => {
+    const fetchProjectDetails = useCallback(async () => {
         setLoading(true);
         try {
             if (!id) throw new Error('Project ID lama helin.');
@@ -86,7 +96,7 @@ const ProjectDetailsPage: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [id]);
 
     // --- Delete Project Handler (unchanged, but always set loading false) ---
     const handleDeleteProject = async () => { /* ... original logic ... */ };
@@ -97,7 +107,19 @@ const ProjectDetailsPage: React.FC = () => {
             setProject(null);
             setLoading(false);
         }
-    }, [id]);
+    }, [id, fetchProjectDetails]);
+
+    useEffect(() => {
+        if (!id) return;
+        const unsubscribe = subscribeToExpenseChange((payload) => {
+            if (payload.projectId === id) {
+                fetchProjectDetails();
+            }
+        });
+        return () => {
+            unsubscribe?.();
+        };
+    }, [id, fetchProjectDetails]);
 
     // Normal refresh only - no real-time updates
     // Project page will refresh only when user manually refreshes or navigates
@@ -121,6 +143,32 @@ const ProjectDetailsPage: React.FC = () => {
       acc[exp.category].push(exp);
       return acc;
     }, {} as Record<string, typeof project.expenses>);
+
+    const laborExpenses = (project?.expenses || []).filter(
+        (exp) => exp.category?.toLowerCase() === 'labor'
+    );
+
+    const laborGroups = Object.values(
+        laborExpenses.reduce((acc, exp) => {
+            const key = exp.employee?.id || exp.employeeId || exp.description || exp.id;
+            if (!acc[key]) {
+                acc[key] = {
+                    key,
+                    employeeName: exp.employee?.fullName || exp.description || 'Shaqaale aan la aqoon',
+                    latestWork: exp.description || '-',
+                    totalPaid: 0,
+                    lastPaymentDate: exp.expenseDate,
+                    employeeId: exp.employee?.id || exp.employeeId,
+                };
+            }
+            const amountValue = typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0;
+            acc[key].totalPaid += amountValue;
+            if (exp.expenseDate && new Date(exp.expenseDate) > new Date(acc[key].lastPaymentDate)) {
+                acc[key].lastPaymentDate = exp.expenseDate;
+            }
+            return acc;
+        }, {} as Record<string, { key: string; employeeName: string; latestWork: string; totalPaid: number; lastPaymentDate: string; employeeId?: string }>)
+    );
 
     // --- View Toggle Component ---
     const ViewSwitcher = ({ tabKey }: { tabKey: 'overview' | 'expenses' | 'materials' }) => (
@@ -364,58 +412,43 @@ const ProjectDetailsPage: React.FC = () => {
                       ))}
                     </div>
                   )}
-                  <h4 className="font-bold text-lg mb-2 text-primary">Shaqaalaha</h4>
-                  {(Array.isArray(project.laborRecords) ? project.laborRecords.length : 0) === 0 ? (
-                    <EmptyState message="Lama diiwaan gelin wax shaqaale ah." />
-                  ) : (
-                    <div className="space-y-2">
-                      {[...(project.laborRecords || [])]
-                        .sort((a, b) => {
-                          const ad = a.dateWorked ? new Date(a.dateWorked).getTime() : 0;
-                          const bd = b.dateWorked ? new Date(b.dateWorked).getTime() : 0;
-                          return bd - ad;
-                        })
-                        .map(lab => {
-                          const agreed = typeof lab.agreedWage === 'number' ? lab.agreedWage : parseFloat(lab.agreedWage as any) || 0;
-                          const paid = typeof lab.paidAmount === 'number' ? lab.paidAmount : parseFloat(lab.paidAmount as any) || 0;
-                          const remaining = typeof lab.remainingWage === 'number' ? lab.remainingWage : parseFloat(lab.remainingWage as any) || 0;
-                          return (
-                            <div key={lab.id} className='bg-white p-3 rounded-lg shadow-sm'>
-                              <div className='flex items-start justify-between gap-3'>
-                                <div className='min-w-0'>
-                                  <p className='font-bold truncate'>{lab.employeeName || '-'}</p>
-                                  <p className='text-xs text-mediumGray truncate'>{lab.workDescription || '-'}</p>
-                                  {lab.dateWorked && <p className='text-[11px] text-mediumGray mt-0.5'>{new Date(lab.dateWorked).toLocaleDateString()}</p>}
-                                </div>
-                                <div className='text-right'>
-                                  <p className='text-xs text-mediumGray'>Agreed</p>
-                                  <p className='font-bold text-accent'>Br{agreed.toLocaleString()}</p>
-                                </div>
-                              </div>
-                              <div className='mt-2 grid grid-cols-2 gap-2'>
-                                <div className='bg-lightGray/40 rounded p-2 text-center'>
-                                  <p className='text-xs text-mediumGray'>Paid</p>
-                                  <p className='font-bold text-green-600'>Br{paid.toLocaleString()}</p>
-                                </div>
-                                <div className='bg-lightGray/40 rounded p-2 text-center'>
-                                  <p className='text-xs text-mediumGray'>Remaining</p>
-                                  <p className={`font-bold ${remaining > 0 ? 'text-redError' : 'text-secondary'}`}>Br{remaining.toLocaleString()}</p>
-                                </div>
-                              </div>
-                              <div className='mt-2 flex justify-end'>
-                                <a
-                                  href={`/expenses/add?projectId=${project.id}&employeeId=${lab.employeeId || ''}&category=Labor`}
-                                  className='inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-primary text-white hover:bg-primary/90'
-                                  title='Bixi inta dhiman'
-                                >
-                                  Bixi hadhay
-                                </a>
-                              </div>
-                            </div>
-                          );
-                        })}
-                    </div>
-                  )}
+              <h4 className="font-bold text-lg mb-2 text-primary">Shaqaalaha</h4>
+              {laborGroups.length === 0 ? (
+                <EmptyState message="Shaqaale mashruucan ku qoran ma jiro." />
+              ) : (
+                <div className="space-y-2">
+                  {laborGroups
+                    .sort((a, b) => new Date(b.lastPaymentDate).getTime() - new Date(a.lastPaymentDate).getTime())
+                    .map(group => (
+                      <div key={group.key} className='bg-white p-3 rounded-lg shadow-sm'>
+                        <div className='flex items-start justify-between gap-3'>
+                          <div className='min-w-0'>
+                            <p className='font-bold truncate'>{group.employeeName}</p>
+                            <p className='text-xs text-mediumGray truncate'>{group.latestWork}</p>
+                            {group.lastPaymentDate && (
+                              <p className='text-[11px] text-mediumGray mt-0.5'>
+                                {new Date(group.lastPaymentDate).toLocaleDateString()}
+                              </p>
+                            )}
+                          </div>
+                          <div className='text-right'>
+                            <p className='text-xs text-mediumGray'>Total Paid</p>
+                            <p className='font-bold text-green-600'>Br{group.totalPaid.toLocaleString()}</p>
+                          </div>
+                        </div>
+                        <div className='mt-2 flex justify-end'>
+                          <a
+                            href={`/expenses/add?projectId=${project.id}&employeeId=${group.employeeId || ''}&category=Labor`}
+                            className='inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-primary text-white hover:bg-primary/90'
+                            title='Ku dar kharash shaqaale'
+                          >
+                            Ku dar kharash
+                          </a>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
                 </div>
               )}
 

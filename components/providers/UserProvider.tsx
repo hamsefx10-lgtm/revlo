@@ -10,6 +10,7 @@ interface UserType {
   companyId?: string;
   companyName?: string;
   avatar?: string;
+  companyLogoUrl?: string;
 }
 
 interface UserContextType {
@@ -40,6 +41,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         companyId: (session.user as any).companyId,
         companyName: (session.user as any).companyName,
         avatar: (session.user as any).avatar,
+        companyLogoUrl: (session.user as any).companyLogoUrl,
       });
     } else if (status === 'unauthenticated') {
       setUser(null);

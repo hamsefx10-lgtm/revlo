@@ -202,6 +202,102 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions) as any;
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (!session?.user?.companyId) {
+      return NextResponse.json({ error: 'Company ID not found in session' }, { status: 400 });
+    }
+
+    const { messageId, content } = await request.json();
+
+    if (!messageId) {
+      return NextResponse.json({ error: 'Message ID is required' }, { status: 400 });
+    }
+    if (!content || !content.trim()) {
+      return NextResponse.json({ error: 'Message content is required' }, { status: 400 });
+    }
+
+    const existing = await prisma.chatMessage.findFirst({
+      where: {
+        id: messageId,
+        senderId: session.user.id,
+        chatRoom: {
+          companyId: session.user.companyId,
+        },
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    if (!existing) {
+      return NextResponse.json({ error: 'Message not found or access denied' }, { status: 404 });
+    }
+
+    const updated = await prisma.chatMessage.update({
+      where: { id: messageId },
+      data: {
+        content: content.trim(),
+        isEdited: true,
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    const formattedMessage = {
+      id: updated.id,
+      content: updated.content,
+      senderId: updated.sender.id,
+      senderName: updated.sender.fullName,
+      senderAvatar: null,
+      timestamp: updated.createdAt,
+      type: updated.type,
+      fileUrl: updated.fileUrl,
+      fileName: updated.fileName,
+      fileSize: updated.fileSize,
+      replyTo: updated.replyToId
+        ? {
+            id: updated.replyToId,
+            content: 'Reply to message',
+            senderName: 'Unknown',
+          }
+        : null,
+      isEdited: updated.isEdited,
+      isPinned: updated.isPinned,
+      reactions: {},
+    };
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: formattedMessage,
+      },
+      { status: 200 },
+    );
+  } catch (error) {
+    console.error('Error editing message:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions) as any;

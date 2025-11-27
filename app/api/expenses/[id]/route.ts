@@ -12,6 +12,24 @@ const toSafeNumber = (value: any, fallback = 0) => {
   return Number.isNaN(parsed) ? fallback : parsed;
 };
 
+const decimalToNumber = (value: any, fallback = 0) => {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === 'object' && typeof value.toNumber === 'function') {
+    return value.toNumber();
+  }
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? fallback : parsed;
+};
+
+const isSameDay = (a?: Date | null, b?: Date | null) => {
+  if (!a || !b) return false;
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+};
+
 // GET /api/expenses/[id] - Soo deji kharash gaar ah
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
@@ -454,6 +472,11 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       return NextResponse.json({ message: 'Kharashka lama helin.' }, { status: 404 });
     }
 
+    const expenseAmountNumber = Math.abs(decimalToNumber(existingExpense.amount, 0));
+    const expenseDate = existingExpense.expenseDate
+      ? new Date(existingExpense.expenseDate)
+      : null;
+
     // Manual cascade delete - delete related records first
     // 1. Refund account balance (add back the amount that was deducted)
     if (existingExpense.paidFrom && existingExpense.amount) {
@@ -480,6 +503,25 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       where: { expenseId: id }
     });
 
+    // 3b. If this was a labor expense, clean up linked project labor record
+    const categoryLower =
+      typeof existingExpense.category === 'string'
+        ? existingExpense.category.toLowerCase()
+        : null;
+    const looksLikeProjectLabor =
+      Boolean(existingExpense.projectId && existingExpense.employeeId) ||
+      (categoryLower && ['labor', 'company labor'].includes(categoryLower));
+
+    if (looksLikeProjectLabor && existingExpense.projectId) {
+      await removeProjectLaborPayment({
+        projectId: existingExpense.projectId,
+        employeeId: existingExpense.employeeId || undefined,
+        description: existingExpense.description || undefined,
+        expenseDate,
+        amount: expenseAmountNumber,
+      });
+    }
+
     // 4. Delete the expense
     await prisma.expense.delete({
       where: { id }
@@ -497,3 +539,81 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     );
   }
 }
+
+const removeProjectLaborPayment = async ({
+  projectId,
+  employeeId,
+  description,
+  expenseDate,
+  amount,
+}: {
+  projectId: string;
+  employeeId?: string;
+  description?: string;
+  expenseDate: Date | null;
+  amount: number;
+}) => {
+  if (!projectId || !amount) return;
+
+  const laborWhere: Record<string, any> = { projectId };
+  if (employeeId) {
+    laborWhere.employeeId = employeeId;
+  }
+
+  const laborRecords = await prisma.projectLabor.findMany({
+    where: laborWhere,
+  });
+
+  if (laborRecords.length === 0) return;
+
+  const normalizedDescription = (description || '').trim().toLowerCase();
+
+  const findMatchingRecord = () => {
+    const byStrictMatch = laborRecords.find((labor) => {
+      const paidAmount = decimalToNumber(labor.paidAmount, 0);
+      const sameAmount = Math.abs(paidAmount - amount) < 0.01;
+      const descMatches = normalizedDescription
+        ? (labor.description || '').trim().toLowerCase() === normalizedDescription
+        : true;
+      const dateMatches = expenseDate
+        ? isSameDay(new Date(labor.dateWorked), expenseDate)
+        : true;
+      return sameAmount && descMatches && dateMatches;
+    });
+    if (byStrictMatch) return byStrictMatch;
+
+    const byAmountMatch = laborRecords.find(
+      (labor) => Math.abs(decimalToNumber(labor.paidAmount, 0) - amount) < 0.01
+    );
+    if (byAmountMatch) return byAmountMatch;
+
+    return laborRecords[0];
+  };
+
+  const laborRecord = findMatchingRecord();
+  if (!laborRecord) return;
+
+  const paidAmount = decimalToNumber(laborRecord.paidAmount, 0);
+  const agreedWage =
+    laborRecord.agreedWage !== null && laborRecord.agreedWage !== undefined
+      ? decimalToNumber(laborRecord.agreedWage, 0)
+      : null;
+  const updatedPaid = Math.max(0, paidAmount - amount);
+  const updatedRemaining =
+    agreedWage !== null ? Math.max(0, agreedWage - updatedPaid) : null;
+
+  if (updatedPaid <= 0.0001) {
+    await prisma.projectLabor.delete({
+      where: { id: laborRecord.id },
+    });
+    return;
+  }
+
+  await prisma.projectLabor.update({
+    where: { id: laborRecord.id },
+    data: {
+      paidAmount: updatedPaid,
+      ...(updatedRemaining !== null ? { remainingWage: updatedRemaining } : {}),
+    },
+  });
+};

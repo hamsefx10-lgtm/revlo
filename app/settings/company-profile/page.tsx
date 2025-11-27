@@ -13,6 +13,7 @@ export default function CompanyProfileSettingsPage() {
   const [profile, setProfile] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [logoUploading, setLogoUploading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
@@ -24,6 +25,7 @@ export default function CompanyProfileSettingsPage() {
   const [editWebsite, setEditWebsite] = useState('');
   const [editIndustry, setEditIndustry] = useState('');
   const [editTaxId, setEditTaxId] = useState('');
+  const [editLogoUrl, setEditLogoUrl] = useState('');
 
   // Fetch company profile from API
   useEffect(() => {
@@ -40,6 +42,7 @@ export default function CompanyProfileSettingsPage() {
           setEditWebsite(data.company.website || '');
           setEditIndustry(data.company.industry || '');
           setEditTaxId(data.company.taxId || '');
+          setEditLogoUrl(data.company.logoUrl || '');
         } else {
           setToastMessage({ message: data.message || 'Profile-ka shirkadda lama helin.', type: 'error' });
         }
@@ -79,6 +82,7 @@ export default function CompanyProfileSettingsPage() {
           website: editWebsite,
           industry: editIndustry,
           taxId: editTaxId,
+          logoUrl: editLogoUrl,
         }),
       });
       const data = await res.json();
@@ -108,6 +112,33 @@ export default function CompanyProfileSettingsPage() {
       setEditTaxId(profile.taxId || '');
     }
     setErrors({});
+  };
+
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setLogoUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/uploads/company-logo', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setToastMessage({ message: data.message || 'Logo upload failed.', type: 'error' });
+        return;
+      }
+      setEditLogoUrl(data.url);
+      setProfile((prev: any) => ({ ...prev, logoUrl: data.url }));
+      setToastMessage({ message: 'Logo-ga waa la cusboonaysiiyay.', type: 'success' });
+    } catch (error) {
+      setToastMessage({ message: 'Cilad ayaa dhacday marka logo la soo gelinayay.', type: 'error' });
+    } finally {
+      setLogoUploading(false);
+      event.target.value = '';
+    }
   };
 
   if (!profile) {
@@ -152,7 +183,30 @@ export default function CompanyProfileSettingsPage() {
       <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md mb-8 animate-fade-in-up">
         {/* Company Logo and Basic Info */}
         <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8 mb-6 pb-6 border-b border-lightGray dark:border-gray-700">
-          <img src={profile.logoUrl || 'https://placehold.co/100x100/3498DB/FFFFFF?text=CO'} alt={`${profile.name} Logo`} className="w-24 h-24 rounded-full object-cover border-4 border-primary/50 shadow-lg flex-shrink-0" />
+          <img src={profile.logoUrl || 'https://placehold.co/120x120/3498DB/FFFFFF?text=LOGO'} alt={`${profile.name} Logo`} className="w-28 h-28 rounded-full object-cover border-4 border-primary/50 shadow-lg flex-shrink-0" />
+          {isEditing && (
+            <div className="text-center md:text-left">
+              <label className="block text-sm font-semibold text-darkGray dark:text-gray-200 mb-2">Logo Shirkadda</label>
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                <label className="cursor-pointer bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition flex items-center">
+                  <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={logoUploading} />
+                  {logoUploading ? (
+                    <>
+                      <Loader2 className="animate-spin mr-2" size={16} />
+                      Soo raraya...
+                    </>
+                  ) : (
+                    <>
+                      <Save size={16} className="mr-2" />
+                      Upload Logo
+                    </>
+                  )}
+                </label>
+                {editLogoUrl && <span className="text-xs text-mediumGray dark:text-gray-400 truncate max-w-[200px]">{editLogoUrl}</span>}
+              </div>
+              <p className="text-xs text-mediumGray dark:text-gray-400 mt-2">Faylasha la ogol yahay: PNG, JPG, WEBP, SVG (max 4MB)</p>
+            </div>
+          )}
           <div className="text-center md:text-left flex-1">
             <h3 className="text-4xl font-bold text-darkGray dark:text-gray-100 mb-2">{profile.name}</h3>
             <p className="text-lg text-mediumGray dark:text-gray-400 mb-1 flex items-center justify-center md:justify-start space-x-2">

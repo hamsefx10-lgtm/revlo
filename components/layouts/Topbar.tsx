@@ -19,6 +19,7 @@ interface TopbarProps {
   };
   currentCompany: {
     name: string;
+    logoUrl?: string | null;
   };
   handleLogout: () => Promise<void>;
   rounded?: boolean;
@@ -60,9 +61,17 @@ const Topbar: React.FC<TopbarProps> = ({
             {isSidebarCollapsed ? <ChevronLast size={22} /> : <ChevronFirst size={22} />}
           </button>
         )}
+        {currentCompany.logoUrl ? (
+          <img
+            src={currentCompany.logoUrl}
+            alt={currentCompany.name || 'Company Logo'}
+            className="hidden md:inline h-8 w-auto rounded-md object-contain bg-lightGray/40 dark:bg-gray-700/60 px-2 py-1"
+          />
+        ) : (
         <span className="text-2xl font-extrabold text-primary hidden md:inline select-none">
           Revl<span className="text-secondary">o</span>.
         </span>
+        )}
         <span className="hidden md:inline text-mediumGray dark:text-gray-400 font-semibold ml-4">{currentCompany.name}</span>
       </div>
 
@@ -256,7 +265,17 @@ const Topbar: React.FC<TopbarProps> = ({
         {/* User Profile Dropdown */}
         <div className="relative group">
           <button className="flex items-center space-x-2 text-darkGray dark:text-gray-100 bg-lightGray dark:bg-gray-700 p-2 rounded-full shadow-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-            <span className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg">{currentUser.avatar}</span>
+            {currentCompany.logoUrl ? (
+              <img
+                src={currentCompany.logoUrl}
+                alt={currentCompany.name || 'Company Logo'}
+                className="w-8 h-8 rounded-full object-contain bg-white"
+              />
+            ) : (
+              <span className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg">
+                {currentUser.avatar}
+              </span>
+            )}
             <span className="hidden lg:block text-md">{currentUser.name}</span>
           </button>
           <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-lg shadow-xl py-2 hidden group-hover:block z-50">

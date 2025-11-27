@@ -56,6 +56,8 @@ export default function ChatPage() {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editingOriginalContent, setEditingOriginalContent] = useState<string | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -130,36 +132,66 @@ export default function ChatPage() {
   }, [messages]);
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !activeRoom || isSending) return;
-
+    if (!newMessage.trim() || isSending) return;
     const messageContent = newMessage.trim();
-    setNewMessage('');
     setIsSending(true);
 
     try {
-      const response = await fetch('/api/chat/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          roomId: activeRoom,
-          content: messageContent,
-          type: 'text'
-        }),
-      });
+      if (editingMessageId) {
+        // Edit existing message
+        const response = await fetch('/api/chat/messages', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            messageId: editingMessageId,
+            content: messageContent,
+          }),
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.message) {
-          setMessages(prev => [...prev, data.message]);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.message) {
+            setMessages(prev =>
+              prev.map(m => (m.id === editingMessageId ? data.message : m)),
+            );
+          }
+          setEditingMessageId(null);
+          setEditingOriginalContent(null);
+          setNewMessage('');
+        } else {
+          const errorData = await response.json();
+          setError(errorData.error || 'Failed to edit message');
         }
       } else {
-        const errorData = await response.json();
-        setError(errorData.error || 'Failed to send message');
+        // New message
+        if (!activeRoom) return;
+        const response = await fetch('/api/chat/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            roomId: activeRoom,
+            content: messageContent,
+            type: 'text',
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.message) {
+            setMessages(prev => [...prev, data.message]);
+          }
+          setNewMessage('');
+        } else {
+          const errorData = await response.json();
+          setError(errorData.error || 'Failed to send message');
+        }
       }
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Error sending/editing message:', error);
       setError('Failed to send message. Please try again.');
     } finally {
       setIsSending(false);
@@ -219,6 +251,18 @@ export default function ChatPage() {
       console.error('Error deleting message:', error);
       setError('Failed to delete message. Please try again.');
     }
+  };
+
+  const startEditingMessage = (message: Message) => {
+    setEditingMessageId(message.id);
+    setEditingOriginalContent(message.content);
+    setNewMessage(message.content);
+  };
+
+  const cancelEditing = () => {
+    setEditingMessageId(null);
+    setEditingOriginalContent(null);
+    setNewMessage('');
   };
 
   const formatTime = (date: Date) => {
@@ -446,7 +490,7 @@ export default function ChatPage() {
                               </div>
                             )}
                             
-                            <div className={`rounded-lg px-4 py-2 ${
+                              <div className={`rounded-lg px-4 py-2 relative ${
                               isCurrentUser 
                                 ? 'bg-primary text-white' 
                                 : 'bg-white border border-gray-200 text-darkGray'
@@ -482,11 +526,41 @@ export default function ChatPage() {
                                 <p className="text-sm">{message.content}</p>
                               )}
                               
-                              <p className={`text-xs mt-1 ${
-                                isCurrentUser ? 'text-white/70' : 'text-mediumGray'
-                              }`}>
-                                {formatTime(message.timestamp)}
-                              </p>
+                              <div className="flex items-center justify-between mt-1 space-x-2">
+                                <p className={`text-xs ${
+                                  isCurrentUser ? 'text-white/70' : 'text-mediumGray'
+                                }`}>
+                                  {formatTime(message.timestamp)}
+                                  {message.isEdited && ' · edited'}
+                                </p>
+                                {isCurrentUser && (
+                                  <div className="flex items-center space-x-1 text-xs">
+                                    {editingMessageId === message.id ? (
+                                      <button
+                                        onClick={cancelEditing}
+                                        className="underline text-red-200"
+                                      >
+                                        Cancel
+                                      </button>
+                                    ) : (
+                                      <>
+                                        <button
+                                          onClick={() => startEditingMessage(message)}
+                                          className="underline"
+                                        >
+                                          Edit
+                                        </button>
+                                        <button
+                                          onClick={() => handleDeleteMessage(message.id)}
+                                          className="underline text-red-200"
+                                        >
+                                          Delete
+                                        </button>
+                                      </>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -745,11 +819,41 @@ export default function ChatPage() {
                               <p className="text-sm">{message.content}</p>
                         )}
                       
-                            <p className={`text-xs mt-1 ${
-                              isCurrentUser ? 'text-white/70' : 'text-mediumGray'
-                            }`}>
-                          {formatTime(message.timestamp)}
-                        </p>
+                              <div className="flex items-center justify-between mt-1 space-x-2">
+                                <p className={`text-xs ${
+                                  isCurrentUser ? 'text-white/70' : 'text-mediumGray'
+                                }`}>
+                                  {formatTime(message.timestamp)}
+                                  {message.isEdited && ' · edited'}
+                                </p>
+                                {isCurrentUser && (
+                                  <div className="flex items-center space-x-1 text-xs">
+                                    {editingMessageId === message.id ? (
+                                      <button
+                                        onClick={cancelEditing}
+                                        className="underline text-red-200"
+                                      >
+                                        Cancel
+                                      </button>
+                                    ) : (
+                                      <>
+                                        <button
+                                          onClick={() => startEditingMessage(message)}
+                                          className="underline"
+                                        >
+                                          Edit
+                                        </button>
+                                        <button
+                                          onClick={() => handleDeleteMessage(message.id)}
+                                          className="underline text-red-200"
+                                        >
+                                          Delete
+                                        </button>
+                                      </>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
                           </div>
                       </div>
                       </div>
@@ -791,15 +895,15 @@ export default function ChatPage() {
                     />
                   </div>
                   
-                  <button
-                    onClick={handleSendMessage}
-                    disabled={!newMessage.trim() || isSending}
-                    className="p-2 bg-primary text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    title="Send Message"
-                    aria-label="Send message"
-                  >
-                    <Send className="w-5 h-5" />
-                  </button>
+                    <button
+                      onClick={handleSendMessage}
+                      disabled={!newMessage.trim() || isSending}
+                      className="p-2 bg-primary text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      title={editingMessageId ? 'Update message' : 'Send message'}
+                      aria-label={editingMessageId ? 'Update message' : 'Send message'}
+                    >
+                      <Send className="w-5 h-5" />
+                    </button>
                 </div>
               </div>
             </>

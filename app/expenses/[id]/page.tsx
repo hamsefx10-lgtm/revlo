@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import Layout from '@/components/layouts/Layout';
 import { useNotifications } from '@/contexts/NotificationContext';
+import { emitExpenseChange } from '@/lib/client-events';
 import {
   ArrowLeft, Edit, Trash2, Calendar, Tag, DollarSign, Briefcase, CreditCard,
   MessageSquare, Paperclip, CheckCircle, XCircle, Loader2, Info, User, Printer, Download, Package,
@@ -520,6 +521,13 @@ export default function ExpenseDetailsPage() {
         const response = await fetch(`/api/expenses/${id}`, { method: 'DELETE' });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || 'Khasab ma ahan in la tirtiro kharashka.');
+        if (expense?.project?.id) {
+          emitExpenseChange({
+            action: 'delete',
+            expenseId: expense.id,
+            projectId: expense.project.id,
+          });
+        }
         setToastMessage({ message: 'Kharashka si guul leh ayaa loo tirtiray!', type: 'success' });
         router.push('/expenses');
       } catch (error: any) {

@@ -40,7 +40,7 @@ export class ExpenseFromTelegram {
       const { projectName, amount, category, description } = parsedData;
 
       // Get or create project
-      let finalProjectId = projectId;
+      let finalProjectId = projectId || pendingExpense.projectId || undefined;
       if (!finalProjectId && projectName) {
         const projectResult = await ProjectAutoCreate.findOrCreate({
           name: projectName,

@@ -4,6 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import prisma from '@/lib/db';
 import { TelegramParser } from '@/lib/telegram-parser';
 import { telegramSender } from '@/lib/telegram-sender';
@@ -27,6 +28,8 @@ export async function POST(request: NextRequest) {
     if (body.message) {
       const message = body.message;
       const chatId = message.chat.id.toString();
+      const chatTitle = message.chat.title || message.chat.username || message.chat.first_name || 'Telegram Chat';
+      const chatType = message.chat.type || 'group';
       const messageId = message.message_id;
       const text = message.text;
       const sender = message.from;
@@ -36,59 +39,122 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ ok: true });
       }
 
-      // Get company ID from chat ID mapping (you might want to store this in database)
-      // For now, we'll use the first company or a default
-      // TODO: Implement proper chat-to-company mapping
-      const company = await prisma.company.findFirst({
-        orderBy: { createdAt: 'asc' },
+      // Look up Telegram chat configuration
+      let chatConfig = await prisma.telegramChat.findUnique({
+        where: { chatId },
       });
 
-      if (!company) {
-        console.error('No company found for Telegram webhook');
+      if (!chatConfig) {
+        const fallbackCompany = await prisma.company.findFirst({
+          orderBy: { createdAt: 'asc' },
+        });
+
+        if (!fallbackCompany) {
+          console.error('No company found for Telegram webhook');
+          return NextResponse.json({ ok: true });
+        }
+
+        chatConfig = await prisma.telegramChat.create({
+          data: {
+            chatId,
+            chatName: chatTitle,
+            chatType,
+            companyId: fallbackCompany.id,
+            active: false,
+          },
+        });
+
+        await telegramSender.sendChatNotLinkedNotice(chatId, messageId, chatTitle);
         return NextResponse.json({ ok: true });
+      }
+
+      if (!chatConfig.active) {
+        await telegramSender.sendChatInactiveNotice(chatId, messageId);
+        return NextResponse.json({ ok: true });
+      }
+
+      const companyId = chatConfig.companyId;
+
+      // Ensure sender has been approved
+      const telegramUserId = sender?.id?.toString();
+      if (telegramUserId) {
+        const displayName = `${sender?.first_name || ''} ${sender?.last_name || ''}`.trim() || sender?.username || `User ${telegramUserId}`;
+        let userLink = await prisma.telegramUserLink.findUnique({
+          where: {
+            companyId_telegramUserId: {
+              companyId,
+              telegramUserId,
+            },
+          },
+        });
+
+        if (!userLink) {
+          userLink = await prisma.telegramUserLink.create({
+            data: {
+              companyId,
+              telegramUserId,
+              telegramUsername: sender?.username || null,
+              telegramDisplayName: displayName,
+              status: 'PENDING',
+            },
+          });
+        } else {
+          const updates: Record<string, string | null> = {};
+          if (displayName && displayName !== userLink.telegramDisplayName) {
+            updates.telegramDisplayName = displayName;
+          }
+          if (sender?.username && sender.username !== userLink.telegramUsername) {
+            updates.telegramUsername = sender.username;
+          }
+          if (Object.keys(updates).length > 0) {
+            await prisma.telegramUserLink.update({
+              where: { id: userLink.id },
+              data: updates,
+            });
+          }
+        }
+
+        if (userLink.status === 'BLOCKED') {
+          await telegramSender.sendUserBlockedNotice(chatId, messageId);
+          return NextResponse.json({ ok: true });
+        }
+
+        if (userLink.status !== 'APPROVED') {
+          await telegramSender.sendUserPendingApprovalNotice(chatId, messageId);
+          return NextResponse.json({ ok: true });
+        }
       }
 
       // Parse the message
       const parsed = TelegramParser.parse(text);
+      const parsedJson = parsed as unknown as Prisma.JsonValue;
       const validation = TelegramParser.validate(parsed);
 
       // Send review notification
       await telegramSender.sendReviewNotification(chatId, messageId);
 
-      // If validation fails, send clarification request
+      const pendingExpenseData = {
+        telegramMessageId: messageId.toString(),
+        telegramChatId: chatId,
+        telegramSenderName: sender?.first_name + (sender?.last_name ? ' ' + sender.last_name : ''),
+        telegramSenderId: sender?.id?.toString(),
+        originalMessage: text,
+        parsedData: parsedJson,
+        status: 'PENDING',
+        companyId,
+        projectId: chatConfig.defaultProjectId,
+        telegramChatConfigId: chatConfig.id,
+      };
+
+      // If validation fails, send clarification request but still store
       if (!validation.valid) {
         await telegramSender.sendClarificationRequest(chatId, messageId, validation.errors);
-        
-        // Still store it for manual review
-        await prisma.pendingExpense.create({
-          data: {
-            telegramMessageId: messageId.toString(),
-            telegramChatId: chatId,
-            telegramSenderName: sender?.first_name + (sender?.last_name ? ' ' + sender.last_name : ''),
-            telegramSenderId: sender?.id?.toString(),
-            originalMessage: text,
-            parsedData: parsed,
-            status: 'PENDING',
-            companyId: company.id,
-          },
-        });
-
+        await prisma.pendingExpense.create({ data: pendingExpenseData });
         return NextResponse.json({ ok: true });
       }
 
       // Store pending expense
-      await prisma.pendingExpense.create({
-        data: {
-          telegramMessageId: messageId.toString(),
-          telegramChatId: chatId,
-          telegramSenderName: sender?.first_name + (sender?.last_name ? ' ' + sender.last_name : ''),
-          telegramSenderId: sender?.id?.toString(),
-          originalMessage: text,
-          parsedData: parsed,
-          status: 'PENDING',
-          companyId: company.id,
-        },
-      });
+      await prisma.pendingExpense.create({ data: pendingExpenseData });
 
       return NextResponse.json({ ok: true });
     }

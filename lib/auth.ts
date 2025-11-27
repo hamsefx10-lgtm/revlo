@@ -26,6 +26,7 @@ declare module 'next-auth' {
       email: string;
       companyName?: string;
       companyId?: string;
+      companyLogoUrl?: string;
     };
   }
 }
@@ -49,7 +50,7 @@ export const authOptions: any = {
           where: { email: credentials.email },
           include: {
             company: {
-              select: { id: true, name: true }
+              select: { id: true, name: true, logoUrl: true }
             }
           }
         });
@@ -75,6 +76,7 @@ export const authOptions: any = {
           role: user.role, 
           companyName: user.company?.name, 
           companyId: user.company?.id,
+          companyLogoUrl: user.company?.logoUrl || undefined,
         };
       }
     })
@@ -99,12 +101,9 @@ export const authOptions: any = {
         token.role = customUser.role;
         token.name = customUser.name; 
         token.email = customUser.email; 
-        if (customUser.companyName) {
-          token.companyName = customUser.companyName;
-        }
-        if (customUser.companyId) {
-          token.companyId = customUser.companyId;
-        }
+        if (customUser.companyName) token.companyName = customUser.companyName;
+        if (customUser.companyId) token.companyId = customUser.companyId;
+        if (customUser.companyLogoUrl) token.companyLogoUrl = customUser.companyLogoUrl;
       }
       return token;
     },
@@ -114,12 +113,9 @@ export const authOptions: any = {
         session.user.role = token.role as string;
         session.user.name = token.name as string; 
         session.user.email = token.email as string; 
-        if (token.companyName) {
-          session.user.companyName = token.companyName as string;
-        }
-        if (token.companyId) {
-          session.user.companyId = token.companyId as string;
-        }
+        if (token.companyName) session.user.companyName = token.companyName as string;
+        if (token.companyId) session.user.companyId = token.companyId as string;
+        if (token.companyLogoUrl) session.user.companyLogoUrl = token.companyLogoUrl as string;
       }
       return session;
     },
@@ -171,5 +167,10 @@ export async function getSessionCompanyUser() {
   if (!session.user?.id) {
     return null; // Return null instead of throwing error
   }
-  return { companyId: session.user.companyId, userId: session.user.id };
+  return { 
+    companyId: session.user.companyId, 
+    userId: session.user.id,
+    userName: session.user.name,
+    companyName: session.user.companyName
+  };
 }

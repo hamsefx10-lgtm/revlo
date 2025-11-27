@@ -71,7 +71,7 @@ interface SidebarProps {
   isCollapsed: boolean;
   currentTime: Date;
   currentUser: { name: string; email: string; avatar: string; id: string; role: string; } | null;
-  currentCompany: { name: string; };
+  currentCompany: { name: string; logoUrl?: string | null };
   handleLogout: () => Promise<void>;
   onNavItemClick?: () => void;
 }
@@ -274,16 +274,25 @@ const Sidebar: React.FC<SidebarProps> = ({
               </button>
             </div>
 
-            {/* User Profile & Company Info */}
-            {currentUser && (
-              <Link href={`/profile/${currentUser.id}`} className="group flex items-center p-3 rounded-md text-white hover:bg-primary/80 transition-all duration-300 mb-4">
-                <div className="rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg w-12 h-12 text-2xl border-2 border-primary/50 shadow-md flex-shrink-0">
-                  {currentUser.avatar}
-                </div>
+            {/* Company Profile */}
+            {currentCompany && (
+              <Link href="/settings/company-profile" className="group flex items-center p-3 rounded-md text-white hover:bg-primary/80 transition-all duration-300 mb-4">
+                {currentCompany.logoUrl ? (
+                  <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center border-2 border-primary/50 shadow-md flex-shrink-0">
+                    <img
+                      src={currentCompany.logoUrl}
+                      alt={currentCompany.name || 'Company Logo'}
+                      className="w-12 h-12 rounded-full object-contain"
+                    />
+                  </div>
+                ) : (
+                  <div className="rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg w-12 h-12 text-2xl border-2 border-primary/50 shadow-md flex-shrink-0">
+                    {currentCompany.name?.charAt(0)?.toUpperCase() || 'C'}
+                  </div>
+                )}
                 <div className="text-left flex-1 animate-fade-in ml-3">
-                  <h3 className="text-base font-bold text-white leading-tight">{currentUser.name}</h3>
-                  <p className="text-xs text-mediumGray dark:text-gray-400 leading-tight">{currentCompany.name}</p>
-                  <p className="text-xs text-mediumGray dark:text-gray-400 leading-tight">Role: {currentUser.role}</p>
+                  <h3 className="text-base font-bold text-white leading-tight">{currentCompany.name}</h3>
+                  <p className="text-xs text-mediumGray dark:text-gray-400 leading-tight">Company Profile</p>
                 </div>
               </Link>
             )}
@@ -342,22 +351,39 @@ const Sidebar: React.FC<SidebarProps> = ({
     >
       {/* Top: Logo only */}
       <div className="flex items-center justify-center px-4 py-4 border-b border-gray-700">
+        {currentCompany.logoUrl ? (
+          <img
+            src={currentCompany.logoUrl}
+            alt={currentCompany.name || 'Company Logo'}
+            className={`${collapsed ? 'h-8 w-8 rounded-full' : 'h-8 w-auto rounded-md'} object-contain bg-lightGray/20 dark:bg-gray-700/60 px-2 py-1`}
+          />
+        ) : (
         <span className="text-3xl font-extrabold tracking-wide select-none">
           {collapsed ? <>R<span className="text-secondary">.</span></> : <>Revl<span className="text-secondary">o</span>.</>}
         </span>
+        )}
       </div>
 
 
-      {/* User Profile & Company Info */}
-      {!collapsed && currentUser && (
-        <Link href={`/profile/${currentUser.id}`} className="group flex items-center p-3 rounded-md text-white hover:bg-primary/80 transition-all duration-300 mb-4">
-          <div className="rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg w-12 h-12 text-2xl border-2 border-primary/50 shadow-md flex-shrink-0">
-            {currentUser.avatar}
-          </div>
+      {/* Company Profile */}
+      {!collapsed && currentCompany && (
+        <Link href="/settings/company-profile" className="group flex items-center p-3 rounded-md text-white hover:bg-primary/80 transition-all duration-300 mb-4">
+          {currentCompany.logoUrl ? (
+            <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center border-2 border-primary/50 shadow-md flex-shrink-0">
+              <img
+                src={currentCompany.logoUrl}
+                alt={currentCompany.name || 'Company Logo'}
+                className="w-10 h-10 rounded-full object-contain"
+              />
+            </div>
+          ) : (
+            <div className="rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg w-12 h-12 text-2xl border-2 border-primary/50 shadow-md flex-shrink-0">
+              {currentCompany.name?.charAt(0)?.toUpperCase() || 'C'}
+            </div>
+          )}
           <div className="text-left flex-1 animate-fade-in ml-3">
-            <h3 className="text-base font-bold text-white leading-tight">{currentUser.name}</h3>
-            <p className="text-xs text-mediumGray dark:text-gray-400 leading-tight">{currentCompany.name}</p>
-            <p className="text-xs text-mediumGray dark:text-gray-400 leading-tight">Role: {currentUser.role}</p>
+            <h3 className="text-base font-bold text-white leading-tight">{currentCompany.name}</h3>
+            <p className="text-xs text-mediumGray dark:text-gray-400 leading-tight">Company Profile</p>
           </div>
         </Link>
       )}

@@ -6,6 +6,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import Layout from '@/components/layouts/Layout';
 import { 
   CheckCircle, XCircle, Edit, RefreshCw, Loader2, 
@@ -163,6 +164,13 @@ export default function TelegramExpensesPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
             Kharashyada Telegram-ka
           </h1>
+          <Link
+            href="/telegram-expenses/settings"
+            className="inline-flex items-center gap-2 px-4 py-2 mb-4 rounded-lg bg-primary text-white hover:bg-primary/90"
+          >
+            <Tag className="w-4 h-4" />
+            Maamul Dejinta Telegram
+          </Link>
 
           {/* Filter Tabs */}
           <div className="flex gap-2 mb-4">

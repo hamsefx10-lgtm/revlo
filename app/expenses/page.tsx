@@ -9,6 +9,7 @@ import {
   List, LayoutGrid, Filter, X, ChevronDown, ChevronUp, Check, XCircle
 } from 'lucide-react';
 import { calculateEmployeeSalary } from '../../lib/utils';
+import { emitExpenseChange } from '@/lib/client-events';
 
 interface Expense {
   id: string;
@@ -32,6 +33,19 @@ interface Expense {
 }
 
 type FilterType = 'total' | 'company' | 'project';
+
+const notifyProjectExpenseRemoval = (removed: Expense | Expense[]) => {
+  const expensesArray = Array.isArray(removed) ? removed : [removed];
+  expensesArray.forEach((expense) => {
+    const projectId = expense?.project?.id;
+    if (!projectId) return;
+    emitExpenseChange({
+      projectId,
+      expenseId: expense.id,
+      action: expensesArray.length > 1 ? 'bulk-delete' : 'delete',
+    });
+  });
+};
 
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -284,13 +298,31 @@ export default function ExpensesPage() {
     if (!window.confirm(`Ma hubtaa inaad tirtirto ${selectedIds.size} kharash? Tani waa fal aan laga noqon.`)) return;
     try {
       const ids = Array.from(selectedIds);
+      const expensesToDelete = expenses.filter(exp => selectedIds.has(exp.id));
       await Promise.all(ids.map(id => fetch(`/api/expenses/${id}`, { method: 'DELETE' })));
+      notifyProjectExpenseRemoval(expensesToDelete);
       // Refresh
       await fetchExpenses();
       clearSelection();
       setSelectMode(false);
     } catch (e) {
       console.error('Bulk delete failed:', e);
+    }
+  };
+
+  const deleteExpense = async (expense: Expense) => {
+    if (!window.confirm('Ma hubtaa inaad rabto inaad tirtirto kharashkan?')) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/expenses/${expense.id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        throw new Error('Failed to delete expense');
+      }
+      notifyProjectExpenseRemoval(expense);
+      await fetchExpenses();
+    } catch (error) {
+      console.error('Delete failed:', error);
     }
   };
 
@@ -1001,18 +1033,10 @@ export default function ExpensesPage() {
                         <button
                           onClick={async () => {
                             if (selectedIds.size > 0) {
-                              // Bulk delete selected
                               await handleBulkDelete();
                               return;
                             }
-                            if (window.confirm('Ma hubtaa inaad rabto inaad tirtirto kharashkan?')) {
-                              try {
-                                await fetch(`/api/expenses/${expense.id}`, { method: 'DELETE' });
-                                await fetchExpenses();
-                              } catch (e) {
-                                console.error('Delete failed:', e);
-                              }
-                            }
+                            await deleteExpense(expense);
                           }}
                           className="text-redError hover:text-red-700 p-1 rounded hover:bg-redError/10 transition-colors duration-200"
                           title="Tirtir"
@@ -1186,14 +1210,7 @@ export default function ExpensesPage() {
                         await handleBulkDelete();
                         return;
                       }
-                      if (window.confirm('Ma hubtaa inaad rabto inaad tirtirto kharashkan?')) {
-                        try {
-                          await fetch(`/api/expenses/${expense.id}`, { method: 'DELETE' });
-                          await fetchExpenses();
-                        } catch (e) {
-                          console.error('Delete failed:', e);
-                        }
-                      }
+                      await deleteExpense(expense);
                     }}
                     className="text-redError hover:text-red-700 p-2 rounded-lg hover:bg-redError/10 transition-colors duration-200"
                     title="Tirtir"

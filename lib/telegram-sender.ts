@@ -115,6 +115,38 @@ export class TelegramSender {
       replyToMessageId: messageId,
     });
   }
+
+  /**
+   * Notify chat that it is not linked to a project/company yet
+   */
+  async sendChatNotLinkedNotice(chatId: string, messageId?: number, chatName?: string) {
+    const message = `⚠️ *Kooxdan lama xiriirin weli*\n\n${chatName ? `Kooxda *${chatName}*` : 'Kooxdan'} wali laguma xirinin Revlo.\n\nFadlan gal Revlo → Telegram Expenses → Settings si aad ugu darto chat-kan oo aad u doorato mashruuca/akoonka saxda ah.`;
+    return this.sendMessage({ chatId, text: message, replyToMessageId: messageId });
+  }
+
+  /**
+   * Notify chat that it is inactive/disabled from system
+   */
+  async sendChatInactiveNotice(chatId: string, messageId?: number) {
+    const message = `⛔ *Kooxdan waa la xiray*\n\nFariimaha lama aqbalayo ilaa maamulka uu dib u hawlgeliyo chat-kan gudaha Revlo.`;
+    return this.sendMessage({ chatId, text: message, replyToMessageId: messageId });
+  }
+
+  /**
+   * Notify sender that they must wait for approval
+   */
+  async sendUserPendingApprovalNotice(chatId: string, messageId?: number) {
+    const message = `👋 *Waad ku mahadsan tahay*\n\nWaxaan diiwaangelinay aqoonsigaaga Telegram. Maamulka ayaa u baahan inuu ku ansixiyo ka hor inta aan fariimahaaga la qaadin.`;
+    return this.sendMessage({ chatId, text: message, replyToMessageId: messageId });
+  }
+
+  /**
+   * Notify sender that they are blocked
+   */
+  async sendUserBlockedNotice(chatId: string, messageId?: number) {
+    const message = `🚫 *Maamulka ayaa xannibay aqoonsigan*\n\nFadlan la xidhiidh maamulka shirkadda haddii aad u baahan tahay in laguu fasaxo.`; 
+    return this.sendMessage({ chatId, text: message, replyToMessageId: messageId });
+  }
 }
 
 // Export singleton instance

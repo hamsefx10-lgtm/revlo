@@ -42,6 +42,7 @@ model User {
   wallet         Wallet?
   projects       Project[]        @relation("ProjectMembers")
   PendingExpense PendingExpense[]
+  telegramLinks  TelegramUserLink[]
 
   @@map("users")
 }
@@ -100,6 +101,8 @@ model Company {
   users                   User[]
   vendors                 Vendor[]
   pendingExpenses         PendingExpense[]
+  telegramChats           TelegramChat[]
+  telegramUsers           TelegramUserLink[]
   workOrders              WorkOrder[]
 
   @@map("companies")
@@ -521,12 +524,50 @@ model PendingExpense {
   companyId          String
   userId             String? // Approver
   approvedAt         DateTime?
+  projectId          String?
+  telegramChatConfigId String?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
   company            Company   @relation(fields: [companyId], references: [id])
   user               User?     @relation(fields: [userId], references: [id])
+  project            Project?  @relation(fields: [projectId], references: [id])
+  telegramChatConfig TelegramChat? @relation(fields: [telegramChatConfigId], references: [id])
 
   @@map("pending_expenses")
+}
+
+model TelegramChat {
+  id               String   @id @default(uuid()) @map("_id")
+  chatId           String   @unique
+  chatName         String?
+  chatType         String?
+  companyId        String
+  defaultProjectId String?
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  company          Company  @relation(fields: [companyId], references: [id])
+  defaultProject   Project? @relation(fields: [defaultProjectId], references: [id])
+  pendingExpenses  PendingExpense[]
+
+  @@map("telegram_chats")
+}
+
+model TelegramUserLink {
+  id                   String   @id @default(uuid()) @map("_id")
+  telegramUserId       String
+  telegramUsername     String?
+  telegramDisplayName  String?
+  companyId            String
+  userId               String?
+  status               String   @default("PENDING") // PENDING, APPROVED, BLOCKED
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  company              Company  @relation(fields: [companyId], references: [id])
+  user                 User?    @relation(fields: [userId], references: [id])
+
+  @@unique([companyId, telegramUserId])
+  @@map("telegram_user_links")
 }
 
 model PersonalizationSettings {

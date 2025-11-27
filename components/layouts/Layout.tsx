@@ -51,7 +51,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     avatar: user.fullName?.charAt(0)?.toUpperCase() || 'U',
     role: user.role,
   };
-  const currentCompany = { name: user.companyName || '' };
+  const currentCompany = { 
+    name: user.companyName || '', 
+    logoUrl: (user as any).companyLogoUrl || null 
+  };
 
   const handleLogout = async () => {
     await logout();
