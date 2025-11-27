@@ -156,6 +156,8 @@ model Project {
   tasks                  Task[]
   transactions           Transaction[]
   members                User[]              @relation("ProjectMembers")
+  pendingExpenses        PendingExpense[]
+  telegramChats          TelegramChat[]
 
   @@map("projects")
 }
