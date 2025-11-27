@@ -1537,7 +1537,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
           {((expenseType === 'project' && category === 'Taxi/Xamaal') || (expenseType === 'company' && category === 'Taxi/Xamaal')) && (
             <div className="p-4 border border-primary/20 rounded-lg bg-primary/5 animate-fade-in">
               <h3 className="text-lg font-bold text-primary dark:text-blue-300 mb-2">
-                {expenseType === 'project' ? 'Faahfaahinta Taxi/Xamaal Mashruuca' : 'Faahfaahinta Taxi/Xamaal Shirkadda'}
+                {(expenseType as 'project' | 'company') === 'project' ? 'Faahfaahinta Taxi/Xamaal Mashruuca' : 'Faahfaahinta Taxi/Xamaal Shirkadda'}
               </h3>
               
               <div className="mb-4">
@@ -1622,7 +1622,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                 )}
               </div>
 
-              {expenseType === 'project' && (
+              {(expenseType as 'project' | 'company') === 'project' && (
                 <div className="mb-4">
                   <label htmlFor="selectedProject_taxi" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Mashruuca La Xiriira (Optional)</label>
                   <select
