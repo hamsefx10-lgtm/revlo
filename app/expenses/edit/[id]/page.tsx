@@ -774,7 +774,7 @@ export default function EditExpensePage() {
               )}
 
               {/* Company Labor Specific Fields - Only show if inside Company Expense selector OR if category is directly Company Labor */}
-              {((category === 'Company Expense' && companyExpenseType === 'Company Labor') || (category === 'Company Labor' && expenseType === 'company')) && (
+              {((category === 'Company Expense' && companyExpenseType === 'Company Labor') || (category === 'Company Labor')) && (
                 <div className="p-4 border border-primary/20 rounded-lg bg-primary/5 animate-fade-in">
                   <h3 className="text-lg font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Shaqaalaha Shirkadda</h3>
                   <div>
