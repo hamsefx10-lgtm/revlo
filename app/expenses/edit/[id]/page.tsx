@@ -527,7 +527,13 @@ export default function EditExpensePage() {
     { value: 'Debt', label: 'Deyn (Macmiilka La Siiyay)', icon: Coins },
     { value: 'Other', label: 'Kale', icon: Info },
   ];
-
+  
+  // Helper to check if Company Labor form should be shown
+  const showCompanyLaborForm = category === 'Company Labor' || (category === 'Company Expense' && companyExpenseType === 'Company Labor');
+  
+  // Helper to check if Taxi/Xamaal form should be shown
+  const showTaxiXamaalForm = category === 'Taxi/Xamaal' || (category === 'Company Expense' && companyExpenseType === 'Taxi/Xamaal');
+  
   return (
     <Layout>
       <div className="flex justify-between items-center mb-8">
@@ -774,7 +780,7 @@ export default function EditExpensePage() {
               )}
 
               {/* Company Labor Specific Fields - Only show if inside Company Expense selector OR if category is directly Company Labor */}
-              {((category as string) === 'Company Labor' || ((category as string) === 'Company Expense' && companyExpenseType === 'Company Labor')) && (
+              {showCompanyLaborForm && (
                 <div className="p-4 border border-primary/20 rounded-lg bg-primary/5 animate-fade-in">
                   <h3 className="text-lg font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Shaqaalaha Shirkadda</h3>
                   <div>
@@ -909,7 +915,7 @@ export default function EditExpensePage() {
               )}
 
               {/* Taxi/Xamaal Form - Only show if inside Company Expense selector OR if category is directly Taxi/Xamaal */}
-              {((category === 'Company Expense' && companyExpenseType === 'Taxi/Xamaal') || (category === 'Taxi/Xamaal' && expenseType === 'company')) && (
+              {showTaxiXamaalForm && (
                 <div className="p-4 border border-primary/20 rounded-lg bg-primary/5 animate-fade-in">
                   <h3 className="text-lg font-bold text-primary dark:text-blue-300 mb-2">
                     {expenseType === 'project' ? 'Faahfaahinta Taxi/Xamaal Mashruuca' : 'Faahfaahinta Taxi/Xamaal Shirkadda'}
