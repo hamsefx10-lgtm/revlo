@@ -1,146 +1,162 @@
-// app/api/expenses/bulk-import/route.ts - Bulk Import Expenses API Route
+// app/api/expenses/bulk-import/route.ts - Bulk Import Expenses API
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/db'; // Import Prisma Client
-import { isValidEmail } from '@/lib/utils'; // For email validation if needed
-import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
+import prisma from '@/lib/db';
+import { getSessionCompanyUser } from '../auth';
 
-// MUHIIM: Waxaad u baahan doontaa library si aad u baarto CSV/Excel.
-// Tusaale: 'csv-parser' ama 'xlsx'
-// npm install csv-parser
-// npm install xlsx
-
-// POST /api/expenses/bulk-import - Dhoofi kharashyo badan
 export async function POST(request: Request) {
   try {
-    // Mustaqbalka, halkan waxaad ku dari doontaa authentication iyo authorization
-    // Tusaale: const session = await getServerSession(authOptions);
-    // if (!session || !isManagerOrAdmin(session.user.role)) return NextResponse.json({ message: 'Awood uma lihid.' }, { status: 403 });
-    // const companyId = session.user.companyId;
-    // const userId = session.user.id; // User-ka diiwaan geliyay
+    const { companyId, userId } = await getSessionCompanyUser();
+    const { expenseType, subCategory, projectId, expenses } = await request.json();
 
-    const formData = await request.formData();
-    const file = formData.get('file') as File; // Faylka la soo shubay
-
-    if (!file) {
+    if (!expenseType || !subCategory || !Array.isArray(expenses) || expenses.length === 0) {
       return NextResponse.json(
-        { message: 'Fadlan soo shub fayl.' },
+        { message: 'Fadlan buuxi dhammaan beeraha waajibka ah' },
         { status: 400 }
       );
     }
 
-    const fileBuffer = await file.arrayBuffer();
-    const fileContent = Buffer.from(fileBuffer).toString('utf-8');
-
-    // Halkan waxaad ku baari doontaa faylka (CSV/Excel)
-    // Tusaale fudud oo CSV ah:
-    const lines = fileContent.split('\n').filter(line => line.trim() !== '');
-    if (lines.length <= 1) { // Headers + at least one data row
+    if (expenseType === 'project' && !projectId) {
       return NextResponse.json(
-        { message: 'Faylka waa madhan yahay ama kaliya wuxuu leeyahay headers.' },
+        { message: 'Project ID waa waajib marka project expense ah' },
         { status: 400 }
       );
     }
 
-    const headers = lines[0].split(',').map(h => h.trim());
-    const dataRows = lines.slice(1);
-    const importedExpenses = [];
-    const errors: { row: number; message: string }[] = [];
-
-    // Map headers to expected fields (tusaale)
-    const headerMap = {
-      'description': 'description',
-      'amount': 'amount',
-      'category': 'category',
-      'subcategory': 'subCategory',
-      'paidfrom': 'paidFrom',
-      'expensedate': 'expenseDate',
-      'note': 'note',
-      'projectid': 'projectId',
+    const results = {
+      created: 0,
+      skipped: 0,
+      errors: [] as any[]
     };
 
-    for (let i = 0; i < dataRows.length; i++) {
-      const row = dataRows[i];
-      const values = row.split(',');
-      const expenseData: any = {};
-      let rowIsValid = true;
-      let rowErrors: string[] = [];
-
-      // Ku buuxi xogta object-ka
-      for (let j = 0; j < headers.length; j++) {
-        const headerKey = headers[j].toLowerCase();
-        const fieldName = (headerMap as any)[headerKey];
-        if (fieldName) {
-          expenseData[fieldName] = values[j] ? values[j].trim() : '';
+    // Process each expense
+    for (let i = 0; i < expenses.length; i++) {
+      const expense = expenses[i];
+      
+      try {
+        // Validate based on subcategory
+        let validationError = null;
+        
+        if (subCategory === 'Material' || subCategory === 'Company Material') {
+          if (!expense.Name || !expense.Quantity || !expense.Price || !expense.Unit) {
+            validationError = 'Name, Quantity, Price, iyo Unit waa waajib';
+          }
+        } else if (subCategory === 'Labor' || subCategory === 'Company Labor') {
+          if (!expense.EmployeeName || !expense.Wage || !expense.WorkDescription) {
+            validationError = 'EmployeeName, Wage, iyo WorkDescription waa waajib';
+          }
+        } else {
+          if (!expense.Description || !expense.Amount) {
+            validationError = 'Description iyo Amount waa waajib';
+          }
         }
-      }
 
-      // Xaqiijinta xogta saf kasta
-      if (!expenseData.description) rowErrors.push('Sharaxaad waa waajib.');
-      if (typeof parseFloat(expenseData.amount) !== 'number' || parseFloat(expenseData.amount) <= 0) rowErrors.push('Qiimaha waa waajib oo waa inuu noqdaa nambar wanaagsan.');
-      if (!expenseData.category) rowErrors.push('Nooca waa waajib.');
-      if (!expenseData.paidFrom) rowErrors.push('Laga Bixiyay waa waajib.');
-      if (!expenseData.expenseDate || isNaN(new Date(expenseData.expenseDate).getTime())) rowErrors.push('Taariikhda kharashka waa waajib oo waa inuu noqdaa taariikh sax ah.');
+        if (validationError) {
+          results.errors.push({
+            row: i + 2,
+            message: validationError
+          });
+          results.skipped++;
+          continue;
+        }
 
-      if (rowErrors.length > 0) {
-        errors.push({ row: i + 2, message: rowErrors.join(' ') }); // +2 for header row and 0-indexed array
-        rowIsValid = false;
-      }
+        // Prepare expense data
+        let expenseData: any = {
+          companyId,
+          userId: userId || null,
+          category: subCategory,
+          paidFrom: expense.PaidFrom || 'Cash',
+          expenseDate: new Date(expense.ExpenseDate || new Date()),
+          note: expense.Note || null,
+          approved: false,
+        };
 
-      if (rowIsValid) {
-        try {
-          // Hubi in project-ka uu jiro haddii la bixiyay
-          let project = null;
-          if (expenseData.projectId) {
-            project = await prisma.project.findUnique({
-              where: { id: expenseData.projectId },
-              // and: { companyId: companyId } // Mustaqbalka, ku dar filter-kan
-            });
-            if (!project) {
-              errors.push({ row: i + 2, message: `Mashruuca ID "${expenseData.projectId}" lama helin.` });
-              continue; // Ka bood safkan
+        // Handle Material expenses
+        if (subCategory === 'Material' || subCategory === 'Company Material') {
+          const materials = [{
+            name: expense.Name,
+            qty: expense.Quantity,
+            price: expense.Price,
+            unit: expense.Unit
+          }];
+          
+          const totalAmount = parseFloat(expense.Quantity) * parseFloat(expense.Price);
+          
+          expenseData.description = expense.Description || expense.Name;
+          expenseData.amount = totalAmount;
+          expenseData.materials = materials;
+          expenseData.materialDate = expense.MaterialDate ? new Date(expense.MaterialDate) : new Date(expense.ExpenseDate);
+          
+          if (expenseType === 'project') {
+            expenseData.projectId = projectId;
+          }
+        }
+        // Handle Labor expenses
+        else if (subCategory === 'Labor' || subCategory === 'Company Labor') {
+          // Find employee by name
+          const employee = await prisma.employee.findFirst({
+            where: {
+              companyId,
+              fullName: {
+                contains: expense.EmployeeName,
+                mode: 'insensitive'
+              }
             }
+          });
+
+          if (!employee) {
+            results.errors.push({
+              row: i + 2,
+              message: `Shaqaale lama helin: ${expense.EmployeeName}`
+            });
+            results.skipped++;
+            continue;
           }
 
-          const newExpense = await prisma.expense.create({
-            data: {
-              description: expenseData.description,
-              amount: parseFloat(expenseData.amount),
-              category: expenseData.category,
-              subCategory: expenseData.subCategory || null,
-              paidFrom: expenseData.paidFrom,
-              expenseDate: new Date(expenseData.expenseDate),
-              note: expenseData.note || null,
-              approved: false, // Default to pending approval for bulk imports
-              projectId: project ? project.id : null,
-              companyId: "dummyCompanyId", // Mustaqbalka, ka hel session-ka
-              userId: "dummyUserId", // Mustaqbalka, ka hel session-ka
-            },
-          });
-          importedExpenses.push(newExpense);
-        } catch (dbError: any) {
-          errors.push({ row: i + 2, message: `Cilad database: ${dbError.message}` });
+          expenseData.description = expense.WorkDescription;
+          expenseData.amount = parseFloat(expense.Wage);
+          expenseData.employeeId = employee.id;
+          
+          if (expenseType === 'project') {
+            expenseData.projectId = projectId;
+          }
         }
+        // Handle other expenses
+        else {
+          expenseData.description = expense.Description;
+          expenseData.amount = parseFloat(expense.Amount || expense.Amount);
+          
+          if (subCategory === 'Transport') {
+            expenseData.transportType = expense.TransportType || null;
+          }
+          
+          if (expenseType === 'project') {
+            expenseData.projectId = projectId;
+          }
+        }
+
+        // Create expense
+        await prisma.expense.create({
+          data: expenseData
+        });
+
+        results.created++;
+      } catch (error: any) {
+        console.error(`Error creating expense at row ${i + 2}:`, error);
+        results.errors.push({
+          row: i + 2,
+          message: error.message || 'Cilad ayaa dhacday'
+        });
+        results.skipped++;
       }
     }
 
-    if (importedExpenses.length > 0 && errors.length === 0) {
-      return NextResponse.json(
-        { message: `Si guul leh ayaa loo dhoofiyay ${importedExpenses.length} kharash!`, importedCount: importedExpenses.length },
-        { status: 200 }
-      );
-    } else if (importedExpenses.length > 0 && errors.length > 0) {
-      return NextResponse.json(
-        { message: `Waxaa la dhoofiyay ${importedExpenses.length} kharash, laakin waxaa jiray ${errors.length} qalad.`, importedCount: importedExpenses.length, errors },
-        { status: 206 } // Partial Content
-      );
-    } else {
-      return NextResponse.json(
-        { message: `Dhoofintu way fashilantay. ${errors.length} qalad ayaa la helay.`, errors },
-        { status: 400 }
-      );
-    }
-  } catch (error) {
-    console.error('Cilad ayaa dhacday marka kharashyada badan la dhoofinayay:', error);
+    return NextResponse.json({
+      message: `Guul! ${results.created} kharash ayaa la soo geliyay`,
+      ...results
+    }, { status: 200 });
+
+  } catch (error: any) {
+    console.error('Error in bulk import:', error);
     return NextResponse.json(
       { message: 'Cilad server ayaa dhacday. Fadlan isku day mar kale.' },
       { status: 500 }

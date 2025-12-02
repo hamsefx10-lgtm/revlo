@@ -741,6 +741,17 @@ export default function ReportsOverviewPage() {
           </div>
           <ArrowRight size={20} className="md:w-6 md:h-6 text-mediumGray dark:text-gray-400 group-hover:translate-x-2 transition-transform duration-200" />
         </Link>
+
+        <Link href="/reports/project-reports" className="bg-indigo-50 dark:bg-indigo-900/20 p-4 md:p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6 group border border-indigo-200 dark:border-indigo-800">
+          <div className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 p-3 md:p-4 rounded-full group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-200">
+            <Briefcase size={32} className="md:w-10 md:h-10" />
+          </div>
+          <div className="text-center md:text-left flex-1">
+            <h3 className="text-lg md:text-2xl font-bold text-darkGray dark:text-gray-100 mb-2">Project Reports</h3>
+            <p className="text-sm md:text-base text-mediumGray dark:text-gray-400">Warbixin mashaariicda oo faahfaahsan, filter-ka taariikhda, PDF/print.</p>
+          </div>
+          <ArrowRight size={20} className="md:w-6 md:h-6 text-mediumGray dark:text-gray-400 group-hover:translate-x-2 transition-transform duration-200" />
+        </Link>
       </div>
 
       {/* Mobile-Optimized Export/Share Buttons */}

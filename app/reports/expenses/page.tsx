@@ -10,7 +10,7 @@ import {
   TrendingUp, TrendingDown, CheckCircle, XCircle, Info,
   Tag, Briefcase, CreditCard, Eye, Edit, Trash2,
   List, LayoutGrid, BarChart, PieChart, LineChart as LineChartIcon,
-  CheckSquare, Clock as ClockIcon, FileText, ChevronRight, ChevronUp, ChevronDown // For approval, recurring, audit
+  CheckSquare, Clock as ClockIcon, FileText, ChevronRight, ChevronUp, ChevronDown, Building // Added Building icon
 } from 'lucide-react';
 import { 
   ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, Tooltip, Legend, 
@@ -100,11 +100,12 @@ function aggregateExpensesByMonth(expenses: Expense[], categories: string[]) {
 // --- Expenses Page Component ---
 export default function ExpensesPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterExpenseType, setFilterExpenseType] = useState<'all' | 'company' | 'project'>('all'); // New: Filter by expense type
   const [filterCategory, setFilterCategory] = useState('All');
   const [filterProject, setFilterProject] = useState('All');
   const [filterPaidFrom, setFilterPaidFrom] = useState('All');
   const [filterDateRange, setFilterDateRange] = useState('All');
-  const [filterApprovalStatus, setFilterApprovalStatus] = useState('All'); // New filter for approval status
+  const [filterApprovalStatus, setFilterApprovalStatus] = useState<'all' | 'pending' | 'approved'>('all'); // Updated: use specific values
   const [viewMode, setViewMode] = useState<'list' | 'cards'>('list'); 
   const [showChartSection, setShowChartSection] = useState(true); 
   const [activeChartType, setActiveChartType] = useState<'line' | 'bar' | 'pie'>('line'); 
@@ -149,12 +150,18 @@ export default function ExpensesPage() {
                              ? !expense.project || expense.project === 'Internal' 
                              : expense.project === filterProject; 
     const matchesPaidFrom = filterPaidFrom === 'All' || expense.paidFrom === filterPaidFrom;
-    const matchesDate = filterDateRange === 'All' ? true : true; 
-    const matchesApproval = filterApprovalStatus === 'All' || 
-                            (filterApprovalStatus === 'Approved' && expense.approved) || 
-                            (filterApprovalStatus === 'Pending' && !expense.approved);
+    const matchesDate = filterDateRange === 'All' ? true : true;
+    // Filter by expense type (Company vs Project)
+    const matchesExpenseType = filterExpenseType === 'all' 
+      ? true 
+      : filterExpenseType === 'company' 
+        ? !expense.project || expense.project === 'Internal' 
+        : expense.project && expense.project !== 'Internal';
+    const matchesApproval = filterApprovalStatus === 'all' || 
+                            (filterApprovalStatus === 'approved' && expense.approved) || 
+                            (filterApprovalStatus === 'pending' && !expense.approved);
 
-    return matchesSearch && matchesCategory && matchesProject && matchesPaidFrom && matchesDate && matchesApproval;
+    return matchesSearch && matchesCategory && matchesProject && matchesPaidFrom && matchesDate && matchesExpenseType && matchesApproval;
   });
 
   // Define categories from API data
@@ -349,6 +356,84 @@ const ExpenseCard: React.FC<{ expense: typeof dummyExpenses[0]; onEdit: (id: str
               <h4 className="text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400">Wadarta Diiwaanka</h4>
               <p className="text-2xl lg:text-3xl font-extrabold text-primary">{expensesCount}</p>
           </div>
+      </div>
+
+      {/* Expense Type Filter Buttons - Similar to image design */}
+      <div className="bg-white dark:bg-gray-800 p-4 lg:p-6 rounded-xl shadow-md mb-6 lg:mb-8 animate-fade-in-up">
+        <div className="flex flex-wrap items-center gap-3 mb-4">
+          <button
+            onClick={() => setFilterExpenseType('company')}
+            className={`px-4 py-2 rounded-lg font-medium text-sm lg:text-base flex items-center gap-2 transition-colors duration-200 ${
+              filterExpenseType === 'company'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+            }`}
+          >
+            <Building size={18} />
+            Shirkadda
+          </button>
+          
+          <button
+            onClick={() => setFilterExpenseType('project')}
+            className={`px-4 py-2 rounded-lg font-medium text-sm lg:text-base flex items-center gap-2 transition-colors duration-200 ${
+              filterExpenseType === 'project'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+            }`}
+          >
+            <Briefcase size={18} />
+            Mashruucyada
+          </button>
+          
+          <button
+            onClick={() => setFilterExpenseType('all')}
+            className={`px-4 py-2 rounded-lg font-medium text-sm lg:text-base flex items-center gap-2 transition-colors duration-200 ${
+              filterExpenseType === 'all'
+                ? 'bg-blue-500 text-white shadow-md'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+            }`}
+          >
+            Dhammaan
+          </button>
+          
+          <button
+            onClick={() => setFilterApprovalStatus('pending')}
+            className={`px-4 py-2 rounded-lg font-medium text-sm lg:text-base flex items-center gap-2 transition-colors duration-200 ${
+              filterApprovalStatus === 'pending'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+            }`}
+          >
+            Sugaya
+          </button>
+          
+          <button
+            onClick={() => setFilterApprovalStatus('approved')}
+            className={`px-4 py-2 rounded-lg font-medium text-sm lg:text-base flex items-center gap-2 transition-colors duration-200 ${
+              filterApprovalStatus === 'approved'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+            }`}
+          >
+            <CheckCircle size={18} />
+            La Ansixiyay
+          </button>
+          
+          <button
+            onClick={() => {
+              setFilterExpenseType('all');
+              setFilterApprovalStatus('all');
+            }}
+            className={`px-4 py-2 rounded-lg font-medium text-sm lg:text-base flex items-center gap-2 transition-colors duration-200 ${
+              filterExpenseType === 'all' && filterApprovalStatus === 'all'
+                ? 'bg-orange-500 text-white shadow-md'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+            }`}
+          >
+            <Filter size={18} />
+            Filtarrada Dheeraadka Ah
+          </button>
+        </div>
       </div>
 
       {/* Search, Filter & View Mode Bar */}

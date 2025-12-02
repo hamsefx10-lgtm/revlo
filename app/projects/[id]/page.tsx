@@ -113,6 +113,7 @@ const ProjectDetailsPage: React.FC = () => {
         if (!id) return;
         const unsubscribe = subscribeToExpenseChange((payload) => {
             if (payload.projectId === id) {
+                // Immediately refresh project data when expenses change (including labor expenses)
                 fetchProjectDetails();
             }
         });

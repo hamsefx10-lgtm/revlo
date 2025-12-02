@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Layout from '../../components/layouts/Layout';
 import { 
   Plus, Search, Eye, Edit, Trash2, DollarSign, Package, Briefcase, Building,
-  List, LayoutGrid, Filter, X, ChevronDown, ChevronUp, Check, XCircle
+  List, LayoutGrid, Filter, X, ChevronDown, ChevronUp, Check, XCircle, Upload
 } from 'lucide-react';
 import { calculateEmployeeSalary } from '../../lib/utils';
 import { emitExpenseChange } from '@/lib/client-events';
@@ -315,11 +315,20 @@ export default function ExpensesPage() {
       return;
     }
     try {
+      // Store projectId before deletion in case expense object gets cleared
+      const projectId = expense?.project?.id;
       const res = await fetch(`/api/expenses/${expense.id}`, { method: 'DELETE' });
       if (!res.ok) {
         throw new Error('Failed to delete expense');
       }
-      notifyProjectExpenseRemoval(expense);
+      // Emit event with projectId to trigger real-time update on project page
+      if (projectId) {
+        emitExpenseChange({
+          projectId,
+          expenseId: expense.id,
+          action: 'delete',
+        });
+      }
       await fetchExpenses();
     } catch (error) {
       console.error('Delete failed:', error);
@@ -385,13 +394,22 @@ export default function ExpensesPage() {
           <h1 className="text-3xl lg:text-4xl font-bold text-darkGray dark:text-gray-100 mb-2">Kharashyada</h1>
           <p className="text-mediumGray dark:text-gray-400">Maamul iyo eegid kharashyada shirkadda</p>
         </div>
-        <Link 
-          href="/expenses/add" 
-          className="bg-primary text-white px-4 lg:px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-200 flex items-center justify-center w-full lg:w-auto"
-        >
-          <Plus size={20} className="mr-2" />
-          Ku Dar Kharash Cusub
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+          <Link 
+            href="/expenses/bulk-import" 
+            className="bg-accent text-white px-4 lg:px-6 py-3 rounded-lg font-semibold hover:bg-accent/80 transition duration-200 flex items-center justify-center"
+          >
+            <Upload size={20} className="mr-2" />
+            Bulk Import
+          </Link>
+          <Link 
+            href="/expenses/add" 
+            className="bg-primary text-white px-4 lg:px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-200 flex items-center justify-center"
+          >
+            <Plus size={20} className="mr-2" />
+            Ku Dar Kharash Cusub
+          </Link>
+        </div>
       </div>
 
 

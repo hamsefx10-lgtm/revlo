@@ -504,15 +504,11 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     });
 
     // 3b. If this was a labor expense, clean up linked project labor record
-    const categoryLower =
-      typeof existingExpense.category === 'string'
-        ? existingExpense.category.toLowerCase()
-        : null;
-    const looksLikeProjectLabor =
-      Boolean(existingExpense.projectId && existingExpense.employeeId) ||
-      (categoryLower && ['labor', 'company labor'].includes(categoryLower));
-
-    if (looksLikeProjectLabor && existingExpense.projectId) {
+    if (
+      existingExpense.category &&
+      existingExpense.category.toLowerCase() === 'labor' &&
+      existingExpense.projectId
+    ) {
       await removeProjectLaborPayment({
         projectId: existingExpense.projectId,
         employeeId: existingExpense.employeeId || undefined,

@@ -2024,7 +2024,16 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paidFrom}</p>}
                     </div>
                     <div>
-                        <label htmlFor="selectedEmployeeForSalary" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Dooro Shaqaale <span className="text-redError">*</span></label>
+                        <div className="flex items-center justify-between mb-1">
+                          <label htmlFor="selectedEmployeeForSalary" className="block text-sm font-medium text-darkGray dark:text-gray-300">Dooro Shaqaale <span className="text-redError">*</span></label>
+                          <Link 
+                            href="/employees/add" 
+                            className="text-primary hover:text-blue-700 text-sm font-medium flex items-center gap-1 transition"
+                          >
+                            <Plus size={16} />
+                            Add New
+                          </Link>
+                        </div>
                         <select
                             id="selectedEmployeeForSalary"
                             required
@@ -2132,7 +2141,16 @@ const [consultancyFee, setConsultancyFee] = useState('');
                 <div className="p-4 border border-primary/20 rounded-lg bg-primary/5 animate-fade-in">
                   <h3 className="text-lg font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Shaqaalaha Shirkadda</h3>
                   <div>
-                    <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Shaqaale <span className="text-redError">*</span></label>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-md font-medium text-darkGray dark:text-gray-300">Shaqaale <span className="text-redError">*</span></label>
+                      <Link 
+                        href="/employees/add" 
+                        className="text-primary hover:text-blue-700 text-sm font-medium flex items-center gap-1 transition"
+                      >
+                        <Plus size={16} />
+                        Add New
+                      </Link>
+                    </div>
                     <select value={selectedEmployeeForSalary} onChange={e => setSelectedEmployeeForSalary(e.target.value)} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100" required title="Dooro Shaqaale">
                       <option value="">-- Dooro Shaqaale --</option>
                       {employees.map(emp => <option key={emp.id} value={emp.id}>{emp.fullName}</option>)}
@@ -2646,7 +2664,16 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paidFrom}</p>}
                     </div>
                     <div>
-                        <label htmlFor="selectedCustomerDebt" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Dooro Macmiilka (Dayn La Siinay) <span className="text-redError">*</span></label>
+                        <div className="flex items-center justify-between mb-1">
+                          <label htmlFor="selectedCustomerDebt" className="block text-sm font-medium text-darkGray dark:text-gray-300">Dooro Macmiilka (Dayn La Siinay) <span className="text-redError">*</span></label>
+                          <Link 
+                            href="/customers/add" 
+                            className="text-primary hover:text-blue-700 text-sm font-medium flex items-center gap-1 transition"
+                          >
+                            <Plus size={16} />
+                            Add New
+                          </Link>
+                        </div>
                         <select
                             id="selectedCustomerDebt"
                             required
