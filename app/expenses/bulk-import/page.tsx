@@ -13,7 +13,7 @@ import {
 import Toast from '@/components/common/Toast';
 
 type ExpenseType = 'company' | 'project';
-type SubCategory = 'Material' | 'Labor' | 'Transport' | 'Rental' | 'Consultancy' | 'Fuel' | 'Other';
+type SubCategory = 'Material' | 'Labor' | 'Company Labor' | 'Transport' | 'Rental' | 'Consultancy' | 'Fuel' | 'Other';
 
 interface MaterialRow {
   name: string;
