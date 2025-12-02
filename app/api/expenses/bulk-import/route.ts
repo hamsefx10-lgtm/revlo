@@ -36,7 +36,7 @@ export async function POST(request: Request) {
         // Validate based on subcategory
         let validationError = null;
         
-        if (subCategory === 'Material' || subCategory === 'Company Material') {
+        if (subCategory === 'Material') {
           if (!expense.Name || !expense.Quantity || !expense.Price || !expense.Unit) {
             validationError = 'Name, Quantity, Price, iyo Unit waa waajib';
           }
@@ -59,11 +59,26 @@ export async function POST(request: Request) {
           continue;
         }
 
+        // Determine category and subCategory based on expense type
+        let category: string;
+        let finalSubCategory: string | null = null;
+        
+        if (expenseType === 'company') {
+          // For company expenses, category is 'Company Expense' and subCategory is the specific type
+          category = 'Company Expense';
+          finalSubCategory = subCategory;
+        } else {
+          // For project expenses, category is the subcategory directly
+          category = subCategory;
+          finalSubCategory = null;
+        }
+
         // Prepare expense data
         let expenseData: any = {
           companyId,
           userId: userId || null,
-          category: subCategory,
+          category,
+          subCategory: finalSubCategory,
           paidFrom: expense.PaidFrom || 'Cash',
           expenseDate: new Date(expense.ExpenseDate || new Date()),
           note: expense.Note || null,
@@ -71,7 +86,7 @@ export async function POST(request: Request) {
         };
 
         // Handle Material expenses
-        if (subCategory === 'Material' || subCategory === 'Company Material') {
+        if (subCategory === 'Material') {
           const materials = [{
             name: expense.Name,
             qty: expense.Quantity,
@@ -82,7 +97,7 @@ export async function POST(request: Request) {
           const totalAmount = parseFloat(expense.Quantity) * parseFloat(expense.Price);
           
           expenseData.description = expense.Description || expense.Name;
-          expenseData.amount = totalAmount;
+          expenseData.amount = totalAmount.toString();
           expenseData.materials = materials;
           expenseData.materialDate = expense.MaterialDate ? new Date(expense.MaterialDate) : new Date(expense.ExpenseDate);
           
@@ -113,20 +128,29 @@ export async function POST(request: Request) {
           }
 
           expenseData.description = expense.WorkDescription;
-          expenseData.amount = parseFloat(expense.Wage);
+          expenseData.amount = parseFloat(expense.Wage).toString();
           expenseData.employeeId = employee.id;
           
           if (expenseType === 'project') {
             expenseData.projectId = projectId;
           }
         }
-        // Handle other expenses
+        // Handle other expenses (Transport, Rental, Consultancy, Fuel, Other)
         else {
           expenseData.description = expense.Description;
-          expenseData.amount = parseFloat(expense.Amount || expense.Amount);
+          expenseData.amount = parseFloat(expense.Amount).toString();
           
           if (subCategory === 'Transport') {
             expenseData.transportType = expense.TransportType || null;
+          } else if (subCategory === 'Rental') {
+            expenseData.equipmentName = expense.EquipmentName || null;
+            expenseData.rentalPeriod = expense.RentalPeriod || null;
+            expenseData.rentalFee = expense.RentalFee ? parseFloat(expense.RentalFee) : null;
+            expenseData.supplierName = expense.SupplierName || null;
+          } else if (subCategory === 'Consultancy') {
+            expenseData.consultantName = expense.ConsultantName || null;
+            expenseData.consultancyType = expense.ConsultancyType || null;
+            expenseData.consultancyFee = expense.ConsultancyFee ? parseFloat(expense.ConsultancyFee) : null;
           }
           
           if (expenseType === 'project') {

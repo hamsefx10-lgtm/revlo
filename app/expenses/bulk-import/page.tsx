@@ -111,6 +111,53 @@ export default function BulkImportExpensesPage() {
           Note: 'Client visit'
         };
         break;
+      case 'Rental':
+        headers = ['Description', 'Amount', 'EquipmentName', 'RentalPeriod', 'RentalFee', 'SupplierName', 'ExpenseDate', 'PaidFrom', 'Note'];
+        sampleRow = {
+          Description: 'Equipment rental',
+          Amount: '5000',
+          EquipmentName: 'Excavator',
+          RentalPeriod: '1 month',
+          RentalFee: '5000',
+          SupplierName: 'ABC Equipment',
+          ExpenseDate: new Date().toISOString().split('T')[0],
+          PaidFrom: 'Bank Account',
+          Note: 'Monthly rental'
+        };
+        break;
+      case 'Consultancy':
+        headers = ['Description', 'Amount', 'ConsultantName', 'ConsultancyType', 'ConsultancyFee', 'ExpenseDate', 'PaidFrom', 'Note'];
+        sampleRow = {
+          Description: 'Consultancy services',
+          Amount: '10000',
+          ConsultantName: 'John Doe',
+          ConsultancyType: 'Legal',
+          ConsultancyFee: '10000',
+          ExpenseDate: new Date().toISOString().split('T')[0],
+          PaidFrom: 'Bank Account',
+          Note: 'Legal consultation'
+        };
+        break;
+      case 'Fuel':
+        headers = ['Description', 'Amount', 'ExpenseDate', 'PaidFrom', 'Note'];
+        sampleRow = {
+          Description: 'Fuel for vehicles',
+          Amount: '3000',
+          ExpenseDate: new Date().toISOString().split('T')[0],
+          PaidFrom: 'Cash',
+          Note: 'Monthly fuel purchase'
+        };
+        break;
+      case 'Other':
+        headers = ['Description', 'Amount', 'ExpenseDate', 'PaidFrom', 'Note'];
+        sampleRow = {
+          Description: 'Miscellaneous expense',
+          Amount: '1000',
+          ExpenseDate: new Date().toISOString().split('T')[0],
+          PaidFrom: 'Cash',
+          Note: 'Other expenses'
+        };
+        break;
       default:
         headers = ['Description', 'Amount', 'ExpenseDate', 'PaidFrom', 'Note'];
         sampleRow = {
@@ -122,22 +169,36 @@ export default function BulkImportExpensesPage() {
         };
     }
 
-    // Convert to CSV
-    const csvContent = [
-      headers.join(','),
-      headers.map(h => sampleRow[h] || '').join(',')
-    ].join('\n');
+    // Convert to CSV with proper escaping
+    const escapeCSVValue = (value: any): string => {
+      if (value === null || value === undefined) return '';
+      const str = String(value);
+      // If value contains comma, quote, or newline, wrap in quotes and escape quotes
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
 
-    // Download CSV
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const csvRows = [
+      headers.map(escapeCSVValue).join(','),
+      headers.map(h => escapeCSVValue(sampleRow[h] || '')).join(',')
+    ];
+
+    const csvContent = csvRows.join('\n');
+
+    // Download CSV with BOM for Excel compatibility
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', `expense_template_${subCategory.toLowerCase()}.csv`);
+    link.setAttribute('download', `expense_template_${subCategory.toLowerCase().replace(/\s+/g, '_')}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 
     setToastMessage({ message: 'Template waa la soo dejiyay!', type: 'success' });
     setStep(4); // Move to upload step
@@ -169,59 +230,78 @@ export default function BulkImportExpensesPage() {
         return;
       }
 
-      // Parse CSV (handle quoted values)
-      const lines = text.split('\n').filter(line => line.trim());
+      // Parse CSV (handle quoted values, empty rows, and special characters)
+      const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
       if (lines.length < 2) {
-        setToastMessage({ message: 'File-ka ma buuxsan yahay', type: 'error' });
+        setToastMessage({ message: 'File-ka ma buuxsan yahay. Ugu yaraan laba saf ayaa loo baahan yahay (headers iyo hal row).', type: 'error' });
         setLoading(false);
         return;
       }
 
-      // Parse headers
-      const headerLine = lines[0];
-      const headers: string[] = [];
-      let currentHeader = '';
-      let inQuotes = false;
-      
-      for (let i = 0; i < headerLine.length; i++) {
-        const char = headerLine[i];
-        if (char === '"') {
-          inQuotes = !inQuotes;
-        } else if (char === ',' && !inQuotes) {
-          headers.push(currentHeader.trim());
-          currentHeader = '';
-        } else {
-          currentHeader += char;
-        }
-      }
-      headers.push(currentHeader.trim());
-
-      // Parse rows
-      const rows: any[] = [];
-      for (let lineIdx = 1; lineIdx < lines.length; lineIdx++) {
-        const line = lines[lineIdx];
+      // Helper function to parse CSV line with proper quote handling
+      const parseCSVLine = (line: string): string[] => {
         const values: string[] = [];
         let currentValue = '';
-        let inQuotesRow = false;
+        let inQuotes = false;
         
         for (let i = 0; i < line.length; i++) {
           const char = line[i];
+          const nextChar = line[i + 1];
+          
           if (char === '"') {
-            inQuotesRow = !inQuotesRow;
-          } else if (char === ',' && !inQuotesRow) {
+            if (inQuotes && nextChar === '"') {
+              // Escaped quote
+              currentValue += '"';
+              i++; // Skip next quote
+            } else {
+              // Toggle quote state
+              inQuotes = !inQuotes;
+            }
+          } else if (char === ',' && !inQuotes) {
+            // End of value
             values.push(currentValue.trim());
             currentValue = '';
           } else {
             currentValue += char;
           }
         }
+        // Add the last value
         values.push(currentValue.trim());
+        
+        return values;
+      };
 
+      // Parse headers
+      const headers = parseCSVLine(lines[0]).map(h => h.trim());
+
+      if (headers.length === 0) {
+        setToastMessage({ message: 'Headers-ka lama helin file-ka', type: 'error' });
+        setLoading(false);
+        return;
+      }
+
+      // Parse rows
+      const rows: any[] = [];
+      for (let lineIdx = 1; lineIdx < lines.length; lineIdx++) {
+        const line = lines[lineIdx];
+        if (!line.trim()) continue; // Skip empty lines
+        
+        const values = parseCSVLine(line);
+        
+        // Only process rows that have at least some data
+        if (values.every(v => !v.trim())) continue;
+        
         const row: any = {};
         headers.forEach((header, index) => {
-          row[header] = values[index] || '';
+          row[header] = (values[index] || '').trim();
         });
         rows.push(row);
+      }
+
+      if (rows.length === 0) {
+        setToastMessage({ message: 'Ma jiro data file-ka. Fadlan hubi in file-ka uu data leeyahay.', type: 'error' });
+        setLoading(false);
+        return;
       }
 
       // Validate rows
@@ -229,22 +309,30 @@ export default function BulkImportExpensesPage() {
       rows.forEach((row, index) => {
         const rowErrors: string[] = [];
         
-        if (subCategory === 'Material' || subCategory === 'Company Material') {
-          if (!row.Name) rowErrors.push('Name is required');
-          if (!row.Quantity || isNaN(Number(row.Quantity))) rowErrors.push('Valid Quantity is required');
-          if (!row.Price || isNaN(Number(row.Price))) rowErrors.push('Valid Price is required');
-          if (!row.Unit) rowErrors.push('Unit is required');
+        if (subCategory === 'Material') {
+          if (!row.Name || row.Name.trim() === '') rowErrors.push('Name is required');
+          if (!row.Quantity || isNaN(Number(row.Quantity)) || Number(row.Quantity) <= 0) rowErrors.push('Valid Quantity is required');
+          if (!row.Price || isNaN(Number(row.Price)) || Number(row.Price) <= 0) rowErrors.push('Valid Price is required');
+          if (!row.Unit || row.Unit.trim() === '') rowErrors.push('Unit is required');
         } else if (subCategory === 'Labor' || subCategory === 'Company Labor') {
-          if (!row.EmployeeName) rowErrors.push('EmployeeName is required');
-          if (!row.Wage || isNaN(Number(row.Wage))) rowErrors.push('Valid Wage is required');
-          if (!row.WorkDescription) rowErrors.push('WorkDescription is required');
+          if (!row.EmployeeName || row.EmployeeName.trim() === '') rowErrors.push('EmployeeName is required');
+          if (!row.Wage || isNaN(Number(row.Wage)) || Number(row.Wage) <= 0) rowErrors.push('Valid Wage is required');
+          if (!row.WorkDescription || row.WorkDescription.trim() === '') rowErrors.push('WorkDescription is required');
         } else {
-          if (!row.Description) rowErrors.push('Description is required');
-          if (!row.Amount || isNaN(Number(row.Amount))) rowErrors.push('Valid Amount is required');
+          if (!row.Description || row.Description.trim() === '') rowErrors.push('Description is required');
+          if (!row.Amount || isNaN(Number(row.Amount)) || Number(row.Amount) <= 0) rowErrors.push('Valid Amount is required');
         }
         
-        if (!row.ExpenseDate) rowErrors.push('ExpenseDate is required');
-        if (!row.PaidFrom) rowErrors.push('PaidFrom is required');
+        if (!row.ExpenseDate || row.ExpenseDate.trim() === '') {
+          rowErrors.push('ExpenseDate is required');
+        } else {
+          // Validate date format
+          const date = new Date(row.ExpenseDate);
+          if (isNaN(date.getTime())) {
+            rowErrors.push('Valid ExpenseDate format is required (YYYY-MM-DD)');
+          }
+        }
+        if (!row.PaidFrom || row.PaidFrom.trim() === '') rowErrors.push('PaidFrom is required');
 
         if (rowErrors.length > 0) {
           errors.push({ row: index + 2, errors: rowErrors });
@@ -254,9 +342,16 @@ export default function BulkImportExpensesPage() {
       setValidationErrors(errors);
       setParsedData(rows);
       setStep(5); // Move to preview step
+      
+      // Reset file input to allow re-uploading the same file
+      const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = '';
+      }
     } catch (error) {
       console.error('Error parsing file:', error);
-      setToastMessage({ message: 'Cilad ayaa dhacday marka file-ka la akhrinayay', type: 'error' });
+      setToastMessage({ message: 'Cilad ayaa dhacday marka file-ka la akhrinayay. Fadlan hubi in file-ka uu format sax ah yahay.', type: 'error' });
+      setFile(null);
     } finally {
       setLoading(false);
     }
@@ -264,7 +359,15 @@ export default function BulkImportExpensesPage() {
 
   // Import expenses
   const handleImport = async () => {
-    if (parsedData.length === 0) return;
+    if (parsedData.length === 0) {
+      setToastMessage({ message: 'Ma jiro data la soo gelin karo', type: 'error' });
+      return;
+    }
+
+    if (expenseType === 'project' && !selectedProject) {
+      setToastMessage({ message: 'Fadlan dooro mashruuca marka hore', type: 'error' });
+      return;
+    }
 
     setLoading(true);
     try {
@@ -388,12 +491,18 @@ export default function BulkImportExpensesPage() {
                   value={selectedProject}
                   onChange={(e) => setSelectedProject(e.target.value)}
                   className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100"
+                  required
                 >
                   <option value="">-- Dooro Mashruuca --</option>
                   {projects.map(p => (
                     <option key={p.id} value={p.id}>{p.name}</option>
                   ))}
                 </select>
+                {projects.length === 0 && (
+                  <p className="text-sm text-yellow-600 dark:text-yellow-400 mt-2">
+                    Mashruucyada la heli karo ma jiraan. Fadlan hubi in mashruuc la sameeyay.
+                  </p>
+                )}
               </div>
             )}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -638,8 +747,10 @@ export default function BulkImportExpensesPage() {
                   setStep(1);
                   setExpenseType('');
                   setSubCategory('');
+                  setSelectedProject('');
                   setFile(null);
                   setParsedData([]);
+                  setValidationErrors([]);
                   setImportResults(null);
                 }}
                 className="px-6 py-4 border border-lightGray dark:border-gray-700 rounded-lg text-darkGray dark:text-gray-100 hover:bg-lightGray dark:hover:bg-gray-700"
