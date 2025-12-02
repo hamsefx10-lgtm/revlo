@@ -171,7 +171,7 @@ export default function ExpensesPage() {
   const projects = ['All', 'Internal', ...Array.from(new Set(expenses.map((e: Expense) => e.project).filter(Boolean)))];
   const paidFromOptions = ['All', ...Array.from(new Set(expenses.map((e: Expense) => e.paidFrom).filter(Boolean)))];
   const dateRanges = ['All', 'Today', 'Last 7 Days', 'Last 30 Days', 'This Month', 'This Quarter', 'This Year'];
-  const approvalStatuses = ['All', 'Approved', 'Pending'];
+  const approvalStatuses: Array<'all' | 'approved' | 'pending'> = ['all', 'approved', 'pending'];
 
   // Expense Statistics
   const totalExpensesAmount = filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0);
@@ -485,9 +485,13 @@ const ExpenseCard: React.FC<{ expense: typeof dummyExpenses[0]; onEdit: (id: str
             title="Filter by Approval Status"
             className="w-full p-3 pl-10 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 appearance-none"
             value={filterApprovalStatus}
-            onChange={(e) => setFilterApprovalStatus(e.target.value)}
+            onChange={(e) => setFilterApprovalStatus(e.target.value as 'all' | 'pending' | 'approved')}
           >
-            {approvalStatuses.map(status => <option key={status} value={status}>{status}</option>)}
+            {approvalStatuses.map(status => (
+              <option key={status} value={status}>
+                {status === 'all' ? 'All' : status === 'approved' ? 'Approved' : 'Pending'}
+              </option>
+            ))}
           </select>
           <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400">
             <ChevronRight className="transform rotate-90" size={20} />
