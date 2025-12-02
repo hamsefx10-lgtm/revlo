@@ -8,6 +8,11 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Revlo - Project & Financial Management',
   description: 'Nidaamka maamulka mashaariicda iyo maaliyadda ee casriga ah.',
+  icons: {
+    icon: '/revlo-logo.png',
+    shortcut: '/revlo-logo.png',
+    apple: '/revlo-logo.png',
+  },
 };
 
 export default function RootLayout({

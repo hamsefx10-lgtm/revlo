@@ -1,7 +1,7 @@
 // app/reports/project-reports/page.tsx - Project Reports Page (PDF-Ready Design)
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Layout from '../../../components/layouts/Layout';
 import { Download, Printer, Loader2, Briefcase, Calendar, Filter, ChevronDown, ChevronUp, Eye, EyeOff, X, XCircle } from 'lucide-react';
 import jsPDF from 'jspdf';
@@ -296,7 +296,7 @@ async function exportPDF(data: ProjectReportsData, showDetails: boolean) {
   renderDocument(logoDataUrl || undefined);
 }
 
-export default function ProjectReportsPage() {
+function ProjectReportsContent() {
   const [reportData, setReportData] = useState<ProjectReportsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -947,4 +947,22 @@ export default function ProjectReportsPage() {
   );
 }
 
+export default function ProjectReportsPage() {
+  return (
+    <Suspense
+      fallback={
+        <Layout>
+          <div className="flex items-center justify-center min-h-[400px]">
+            <Loader2 className="animate-spin mr-3 text-primary" size={32} />
+            <span className="text-xl text-mediumGray">
+              Warbixinta mashaariicda ayaa soo dhacaysa...
+            </span>
+          </div>
+        </Layout>
+      }
+    >
+      <ProjectReportsContent />
+    </Suspense>
+  );
+}
 
