@@ -5,7 +5,7 @@ import React from 'react';
 import Link from 'next/link';
 import Layout from '../../components/layouts/Layout';
 import { useCurrency } from '../../contexts/CurrencyContext';
-import { 
+import {
   ArrowLeft, LineChart, DollarSign, Warehouse, Scale, CreditCard, Banknote, CalendarCheck, FileText, Plus, ArrowRight,
   TrendingUp, TrendingDown, Briefcase, Building, Users, Clock, Download, Share2, Printer, Mail, MessageSquare, Send, Bell, XCircle, Info, PlayCircle, Settings, Factory, PieChart, BarChart3, Eye // New icons for sharing
 } from 'lucide-react';
@@ -90,11 +90,26 @@ export default function ReportsOverviewPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showProjectViews, setShowProjectViews] = useState(false);
+  const [planType, setPlanType] = useState<string>('COMBINED');
   const { formatCurrency } = useCurrency();
   const [dateRange, setDateRange] = useState({
     startDate: new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0]
   });
+
+  // Fetch plan type
+  useEffect(() => {
+    const fetchPlanType = async () => {
+      try {
+        const response = await fetch('/api/company/plan-type');
+        const data = await response.json();
+        setPlanType(data.planType || 'COMBINED');
+      } catch (error) {
+        setPlanType('COMBINED');
+      }
+    };
+    fetchPlanType();
+  }, []);
 
   // Export functions
   const exportToPDF = () => {
@@ -104,7 +119,7 @@ export default function ReportsOverviewPage() {
 
   const exportToExcel = () => {
     if (!stats || !dailyReport) return;
-    
+
     const data = [
       ['Report Type', 'Value'],
       ['Total Income', formatCurrency(stats.totalIncome || 0)],
@@ -117,7 +132,7 @@ export default function ReportsOverviewPage() {
       ['Today Expenses', formatCurrency(dailyReport.todayExpenses || 0)],
       ['Today Net Flow', formatCurrency(dailyReport.todayNetFlow || 0)],
     ];
-    
+
     const csvContent = data.map(row => row.join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -128,7 +143,7 @@ export default function ReportsOverviewPage() {
 
   const exportToCSV = () => {
     if (!stats || !dailyReport) return;
-    
+
     const data = [
       ['Metric', 'Value', 'Date'],
       ['Total Income', stats.totalIncome, new Date().toISOString().split('T')[0]],
@@ -141,7 +156,7 @@ export default function ReportsOverviewPage() {
       ['Today Expenses', dailyReport.todayExpenses, dailyReport.date],
       ['Today Net Flow', dailyReport.todayNetFlow, dailyReport.date],
     ];
-    
+
     const csvContent = data.map(row => row.join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -171,7 +186,7 @@ export default function ReportsOverviewPage() {
         setStats(statsData.stats || statsData);
         setProjectPerformance(perfData.performance || perfData);
         setDailyReport(dailyData.dailyReport || dailyData);
-        
+
         // Fetch project financial reports
         if (projectRes.ok) {
           const projectData = await projectRes.json();
@@ -187,7 +202,7 @@ export default function ReportsOverviewPage() {
     fetchAll();
   }, [dateRange]);
 
-// --- Main Reports Overview Page Component ---
+  // --- Main Reports Overview Page Component ---
   if (loading) return (
     <Layout>
       <div className="flex items-center justify-center min-h-[400px] text-darkGray dark:text-gray-100">
@@ -204,7 +219,7 @@ export default function ReportsOverviewPage() {
       </div>
     </Layout>
   );
-  if (!stats || !dailyReport) return null;
+  if (!stats || !dailyReport) { return null; }
 
   return (
     <Layout>
@@ -221,7 +236,7 @@ export default function ReportsOverviewPage() {
               Reports & Analytics
             </h1>
           </div>
-          
+
           {/* Mobile Date Range & Actions */}
           <div className="flex flex-col space-y-3 md:flex-row md:items-center md:space-y-0 md:space-x-4">
             {/* Date Range - Mobile Stacked */}
@@ -249,10 +264,10 @@ export default function ReportsOverviewPage() {
                 />
               </div>
             </div>
-            
+
             {/* Generate Report Button - Mobile Full Width */}
             <button className="bg-primary text-white py-2 px-4 md:py-2.5 md:px-6 rounded-lg font-semibold text-sm md:text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center justify-center w-full md:w-auto">
-              <Plus className="mr-2 w-4 h-4 md:w-5 md:h-5" /> 
+              <Plus className="mr-2 w-4 h-4 md:w-5 md:h-5" />
               <span className="hidden sm:inline">Generate Custom Report</span>
               <span className="sm:hidden">Custom Report</span>
             </button>
@@ -289,14 +304,16 @@ export default function ReportsOverviewPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8 animate-fade-in-up">
         <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md border-l-4 border-redError">
           <h3 className="text-lg md:text-xl font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center space-x-2">
-            <DollarSign size={20} className="md:w-6 md:h-6 text-redError"/> 
+            <DollarSign size={20} className="md:w-6 md:h-6 text-redError" />
             <span className="text-sm md:text-base">Faahfaahinta Kharashyada</span>
           </h3>
           <div className="space-y-3 text-sm md:text-base text-mediumGray dark:text-gray-400">
-            <div className="flex justify-between items-center">
-              <span className="text-xs md:text-sm">Kharashyada Mashruuca:</span>
-              <span className="font-semibold text-redError text-xs md:text-sm">-{formatCurrency(stats.projectExpenses || 0)}</span>
-            </div>
+            {planType !== 'FACTORIES_ONLY' && (
+              <div className="flex justify-between items-center">
+                <span className="text-xs md:text-sm">Kharashyada Mashruuca:</span>
+                <span className="font-semibold text-redError text-xs md:text-sm">-{formatCurrency(stats.projectExpenses || 0)}</span>
+              </div>
+            )}
             <div className="flex justify-between items-center">
               <span className="text-xs md:text-sm">Kharashyada Shirkadda:</span>
               <span className="font-semibold text-redError text-xs md:text-sm">-{formatCurrency(stats.companyExpenses || 0)}</span>
@@ -309,7 +326,7 @@ export default function ReportsOverviewPage() {
         </div>
         <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md border-l-4 border-accent">
           <h3 className="text-lg md:text-xl font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center space-x-2">
-            <Scale size={20} className="md:w-6 md:h-6 text-accent"/> 
+            <Scale size={20} className="md:w-6 md:h-6 text-accent" />
             <span className="text-sm md:text-base">Deynaha & Lacagaha</span>
           </h3>
           <div className="space-y-3 text-sm md:text-base text-mediumGray dark:text-gray-400">
@@ -317,10 +334,12 @@ export default function ReportsOverviewPage() {
               <span className="text-xs md:text-sm">Lacagaha La Sugayo (customers):</span>
               <span className="font-semibold text-redError text-xs md:text-sm">-{formatCurrency(stats.outstandingDebts || 0)}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs md:text-sm">Lacagaha La Sugayo (projects):</span>
-              <span className="font-semibold text-secondary text-xs md:text-sm">{formatCurrency(stats.receivableDebts || 0)}</span>
-            </div>
+            {planType !== 'FACTORIES_ONLY' && (
+              <div className="flex justify-between items-center">
+                <span className="text-xs md:text-sm">Lacagaha La Sugayo (projects):</span>
+                <span className="font-semibold text-secondary text-xs md:text-sm">{formatCurrency(stats.receivableDebts || 0)}</span>
+              </div>
+            )}
             <div className="flex justify-between items-center font-bold text-sm md:text-lg pt-2 border-t-2 border-lightGray dark:border-gray-700">
               <span className="text-xs md:text-sm">Saamiga Saamileyda:</span>
               <span className="text-primary text-xs md:text-sm font-extrabold">{formatCurrency(stats.shareholdersEquity || 0)}</span>
@@ -332,7 +351,7 @@ export default function ReportsOverviewPage() {
       {/* Mobile-Optimized Project Performance Chart */}
       <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md mb-6 md:mb-8 animate-fade-in-up">
         <h3 className="text-lg md:text-xl font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center space-x-2">
-          <LineChart size={20} className="md:w-6 md:h-6 text-primary"/> 
+          <LineChart size={20} className="md:w-6 md:h-6 text-primary" />
           <span className="text-sm md:text-base">Horumarka Mashruucyada (6 Bilood ee Ugu Dambeeyay)</span>
         </h3>
         <div className="h-64 md:h-80">
@@ -341,13 +360,13 @@ export default function ReportsOverviewPage() {
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis dataKey="month" stroke="#6b7280" fontSize={12} />
               <YAxis stroke="#6b7280" fontSize={12} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#1f2937', 
-                  border: '1px solid #374151', 
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#1f2937',
+                  border: '1px solid #374151',
                   borderRadius: '8px',
                   fontSize: '12px'
-                }} 
+                }}
               />
               <Legend />
               <Bar dataKey="started" fill="#3b82f6" name="Bilaabmay" radius={[2, 2, 0, 0]} />
@@ -357,178 +376,176 @@ export default function ReportsOverviewPage() {
         </div>
       </div>
 
-      {/* NEW: Project Views Section - Muraayada Mashruucyada */}
-      <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md mb-6 md:mb-8 animate-fade-in-up">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
-          <h3 className="text-lg md:text-xl font-semibold text-darkGray dark:text-gray-100 flex items-center space-x-2">
-            <Eye size={20} className="md:w-6 md:h-6 text-primary"/> 
-            <span className="text-sm md:text-base">Muraayada Mashruucyada (Project Financial Views)</span>
-          </h3>
-          <button
-            onClick={() => setShowProjectViews(!showProjectViews)}
-            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center gap-2"
-          >
-            <Eye size={16} />
-            {showProjectViews ? 'Qari' : 'Muuji'}
-          </button>
-        </div>
+      {/* NEW: Project Views Section - Muraayada Mashruucyada - Only for PROJECTS_ONLY or COMBINED */}
+      {planType !== 'FACTORIES_ONLY' && (
+        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md mb-6 md:mb-8 animate-fade-in-up">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
+            <h3 className="text-lg md:text-xl font-semibold text-darkGray dark:text-gray-100 flex items-center space-x-2">
+              <Eye size={20} className="md:w-6 md:h-6 text-primary" />
+              <span className="text-sm md:text-base">Muraayada Mashruucyada (Project Financial Views)</span>
+            </h3>
+            <button
+              onClick={() => setShowProjectViews(!showProjectViews)}
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center gap-2"
+            >
+              <Eye size={16} />
+              {showProjectViews ? 'Qari' : 'Muuji'}
+            </button>
+          </div>
 
-        {showProjectViews && projectSummary && (
-          <>
-            {/* Project Financial Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-700">
-                <div className="flex items-center justify-between mb-2">
-                  <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
-                  <span className="text-xs text-green-600 dark:text-green-400 font-medium">Total Revenue</span>
+          {showProjectViews && projectSummary && (
+            <>
+              {/* Project Financial Summary Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-700">
+                  <div className="flex items-center justify-between mb-2">
+                    <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    <span className="text-xs text-green-600 dark:text-green-400 font-medium">Total Revenue</span>
+                  </div>
+                  <p className="text-xl md:text-2xl font-bold text-green-700 dark:text-green-300">
+                    {formatCurrency(projectSummary.totalRevenue)}
+                  </p>
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                    {projectSummary.totalProjects} mashruuc
+                  </p>
                 </div>
-                <p className="text-xl md:text-2xl font-bold text-green-700 dark:text-green-300">
-                  {formatCurrency(projectSummary.totalRevenue)}
-                </p>
-                <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                  {projectSummary.totalProjects} mashruuc
-                </p>
+
+                <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-700">
+                  <div className="flex items-center justify-between mb-2">
+                    <TrendingDown className="w-5 h-5 text-red-600 dark:text-red-400" />
+                    <span className="text-xs text-red-600 dark:text-red-400 font-medium">Total Expenses</span>
+                  </div>
+                  <p className="text-xl md:text-2xl font-bold text-red-700 dark:text-red-300">
+                    {formatCurrency(projectSummary.totalExpenses)}
+                  </p>
+                  <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                    Kharashyada guud
+                  </p>
+                </div>
+
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-700">
+                  <div className="flex items-center justify-between mb-2">
+                    <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">Total Profit</span>
+                  </div>
+                  <p className="text-xl md:text-2xl font-bold text-blue-700 dark:text-blue-300">
+                    {formatCurrency(projectSummary.totalProfit)}
+                  </p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                    Faa'iidada guud
+                  </p>
+                </div>
+
+                <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-700">
+                  <div className="flex items-center justify-between mb-2">
+                    <PieChart className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">Avg Profit Margin</span>
+                  </div>
+                  <p className="text-xl md:text-2xl font-bold text-purple-700 dark:text-purple-300">
+                    {projectSummary.averageProfitMargin.toFixed(1)}%
+                  </p>
+                  <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                    Celceliska faa'iidada
+                  </p>
+                </div>
               </div>
 
-              <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-700">
-                <div className="flex items-center justify-between mb-2">
-                  <TrendingDown className="w-5 h-5 text-red-600 dark:text-red-400" />
-                  <span className="text-xs text-red-600 dark:text-red-400 font-medium">Total Expenses</span>
-                </div>
-                <p className="text-xl md:text-2xl font-bold text-red-700 dark:text-red-300">
-                  {formatCurrency(projectSummary.totalExpenses)}
-                </p>
-                <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                  Kharashyada guud
-                </p>
-              </div>
-
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-700">
-                <div className="flex items-center justify-between mb-2">
-                  <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">Total Profit</span>
-                </div>
-                <p className="text-xl md:text-2xl font-bold text-blue-700 dark:text-blue-300">
-                  {formatCurrency(projectSummary.totalProfit)}
-                </p>
-                <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                  Faa'iidada guud
-                </p>
-              </div>
-
-              <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-700">
-                <div className="flex items-center justify-between mb-2">
-                  <PieChart className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                  <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">Avg Profit Margin</span>
-                </div>
-                <p className="text-xl md:text-2xl font-bold text-purple-700 dark:text-purple-300">
-                  {projectSummary.averageProfitMargin.toFixed(1)}%
-                </p>
-                <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
-                  Celceliska faa'iidada
-                </p>
-              </div>
-            </div>
-
-            {/* Individual Project Financial Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-700">
-                    <th className="text-left py-3 px-4 font-semibold text-darkGray dark:text-gray-100">Mashruuc</th>
-                    <th className="text-right py-3 px-4 font-semibold text-darkGray dark:text-gray-100">Revenue</th>
-                    <th className="text-right py-3 px-4 font-semibold text-darkGray dark:text-gray-100">Kharashyada</th>
-                    <th className="text-right py-3 px-4 font-semibold text-darkGray dark:text-gray-100">Faa'iidada</th>
-                    <th className="text-right py-3 px-4 font-semibold text-darkGray dark:text-gray-100">Margin %</th>
-                    <th className="text-center py-3 px-4 font-semibold text-darkGray dark:text-gray-100">Xaaladda</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {projectReports.slice(0, 10).map((project) => (
-                    <tr key={project.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                      <td className="py-3 px-4">
-                        <div className="font-medium text-darkGray dark:text-gray-100">{project.name}</div>
-                        <div className="text-xs text-mediumGray dark:text-gray-400">{project.customer}</div>
-                      </td>
-                      <td className="text-right py-3 px-4 text-green-600 dark:text-green-400 font-medium">
-                        {formatCurrency(project.totalRevenue)}
-                      </td>
-                      <td className="text-right py-3 px-4 text-red-600 dark:text-red-400 font-medium">
-                        {formatCurrency(project.totalExpenses)}
-                      </td>
-                      <td className={`text-right py-3 px-4 font-bold ${
-                        project.grossProfit >= 0 
-                          ? 'text-blue-600 dark:text-blue-400' 
+              {/* Individual Project Financial Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200 dark:border-gray-700">
+                      <th className="text-left py-3 px-4 font-semibold text-darkGray dark:text-gray-100">Mashruuc</th>
+                      <th className="text-right py-3 px-4 font-semibold text-darkGray dark:text-gray-100">Revenue</th>
+                      <th className="text-right py-3 px-4 font-semibold text-darkGray dark:text-gray-100">Kharashyada</th>
+                      <th className="text-right py-3 px-4 font-semibold text-darkGray dark:text-gray-100">Faa'iidada</th>
+                      <th className="text-right py-3 px-4 font-semibold text-darkGray dark:text-gray-100">Margin %</th>
+                      <th className="text-center py-3 px-4 font-semibold text-darkGray dark:text-gray-100">Xaaladda</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {projectReports.slice(0, 10).map((project) => (
+                      <tr key={project.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <td className="py-3 px-4">
+                          <div className="font-medium text-darkGray dark:text-gray-100">{project.name}</div>
+                          <div className="text-xs text-mediumGray dark:text-gray-400">{project.customer}</div>
+                        </td>
+                        <td className="text-right py-3 px-4 text-green-600 dark:text-green-400 font-medium">
+                          {formatCurrency(project.totalRevenue)}
+                        </td>
+                        <td className="text-right py-3 px-4 text-red-600 dark:text-red-400 font-medium">
+                          {formatCurrency(project.totalExpenses)}
+                        </td>
+                        <td className={`text-right py-3 px-4 font-bold ${project.grossProfit >= 0
+                          ? 'text-blue-600 dark:text-blue-400'
                           : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {formatCurrency(project.grossProfit)}
-                      </td>
-                      <td className={`text-right py-3 px-4 font-medium ${
-                        project.profitMargin >= 20 
-                          ? 'text-green-600 dark:text-green-400' 
+                          }`}>
+                          {formatCurrency(project.grossProfit)}
+                        </td>
+                        <td className={`text-right py-3 px-4 font-medium ${project.profitMargin >= 20
+                          ? 'text-green-600 dark:text-green-400'
                           : project.profitMargin >= 10
-                          ? 'text-yellow-600 dark:text-yellow-400'
-                          : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {project.profitMargin.toFixed(1)}%
-                      </td>
-                      <td className="text-center py-3 px-4">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                          project.status === 'Active' 
+                            ? 'text-yellow-600 dark:text-yellow-400'
+                            : 'text-red-600 dark:text-red-400'
+                          }`}>
+                          {project.profitMargin.toFixed(1)}%
+                        </td>
+                        <td className="text-center py-3 px-4">
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${project.status === 'Active'
                             ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
                             : project.status === 'Completed'
-                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                            : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
-                        }`}>
-                          {project.status}
-                        </span>
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                              : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
+                            }`}>
+                            {project.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot className="bg-gray-50 dark:bg-gray-700/50">
+                    <tr>
+                      <td className="py-3 px-4 font-bold text-darkGray dark:text-gray-100">Wadarta Guud:</td>
+                      <td className="text-right py-3 px-4 font-bold text-green-600 dark:text-green-400">
+                        {formatCurrency(projectSummary.totalRevenue)}
                       </td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot className="bg-gray-50 dark:bg-gray-700/50">
-                  <tr>
-                    <td className="py-3 px-4 font-bold text-darkGray dark:text-gray-100">Wadarta Guud:</td>
-                    <td className="text-right py-3 px-4 font-bold text-green-600 dark:text-green-400">
-                      {formatCurrency(projectSummary.totalRevenue)}
-                    </td>
-                    <td className="text-right py-3 px-4 font-bold text-red-600 dark:text-red-400">
-                      {formatCurrency(projectSummary.totalExpenses)}
-                    </td>
-                    <td className={`text-right py-3 px-4 font-bold ${
-                      projectSummary.totalProfit >= 0 
-                        ? 'text-blue-600 dark:text-blue-400' 
+                      <td className="text-right py-3 px-4 font-bold text-red-600 dark:text-red-400">
+                        {formatCurrency(projectSummary.totalExpenses)}
+                      </td>
+                      <td className={`text-right py-3 px-4 font-bold ${projectSummary.totalProfit >= 0
+                        ? 'text-blue-600 dark:text-blue-400'
                         : 'text-red-600 dark:text-red-400'
-                    }`}>
-                      {formatCurrency(projectSummary.totalProfit)}
-                    </td>
-                    <td className="text-right py-3 px-4 font-bold text-purple-600 dark:text-purple-400">
-                      {projectSummary.averageProfitMargin.toFixed(1)}%
-                    </td>
-                    <td className="py-3 px-4"></td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-
-            {projectReports.length > 10 && (
-              <div className="mt-4 text-center">
-                <Link 
-                  href="/reports/profit-loss" 
-                  className="text-primary hover:text-blue-700 text-sm font-medium flex items-center justify-center gap-2"
-                >
-                  Muuji Dhammaan Mashruucyada <ArrowRight size={16} />
-                </Link>
+                        }`}>
+                        {formatCurrency(projectSummary.totalProfit)}
+                      </td>
+                      <td className="text-right py-3 px-4 font-bold text-purple-600 dark:text-purple-400">
+                        {projectSummary.averageProfitMargin.toFixed(1)}%
+                      </td>
+                      <td className="py-3 px-4"></td>
+                    </tr>
+                  </tfoot>
+                </table>
               </div>
-            )}
-          </>
-        )}
-      </div>
+
+              {projectReports.length > 10 && (
+                <div className="mt-4 text-center">
+                  <Link
+                    href="/reports/profit-loss"
+                    className="text-primary hover:text-blue-700 text-sm font-medium flex items-center justify-center gap-2"
+                  >
+                    Muuji Dhammaan Mashruucyada <ArrowRight size={16} />
+                  </Link>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       {/* Mobile-Optimized Project Alerts Section */}
       <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md mb-6 md:mb-8 animate-fade-in-up">
         <h3 className="text-lg md:text-xl font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center space-x-2">
-          <Bell size={20} className="md:w-6 md:h-6 text-accent"/> 
+          <Bell size={20} className="md:w-6 md:h-6 text-accent" />
           <span className="text-sm md:text-base">Digniinada Mashruucyada</span>
         </h3>
         <div className="space-y-3">
@@ -590,7 +607,7 @@ export default function ReportsOverviewPage() {
       {/* Mobile-Optimized Daily Report Section */}
       <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md mb-6 md:mb-8 animate-fade-in-up">
         <h3 className="text-lg md:text-xl font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center space-x-2">
-          <CalendarCheck size={20} className="md:w-6 md:h-6 text-primary"/> 
+          <CalendarCheck size={20} className="md:w-6 md:h-6 text-primary" />
           <span className="text-sm md:text-base">Warbixinta Maalinlaha ah ({dailyReport.date})</span>
         </h3>
         <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mb-4">
@@ -742,22 +759,24 @@ export default function ReportsOverviewPage() {
           <ArrowRight size={20} className="md:w-6 md:h-6 text-mediumGray dark:text-gray-400 group-hover:translate-x-2 transition-transform duration-200" />
         </Link>
 
-        <Link href="/reports/project-reports" className="bg-indigo-50 dark:bg-indigo-900/20 p-4 md:p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6 group border border-indigo-200 dark:border-indigo-800">
-          <div className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 p-3 md:p-4 rounded-full group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-200">
-            <Briefcase size={32} className="md:w-10 md:h-10" />
-          </div>
-          <div className="text-center md:text-left flex-1">
-            <h3 className="text-lg md:text-2xl font-bold text-darkGray dark:text-gray-100 mb-2">Project Reports</h3>
-            <p className="text-sm md:text-base text-mediumGray dark:text-gray-400">Warbixin mashaariicda oo faahfaahsan, filter-ka taariikhda, PDF/print.</p>
-          </div>
-          <ArrowRight size={20} className="md:w-6 md:h-6 text-mediumGray dark:text-gray-400 group-hover:translate-x-2 transition-transform duration-200" />
-        </Link>
+        {planType !== 'FACTORIES_ONLY' && (
+          <Link href="/reports/project-reports" className="bg-indigo-50 dark:bg-indigo-900/20 p-4 md:p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6 group border border-indigo-200 dark:border-indigo-800">
+            <div className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 p-3 md:p-4 rounded-full group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-200">
+              <Briefcase size={32} className="md:w-10 md:h-10" />
+            </div>
+            <div className="text-center md:text-left flex-1">
+              <h3 className="text-lg md:text-2xl font-bold text-darkGray dark:text-gray-100 mb-2">Project Reports</h3>
+              <p className="text-sm md:text-base text-mediumGray dark:text-gray-400">Warbixin mashaariicda oo faahfaahsan, filter-ka taariikhda, PDF/print.</p>
+            </div>
+            <ArrowRight size={20} className="md:w-6 md:h-6 text-mediumGray dark:text-gray-400 group-hover:translate-x-2 transition-transform duration-200" />
+          </Link>
+        )}
       </div>
 
       {/* Mobile-Optimized Export/Share Buttons */}
       <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md mb-6 md:mb-8 animate-fade-in-up">
         <h3 className="text-lg md:text-xl font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center space-x-2">
-          <Download size={20} className="md:w-6 md:h-6 text-primary"/> 
+          <Download size={20} className="md:w-6 md:h-6 text-primary" />
           <span className="text-sm md:text-base">Soo Deji & Wadaag</span>
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 md:gap-4">
@@ -781,17 +800,17 @@ export default function ReportsOverviewPage() {
             <span className="hidden sm:inline">Daabac</span>
             <span className="sm:hidden">Print</span>
           </button>
-          <button onClick={() => {/* Email functionality */}} className="bg-green-600 text-white py-2 px-3 md:py-3 md:px-4 rounded-lg font-semibold text-xs md:text-sm hover:bg-green-700 transition duration-200 flex items-center justify-center space-x-1">
+          <button onClick={() => {/* Email functionality */ }} className="bg-green-600 text-white py-2 px-3 md:py-3 md:px-4 rounded-lg font-semibold text-xs md:text-sm hover:bg-green-700 transition duration-200 flex items-center justify-center space-x-1">
             <Mail size={14} className="md:w-4 md:h-4" />
             <span className="hidden sm:inline">U Dir Email</span>
             <span className="sm:hidden">Email</span>
           </button>
-          <button onClick={() => {/* WhatsApp functionality */}} className="bg-green-500 text-white py-2 px-3 md:py-3 md:px-4 rounded-lg font-semibold text-xs md:text-sm hover:bg-green-600 transition duration-200 flex items-center justify-center space-x-1">
+          <button onClick={() => {/* WhatsApp functionality */ }} className="bg-green-500 text-white py-2 px-3 md:py-3 md:px-4 rounded-lg font-semibold text-xs md:text-sm hover:bg-green-600 transition duration-200 flex items-center justify-center space-x-1">
             <MessageSquare size={14} className="md:w-4 md:h-4" />
             <span className="hidden sm:inline">Wadaag (WhatsApp)</span>
             <span className="sm:hidden">WhatsApp</span>
           </button>
-          <button onClick={() => {/* Telegram functionality */}} className="bg-blue-500 text-white py-2 px-3 md:py-3 md:px-4 rounded-lg font-semibold text-xs md:text-sm hover:bg-blue-600 transition duration-200 flex items-center justify-center space-x-1">
+          <button onClick={() => {/* Telegram functionality */ }} className="bg-blue-500 text-white py-2 px-3 md:py-3 md:px-4 rounded-lg font-semibold text-xs md:text-sm hover:bg-blue-600 transition duration-200 flex items-center justify-center space-x-1">
             <Send size={14} className="md:w-4 md:h-4" />
             <span className="hidden sm:inline">Wadaag (Telegram)</span>
             <span className="sm:hidden">Telegram</span>

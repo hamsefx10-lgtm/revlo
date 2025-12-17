@@ -19,9 +19,25 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const account = await prisma.account.findFirst({
       where: { id: id, companyId },
       include: {
-        transactions: true,
-        fromTransactions: true,
-        toTransactions: true,
+        transactions: {
+          include: {
+            project: { select: { name: true } },
+            customer: { select: { name: true } },
+            vendor: { select: { name: true } },
+            user: { select: { fullName: true } },
+            employee: { select: { fullName: true } },
+          },
+        },
+        fromTransactions: {
+          include: {
+            toAccount: { select: { name: true } },
+          },
+        },
+        toTransactions: {
+          include: {
+            fromAccount: { select: { name: true } },
+          },
+        },
       },
     });
 

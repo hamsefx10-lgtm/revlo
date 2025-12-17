@@ -2,13 +2,20 @@
   "name": "revlo-app",
   "version": "0.1.0",
   "private": true,
+  "main": "electron/main.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "import-excel": "node scripts/import-excel.js",
-    "deploy": "npm run build && npm run start"
+    "deploy": "npm run build && npm run start",
+    "electron": "electron .",
+    "electron:dev": "NODE_ENV=development electron .",
+    "electron:build": "npm run build && electron-builder",
+    "electron:build:win": "powershell -ExecutionPolicy Bypass -File ./build-win.ps1",
+    "electron:build:mac": "npm run build && electron-builder --mac",
+    "electron:build:linux": "npm run build && electron-builder --linux"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",
@@ -35,10 +42,53 @@
     "@types/react-dom": "^18",
     "@types/recharts": "^1.8.29",
     "autoprefixer": "^10.4.19",
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.4",
     "typescript": "^5"
+  },
+  "build": {
+    "appId": "com.revlo.app",
+    "productName": "Revlo",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      ".next/standalone/**/*",
+      "public/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "asar": false,
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "sign": null,
+      "signingHashAlgorithms": [],
+      "signDlls": false
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "icon": "public/revlo-logo.png",
+      "category": "public.app-category.business"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "public/revlo-logo.png",
+      "category": "Office"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }

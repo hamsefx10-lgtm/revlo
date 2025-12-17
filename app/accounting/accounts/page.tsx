@@ -35,6 +35,9 @@ const AccountRow: React.FC<{ account: Account; onEdit: (id: string) => void; onD
     <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-semibold text-right">${account.balance.toLocaleString()}</td>
     <td className="p-4 whitespace-nowrap text-right">
       <div className="flex items-center justify-end space-x-2">
+        <Link href={`/accounting/transactions/transfer?fromAccount=${account.id}`} className="p-2 rounded-full bg-green-500/10 text-green-600 hover:bg-green-500 hover:text-white transition-colors duration-200" title="Transfer Money" aria-label="Transfer Money">
+          <Repeat size={18} />
+        </Link>
         <Link href={`/accounting/accounts/${account.id}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View Details">
           <Eye size={18} />
         </Link>

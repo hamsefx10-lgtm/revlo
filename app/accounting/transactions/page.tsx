@@ -5,11 +5,11 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Layout from '../../../components/layouts/Layout';
-import {
-  ArrowLeft, Plus, Search, Filter, Calendar, List, LayoutGrid,
+import { 
+  ArrowLeft, Plus, Search, Filter, Calendar, List, LayoutGrid, 
   DollarSign, CreditCard, Banknote, RefreshCw, Eye, Edit, Trash2,
   TrendingUp, TrendingDown, Info as InfoIcon, CheckCircle, XCircle, Clock as ClockIcon,
-  User as UserIcon, Briefcase as BriefcaseIcon, Tag as TagIcon, ChevronRight, Loader2, HardDrive // Added HardDrive for fixed assets
+  User as UserIcon, Briefcase as BriefcaseIcon, Tag as TagIcon, ChevronRight, Loader2, HardDrive, Repeat // Added Repeat for transfers
 } from 'lucide-react';
 import Toast from '../../../components/common/Toast';
 
@@ -250,6 +250,9 @@ export default function TransactionsPage() {
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
           <Link href="/accounting/transactions/add" className="bg-primary text-white py-2.5 px-4 sm:px-6 rounded-lg font-bold text-sm sm:text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center justify-center">
             <Plus size={18} className="mr-2" /> Diiwaan Geli Dhaqdhaqaaq
+          </Link>
+          <Link href="/accounting/transactions/transfer" className="bg-green-600 text-white py-2.5 px-4 sm:px-6 rounded-lg font-bold text-sm sm:text-lg hover:bg-green-700 transition duration-200 shadow-md flex items-center justify-center">
+            <Repeat size={18} className="mr-2" /> Wareejin Account-ka
           </Link>
           <button onClick={fetchTransactions} className="bg-secondary text-white py-2.5 px-4 sm:px-6 rounded-lg font-bold text-sm sm:text-lg hover:bg-green-600 transition duration-200 shadow-md flex items-center justify-center">
             <RefreshCw size={18} className="mr-2" /> Cusboonaysii

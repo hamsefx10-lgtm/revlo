@@ -8,7 +8,7 @@ import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 
 export async function POST(request: Request) {
   try {
-    const { fullName, email, password, companyName } = await request.json();
+    const { fullName, email, password, companyName, planType } = await request.json();
 
     // 1. Xaqiijinta Input-ka (Input Validation)
     if (!fullName || !email || !password || !companyName) {
@@ -55,6 +55,7 @@ export async function POST(request: Request) {
         data: {
           name: companyName,
           industry: 'General', // Default industry, can be updated later
+          planType: planType || 'COMBINED', // PROJECTS_ONLY, FACTORIES_ONLY, or COMBINED
         },
       });
     }

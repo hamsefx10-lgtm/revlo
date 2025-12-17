@@ -336,9 +336,33 @@ export async function POST(request: Request) {
         transactionAccountId = paidFrom || undefined;
       }
     } else if (category === 'Company Expense') {
-      // For ALL company expenses (including Debt and Material subcategories), deduct from paidFrom if provided
-      transactionType = 'EXPENSE';
+      // Check if this is money given to a customer (should be tracked as debt)
+      if (customerId && paidFrom && subCategory !== 'Debt') {
+        // Money given to customer from account = DEBT_TAKEN
+        transactionType = 'DEBT_TAKEN';
+        transactionCustomerId = customerId;
+        transactionAccountId = paidFrom;
+      } else {
+        // For ALL other company expenses, deduct from paidFrom if provided
+        transactionType = 'EXPENSE';
+        transactionAccountId = paidFrom;
+      }
+    }
+    // FIX: If customerId is provided with paidFrom (money given to customer), create DEBT_TAKEN transaction
+    // This handles cases where expense has customerId but category is not explicitly "Debt"
+    if (customerId && paidFrom && !transactionCustomerId && transactionType === 'EXPENSE') {
+      // Check if this expense represents money given to customer
+      // If customerId exists and paidFrom exists, it means money was given to customer
+      transactionType = 'DEBT_TAKEN';
+      transactionCustomerId = customerId;
       transactionAccountId = paidFrom;
+      console.log('Auto-detected customer debt transaction:', {
+        customerId,
+        amount,
+        description,
+        category,
+        subCategory
+      });
     }
     // For EXPENSE, always store as negative (money out)
     if (transactionType === 'EXPENSE') {

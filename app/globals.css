@@ -4,77 +4,92 @@
 
 /* Base styles for the entire app */
 body {
-  @apply bg-lightGray text-darkGray;
+  @apply bg-lightGray text-darkGray selection:bg-primary/30 selection:text-primary;
   font-family: 'Inter', sans-serif;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar Styling - Modern, smooth, and consistent with Tailwind theme */
+/* Glassmorphism Utilities */
+@layer utilities {
+  .glass {
+    @apply bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border border-white/20 shadow-lg;
+  }
+
+  .glass-card {
+    @apply bg-white/10 backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary;
+  }
+}
+
+/* Scrollbar Styling - Modern, smooth, and consistent */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-track {
-  background: #f3f4f6; /* theme('colors.lightGray') fallback */
-  border-radius: 6px;
+  background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1; /* theme('colors.mediumGray') fallback */
-  border-radius: 6px;
-  transition: background 0.2s;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #233047; /* theme('colors.darkGray') fallback */
+  @apply bg-gray-300 dark:bg-gray-700 rounded-full hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors;
 }
 
 /* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f3f4f6;
+  scrollbar-color: #cbd5e1 transparent;
 }
 
-/* Utility for custom-scrollbar class (if used in sidebar/nav) */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #233047;
-}
-
-/* Animation utilities for sidebar and nav items */
+/* Animation utilities */
 @layer utilities {
-  .animate-fade-in {
-    animation: fadeIn 0.3s;
+  .perspective-1000 {
+    perspective: 1000px;
   }
-  .animate-slide-in {
-    animation: slideIn 0.3s;
+
+  .transform-style-3d {
+    transform-style: preserve-3d;
   }
-  .animate-fade-in-up {
-    animation: fadeInUp 0.6s ease-out forwards;
-  }
-  @keyframes fadeIn {
-    from { opacity: 0 }
-    to { opacity: 1 }
-  }
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(10px);}
-    to { opacity: 1; transform: translateY(0);}
-  }
+
   @keyframes fadeInUp {
-    from { 
-      opacity: 0; 
+    from {
+      opacity: 0;
       transform: translateY(20px);
     }
-    to { 
-      opacity: 1; 
+
+    to {
+      opacity: 1;
       transform: translateY(0);
     }
+  }
+
+  .animate-bg-pan {
+    animation: bgPan 4s ease infinite;
+  }
+
+  @keyframes bgPan {
+    0% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  .background-size-200 {
+    background-size: 200% 200%;
   }
 }

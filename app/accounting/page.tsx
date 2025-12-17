@@ -645,6 +645,9 @@ export default function AccountingPage() {
           <Link href="/accounting/transactions/add" className="bg-primary text-white py-2.5 px-4 sm:px-6 rounded-lg font-bold text-sm sm:text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center justify-center">
             <Plus size={18} className="mr-2" /> Diiwaan Geli Dhaqdhaqaaq
           </Link>
+          <Link href="/accounting/transactions/transfer" className="bg-green-600 text-white py-2.5 px-4 sm:px-6 rounded-lg font-bold text-sm sm:text-lg hover:bg-green-700 transition duration-200 shadow-md flex items-center justify-center">
+            <Repeat size={18} className="mr-2" /> Wareejin Account-ka
+          </Link>
           <button onClick={fetchAccountingData} className="bg-secondary text-white py-2.5 px-4 sm:px-6 rounded-lg font-bold text-sm sm:text-lg hover:bg-green-600 transition duration-200 shadow-md flex items-center justify-center">
             <RefreshCw size={18} className="mr-2" /> Cusboonaysii
           </button>

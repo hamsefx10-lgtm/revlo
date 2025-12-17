@@ -29,7 +29,27 @@ interface Project {
         employee?: { id: string; fullName?: string };
     }[];
     materialsUsed: { id: string; name: string; quantityUsed: number; unit: string; leftoverQty: number; costPerUnit: number | string; dateUsed?: string; }[];
-    laborRecords: { id: string; employeeId?: string; employeeName: string; workDescription: string; agreedWage: number; paidAmount: number; remainingWage: number; dateWorked?: string; }[];
+    laborRecords: { 
+        id: string; 
+        employeeId?: string; 
+        employeeName: string; 
+        workDescription: string; 
+        agreedWage: number; 
+        paidAmount: number; 
+        remainingWage: number; 
+        dateWorked?: string;
+        employee?: { id: string; fullName?: string };
+    }[];
+    transactions?: {
+        id: string;
+        description: string;
+        amount: number | string;
+        type: string;
+        transactionDate: string;
+        employeeId?: string;
+        employee?: { id: string; fullName?: string };
+        projectId?: string;
+    }[];
     payments: { id: string; amount: number; paymentDate: string; paymentType: string; receivedIn: string; }[];
     documents: { id: string; name: string; fileUrl: string; fileType: string; uploadedAt: string; }[];
 }
@@ -396,60 +416,245 @@ const ProjectDetailsPage: React.FC = () => {
 
               {/* Mobile Labor Content */}
               {activeTab === 'Labor' && (
+                <div className="space-y-6">
+                  {/* Labor Expenses Summary - Mobile */}
                 <div>
-                  <h4 className="font-bold text-lg mb-2 text-blue-700">Kharashaadka Shaqaalaha (Labor)</h4>
+                    <h4 className="font-bold text-lg mb-4 text-blue-700 flex items-center gap-2">
+                      <HardHat size={18} />
+                      Kharashaadka Shaqaalaha
+                    </h4>
                   {project.expenses.filter(e => e.category && e.category.toLowerCase() === 'labor').length === 0 ? (
                     <EmptyState message="Lama diiwaan gelin wax kharash shaqaale ah." />
                   ) : (
-                    <div className="space-y-2 mb-6">
+                      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-lightGray dark:border-gray-700 p-3">
+                        <div className="space-y-2">
                       {project.expenses.filter(e => e.category && e.category.toLowerCase() === 'labor').map(exp => (
-                        <div key={exp.id} className="bg-white p-3 rounded-lg flex justify-between items-center shadow-sm">
-                          <div>
-                            <p className="font-bold">{exp.description}</p>
-                            <p className="text-xs text-mediumGray">{new Date(exp.expenseDate).toLocaleDateString()}</p>
+                            <div key={exp.id} className="flex items-center justify-between p-3 bg-lightGray/30 dark:bg-gray-700/30 rounded-lg">
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-sm text-darkGray dark:text-gray-100 truncate">{exp.description}</p>
+                                <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">{new Date(exp.expenseDate).toLocaleDateString()}</p>
                           </div>
-                          <p className="font-bold text-lg text-redError">-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</p>
+                              <p className="font-bold text-base text-redError ml-3">-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</p>
                         </div>
                       ))}
+                        </div>
                     </div>
                   )}
-              <h4 className="font-bold text-lg mb-2 text-primary">Shaqaalaha</h4>
-              {laborGroups.length === 0 ? (
-                <EmptyState message="Shaqaale mashruucan ku qoran ma jiro." />
-              ) : (
-                <div className="space-y-2">
-                  {laborGroups
-                    .sort((a, b) => new Date(b.lastPaymentDate).getTime() - new Date(a.lastPaymentDate).getTime())
-                    .map(group => (
-                      <div key={group.key} className='bg-white p-3 rounded-lg shadow-sm'>
-                        <div className='flex items-start justify-between gap-3'>
-                          <div className='min-w-0'>
-                            <p className='font-bold truncate'>{group.employeeName}</p>
-                            <p className='text-xs text-mediumGray truncate'>{group.latestWork}</p>
-                            {group.lastPaymentDate && (
-                              <p className='text-[11px] text-mediumGray mt-0.5'>
-                                {new Date(group.lastPaymentDate).toLocaleDateString()}
-                              </p>
-                            )}
+                  </div>
+                  
+                  {/* Employee Details Section - Mobile Table */}
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-bold text-xl text-primary flex items-center gap-2">
+                        <User size={20} />
+                        Shaqaalaha Mashruuca
+                      </h4>
+                      <Link
+                        href={`/expenses/add?projectId=${project.id}&category=Labor`}
+                        className='inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary text-white hover:bg-primary/90 transition-all'
+                      >
+                        <Plus size={14} />
+                        Ku Dar
+                      </Link>
+                    </div>
+                    {(Array.isArray(project.laborRecords) ? project.laborRecords.length : 0) === 0 ? (
+                      <EmptyState message="Lama diiwaan gelin wax shaqaale ah." />
+                    ) : (
+                      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-lightGray dark:border-gray-700 overflow-hidden">
+                        <div className="overflow-x-auto">
+                          <table className="w-full min-w-[600px]">
+                            <thead className="bg-primary/10 dark:bg-gray-700">
+                              <tr>
+                                <th className="px-3 py-2.5 text-left text-xs font-bold text-darkGray dark:text-gray-100">Magaca</th>
+                                <th className="px-3 py-2.5 text-left text-xs font-bold text-darkGray dark:text-gray-100">La Qoray</th>
+                                <th className="px-3 py-2.5 text-right text-xs font-bold text-darkGray dark:text-gray-100">La Bixiyay</th>
+                                <th className="px-3 py-2.5 text-right text-xs font-bold text-darkGray dark:text-gray-100">Hadhay</th>
+                                <th className="px-3 py-2.5 text-center text-xs font-bold text-darkGray dark:text-gray-100">Ficil</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-lightGray dark:divide-gray-700">
+                              {(() => {
+                                // Group labor records by employee
+                                const employeeMap = new Map<string, {
+                                  employeeId: string;
+                                  employeeName: string;
+                                  firstAgreedWage: number;
+                                  totalPaid: number;
+                                  totalRemaining: number;
+                                  transactions: any[];
+                                  payments: any[];
+                                }>();
+                                
+                                (project.laborRecords || []).forEach(lab => {
+                                  const empId = lab.employeeId || 'unknown';
+                                  if (!employeeMap.has(empId)) {
+                                    const agreed = typeof lab.agreedWage === 'number' ? lab.agreedWage : parseFloat(lab.agreedWage as any) || 0;
+                                    employeeMap.set(empId, {
+                                      employeeId: empId,
+                                      employeeName: lab.employeeName || lab.employee?.fullName || 'Unknown',
+                                      firstAgreedWage: agreed,
+                                      totalPaid: 0,
+                                      totalRemaining: 0,
+                                      transactions: [],
+                                      payments: [],
+                                    });
+                                  }
+                                  const emp = employeeMap.get(empId)!;
+                                  const paid = typeof lab.paidAmount === 'number' ? lab.paidAmount : parseFloat(lab.paidAmount as any) || 0;
+                                  const remaining = typeof lab.remainingWage === 'number' ? lab.remainingWage : parseFloat(lab.remainingWage as any) || 0;
+                                  emp.totalPaid += paid;
+                                  emp.totalRemaining += remaining;
+                                });
+                                
+                                // Add transactions and payments
+                                // Create a set of expense IDs that have transactions to avoid duplicates
+                                const expenseIdsWithTransactions = new Set(
+                                  (project.transactions || [])
+                                    .filter((t: any) => t.expenseId)
+                                    .map((t: any) => t.expenseId)
+                                );
+                                
+                                (project.transactions || []).forEach((t: any) => {
+                                  const emp = employeeMap.get(t.employeeId);
+                                  if (emp && t.projectId === project.id) {
+                                    emp.transactions.push(t);
+                                  }
+                                });
+                                
+                                // Only add expenses that don't have a corresponding transaction (to avoid duplicates)
+                                (project.expenses || []).forEach((e: any) => {
+                                  const emp = employeeMap.get(e.employeeId);
+                                  if (emp && e.category?.toLowerCase() === 'labor' && !expenseIdsWithTransactions.has(e.id)) {
+                                    emp.payments.push(e);
+                                  }
+                                });
+                                
+                                return Array.from(employeeMap.values()).map((emp, index) => (
+                                  <React.Fragment key={emp.employeeId}>
+                                    <tr className="hover:bg-lightGray/30 dark:hover:bg-gray-700/30 transition-colors">
+                                      <td className="px-3 py-3">
+                                        <div className="flex items-center gap-2">
+                                          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                                            <User size={16} className="text-white" />
+                                          </div>
+                                          <div className="min-w-0">
+                                            <p className="font-bold text-sm text-darkGray dark:text-gray-100 truncate">{emp.employeeName}</p>
+                                            <p className="text-[10px] text-mediumGray dark:text-gray-400">
+                                              {emp.transactions.length} trx • {emp.payments.length} bixin
+                                            </p>
                           </div>
-                          <div className='text-right'>
-                            <p className='text-xs text-mediumGray'>Total Paid</p>
-                            <p className='font-bold text-green-600'>Br{group.totalPaid.toLocaleString()}</p>
                           </div>
-                        </div>
-                        <div className='mt-2 flex justify-end'>
-                          <a
-                            href={`/expenses/add?projectId=${project.id}&employeeId=${group.employeeId || ''}&category=Labor`}
-                            className='inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-primary text-white hover:bg-primary/90'
-                            title='Ku dar kharash shaqaale'
-                          >
-                            Ku dar kharash
-                          </a>
+                                      </td>
+                                      <td className="px-3 py-3">
+                                        <p className="font-semibold text-xs text-accent">Br{emp.firstAgreedWage.toLocaleString()}</p>
+                                      </td>
+                                      <td className="px-3 py-3 text-right">
+                                        <p className="font-semibold text-xs text-secondary">Br{emp.totalPaid.toLocaleString()}</p>
+                                      </td>
+                                      <td className="px-3 py-3 text-right">
+                                        <p className={`font-semibold text-xs ${emp.totalRemaining > 0 ? 'text-redError' : 'text-green-600'}`}>
+                                          Br{emp.totalRemaining.toLocaleString()}
+                                        </p>
+                                      </td>
+                                      <td className="px-3 py-3 text-center">
+                                        <Link
+                                          href={`/expenses/add?projectId=${project.id}&employeeId=${emp.employeeId}&category=Labor`}
+                                          className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-primary text-white hover:bg-primary/90"
+                                        >
+                                          <Plus size={12} />
+                                          Bixin
+                                        </Link>
+                                      </td>
+                                    </tr>
+                                    {/* Expandable Details Row - Mobile */}
+                                    {(emp.transactions.length > 0 || emp.payments.length > 0) && (
+                                      <tr>
+                                        <td colSpan={5} className="px-3 py-3 bg-lightGray/20 dark:bg-gray-800/50">
+                                          <div className="space-y-3">
+                                            {/* Transactions Table - Mobile */}
+                                            {emp.transactions.length > 0 && (
+                                              <div>
+                                                <h6 className="font-semibold text-xs text-darkGray dark:text-gray-100 mb-2 flex items-center gap-1">
+                                                  <FileText size={14} className="text-primary" />
+                                                  Dhaqdhaqaaqaadka
+                                                </h6>
+                                                <div className="overflow-x-auto">
+                                                  <table className="w-full text-[10px]">
+                                                    <thead>
+                                                      <tr className="bg-white/50 dark:bg-gray-700/50">
+                                                        <th className="px-2 py-1 text-left font-semibold text-darkGray dark:text-gray-100">Sharaxaad</th>
+                                                        <th className="px-2 py-1 text-left font-semibold text-darkGray dark:text-gray-100">Taariikh</th>
+                                                        <th className="px-2 py-1 text-right font-semibold text-darkGray dark:text-gray-100">Qadarka</th>
+                                                      </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-lightGray dark:divide-gray-700">
+                                                      {emp.transactions
+                                                        .sort((a: any, b: any) => new Date(b.transactionDate).getTime() - new Date(a.transactionDate).getTime())
+                                                        .map((trx: any) => {
+                                                          const trxAmount = typeof trx.amount === 'number' ? trx.amount : parseFloat(trx.amount as any) || 0;
+                                                          return (
+                                                            <tr key={trx.id} className="hover:bg-white/50 dark:hover:bg-gray-700/50">
+                                                              <td className="px-2 py-1.5 text-darkGray dark:text-gray-100">{trx.description || 'Lacag Bixin'}</td>
+                                                              <td className="px-2 py-1.5 text-mediumGray dark:text-gray-400">{new Date(trx.transactionDate).toLocaleDateString()}</td>
+                                                              <td className={`px-2 py-1.5 text-right font-semibold ${trxAmount < 0 ? 'text-redError' : 'text-secondary'}`}>
+                                                                {trxAmount < 0 ? '-' : '+'}Br{Math.abs(trxAmount).toLocaleString()}
+                                                              </td>
+                                                            </tr>
+                                                          );
+                                                        })}
+                                                    </tbody>
+                                                  </table>
                         </div>
                       </div>
-                    ))}
+                                            )}
+                                            
+                                            {/* Payments Table - Mobile */}
+                                            {emp.payments.length > 0 && (
+                                              <div>
+                                                <h6 className="font-semibold text-xs text-darkGray dark:text-gray-100 mb-2 flex items-center gap-1">
+                                                  <DollarSign size={14} className="text-secondary" />
+                                                  Lacagaha La Siinayay
+                                                </h6>
+                                                <div className="overflow-x-auto">
+                                                  <table className="w-full text-[10px]">
+                                                    <thead>
+                                                      <tr className="bg-white/50 dark:bg-gray-700/50">
+                                                        <th className="px-2 py-1 text-left font-semibold text-darkGray dark:text-gray-100">Sharaxaad</th>
+                                                        <th className="px-2 py-1 text-left font-semibold text-darkGray dark:text-gray-100">Taariikh</th>
+                                                        <th className="px-2 py-1 text-right font-semibold text-darkGray dark:text-gray-100">Qadarka</th>
+                                                      </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-lightGray dark:divide-gray-700">
+                                                      {emp.payments
+                                                        .sort((a: any, b: any) => new Date(b.expenseDate).getTime() - new Date(a.expenseDate).getTime())
+                                                        .map((exp: any) => {
+                                                          const expAmount = typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0;
+                                                          return (
+                                                            <tr key={exp.id} className="hover:bg-white/50 dark:hover:bg-gray-700/50">
+                                                              <td className="px-2 py-1.5 text-darkGray dark:text-gray-100">{exp.description || 'Lacag Bixin'}</td>
+                                                              <td className="px-2 py-1.5 text-mediumGray dark:text-gray-400">{new Date(exp.expenseDate).toLocaleDateString()}</td>
+                                                              <td className="px-2 py-1.5 text-right font-semibold text-secondary">Br{expAmount.toLocaleString()}</td>
+                                                            </tr>
+                                                          );
+                                                        })}
+                                                    </tbody>
+                                                  </table>
+                                                </div>
                 </div>
               )}
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    )}
+                                  </React.Fragment>
+                                ));
+                              })()}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -710,75 +915,245 @@ const ProjectDetailsPage: React.FC = () => {
                      
                   {/* Desktop Labor Content */}
                   {activeTab === 'Labor' && (
+                        <div className="space-y-6">
+                          {/* Labor Expenses Summary */}
                         <div>
-                                        <h4 className="font-bold text-lg mb-2 text-blue-700">Kharashaadka Shaqaalaha (Labor)</h4>
+                            <h4 className="font-bold text-lg mb-4 text-blue-700 flex items-center gap-2">
+                              <HardHat size={20} />
+                              Kharashaadka Shaqaalaha (Labor Expenses)
+                            </h4>
                                         {project.expenses.filter(e => e.category && e.category.toLowerCase() === 'labor').length === 0 ? (
                                             <EmptyState message="Lama diiwaan gelin wax kharash shaqaale ah." />
                                         ) : (
-                                            <div className="space-y-2 mb-6">
+                              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-lightGray dark:border-gray-700 p-4">
+                                <div className="space-y-2">
                                                 {project.expenses.filter(e => e.category && e.category.toLowerCase() === 'labor').map(exp => (
-                                                    <div key={exp.id} className="bg-white p-3 rounded-lg flex justify-between items-center shadow-sm">
-                                                        <div>
-                                                            <p className="font-bold">{exp.description}</p>
-                                                            <p className="text-xs text-mediumGray">{new Date(exp.expenseDate).toLocaleDateString()}</p>
+                                    <div key={exp.id} className="flex items-center justify-between p-3 bg-lightGray/30 dark:bg-gray-700/30 rounded-lg hover:bg-lightGray/50 dark:hover:bg-gray-700/50 transition-colors">
+                                      <div className="flex-1">
+                                        <p className="font-semibold text-darkGray dark:text-gray-100">{exp.description}</p>
+                                        <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">{new Date(exp.expenseDate).toLocaleDateString()}</p>
                                                         </div>
-                                                        <p className="font-bold text-lg text-redError">-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</p>
+                                      <p className="font-bold text-lg text-redError ml-4">-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</p>
                                                     </div>
                                                 ))}
+                                </div>
                                             </div>
                                         )}
-                                        <h4 className="font-bold text-lg mb-2 text-primary">Shaqaalaha</h4>
+                          </div>
+                          
+                          {/* Employee Details Section - Table Design */}
+                          <div>
+                            <div className="flex items-center justify-between mb-4">
+                              <h4 className="font-bold text-xl text-primary flex items-center gap-2">
+                                <User size={24} />
+                                Shaqaalaha Mashruuca
+                              </h4>
+                              <Link
+                                href={`/expenses/add?projectId=${project.id}&category=Labor`}
+                                className='inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-primary text-white hover:bg-primary/90 transition-all shadow-md'
+                              >
+                                <Plus size={18} />
+                                Ku Dar Shaqaale
+                              </Link>
+                            </div>
                                         {(Array.isArray(project.laborRecords) ? project.laborRecords.length : 0) === 0 ? (
                                             <EmptyState message="Lama diiwaan gelin wax shaqaale ah." />
                                         ) : (
-                                            <div className="space-y-2">
-                                                {[...(project.laborRecords || [])]
-                                                  .sort((a, b) => {
-                                                    const ad = a.dateWorked ? new Date(a.dateWorked).getTime() : 0;
-                                                    const bd = b.dateWorked ? new Date(b.dateWorked).getTime() : 0;
-                                                    return bd - ad;
-                                                  })
-                                                  .map(lab => {
+                              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-lightGray dark:border-gray-700 overflow-hidden">
+                                <div className="overflow-x-auto">
+                                  <table className="w-full">
+                                    <thead className="bg-primary/10 dark:bg-gray-700">
+                                      <tr>
+                                        <th className="px-4 py-3 text-left text-sm font-bold text-darkGray dark:text-gray-100">Magaca</th>
+                                        <th className="px-4 py-3 text-left text-sm font-bold text-darkGray dark:text-gray-100">La Qoray</th>
+                                        <th className="px-4 py-3 text-right text-sm font-bold text-darkGray dark:text-gray-100">La Bixiyay</th>
+                                        <th className="px-4 py-3 text-right text-sm font-bold text-darkGray dark:text-gray-100">Hadhay</th>
+                                        <th className="px-4 py-3 text-center text-sm font-bold text-darkGray dark:text-gray-100">Ficilada</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-lightGray dark:divide-gray-700">
+                                      {(() => {
+                                        // Group labor records by employee
+                                        const employeeMap = new Map<string, {
+                                          employeeId: string;
+                                          employeeName: string;
+                                          firstAgreedWage: number;
+                                          totalPaid: number;
+                                          totalRemaining: number;
+                                          transactions: any[];
+                                          payments: any[];
+                                        }>();
+                                        
+                                        (project.laborRecords || []).forEach(lab => {
+                                          const empId = lab.employeeId || 'unknown';
+                                          if (!employeeMap.has(empId)) {
                                                     const agreed = typeof lab.agreedWage === 'number' ? lab.agreedWage : parseFloat(lab.agreedWage as any) || 0;
+                                            employeeMap.set(empId, {
+                                              employeeId: empId,
+                                              employeeName: lab.employeeName || lab.employee?.fullName || 'Unknown',
+                                              firstAgreedWage: agreed,
+                                              totalPaid: 0,
+                                              totalRemaining: 0,
+                                              transactions: [],
+                                              payments: [],
+                                            });
+                                          }
+                                          const emp = employeeMap.get(empId)!;
                                                     const paid = typeof lab.paidAmount === 'number' ? lab.paidAmount : parseFloat(lab.paidAmount as any) || 0;
                                                     const remaining = typeof lab.remainingWage === 'number' ? lab.remainingWage : parseFloat(lab.remainingWage as any) || 0;
-                                                    return (
-                                                        <div key={lab.id} className='bg-white p-3 rounded-lg shadow-sm'>
-                                                            <div className='flex items-start justify-between gap-3'>
-                                                                <div className='min-w-0'>
-                                                                    <p className='font-bold truncate'>{lab.employeeName || '-'}</p>
-                                                                    <p className='text-xs text-mediumGray truncate'>{lab.workDescription || '-'}</p>
-                                                                    {lab.dateWorked && <p className='text-[11px] text-mediumGray mt-0.5'>{new Date(lab.dateWorked).toLocaleDateString()}</p>}
+                                          emp.totalPaid += paid;
+                                          emp.totalRemaining += remaining;
+                                        });
+                                        
+                                // Add transactions and payments
+                                // Create a set of expense IDs that have transactions to avoid duplicates
+                                const expenseIdsWithTransactions = new Set(
+                                  (project.transactions || [])
+                                    .filter((t: any) => t.expenseId)
+                                    .map((t: any) => t.expenseId)
+                                );
+                                
+                                (project.transactions || []).forEach((t: any) => {
+                                  const emp = employeeMap.get(t.employeeId);
+                                  if (emp && t.projectId === project.id) {
+                                    emp.transactions.push(t);
+                                  }
+                                });
+                                
+                                // Only add expenses that don't have a corresponding transaction (to avoid duplicates)
+                                (project.expenses || []).forEach((e: any) => {
+                                  const emp = employeeMap.get(e.employeeId);
+                                  if (emp && e.category?.toLowerCase() === 'labor' && !expenseIdsWithTransactions.has(e.id)) {
+                                    emp.payments.push(e);
+                                  }
+                                });
+                                        
+                                        return Array.from(employeeMap.values()).map((emp, index) => (
+                                          <React.Fragment key={emp.employeeId}>
+                                            <tr className="hover:bg-lightGray/30 dark:hover:bg-gray-700/30 transition-colors">
+                                              <td className="px-4 py-4">
+                                                <div className="flex items-center gap-3">
+                                                  <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                                                    <User size={20} className="text-white" />
                                                                 </div>
-                                                                <div className='text-right'>
-                                                                    <p className='text-xs text-mediumGray'>Agreed</p>
-                                                                    <p className='font-bold text-accent'>Br{agreed.toLocaleString()}</p>
+                                                  <div>
+                                                    <p className="font-bold text-darkGray dark:text-gray-100">{emp.employeeName}</p>
+                                                    <p className="text-xs text-mediumGray dark:text-gray-400">
+                                                      {emp.transactions.length} dhaqdhaqaaq • {emp.payments.length} lacag bixin
+                                                    </p>
                                                                 </div>
                                                             </div>
-                                                            <div className='mt-2 grid grid-cols-2 gap-2'>
-                                                                <div className='bg-lightGray/40 rounded p-2 text-center'>
-                                                                    <p className='text-xs text-mediumGray'>Paid</p>
-                                                                    <p className='font-bold text-green-600'>Br{paid.toLocaleString()}</p>
-                                                                </div>
-                                                                <div className='bg-lightGray/40 rounded p-2 text-center'>
-                                                                    <p className='text-xs text-mediumGray'>Remaining</p>
-                                                                    <p className={`font-bold ${remaining > 0 ? 'text-redError' : 'text-secondary'}`}>Br{remaining.toLocaleString()}</p>
-                                                                </div>
-                                                            </div>
-                                                            <div className='mt-2 flex justify-end'>
-                                                                <a
-                                                                  href={`/expenses/add?projectId=${project.id}&employeeId=${lab.employeeId || ''}&category=Labor`}
-                                                                  className='inline-flex items-center px-3 py-1.5 rounded-md text-sm bg-primary text-white hover:bg-primary/90'
-                                                                  title='Bixi inta dhiman'
-                                                                >
-                                                                  Bixi hadhay
-                                                                </a>
+                                              </td>
+                                              <td className="px-4 py-4">
+                                                <p className="font-semibold text-accent">Br{emp.firstAgreedWage.toLocaleString()}</p>
+                                              </td>
+                                              <td className="px-4 py-4 text-right">
+                                                <p className="font-semibold text-secondary">Br{emp.totalPaid.toLocaleString()}</p>
+                                              </td>
+                                              <td className="px-4 py-4 text-right">
+                                                <p className={`font-semibold ${emp.totalRemaining > 0 ? 'text-redError' : 'text-green-600'}`}>
+                                                  Br{emp.totalRemaining.toLocaleString()}
+                                                </p>
+                                              </td>
+                                              <td className="px-4 py-4 text-center">
+                                                <Link
+                                                  href={`/expenses/add?projectId=${project.id}&employeeId=${emp.employeeId}&category=Labor`}
+                                                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary text-white hover:bg-primary/90 transition-colors"
+                                                >
+                                                  <Plus size={14} />
+                                                  Bixin
+                                                </Link>
+                                              </td>
+                                            </tr>
+                                            {/* Expandable Details Row */}
+                                            {(emp.transactions.length > 0 || emp.payments.length > 0) && (
+                                              <tr>
+                                                <td colSpan={5} className="px-4 py-4 bg-lightGray/20 dark:bg-gray-800/50">
+                                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {/* Transactions Table */}
+                                                    {emp.transactions.length > 0 && (
+                                                      <div>
+                                                        <h6 className="font-semibold text-sm text-darkGray dark:text-gray-100 mb-2 flex items-center gap-2">
+                                                          <FileText size={16} className="text-primary" />
+                                                          Dhaqdhaqaaqaadka
+                                                        </h6>
+                                                        <div className="overflow-x-auto">
+                                                          <table className="w-full text-xs">
+                                                            <thead>
+                                                              <tr className="bg-white/50 dark:bg-gray-700/50">
+                                                                <th className="px-2 py-1.5 text-left font-semibold text-darkGray dark:text-gray-100">Sharaxaad</th>
+                                                                <th className="px-2 py-1.5 text-left font-semibold text-darkGray dark:text-gray-100">Taariikh</th>
+                                                                <th className="px-2 py-1.5 text-right font-semibold text-darkGray dark:text-gray-100">Qadarka</th>
+                                                              </tr>
+                                                            </thead>
+                                                            <tbody className="divide-y divide-lightGray dark:divide-gray-700">
+                                                              {emp.transactions
+                                                                .sort((a: any, b: any) => new Date(b.transactionDate).getTime() - new Date(a.transactionDate).getTime())
+                                                                .map((trx: any) => {
+                                                                  const trxAmount = typeof trx.amount === 'number' ? trx.amount : parseFloat(trx.amount as any) || 0;
+                                                                  return (
+                                                                    <tr key={trx.id} className="hover:bg-white/50 dark:hover:bg-gray-700/50">
+                                                                      <td className="px-2 py-2 text-darkGray dark:text-gray-100">{trx.description || 'Lacag Bixin'}</td>
+                                                                      <td className="px-2 py-2 text-mediumGray dark:text-gray-400">{new Date(trx.transactionDate).toLocaleDateString()}</td>
+                                                                      <td className={`px-2 py-2 text-right font-semibold ${trxAmount < 0 ? 'text-redError' : 'text-secondary'}`}>
+                                                                        {trxAmount < 0 ? '-' : '+'}Br{Math.abs(trxAmount).toLocaleString()}
+                                                                      </td>
+                                                                    </tr>
+                                                                  );
+                                                                })}
+                                                            </tbody>
+                                                          </table>
                                                             </div>
                                                         </div>
+                                                    )}
+                                                    
+                                                    {/* Payments Table */}
+                                                    {emp.payments.length > 0 && (
+                                                      <div>
+                                                        <h6 className="font-semibold text-sm text-darkGray dark:text-gray-100 mb-2 flex items-center gap-2">
+                                                          <DollarSign size={16} className="text-secondary" />
+                                                          Lacagaha La Siinayay
+                                                        </h6>
+                                                        <div className="overflow-x-auto">
+                                                          <table className="w-full text-xs">
+                                                            <thead>
+                                                              <tr className="bg-white/50 dark:bg-gray-700/50">
+                                                                <th className="px-2 py-1.5 text-left font-semibold text-darkGray dark:text-gray-100">Sharaxaad</th>
+                                                                <th className="px-2 py-1.5 text-left font-semibold text-darkGray dark:text-gray-100">Taariikh</th>
+                                                                <th className="px-2 py-1.5 text-right font-semibold text-darkGray dark:text-gray-100">Qadarka</th>
+                                                              </tr>
+                                                            </thead>
+                                                            <tbody className="divide-y divide-lightGray dark:divide-gray-700">
+                                                              {emp.payments
+                                                                .sort((a: any, b: any) => new Date(b.expenseDate).getTime() - new Date(a.expenseDate).getTime())
+                                                                .map((exp: any) => {
+                                                                  const expAmount = typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0;
+                                                                  return (
+                                                                    <tr key={exp.id} className="hover:bg-white/50 dark:hover:bg-gray-700/50">
+                                                                      <td className="px-2 py-2 text-darkGray dark:text-gray-100">{exp.description || 'Lacag Bixin'}</td>
+                                                                      <td className="px-2 py-2 text-mediumGray dark:text-gray-400">{new Date(exp.expenseDate).toLocaleDateString()}</td>
+                                                                      <td className="px-2 py-2 text-right font-semibold text-secondary">Br{expAmount.toLocaleString()}</td>
+                                                                    </tr>
                                                     );
                                                 })}
+                                                            </tbody>
+                                                          </table>
+                                                        </div>
                                             </div>
                                         )}
+                                                  </div>
+                                                </td>
+                                              </tr>
+                                            )}
+                                          </React.Fragment>
+                                        ));
+                                      })()}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                     </div>
                                 )}
 

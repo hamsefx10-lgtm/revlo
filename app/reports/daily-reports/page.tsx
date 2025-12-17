@@ -2,8 +2,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import Layout from '../../../components/layouts/Layout';
-import { Download, Printer, Loader2, TrendingUp, TrendingDown, DollarSign, Receipt, FileText, XCircle, Wallet, Calendar, HelpCircle, X } from 'lucide-react';
+import { Download, Printer, Loader2, TrendingUp, TrendingDown, DollarSign, Receipt, FileText, XCircle, Wallet, Calendar, HelpCircle, X, HardDrive, Edit, ExternalLink } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -43,13 +44,17 @@ interface DailyReport {
     type: string;
   }>;
   projectExpenses: Array<{
+    id: string;
     date: string;
     project: string;
     category: string;
     description: string;
     amount: number;
+    paidFrom?: string;
+    note?: string | null;
   }>;
   companyExpenses: Array<{
+    id: string;
     date: string;
     project: string;
     category: string;
@@ -63,6 +68,7 @@ interface DailyReport {
     details?: string | null;
     expenseType?: string;
     note?: string | null;
+    paidFrom?: string;
   }>;
   totalProjectExpenses: number;
   totalCompanyExpenses: number;
@@ -70,6 +76,31 @@ interface DailyReport {
   debtsCollected: Array<{
     project: string;
     amount: number;
+  }>;
+  fixedAssets?: Array<{
+    id: string;
+    name: string;
+    type: string;
+    value: number;
+    purchaseDate: string;
+    vendor: string | null;
+    assignedTo: string | null;
+  }>;
+  totalFixedAssets?: number;
+  otherTransactions?: Array<{
+    id: string;
+    description: string;
+    amount: number;
+    type: string;
+    account: string;
+    project: string | null;
+    customer: string | null;
+    vendor: string | null;
+    employee: string | null;
+    user: string | null;
+    category: string | null;
+    note: string | null;
+    transactionDate: string;
   }>;
 }
 
@@ -390,7 +421,7 @@ export default function DailyReportPage() {
       try {
         // Add cache busting and faster fetch
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout (increased for large datasets)
         
         const res = await fetch(`/api/reports/daily?date=${selectedDate}&t=${Date.now()}`, {
           signal: controller.signal,
@@ -403,14 +434,18 @@ export default function DailyReportPage() {
         
         clearTimeout(timeoutId);
         
-        if (!res.ok) throw new Error('Xogta lama helin');
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.message || errorData.error || 'Xogta lama helin');
+        }
         const data: DailyReport = await res.json();
         setReport(data);
-      } catch (err) {
+      } catch (err: any) {
+        console.error('Daily Report fetch error:', err);
         if (err instanceof Error && err.name === 'AbortError') {
           setError('Waqtiga dhameeyay. Isku day mar kale.');
         } else {
-          setError('Cilad ayaa dhacday ama xog lama helin.');
+          setError(err?.message || 'Cilad ayaa dhacday ama xog lama helin.');
         }
       } finally {
         setLoading(false);
@@ -479,13 +514,16 @@ export default function DailyReportPage() {
 
   if (!report) return null;
 
-  const netFlow = report.income - report.totalExpenses;
+  const totalExpensesIncludingAssets = report.totalExpenses + (report.totalFixedAssets || 0);
+  const netFlow = report.income - totalExpensesIncludingAssets;
   const hasData = 
     report.income > 0 ||
     report.totalExpenses > 0 ||
     report.debtsCollected.length > 0 ||
     report.incomeTransactions.length > 0 ||
-    report.transfers.length > 0;
+    report.transfers.length > 0 ||
+    (report.fixedAssets && report.fixedAssets.length > 0) ||
+    (report.otherTransactions && report.otherTransactions.length > 0);
   const hasBalances = report.balances && Object.keys(report.balances.today).length > 0;
 
   return (
@@ -797,8 +835,13 @@ export default function DailyReportPage() {
                 </div>
               </div>
               <div className="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wider mb-2">Kharashyada</div>
-              <div className="text-3xl font-extrabold text-red-700 dark:text-red-500">{report.totalExpenses.toLocaleString()}</div>
+              <div className="text-3xl font-extrabold text-red-700 dark:text-red-500">{totalExpensesIncludingAssets.toLocaleString()}</div>
               <div className="text-xs font-semibold text-red-600 dark:text-red-400 mt-1">ETB</div>
+              {(report.totalFixedAssets || 0) > 0 && (
+                <div className="text-xs text-red-500 dark:text-red-400 mt-1">
+                  (oo ay ku jiraan Hantida: {(report.totalFixedAssets || 0).toLocaleString()})
+                </div>
+              )}
             </div>
 
             <div className={`p-6 text-center bg-gradient-to-br ${netFlow >= 0 ? 'from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20' : 'from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20'}`}>
@@ -1001,24 +1044,48 @@ export default function DailyReportPage() {
                   <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-blue-50 dark:bg-blue-900/20">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-blue-900 dark:text-blue-100 uppercase">Project</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-blue-900 dark:text-blue-100 uppercase">Category</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-blue-900 dark:text-blue-100 uppercase hidden md:table-cell">Description</th>
-                        <th className="px-4 py-3 text-right text-xs font-bold text-blue-900 dark:text-blue-100 uppercase">Amount</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-blue-900 dark:text-blue-100 uppercase">Taariikh</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-blue-900 dark:text-blue-100 uppercase">Mashruuc</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-blue-900 dark:text-blue-100 uppercase">Nooca</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-blue-900 dark:text-blue-100 uppercase hidden md:table-cell">Sharaxaad</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-blue-900 dark:text-blue-100 uppercase hidden lg:table-cell">Account</th>
+                        <th className="px-4 py-3 text-right text-xs font-bold text-blue-900 dark:text-blue-100 uppercase">Qiimaha</th>
+                        <th className="px-4 py-3 text-center text-xs font-bold text-blue-900 dark:text-blue-100 uppercase">Actions</th>
               </tr>
             </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {report.projectExpenses.map((e, i) => (
-                        <tr key={i} className="hover:bg-blue-50 dark:hover:bg-blue-900/10">
-                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300">{e.project}</td>
-                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300">{e.category}</td>
-                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden md:table-cell">{e.description}</td>
-                          <td className="px-4 py-3 text-xs font-semibold text-right text-gray-900 dark:text-gray-300">{e.amount.toLocaleString()} ETB</td>
+                        <tr key={e.id || i} className="hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors">
+                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 whitespace-nowrap">{e.date}</td>
+                          <td className="px-4 py-3 text-xs font-medium text-gray-900 dark:text-gray-300">{e.project}</td>
+                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300">
+                            <span className="px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 font-semibold">
+                              {e.category}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden md:table-cell">
+                            <div className="max-w-xs truncate" title={e.description}>{e.description}</div>
+                            {e.note && (
+                              <div className="text-xs text-gray-500 dark:text-gray-500 mt-1 italic">Fiiro: {e.note}</div>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden lg:table-cell">{e.paidFrom || 'Cash'}</td>
+                          <td className="px-4 py-3 text-xs font-semibold text-right text-red-700 dark:text-red-300">{e.amount.toLocaleString()} ETB</td>
+                          <td className="px-4 py-3 text-center">
+                            <Link 
+                              href={`/expenses/edit/${e.id}`}
+                              className="inline-flex items-center justify-center p-2 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                              title="Wax ka beddel"
+                            >
+                              <Edit size={16} />
+                            </Link>
+                          </td>
                 </tr>
               ))}
                       <tr className="bg-blue-100 dark:bg-blue-900/30 font-bold border-t-2 border-blue-300 dark:border-blue-700">
-                        <td colSpan={3} className="px-4 py-3 text-xs text-blue-900 dark:text-blue-100">WADARTA KHARASHYADA MASHRUUCYADA</td>
+                        <td colSpan={5} className="px-4 py-3 text-xs text-blue-900 dark:text-blue-100">WADARTA KHARASHYADA MASHRUUCYADA</td>
                         <td className="px-4 py-3 text-xs text-right text-blue-700 dark:text-blue-300">{report.totalProjectExpenses.toLocaleString()} ETB</td>
+                        <td></td>
                       </tr>
             </tbody>
           </table>
@@ -1044,37 +1111,169 @@ export default function DailyReportPage() {
                   <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-green-50 dark:bg-green-900/20">
                       <tr>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase">Taariikh</th>
                         <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase">Nooca Kharashka</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase hidden md:table-cell">Faahfaahin</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase hidden md:table-cell">Sharaxaad</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase hidden lg:table-cell">Account</th>
                         <th className="px-4 py-3 text-right text-xs font-bold text-green-900 dark:text-green-100 uppercase">Qiimaha</th>
+                        <th className="px-4 py-3 text-center text-xs font-bold text-green-900 dark:text-green-100 uppercase">Actions</th>
               </tr>
             </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {report.companyExpenses.map((e, i) => (
-                        <tr key={i} className="hover:bg-green-50 dark:hover:bg-green-900/10">
+                        <tr key={e.id || i} className="hover:bg-green-50 dark:hover:bg-green-900/10 transition-colors">
+                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 whitespace-nowrap">{e.date}</td>
                           <td className="px-4 py-3">
                             <div className="text-xs font-semibold text-gray-900 dark:text-gray-300">{e.category}</div>
                             {e.details && (
                               <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">{e.details}</div>
                             )}
+                            {e.subCategory && e.subCategory !== e.category && (
+                              <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">({e.subCategory})</div>
+                            )}
                           </td>
                           <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden md:table-cell">
-                            {e.description}
+                            <div className="max-w-xs truncate" title={e.description}>{e.description}</div>
                             {e.note && (
                               <div className="text-xs text-gray-500 dark:text-gray-500 mt-1 italic">Fiiro: {e.note}</div>
                             )}
                           </td>
-                          <td className="px-4 py-3 text-xs font-semibold text-right text-gray-900 dark:text-gray-300">{e.amount.toLocaleString()} ETB</td>
+                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden lg:table-cell">{e.paidFrom || 'Cash'}</td>
+                          <td className="px-4 py-3 text-xs font-semibold text-right text-red-700 dark:text-red-300">{e.amount.toLocaleString()} ETB</td>
+                          <td className="px-4 py-3 text-center">
+                            <Link 
+                              href={`/expenses/edit/${e.id}`}
+                              className="inline-flex items-center justify-center p-2 rounded-lg bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800 transition-colors"
+                              title="Wax ka beddel"
+                            >
+                              <Edit size={16} />
+                            </Link>
+                          </td>
                 </tr>
               ))}
                       <tr className="bg-green-100 dark:bg-green-900/30 font-bold border-t-2 border-green-300 dark:border-green-700">
-                        <td colSpan={2} className="px-4 py-3 text-xs text-green-900 dark:text-green-100">WADARTA KHARASHYADA SHIRKADDA</td>
+                        <td colSpan={4} className="px-4 py-3 text-xs text-green-900 dark:text-green-100">WADARTA KHARASHYADA SHIRKADDA</td>
                         <td className="px-4 py-3 text-xs text-right text-green-700 dark:text-green-300">{report.totalCompanyExpenses.toLocaleString()} ETB</td>
+                        <td></td>
                       </tr>
             </tbody>
           </table>
         </div>
       </div>
+            )}
+
+            {/* Fixed Assets Section */}
+            {report.fixedAssets && report.fixedAssets.length > 0 && (
+              <div className="border-2 border-indigo-200 dark:border-indigo-800 rounded-xl overflow-hidden">
+                <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white px-6 py-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-bold flex items-center">
+                      <HardDrive size={24} className="mr-2" />
+                      Hantida La Gashay (Fixed Assets)
+                    </h2>
+                    <div className="bg-white/30 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold">
+                      {report.fixedAssets.length} Item(s)
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white dark:bg-gray-800">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-indigo-50 dark:bg-indigo-900/20">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-indigo-900 dark:text-indigo-100 uppercase">Magaca</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-indigo-900 dark:text-indigo-100 uppercase">Nooca</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-indigo-900 dark:text-indigo-100 uppercase hidden md:table-cell">Iibiyaha</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-indigo-900 dark:text-indigo-100 uppercase hidden lg:table-cell">Loo Qoondeeyay</th>
+                        <th className="px-4 py-3 text-right text-xs font-bold text-indigo-900 dark:text-indigo-100 uppercase">Qiimaha</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                      {report.fixedAssets.map((asset, i) => (
+                        <tr key={asset.id || i} className="hover:bg-indigo-50 dark:hover:bg-indigo-900/10">
+                          <td className="px-4 py-3">
+                            <div className="text-xs font-medium text-gray-900 dark:text-gray-300">{asset.name}</div>
+                          </td>
+                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300">{asset.type}</td>
+                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden md:table-cell">{asset.vendor || '-'}</td>
+                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden lg:table-cell">{asset.assignedTo || '-'}</td>
+                          <td className="px-4 py-3 text-xs font-semibold text-right text-gray-900 dark:text-gray-300">{asset.value.toLocaleString()} ETB</td>
+                        </tr>
+                      ))}
+                      <tr className="bg-indigo-100 dark:bg-indigo-900/30 font-bold border-t-2 border-indigo-300 dark:border-indigo-700">
+                        <td colSpan={4} className="px-4 py-3 text-xs text-indigo-900 dark:text-indigo-100">WADARTA HANTIDA LA GASHAY</td>
+                        <td className="px-4 py-3 text-xs text-right text-indigo-700 dark:text-indigo-300">{(report.totalFixedAssets || 0).toLocaleString()} ETB</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Other Transactions Section */}
+            {report.otherTransactions && report.otherTransactions.length > 0 && (
+              <div className="border-2 border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+                <div className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-bold flex items-center">
+                      <Receipt size={24} className="mr-2" />
+                      Dhaqdhaqaaqyada Kale
+                    </h2>
+                    <div className="bg-white/30 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold">
+                      {report.otherTransactions.length} Item(s)
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-200 mt-1">Dhaqdhaqaaqyada kale ee dhacay maalintan (DEBT_TAKEN, DEBT_REPAID, EXPENSE, etc.)</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-900/20">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 dark:text-gray-100 uppercase">Sharaxaad</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 dark:text-gray-100 uppercase">Nooca</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 dark:text-gray-100 uppercase hidden md:table-cell">Category</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 dark:text-gray-100 uppercase hidden lg:table-cell">Account</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 dark:text-gray-100 uppercase hidden lg:table-cell">La Xiriira</th>
+                        <th className="px-4 py-3 text-right text-xs font-bold text-gray-900 dark:text-gray-100 uppercase">Qiimaha</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                      {report.otherTransactions.map((tx, i) => {
+                        const isIncome = tx.type === 'DEBT_REPAID';
+                        const relatedName = tx.project || tx.customer || tx.vendor || tx.employee || tx.user || '-';
+                        return (
+                          <tr key={tx.id || i} className="hover:bg-gray-50 dark:hover:bg-gray-900/10">
+                            <td className="px-4 py-3">
+                              <div className="text-xs font-medium text-gray-900 dark:text-gray-300">{tx.description}</div>
+                              {tx.note && (
+                                <div className="text-xs text-gray-500 dark:text-gray-500 mt-1 italic">Fiiro: {tx.note}</div>
+                              )}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                isIncome 
+                                  ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200'
+                                  : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200'
+                              }`}>
+                                {tx.type}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden md:table-cell">{tx.category || '-'}</td>
+                            <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden lg:table-cell">{tx.account}</td>
+                            <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden lg:table-cell">{relatedName}</td>
+                            <td className={`px-4 py-3 text-xs font-semibold text-right ${
+                              isIncome 
+                                ? 'text-green-700 dark:text-green-300'
+                                : 'text-red-700 dark:text-red-300'
+                            }`}>
+                              {isIncome ? '+' : '-'}{Math.abs(tx.amount).toLocaleString()} ETB
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             )}
 
             {/* No Data Message */}

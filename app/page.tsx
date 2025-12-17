@@ -1,484 +1,648 @@
-// app/page.tsx - Revlo Home Page (Left Aligned, 1000% Enhanced Design & Features)
+'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import React from 'react';
+import Image from 'next/image';
 import {
   Briefcase, DollarSign, Warehouse, Users, Truck, LineChart, Zap, LayoutDashboard, Coins, ChevronRight, ShieldCheck,
   Award, RefreshCw, Smartphone, Cloud, Bell, Mail, MapPin, Phone, MessageSquare, Plus, CheckCircle,
-  Code,  // New icon for API Access
-  Palette, // New icon for Customization
-  Globe, // New icon for Multi-language
-  Cpu, // New icon for AI Assistant
-  ReceiptText, // New icon for OCR/Receipt Scan
-  Clock, // New icon for Time Tracking
-  ClipboardCopy, // New icon for Bulk Entry
-  CreditCard, // New icon for Payment Schedule
-  FileText, // New icon for Debt Repayment
-  HandPlatter, // New icon for Vendors/Suppliers
-  CalendarCheck, // New icon for Recurring Expenses
-  Activity, // New icon for User Access Logs
-  Database, // New icon for Backup/Restore
-  Factory, // New icon for Manufacturing
-  Landmark, // New icon for Accounting
-  MessageCircle, // New icon for Chat
-  Package, // New icon for Package/Materials
-  BarChart3, // New icon for Reports
-  Download, // New icon for Download/Install
-} from 'lucide-react'; // Imports all necessary icons from Lucide React
+  Menu, X, Factory, Landmark, MessageCircle, Package, BarChart3, Download, Play, Star, ArrowRight, Check,
+  CreditCard, Globe, Lock
+} from 'lucide-react';
 import LiveReviews from '@/components/LiveReviews';
 
-// --- Custom Components for Reusability and Cleanliness ---
+// --- Components ---
 
-// Feature Card Component (Mobile Optimized)
-const FeatureCard: React.FC<{ icon: React.ReactNode; title: string; description: string; delay: number }> = ({ icon, title, description, delay }) => (
-  <div
-    className="relative bg-white dark:bg-gray-800 p-4 sm:p-6 lg:p-8 rounded-xl shadow-2xl border border-lightGray dark:border-gray-700 
-               flex flex-col items-center text-center transform hover:scale-105 transition-all duration-500 group 
-               overflow-hidden animate-fade-in-up"
-    style={{ animationDelay: `${delay}ms` }}
-  >
-    <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0"></div>
-    <div className={`relative text-3xl sm:text-4xl lg:text-6xl text-primary dark:text-secondary mb-3 sm:mb-4 lg:mb-6 group-hover:text-white transition-colors duration-300 z-10`}>
-      {icon}
-    </div>
-    <h4 className="relative text-lg sm:text-xl lg:text-3xl font-extrabold text-darkGray dark:text-gray-100 mb-2 sm:mb-3 lg:mb-4 z-10">{title}</h4>
-    <p className="relative text-xs sm:text-sm lg:text-lg text-mediumGray dark:text-gray-300 leading-relaxed z-10">{description}</p>
-  </div>
-);
+/** 
+ * Navbar Component 
+ * Solid, authoritative, and branded. Not floating glass.
+ */
+const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-// Step Card Component (Enhanced with subtle hover effect)
-const StepCard: React.FC<{ step: number; title: string; description: string; bgColor: string; delay: number }> = ({ step, title, description, bgColor, delay }) => (
-  <div 
-    className="relative p-8 rounded-xl bg-white dark:bg-gray-800 shadow-2xl border border-lightGray dark:border-gray-700 
-               transform hover:-translate-y-2 transition-transform duration-500 animate-fade-in-up" 
-    style={{ animationDelay: `${delay}ms` }}
-  >
-    <div className={`absolute -top-6 ${bgColor} text-white text-3xl font-bold w-16 h-16 rounded-full flex items-center justify-center border-4 border-lightGray dark:border-gray-700 shadow-lg`}>
-      {step}
-    </div>
-    <h4 className="text-2xl font-bold text-darkGray dark:text-gray-100 mt-8 mb-4">{title}</h4>
-    <p className="text-lg text-mediumGray dark:text-gray-300 leading-relaxed">{description}</p>
-  </div>
-);
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-// Testimonial Card Component (Mobile Optimized)
-const TestimonialCard: React.FC<{ text: string; name: string; role: string; delay: number }> = ({ text, name, role, delay }) => (
-  <div 
-    className="bg-white dark:bg-gray-800 p-4 sm:p-6 lg:p-8 rounded-xl shadow-2xl border border-lightGray dark:border-gray-700 text-center 
-               transform hover:scale-105 transition-all duration-500 animate-fade-in-up"
-    style={{ animationDelay: `${delay}ms` }}
-  >
-    <p className="text-sm sm:text-base lg:text-xl italic text-mediumGray dark:text-gray-300 mb-4 sm:mb-6 leading-relaxed">
-      "{text}"
-    </p>
-    <p className="text-sm sm:text-base lg:text-lg font-bold text-darkGray dark:text-gray-100">{name}</p>
-    <p className="text-xs sm:text-sm lg:text-md text-mediumGray dark:text-gray-300">{role}</p>
-  </div>
-);
+  const navLinks = [
+    { name: 'Astaamaha', href: '#features' },
+    { name: 'Sida uu u Shaqeeyo', href: '#how-it-works' },
+    { name: 'Xalka', href: '#solutions' },
+    { name: 'Qiimaha', href: '#pricing' },
+  ];
 
-// Value Proposition Card (Mobile Optimized)
-const ValuePropCard: React.FC<{ icon: React.ReactNode; title: string; description: string }> = ({ icon, title, description }) => (
-  <div className="flex items-start space-x-3 sm:space-x-4 p-3 sm:p-4 rounded-lg bg-white dark:bg-gray-800 shadow-md transform hover:shadow-lg transition-shadow duration-300">
-    <div className="text-primary dark:text-secondary flex-shrink-0 mt-1">{icon}</div>
-    <div>
-      <h4 className="text-sm sm:text-base lg:text-xl font-semibold text-darkGray dark:text-gray-100 mb-1">{title}</h4>
-      <p className="text-xs sm:text-sm lg:text-base text-mediumGray dark:text-gray-300">{description}</p>
-    </div>
-  </div>
-);
-
-
-
-// --- Main Page Component ---
-export default function HomePage() {
   return (
-    <div className="min-h-screen bg-lightGray dark:bg-gray-900 text-darkGray dark:text-gray-200 flex flex-col">
-      {/* Header/Navbar - Mobile Optimized */}
-      <header className="bg-white dark:bg-gray-800 shadow-lg py-3 px-4 lg:py-4 lg:px-8 flex justify-between items-center sticky top-0 z-20">
-        <h1 className="text-xl sm:text-2xl lg:text-4xl font-extrabold tracking-wide text-darkGray dark:text-gray-100">
-          Revl<span className="text-secondary">o</span>
-        </h1>
-        <nav className="hidden md:flex space-x-4 lg:space-x-6 items-center justify-center flex-1"> {/* Hidden on mobile, centered */}
-          {['Astaamaha', 'Sida uu u Shaqeeyo', 'Xalka', 'Install App', 'Qiimaha', 'Aragtiyada', 'Nala Soo Xiriir'].map((text, i) => (
-            <a key={i} href={`#${['features', 'how-it-works', 'solutions', 'pwa-install', 'pricing', 'testimonials', 'contact'][i]}`} className="text-darkGray dark:text-gray-200 hover:text-primary transition-colors duration-200 font-medium text-sm lg:text-lg">
-              {text}
-            </a>
-          ))}
-        </nav>
-        <div className="hidden md:flex space-x-2 lg:space-x-4 items-center">
-          <Link href="/login" className="bg-primary text-white py-2 px-4 lg:py-2.5 lg:px-6 rounded-full font-bold text-sm lg:text-lg hover:bg-blue-700 transition duration-200 shadow-md">
-            Login
+    <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-sm shadow-sm py-3 dark:bg-gray-900/95' : 'bg-transparent py-5 dark:bg-gray-900'}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center">
+          {/* Logo Section */}
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className={`text-2xl font-extrabold tracking-tight flex items-center gap-1 ${scrolled ? 'text-darkGray dark:text-white' : 'text-darkGray dark:text-white'}`}>
+              Rev<span className="text-secondary">lo</span>
+            </div>
           </Link>
-          <Link href="/signup" className="bg-primary text-white py-2 px-4 lg:py-2.5 lg:px-6 rounded-full font-bold text-sm lg:text-lg hover:bg-blue-700 transition duration-200 shadow-md">
-            Sign Up
-          </Link>
-        </div>
-        {/* Mobile Menu Icon (Hamburger) - Enhanced */}
-        <div className="md:hidden flex items-center space-x-2">
-          <Link href="/login" className="bg-primary text-white py-1.5 px-3 rounded-full font-bold text-xs hover:bg-blue-700 transition duration-200 shadow-md">
-            Login
-          </Link>
-          <button className="text-darkGray dark:text-gray-100 text-xl hover:text-primary transition-colors duration-200 p-1">
-            ☰
-          </button>
-        </div>
-      </header>
 
-      {/* Hero Section - Mobile Optimized */}
-      <section className="relative flex items-center py-12 sm:py-16 lg:py-32 px-4 sm:px-6 lg:px-16 bg-gradient-to-br from-primary to-blue-500 text-white overflow-hidden shadow-2xl">
-        <div className="max-w-7xl mx-auto z-10 flex flex-col items-center text-center">
-          {/* Text Content - Mobile Optimized */}
-          <div className="text-center animate-fade-in-left">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-7xl font-extrabold leading-tight mb-3 sm:mb-4 lg:mb-7 drop-shadow-xl">
-              Maamul Ganacsigaaga,<br />
-              <span className="text-secondary">Revlo waa nidaam ERP casri ah</span>
-            </h2>
-            <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl mb-6 sm:mb-8 lg:mb-12 opacity-90 leading-relaxed max-w-xs sm:max-w-lg lg:max-w-xl mx-auto px-2">
-               oo dhamaystiran, kaas oo ganacsigaaga ka dhigaya mid hufan oo isku xirnaan leh. Ku maamul mashaariicda, 
-               <span className="text-secondary font-bold">Production Orders</span>, 
-               <span className="text-accent font-bold">Material Purchases</span>, 
-               <span className="text-white font-bold bg-secondary/20 px-1 py-0.5 sm:px-2 sm:py-1 rounded text-xs sm:text-sm">Company Chat</span>, 
-               kharashaadka, kaydka, iyo macaamiishaada si fudud, adigoo ka faa'iidaysanaya otomaatig awood leh iyo xog dhab ah oo kugu hagta go'aanka saxda ah.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 lg:gap-6 px-4 sm:px-0">
-              <Link href="/signup" className="bg-secondary text-white py-2.5 sm:py-3 lg:py-4 px-4 sm:px-6 lg:px-10 rounded-full text-sm sm:text-lg lg:text-xl font-extrabold hover:bg-green-600 transition-all duration-300 shadow-xl transform hover:scale-105 flex items-center justify-center">
-                Bilaaw Bilaash <ChevronRight className="ml-1 sm:ml-2 w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                className={`text-sm font-bold hover:text-primary transition-colors hover:scale-105 transform duration-200 ${scrolled ? 'text-mediumGray dark:text-gray-300' : 'text-darkGray dark:text-gray-300'}`}
+              >
+                {link.name}
               </Link>
-              <Link href="/login" className="border-2 border-white text-white py-2.5 sm:py-3 lg:py-4 px-4 sm:px-6 lg:px-10 rounded-full text-sm sm:text-lg lg:text-xl font-extrabold hover:bg-white hover:text-primary transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
-                Gal
+            ))}
+            <Link href="/download" className="text-sm font-bold hover:text-primary transition-colors text-mediumGray dark:text-gray-300">
+              Desktop App
+            </Link>
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="hidden md:flex items-center gap-4">
+            <Link href="/login" className={`text-sm font-bold hover:text-primary transition-colors ${scrolled ? 'text-darkGray dark:text-white' : 'text-darkGray dark:text-white'}`}>
+              Log In
+            </Link>
+            <Link href="/signup" className="relative overflow-hidden bg-primary text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-lg hover:shadow-primary/40 hover:-translate-y-0.5 transition-all group">
+              <span className="relative z-10 flex items-center gap-2">Bilaaw Hadda <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" /></span>
+              <div className="absolute inset-0 bg-secondary opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </Link>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden flex items-center">
+            <button onClick={() => setIsOpen(!isOpen)} className="text-darkGray dark:text-white hover:text-primary focus:outline-none p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              {isOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      {isOpen && (
+        <div className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 absolute w-full shadow-xl animate-fade-in-up">
+          <div className="px-4 py-6 space-y-4">
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                className="block text-lg font-bold text-darkGray dark:text-gray-200 hover:text-primary px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                onClick={() => setIsOpen(false)}
+              >
+                {link.name}
               </Link>
+            ))}
+            <Link href="/download" className="block text-lg font-bold text-darkGray dark:text-gray-200 hover:text-primary px-4 py-2">Desktop App</Link>
+            <hr className="border-gray-100 dark:border-gray-800 my-2" />
+            <div className="flex flex-col gap-3 px-2">
+              <Link href="/login" className="w-full text-center text-darkGray font-bold py-3 bg-gray-100 rounded-xl">Log In</Link>
+              <Link href="/signup" className="w-full text-center bg-primary text-white py-3 rounded-xl font-bold shadow-lg">Bilaaw Hadda</Link>
             </div>
           </div>
-          
         </div>
-        {/* Animated Background Shapes - Mobile Optimized */}
-        <div className="absolute inset-0 z-0 opacity-20">
-          <div className="absolute top-1/4 left-1/4 w-20 h-20 sm:w-32 sm:h-32 lg:w-40 lg:h-40 bg-white rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-bounce-slow"></div>
-          <div className="absolute bottom-1/3 right-1/3 w-32 h-32 sm:w-48 sm:h-48 lg:w-60 lg:h-60 bg-secondary rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-bounce-fast"></div>
-          <div className="absolute top-1/2 right-1/4 w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-accent rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-bounce-slowest"></div>
-        </div>
-      </section>
+      )}
+    </nav>
+  );
+};
 
-      {/* Core Features Section - Mobile Optimized */}
-      <section id="features" className="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 md:px-16 bg-lightGray dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto text-center mb-8 sm:mb-12 lg:mb-16">
-          <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-darkGray dark:text-gray-100">Qiimaha Revlo Kuu Siiyo</h3>
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-mediumGray dark:text-gray-400 max-w-xs sm:max-w-2xl lg:max-w-3xl mx-auto px-2">
-            Qalabka muhiimka ah ee aad u baahan tahay hal meel, si aad ganacsigaaga u kobciso una qaado heerka xiga. Production Orders, Material Purchases, Company Chat, iyo dhammaan qalabka casri ah.
+const Interactive3DBackground = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    // Shape definitions
+    const numShapes = 20;
+    const connectionDistance = 200;
+    const mouseDistance = 300;
+
+    // Colors
+    const colors = ['#3498DB', '#2ECC71']; // Primary, Secondary
+
+    class Shape3D {
+      x: number;
+      y: number;
+      z: number;
+      size: number;
+      type: 'cube' | 'pyramid';
+      color: string;
+      dx: number;
+      dy: number;
+      rotX: number;
+      rotY: number;
+      rotSpeed: number;
+
+      constructor() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.z = Math.random() * 2 + 1; // Depth scale
+        this.size = Math.random() * 20 + 15;
+        this.type = Math.random() > 0.5 ? 'cube' : 'pyramid';
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+        this.dx = (Math.random() - 0.5) * 0.5;
+        this.dy = (Math.random() - 0.5) * 0.5;
+        this.rotX = Math.random() * Math.PI * 2;
+        this.rotY = Math.random() * Math.PI * 2;
+        this.rotSpeed = (Math.random() - 0.5) * 0.02;
+      }
+
+      update(mouseX: number, mouseY: number) {
+        // Auto move
+        this.x += this.dx;
+        this.y += this.dy;
+        this.rotX += this.rotSpeed;
+        this.rotY += this.rotSpeed;
+
+        // Bounce off edges
+        if (this.x < 0 || this.x > width) this.dx *= -1;
+        if (this.y < 0 || this.y > height) this.dy *= -1;
+
+        // Mouse Interaction (Magnetic Pull / Repel)
+        const dx = this.x - mouseX;
+        const dy = this.y - mouseY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < mouseDistance) {
+          const force = (mouseDistance - distance) / mouseDistance;
+          // Gentle push away for "activity"
+          this.x += (dx / distance) * force * 2;
+          this.y += (dy / distance) * force * 2;
+        }
+      }
+
+      draw(ctx: CanvasRenderingContext2D) {
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+
+        // Simple 3D Projection Calculation
+        const project = (x: number, y: number, z: number) => {
+          // Rotate
+          const cosX = Math.cos(this.rotX), sinX = Math.sin(this.rotX);
+          const cosY = Math.cos(this.rotY), sinY = Math.sin(this.rotY);
+
+          let ry = y * cosX - z * sinX;
+          let rz = y * sinX + z * cosX;
+          let rx = x * cosY + rz * sinY;
+          let rz2 = z * cosY - x * sinY;
+
+          const scale = 300 / (300 + rz2 + 100); // Perspective
+          return {
+            x: this.x + rx * scale,
+            y: this.y + ry * scale
+          };
+        };
+
+        const s = this.size;
+
+        if (this.type === 'cube') {
+          const nodes = [
+            [-s, -s, -s], [s, -s, -s], [s, s, -s], [-s, s, -s],
+            [-s, -s, s], [s, -s, s], [s, s, s], [-s, s, s]
+          ];
+          const p = nodes.map(n => project(n[0], n[1], n[2]));
+
+          // Draw edges
+          const edges = [
+            [0, 1], [1, 2], [2, 3], [3, 0], // Front face
+            [4, 5], [5, 6], [6, 7], [7, 4], // Back face
+            [0, 4], [1, 5], [2, 6], [3, 7]  // Connecting lines
+          ];
+          edges.forEach(e => {
+            ctx.moveTo(p[e[0]].x, p[e[0]].y);
+            ctx.lineTo(p[e[1]].x, p[e[1]].y);
+          });
+
+        } else if (this.type === 'pyramid') {
+          const nodes = [
+            [0, -s, 0],   // Top
+            [-s, s, -s], [s, s, -s], [s, s, s], [-s, s, s] // Base
+          ];
+          const p = nodes.map(n => project(n[0], n[1], n[2]));
+
+          // Base
+          ctx.moveTo(p[1].x, p[1].y); ctx.lineTo(p[2].x, p[2].y);
+          ctx.lineTo(p[3].x, p[3].y); ctx.lineTo(p[4].x, p[4].y);
+          ctx.lineTo(p[1].x, p[1].y);
+          // Sides
+          [1, 2, 3, 4].forEach(i => {
+            ctx.moveTo(p[0].x, p[0].y);
+            ctx.lineTo(p[i].x, p[i].y);
+          });
+        }
+
+        ctx.stroke();
+      }
+    }
+
+    // Initialize shapes
+    const shapes: Shape3D[] = [];
+    for (let i = 0; i < numShapes; i++) {
+      shapes.push(new Shape3D());
+    }
+
+    const handleResize = () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+
+    const mouseObj = { x: 0, y: 0 };
+    const onMove = (e: MouseEvent) => { mouseObj.x = e.clientX; mouseObj.y = e.clientY; };
+    window.addEventListener('mousemove', onMove);
+
+    const animateWithMouse = () => {
+      ctx.clearRect(0, 0, width, height);
+
+      // Draw faint grid first
+      ctx.strokeStyle = 'rgba(200, 200, 200, 0.1)';
+      ctx.lineWidth = 1;
+      // Draw shapes
+      shapes.forEach(shape => {
+        shape.update(mouseObj.x, mouseObj.y);
+        shape.draw(ctx);
+      });
+
+      // Draw Connections
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i < shapes.length; i++) {
+        for (let j = i + 1; j < shapes.length; j++) {
+          const dx = shapes[i].x - shapes[j].x;
+          const dy = shapes[i].y - shapes[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < connectionDistance) {
+            const opacity = 1 - (dist / connectionDistance);
+            ctx.strokeStyle = `rgba(52, 152, 219, ${opacity * 0.4})`;
+            ctx.beginPath();
+            ctx.moveTo(shapes[i].x, shapes[i].y);
+            ctx.lineTo(shapes[j].x, shapes[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(animateWithMouse);
+    }
+    const animId = requestAnimationFrame(animateWithMouse);
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('mousemove', onMove);
+      cancelAnimationFrame(animId);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="absolute inset-0 z-0 bg-gradient-to-b from-white via-blue-50/30 to-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" />;
+};
+
+/**
+ * Hero Section
+ * Uses Interactive3DBackground
+ */
+const Hero = () => {
+  return (
+    <section className="relative min-h-[90vh] flex flex-col justify-center pt-32 pb-20 overflow-hidden">
+
+      {/* The New Canvas Background */}
+      <Interactive3DBackground />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center pointer-events-none">
+        {/* Pointer events none on container so mouse touches canvas, but re-enable on buttons */}
+
+        {/* Badge - Solid Secondary Color */}
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-50 dark:bg-green-900/20 border border-secondary/30 text-secondary text-xs font-bold uppercase tracking-wider mb-8 animate-fade-in-up pointer-events-auto">
+          <CheckCircle size={14} className="text-secondary fill-current" />
+          ERP System Casri Ah
+        </div>
+
+        {/* Headline */}
+        <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-darkGray dark:text-white tracking-tight mb-8 leading-tight animate-fade-in-up select-none" style={{ animationDelay: '100ms' }}>
+          Maamul Ganacsigaaga, <br />
+          <span className="text-primary pb-2 inline-block relative">
+            Si Hufan.
+            <div className="absolute bottom-2 left-0 w-full h-3 bg-primary/10 -z-10 -skew-x-12"></div>
+          </span>
+        </h1>
+
+        <p className="max-w-3xl mx-auto text-xl text-mediumGray dark:text-gray-400 mb-10 leading-relaxed animate-fade-in-up select-none" style={{ animationDelay: '200ms' }}>
+          Revlo waa nidaam dhamaystiran oo isku xiraya Mashaariicda, Iibka, Maaliyadda, iyo Shaqaalahaaga. Ka dhig ganacsigaaga mid la jaan-qaada tiknoolajiyadda casriga ah.
+        </p>
+
+        {/* Buttons - Interactive */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up pointer-events-auto" style={{ animationDelay: '300ms' }}>
+          <Link href="/signup" className="flex items-center justify-center gap-2 bg-primary text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-600 hover:-translate-y-1 transition-all shadow-xl shadow-blue-500/20">
+            Bilaaw Bilaash <ChevronRight size={20} />
+          </Link>
+          <Link href="/demo" className="flex items-center justify-center gap-2 bg-white dark:bg-gray-800 text-darkGray dark:text-white border-2 border-gray-100 dark:border-gray-700 px-8 py-4 rounded-xl font-bold text-lg hover:border-secondary hover:text-secondary hover:-translate-y-1 transition-all shadow-sm">
+            <Play size={20} className="fill-current" /> Daawo Demo
+          </Link>
+        </div>
+
+        {/* Dashboard Preview */}
+        <div
+          className="mt-16 sm:mt-24 relative max-w-6xl mx-auto animate-fade-in-up pointer-events-auto transform hover:scale-[1.01] transition-transform duration-500"
+          style={{ animationDelay: '500ms' }}
+        >
+          <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-gray-200 dark:border-gray-700 overflow-hidden ring-1 ring-black/5">
+            {/* Header Bar */}
+            <div className="h-8 bg-gray-50 dark:bg-gray-700 border-b border-gray-100 dark:border-gray-600 flex items-center gap-2 px-4">
+              <div className="w-3 h-3 rounded-full bg-red-400"></div>
+              <div className="w-3 h-3 rounded-full bg-amber-400"></div>
+              <div className="w-3 h-3 rounded-full bg-green-400"></div>
+            </div>
+            <div className="aspect-[16/9] bg-white dark:bg-gray-900 flex items-center justify-center group overflow-hidden relative">
+              {/* Abstract Representation of Dashboard for Preview */}
+              <div className="grid grid-cols-4 gap-4 p-8 w-full h-full opacity-60">
+                <div className="col-span-1 bg-blue-50 h-32 rounded-xl"></div>
+                <div className="col-span-1 bg-green-50 h-32 rounded-xl"></div>
+                <div className="col-span-2 bg-gray-50 h-32 rounded-xl"></div>
+                <div className="col-span-3 bg-gray-50 h-64 rounded-xl"></div>
+                <div className="col-span-1 bg-blue-50 h-64 rounded-xl"></div>
+              </div>
+
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <div className="w-24 h-24 bg-white shadow-xl rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-110 duration-500">
+                  <LayoutDashboard size={48} className="text-primary" />
+                </div>
+                <h3 className="text-2xl font-bold text-darkGray dark:text-white">Dashboard Preview</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Trusted By Ticker */}
+        <TrustedBy />
+      </div>
+    </section>
+  );
+};
+
+const TrustedBy = () => (
+  <div className="pt-20 pb-10 border-b border-gray-100 dark:border-gray-800/50 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
+    <p className="text-sm font-semibold text-mediumGray dark:text-gray-500 uppercase tracking-widest mb-8">Waxaa ku kalsoon shirkadaha ugu waaweyn</p>
+    <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+      {['Construction Co', 'Manufacturing Inc', 'Global Trade', 'BuildRight Ltd', 'TechFlow'].map((name, i) => (
+        <div key={i} className="flex items-center gap-2 font-bold text-xl text-darkGray dark:text-white">
+          <div className="w-8 h-8 rounded bg-darkGray dark:bg-gray-700"></div>
+          {name}
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+/**
+ * How It Works Section - New Addition
+ */
+const HowItWorks = () => {
+  const steps = [
+    { id: 1, title: 'Is-diiwaangeli', desc: 'Koonto sameyso daqiiqado gudahood. Waa bilaash in la bilaabo.', icon: <Users /> },
+    { id: 2, title: 'Habee Ganacsigaaga', desc: 'Geli xogta shirkaddaada, sida shaqaalaha iyo mashaariicda.', icon: <Briefcase /> },
+    { id: 3, title: 'Bilow Maamulka', desc: 'La soco dhaqdhaqaaqa, iibka, iyo wax-soo-saarka si toos ah.', icon: <LineChart /> },
+  ];
+
+  return (
+    <section id="how-it-works" className="py-24 bg-gray-50 dark:bg-gray-800/50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-primary font-bold tracking-wide uppercase text-sm mb-2">Habsami u Socodka</h2>
+          <h3 className="text-3xl md:text-4xl font-bold text-darkGray dark:text-white">Sida uu u Shaqeeyo</h3>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          {steps.map((step) => (
+            <div key={step.id} className="relative bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 text-center group hover:-translate-y-2 transition-transform duration-300">
+              <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-primary group-hover:scale-110 transition-transform">
+                {React.cloneElement(step.icon, { size: 32 })}
+              </div>
+              <div className="absolute top-8 right-8 text-6xl font-black text-gray-100 dark:text-gray-700 -z-0 select-none opacity-50">{step.id}</div>
+              <h4 className="text-xl font-bold text-darkGray dark:text-white mb-3 relative z-10">{step.title}</h4>
+              <p className="text-mediumGray dark:text-gray-400 relative z-10">{step.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Features Grid
+ * Clean cards, clear iconography.
+ */
+const Features = () => {
+
+  return (
+    <section id="features" className="py-24 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <h2 className="text-primary font-bold tracking-wide uppercase text-sm mb-2">Awoodaha Nidaamka</h2>
+          <h3 className="text-3xl md:text-5xl font-bold text-darkGray dark:text-white mb-6">Wax Walba Hal Meel.</h3>
+          <p className="text-xl text-mediumGray dark:text-gray-400">
+            Looma baahna software kala duwan. Revlo wuxuu isugu keenay wax walba oo ganacsigaagu u baahan yahay.
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 md:gap-10 lg:gap-12">
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           <FeatureCard
             icon={<Briefcase />}
             title="Maamulka Mashruuca"
-            description="Qorshee oo la soco mashaariicda Kanban & timeline muuqda. Maamul hawlaha, ilaha, iyo jadwalka si hufan."
+            desc="La soco horumarka mashaariicda, qorshee hawlaha (Tasks), oo maamul miisaaniyadda mashruuc kasta si gaar ah."
             delay={0}
           />
           <FeatureCard
             icon={<Factory />}
-            title="Warshadaha & Samaynta"
-            description="Maamul Production Orders, Bill of Materials, Work Orders, iyo Material Purchases. La soco samaynta alaabta si hufan."
+            title="Warshadaha & Soo-saarka"
+            desc="Maamul 'Production Orders', xisaabi kharashka alaabta ceeriin (Raw Materials), oo hel warbixin faahfaahsan."
             delay={100}
           />
           <FeatureCard
-            icon={<DollarSign />}
-            title="Maamulka Kharashaadka"
-            description="Diiwaan geli kharashaadka, isticmaal OCR rasiidka, xisaabi otomaatig. Hel aragti ku saabsan lacagtaada iyo miisaaniyadda."
+            icon={<Landmark />}
+            title="Maamulka Maaliyadda"
+            desc="Diiwaan geli dakhliga iyo kharashka. Isku xir Bankiyada iyo Mobile Money. Hel 'Profit & Loss' degdeg ah."
             delay={200}
           />
           <FeatureCard
-            icon={<Landmark />}
-            title="Maamulka Xisaabaadka"
-            description="Maamul koobabka lacagta, dhaqdhaqaaqa lacagta, iyo warbixino dhaqaale. La soco lacagtaada si toos ah."
+            icon={<Users />}
+            title="HR & Shaqaalaha"
+            desc="Maamul xogta shaqaalaha, xaadirinta, mushaharka, iyo gunooyinka si fudud oo otomaatig ah."
             delay={300}
           />
           <FeatureCard
-            icon={<Warehouse />}
-            title="Maamulka Bakhaarka"
-            description="Si hufan ula socod alaabtaada, isticmaalkeeda mashruuca, iyo heerarka stock-ga. Hel digniino markay alaabtu dhammaato."
+            icon={<Truck />}
+            title="Silsiladda Sahayda"
+            desc="Maamul iibiyayaasha (Vendors), dalabaadka (Purchase Orders), iyo keenista alaabta."
             delay={400}
           />
           <FeatureCard
-            icon={<Users />}
-            title="Maamulka Macaamiisha"
-            description="Diiwaan geli macaamiishaada, la socod taariikhdooda, iyo mashaariicda ay kula leeyihiin. Dib u eeg lacag-bixinta iyo xiriirka."
+            icon={<MessageCircle />}
+            title="Wada-shaqeynta Kooxda"
+            desc="Nidaam Chat oo gudaha ah. Wadaag faylasha, sawirada, iyo warbixinada adiga oo aan ka bixin nidaamka."
             delay={500}
           />
-          <FeatureCard
-            icon={<Truck />}
-            title="Maamulka Iibiyayaasha"
-            description="Maamulka qandaraasleyaasha iyo waxyaabaha aad ka iibsatay. La soco waxqabadkooda iyo taariikhda lacag-bixinta."
-            delay={600}
-          />
-          <FeatureCard
-            icon={<MessageCircle />}
-            title="Company Chat"
-            description="Nidaamka warbixinta dhexdhexaadka ah ee shirkadda. La soco warbixinta, wadaag faylasha, iyo iskaashiga kooxda."
-            delay={700}
-          />
-          <FeatureCard
-            icon={<LineChart />}
-            title="Warbixino & Falanqayn"
-            description="Warbixino faahfaahsan oo ku saleysan xogtaada, oo ay ku jiraan shaxanyo muuqaal ah iyo filter-yo horumarsan. Ka gaar go'aano xog ku salaysan."
-            delay={800}
-          />
         </div>
-      </section>
+      </div>
+    </section>
+  );
+};
 
-      {/* Solutions Section - Mobile Optimized */}
-      <section id="solutions" className="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 md:px-16 bg-white dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto text-center mb-8 sm:mb-12 lg:mb-16">
-          <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-darkGray dark:text-gray-100">Xalka Gaarka ah ee Revlo Bixiyo</h3>
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-mediumGray dark:text-gray-400 max-w-xs sm:max-w-2xl lg:max-w-3xl mx-auto px-2">
-            Revlo wuxuu bixiyaa qalab casri ah oo u sahlaya ganacsigaaga inuu noqdo mid hufan oo toosan. Production Orders, Material Purchases, Company Chat, iyo dhammaan qalabka casri ah.
-          </p>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-          <ValuePropCard 
-            icon={<Factory className="w-8 h-8" />} 
-            title="Production Orders & BOM" 
-            description="Maamul Production Orders, Bill of Materials, iyo Work Orders. La soco samaynta alaabta si hufan oo toosan." 
-          />
-          <ValuePropCard 
-            icon={<Package className="w-8 h-8" />} 
-            title="Material Purchases" 
-            description="Iibso alaabta warshadaha, la soco qandaraasleyaasha, oo hubi in alaabtaadu ay timaado waqti kasta." 
-          />
-          <ValuePropCard 
-            icon={<Landmark className="w-8 h-8" />} 
-            title="Multi-Account Management" 
-            description="Maamul koobabka lacagta (Bank, Cash, Mobile Money), dhaqdhaqaaqa lacagta, iyo warbixino dhaqaale." 
-          />
-          <ValuePropCard 
-            icon={<ReceiptText className="w-8 h-8" />} 
-            title="Expense Approval System" 
-            description="Maamul kharashyada u baahan ansixinta maamulaha, oo hubi in xisaabaadkaagu ay sax yihiin." 
-          />
-          <ValuePropCard 
-            icon={<MessageCircle className="w-8 h-8" />} 
-            title="Real-time Company Chat" 
-            description="Nidaamka warbixinta dhexdhexaadka ah ee shirkadda. La soco warbixinta, wadaag faylasha, iyo iskaashiga kooxda." 
-          />
-          <ValuePropCard 
-            icon={<Users className="w-8 h-8" />} 
-            title="Role-based Access Control" 
-            description="Maamul istcmaaleyaal, dooro xilalka (Admin, Manager, Member), oo hubi in xogtaada ay amniga ku jirto." 
-          />
-          <ValuePropCard 
-            icon={<BarChart3 className="w-8 h-8" />} 
-            title="Advanced Reporting" 
-            description="Warbixino faahfaahsan oo ku saleysan xogtaada, oo ay ku jiraan shaxanyo muuqaal ah iyo filter-yo horumarsan." 
-          />
-          <ValuePropCard 
-            icon={<Warehouse className="w-8 h-8" />} 
-            title="Smart Inventory Tracking" 
-            description="La soco alaabtaada, isticmaalkeeda mashruuca, iyo heerarka stock-ga. Hel digniino markay alaabtu dhammaato." 
-          />
-          <ValuePropCard 
-            icon={<Truck className="w-8 h-8" />} 
-            title="Vendor Management" 
-            description="Maamulka qandaraasleyaasha iyo waxyaabaha aad ka iibsatay. La soco waxqabadkooda iyo taariikhda lacag-bixinta." 
-          />
-        </div>
-      </section>
-
-
-      {/* PWA Install Section */}
-      <section id="pwa-install" className="py-24 px-6 md:px-16 bg-gradient-to-br from-primary/10 to-secondary/10">
-        <div className="max-w-7xl mx-auto text-center">
-          <h3 className="text-4xl md:text-5xl font-bold mb-6 text-darkGray dark:text-gray-100">Install Revlo App</h3>
-          <p className="text-lg md:text-xl text-mediumGray dark:text-gray-400 mb-8 max-w-3xl mx-auto">
-            Install Revlo as a Progressive Web App (PWA) on your device for the best experience. Works offline, loads fast, and feels like a native app. No need for App Store or Play Store - install directly from your browser!
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
-              <div className="bg-primary/10 p-3 rounded-lg w-fit mx-auto mb-4">
-                <Smartphone className="w-8 h-8 text-primary" />
-              </div>
-              <h4 className="text-xl font-semibold text-darkGray dark:text-gray-100 mb-2">Mobile Install</h4>
-              <p className="text-mediumGray dark:text-gray-400">
-                Install on your phone for quick access. Works on iOS Safari and Android Chrome.
-              </p>
-            </div>
-            
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
-              <div className="bg-secondary/10 p-3 rounded-lg w-fit mx-auto mb-4">
-                <Cloud className="w-8 h-8 text-secondary" />
-              </div>
-              <h4 className="text-xl font-semibold text-darkGray dark:text-gray-100 mb-2">Offline Access</h4>
-              <p className="text-mediumGray dark:text-gray-400">
-                Use Revlo even without internet. Your data syncs when you're back online.
-              </p>
-            </div>
-            
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
-              <div className="bg-accent/10 p-3 rounded-lg w-fit mx-auto mb-4">
-                <Zap className="w-8 h-8 text-accent" />
-              </div>
-              <h4 className="text-xl font-semibold text-darkGray dark:text-gray-100 mb-2">Fast Loading</h4>
-              <p className="text-mediumGray dark:text-gray-400">
-                Cached resources make Revlo load instantly, even on slow connections.
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <button 
-              id="pwa-install-button-main"
-              className="bg-primary text-white py-4 px-8 rounded-full text-xl font-bold hover:bg-primary/80 transition-all duration-300 shadow-xl transform hover:scale-105 flex items-center justify-center"
-              style={{ display: 'none' }}
-            >
-              <svg className="mr-3 w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              Install Revlo App
-            </button>
-            
-            <div className="text-center">
-              <p className="text-sm text-mediumGray dark:text-gray-400 mb-2">Installation Instructions:</p>
-              <div className="flex flex-col sm:flex-row gap-4 text-sm text-mediumGray dark:text-gray-400">
-                <div className="flex items-center justify-center space-x-2">
-                  <span className="bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">1</span>
-                  <span>Open in browser</span>
-                </div>
-                <div className="flex items-center justify-center space-x-2">
-                  <span className="bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">2</span>
-                  <span>Tap "Install" or "Add to Home Screen"</span>
-                </div>
-                <div className="flex items-center justify-center space-x-2">
-                  <span className="bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">3</span>
-                  <span>Enjoy the app experience!</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Mobile App Section - Mobile Optimized */}
-      <section id="mobile-app" className="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 md:px-16 bg-lightGray dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 items-center">
-          <div className="animate-fade-in-left">
-            <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 text-darkGray dark:text-gray-100">Revlo Mobile: Maamul Goobta Kasta</h3>
-            <p className="text-sm sm:text-base md:text-lg lg:text-xl text-mediumGray dark:text-gray-400 mb-6 sm:mb-8 leading-relaxed">
-              Qaado Revlo jeebkaaga! App-ka moobilka ee sahlan wuxuu kuu oggolaanayaa inaad geliso kharashyada, la socoto mashaariicda, Production Orders, Material Purchases, Company Chat, oo aad gasho macluumaadka muhiimka ah meel kasta oo aad joogto, xitaa marka aysan jirin internet.
-            </p>
-            <ul className="space-y-3 sm:space-y-4 text-sm sm:text-base lg:text-lg text-darkGray dark:text-gray-200 mb-6 sm:mb-8">
-              <li className="flex items-center space-x-2 sm:space-x-3"><CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-secondary flex-shrink-0" /><span>Gelinta Kharashyada Degdeg ah (Scan Receipt)</span></li>
-              <li className="flex items-center space-x-2 sm:space-x-3"><CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-secondary flex-shrink-0" /><span>La Socodka Horumarka Mashruuca</span></li>
-              <li className="flex items-center space-x-2 sm:space-x-3"><CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-secondary flex-shrink-0" /><span>Maamulka Production Orders</span></li>
-              <li className="flex items-center space-x-2 sm:space-x-3"><CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-secondary flex-shrink-0" /><span>Company Chat & Communication</span></li>
-              <li className="flex items-center space-x-2 sm:space-x-3"><CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-secondary flex-shrink-0" /><span>La Socodka Lacagta & Xisaabaadka</span></li>
-              <li className="flex items-center space-x-2 sm:space-x-3"><CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-secondary flex-shrink-0" /><span>Galitaanka Xogta Offline</span></li>
-            </ul>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <Link href="#" className="bg-darkGray dark:bg-gray-700 text-white py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg text-sm sm:text-base lg:text-lg font-semibold hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200 shadow-md flex items-center justify-center">
-                <Smartphone className="mr-2 w-4 h-4 sm:w-5 sm:h-5" /> App Store
-              </Link>
-              <Link href="#" className="bg-darkGray dark:bg-gray-700 text-white py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg text-sm sm:text-base lg:text-lg font-semibold hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200 shadow-md flex items-center justify-center">
-                <Award className="mr-2 w-4 h-4 sm:w-5 sm:h-5" /> Google Play
-              </Link>
-            </div>
-          </div>
-          <div className="flex justify-center md:justify-end animate-fade-in-right">
-            {/* Placeholder for mobile app screenshot */}
-            <img src="/images/mobile-app-preview.png" alt="Revlo Mobile App" className="w-64 sm:w-80 md:w-96 rounded-xl shadow-2xl border-4 border-white dark:border-gray-700 transform rotate-3 hover:rotate-0 transition-transform duration-500" />
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section - Mobile Optimized */}
-      <section id="pricing" className="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 md:px-16 bg-white dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto text-center mb-8 sm:mb-12 lg:mb-16">
-          <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-darkGray dark:text-gray-100">Qiimaha Xubinimada</h3>
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-mediumGray dark:text-gray-400 max-w-xs sm:max-w-2xl lg:max-w-3xl mx-auto px-2">Dooro qorshaha ku habboon baahida ganacsigaaga. Bilaw bilaash, oo mar walba kor u qaad. Production Orders, Material Purchases, Company Chat, iyo dhammaan qalabka casri ah.</p>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
-          {[
-            { name: 'Basic', price: 'Bilaash', features: ['1 Isticmaale', '10 Mashruuc', '50 Kharash', 'Maamulka Bakhaarka (50 shay)', 'Basic Reports'], featured: false, delay: 0 },
-            { name: 'Business', price: 'ETB/bil', features: ['5 Isticmaale', 'Mashaariic Aan Xadidnayn', 'Kharash Aan Xadidnayn', 'Maamulka Bakhaarka (Aan Xadidnayn)', 'Production Orders & BOM', 'Material Purchases', 'Multi-Account Management', 'Company Chat', 'Warbixino horumarsan', 'Expense Approval System'], featured: true, delay: 100 },
-            { name: 'Enterprise', price: 'Gaarka ah', features: ['Isticmaale Aan Xadidnayn', 'Dhammaan features-ka Business', 'Advanced Manufacturing', 'Role-based Access Control', 'Maamule u gaar ah', 'Isku-dhexgalka API', 'Talo bixin shakhsi ah'], featured: false, delay: 200 },
-          ].map((plan, i) => (
-                <div key={i} className={`p-4 sm:p-6 lg:p-8 rounded-xl shadow-2xl border text-center transform hover:scale-105 transition duration-300 animate-fade-in-up ${plan.featured ? 'border-primary bg-primary/10' : 'border-lightGray dark:border-gray-700'}`} style={{ animationDelay: `${plan.delay}ms` }}>
-                  <h4 className="text-lg sm:text-xl lg:text-2xl font-bold mb-3 sm:mb-4 text-darkGray dark:text-gray-100">{plan.name}</h4>
-                  <p className="text-2xl sm:text-3xl lg:text-4xl font-extrabold mb-4 sm:mb-6 text-darkGray dark:text-gray-100">{plan.price}</p>
-                  <ul className="space-y-1 sm:space-y-2 mb-4 sm:mb-6">
-                    {plan.features.map((f, idx) => <li key={idx} className="text-xs sm:text-sm lg:text-base text-mediumGray dark:text-gray-300">{f}</li>)}
-                  </ul>
-                  <Link href="/signup" className={`inline-block py-2 sm:py-3 px-4 sm:px-6 lg:px-8 rounded-full text-sm sm:text-base font-semibold ${plan.featured ? 'bg-secondary text-white hover:bg-green-600' : 'border-2 border-primary text-primary hover:bg-primary hover:text-white'}`}>
-                    {plan.featured ? 'Bilaaw Tijaabada Bilaashka' : 'Dooro Qorshaha'}
-                  </Link>
-                </div>
-              ))}
-        </div>
-      </section>
-
-      
-
-      {/* Testimonials - Mobile Optimized */}
-      <section id="testimonials" className="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 md:px-16 bg-white dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto text-center mb-8 sm:mb-12 lg:mb-16">
-          <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-darkGray dark:text-gray-100">Waxa Ay Dadku Ka Dhahaan Revlo</h3>
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-mediumGray dark:text-gray-400 max-w-xs sm:max-w-2xl lg:max-w-3xl mx-auto px-2">
-            Halkaan ka ogoow sababta Revlo uu u yahay doorashada koowaad . Production Orders, Material Purchases, Company Chat, iyo dhammaan qalabka casri ah.
-          </p>
-        </div>
-        {/* Live Reviews Section */}
-        <LiveReviews />
-      </section>
-
-      {/* Call to Action - Mobile Optimized */}
-      <section id="contact" className="py-12 sm:py-16 lg:py-24 px-4 sm:px-6 md:px-16 bg-gradient-to-tr from-blue-700 to-primary text-white text-center">
-        <div className="max-w-6xl mx-auto animate-fade-in-up">
-          <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 drop-shadow-lg">Diyaar Ma U Tahay inaad Ganacsigaaga Kobciso?</h3>
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl mb-6 sm:mb-8 lg:mb-10 opacity-90 max-w-xs sm:max-w-2xl lg:max-w-4xl mx-auto px-2">
-            Ku soo biir Revlo si aad maamulatid hawlahaaga maalinlaha ah. Isticmaal Production Orders, Material Purchases, Company Chat, iyo dhammaan qalabka casri ah ee ganacsigaaga u baahan yahay.
-          </p>
-          <Link href="/signup" className="bg-white text-primary py-3 sm:py-4 px-8 sm:px-12 rounded-full text-lg sm:text-xl font-bold hover:bg-gray-100 transition-all duration-300 shadow-xl transform hover:scale-105">
-            Bilaaw Bilaashkaaga
-          </Link>
-        </div>
-      </section>
-
-      {/* Footer - Mobile Optimized */}
-      <footer className="bg-darkGray dark:bg-gray-900 text-white py-8 sm:py-12 px-4 sm:px-6 md:px-16 text-center border-t border-gray-700">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10 mb-6 sm:mb-10">
-          <div>
-            <h4 className="text-3xl font-bold mb-4">Revlo<span className="text-secondary">.</span></h4>
-            <p className="text-mediumGray dark:text-gray-400 leading-relaxed">Maamulka Ganacsigaaga oo Fudud, hufan, oo casri ah. Production Orders, Material Purchases, Company Chat, iyo dhammaan qalabka casri ah.</p>
-          </div>
-          <div>
-            <h4 className="text-xl font-bold mb-4">Links Degdeg ah</h4>
-            <ul className="space-y-2 text-mediumGray dark:text-gray-400">
-              <li><Link href="#features" className="hover:text-primary transition">Astaamaha</Link></li>
-              <li><Link href="#how-it-works" className="hover:text-primary transition">Sida uu u Shaqeeyo</Link></li>
-              <li><Link href="#solutions" className="hover:text-primary transition">Xalka</Link></li>
-              <li><Link href="#pwa-install" className="hover:text-primary transition">Install App</Link></li>
-              <li><Link href="#pricing" className="hover:text-primary transition">Qiimaha</Link></li>
-              <li><Link href="#testimonials" className="hover:text-primary transition">Aragtiyada</Link></li>
-              <li><Link href="/login" className="hover:text-primary transition">Gal</Link></li>
-              <li><Link href="/signup" className="hover:text-primary transition">Isdiiwaangeli</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-xl font-bold mb-4">Nala Soo Xiriir</h4>
-            <ul className="space-y-2 text-mediumGray dark:text-gray-400">
-                <li className="flex items-center justify-center md:justify-start space-x-2">
-                    <Mail className="w-5 h-5 text-primary" /><span>info@revlo.com</span>
-                </li>
-                <li className="flex items-center justify-center md:justify-start space-x-2">
-                    <Phone className="w-5 h-5 text-primary" /><span>+251 929 475 332</span>
-                </li>
-                <li className="flex items-center justify-center md:justify-start space-x-2">
-                    <MapPin className="w-5 h-5 text-primary" /><span>Jigjiga, Somali galbeed</span>
-                </li>
-            </ul>
-          </div>
-        </div>
-        <div className="text-mediumGray dark:text-gray-500 text-sm mt-12 pt-8 border-t border-gray-700">
-          &copy; {new Date().getFullYear()} Revlo. Xuquuqda oo dhan waa ay xifdisan tahay.
-        </div>
-      </footer>
+const FeatureCard = ({ icon, title, desc, delay }: { icon: any, title: string, desc: string, delay: number }) => (
+  <div className="p-8 bg-lightGray/30 dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 hover:border-primary/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-xl transition-all duration-300 group" style={{ animationDelay: `${delay}ms` }}>
+    <div className="w-12 h-12 bg-white dark:bg-gray-700 rounded-xl flex items-center justify-center text-primary shadow-sm mb-6 group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-300">
+      {React.cloneElement(icon, { size: 24 })}
     </div>
+    <h4 className="text-xl font-bold text-darkGray dark:text-white mb-3">{title}</h4>
+    <p className="text-mediumGray dark:text-gray-400 leading-relaxed">{desc}</p>
+  </div>
+);
+
+
+/**
+ * PWA Install Section - Restored
+ * Critical feature for the user.
+ */
+const PWAInstall = () => {
+  return (
+    <section id="download" className="py-24 bg-gradient-to-br from-primary/5 to-secondary/5 dark:from-gray-900 dark:to-gray-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-bold uppercase tracking-wider mb-6">
+              <Smartphone size={14} /> Mobile & Desktop
+            </div>
+            <h3 className="text-3xl md:text-5xl font-bold text-darkGray dark:text-white mb-6">
+              Ku shubo Revlo <br />
+              <span className="text-secondary">Qalab Kasta.</span>
+            </h3>
+            <p className="text-lg text-mediumGray dark:text-gray-400 mb-8 leading-relaxed">
+              Revlo waa **Progressive Web App (PWA)**. Taas macnaheedu waa inaad ku isticmaali karto Computer-kaaga, Tablet-kaaga, ama Smart Phone-kaaga adiga oo aan u baahnayn App Store.
+            </p>
+
+            <div className="space-y-6">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-white dark:bg-gray-800 rounded-lg shadow-md text-primary">
+                  <Cloud size={24} />
+                </div>
+                <div>
+                  <h4 className="font-bold text-darkGray dark:text-white text-lg">Wuxuu Shaqeeyaa Offline</h4>
+                  <p className="text-mediumGray dark:text-gray-400">Xitaa haddii internet-ku go'o, shaqadaadu ma istaagayso. Xogtu way synchronise-gareysaa marka aad online noqoto.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-white dark:bg-gray-800 rounded-lg shadow-md text-secondary">
+                  <Zap size={24} />
+                </div>
+                <div>
+                  <h4 className="font-bold text-darkGray dark:text-white text-lg">Xawaare Sare</h4>
+                  <p className="text-mediumGray dark:text-gray-400">Waxaa loo dhisay inuu ahaado mid fudud oo degdeg ah, iyadoo aan culeys saarayn qalabkaaga.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-10 flex gap-4">
+              <button className="bg-darkGray text-white px-6 py-3 rounded-lg font-bold hover:bg-black transition-colors flex items-center gap-2">
+                <Download size={20} /> Install App
+              </button>
+            </div>
+          </div>
+
+          {/* Visual representation of Cross-platform */}
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-tr from-primary to-secondary rounded-full filter blur-[100px] opacity-20"></div>
+            <div className="relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl p-4 transform rotate-2 hover:rotate-0 transition-all duration-500">
+              <div className="aspect-[4/3] bg-gray-100 dark:bg-gray-900 rounded-xl flex items-center justify-center">
+                <span className="text-gray-400">App Interface Preview</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+/**
+ * Reviews Section - Wrapper for LiveReviews
+ */
+const Reviews = () => {
+  return (
+    <section className="py-24 bg-white dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h3 className="text-3xl font-bold text-darkGray dark:text-white mb-4">Waxa Ay Macaamiishu Dhahaan</h3>
+          <p className="text-mediumGray dark:text-gray-400">Ku biir boqolaal shirkadood oo ku horumaray isticmaalka Revlo.</p>
+        </div>
+        {/* Re-integrated the original component logic here or import it if compatible */}
+        <div className="bg-lightGray/20 dark:bg-gray-800 p-8 rounded-3xl">
+          <LiveReviews />
+        </div>
+      </div>
+    </section>
+  );
+};
+
+/**
+ * Footer Component
+ * Clean and professional.
+ */
+const Footer = () => (
+  <footer className="bg-darkGray text-white py-16 border-t border-gray-800">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-12">
+      <div className="col-span-1 md:col-span-2">
+        <Link href="/" className="text-3xl font-bold mb-6 block">Revlo<span className="text-secondary">.</span></Link>
+        <p className="text-gray-400 max-w-sm mb-6 leading-relaxed">
+          Nidaamka koowaad ee ERP ee loogu talagalay horumarinta ganacsiga Bariga Afrika.
+          Tayada, Hufnaanta, iyo Tiknoolajiyadda.
+        </p>
+        <div className="flex gap-4">
+          {/* Social Icons */}
+        </div>
+      </div>
+
+      <div>
+        <h4 className="font-bold text-lg mb-6 text-white border-b border-gray-700 pb-2 inline-block">Bogagga</h4>
+        <ul className="space-y-3 text-gray-400">
+          <li><Link href="#features" className="hover:text-primary transition-colors">Astaamaha</Link></li>
+          <li><Link href="#pricing" className="hover:text-primary transition-colors">Qiimaha</Link></li>
+          <li><Link href="/login" className="hover:text-primary transition-colors">Gal (Login)</Link></li>
+          <li><Link href="/signup" className="hover:text-primary transition-colors">Isdiiwaangeli</Link></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 className="font-bold text-lg mb-6 text-white border-b border-gray-700 pb-2 inline-block">Nala Xiriir</h4>
+        <ul className="space-y-3 text-gray-400">
+          <li className="flex items-center gap-3"><Mail size={18} className="text-primary" /> info@revlo.com</li>
+          <li className="flex items-center gap-3"><Phone size={18} className="text-primary" /> +251 929 475 332</li>
+          <li className="flex items-center gap-3"><MapPin size={18} className="text-primary" /> Jigjiga, Somali Region</li>
+        </ul>
+      </div>
+    </div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 pt-8 border-t border-gray-800 text-center text-gray-500 text-sm">
+      &copy; {new Date().getFullYear()} Revlo. Xuquuqda oo dhan waa ay xifdisan tahay.
+    </div>
+  </footer>
+);
+
+
+export default function HomePage() {
+  return (
+    <main className="min-h-screen bg-white dark:bg-gray-900 font-sans selection:bg-primary/30 selection:text-primary">
+      <Navbar />
+      <Hero />
+      <HowItWorks />
+      <Features />
+      <PWAInstall />
+      <Reviews />
+      <Footer />
+    </main>
   );
 }

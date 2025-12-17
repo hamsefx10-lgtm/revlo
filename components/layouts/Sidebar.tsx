@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Briefcase, DollarSign, Users, Truck,
   Settings, X, UserCircle, LogOut,
   Landmark, UserCogIcon, Shield, Calendar, Menu, Wrench, Factory,
-  Package, BarChart3, Scissors, MessageCircle
+  Package, BarChart3, Scissors, MessageCircle, ShoppingCart, Tag
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -85,6 +85,8 @@ const menuConfig = {
     business: [
       { name: 'Projects', href: '/projects', icon: <Briefcase />, group: 'Business' },
       { name: 'Manufacturing', href: '/manufacturing', icon: <Factory />, group: 'Business' },
+      { name: 'Products', href: '/manufacturing/products', icon: <Tag />, group: 'Business' },
+      { name: 'Sales', href: '/sales', icon: <ShoppingCart />, group: 'Business' },
       { name: 'Purchases', href: '/manufacturing/material-purchases', icon: <Package />, group: 'Business' },
       { name: 'Vendors', href: '/vendors', icon: <Users />, group: 'Business' },
       { name: 'Customers', href: '/customers', icon: <Users />, group: 'Business' },
@@ -114,6 +116,8 @@ const menuConfig = {
     business: [
       { name: 'Projects', href: '/projects', icon: <Briefcase />, group: 'Business' },
       { name: 'Manufacturing', href: '/manufacturing', icon: <Factory />, group: 'Business' },
+      { name: 'Products', href: '/manufacturing/products', icon: <Tag />, group: 'Business' },
+      { name: 'Sales', href: '/sales', icon: <ShoppingCart />, group: 'Business' },
       { name: 'Purchases', href: '/manufacturing/material-purchases', icon: <Package />, group: 'Business' },
       { name: 'Vendors', href: '/vendors', icon: <Users />, group: 'Business' },
       { name: 'Customers', href: '/customers', icon: <Users />, group: 'Business' },
@@ -174,6 +178,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const [collapsed, setCollapsed] = useState(isCollapsed);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [planType, setPlanType] = useState<string>('COMBINED');
 
   // Detect mobile
   const [isMobile, setIsMobile] = useState(false);
@@ -183,6 +188,22 @@ const Sidebar: React.FC<SidebarProps> = ({
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Fetch plan type
+  useEffect(() => {
+    const fetchPlanType = async () => {
+      try {
+        const response = await fetch('/api/company/plan-type');
+        const data = await response.json();
+        setPlanType(data.planType || 'COMBINED');
+      } catch (error) {
+        setPlanType('COMBINED');
+      }
+    };
+    if (currentUser) {
+      fetchPlanType();
+    }
+  }, [currentUser]);
 
   // Auto close sidebar on mobile nav click
   const handleNavClick = () => {
@@ -195,7 +216,49 @@ const Sidebar: React.FC<SidebarProps> = ({
   }, [isCollapsed]);
 
   const role = currentUser?.role?.toUpperCase() as keyof typeof menuConfig;
-  const menuStructure = menuConfig[role] || menuConfig['VIEWER'];
+  let menuStructure = menuConfig[role] || menuConfig['VIEWER'];
+
+  // Filter menu items based on planType
+  const filterMenuByPlan = (menu: any) => {
+    if (planType === 'FACTORIES_ONLY') {
+      // Replace Projects with Factories, show only Manufacturing-related items
+      return {
+        ...menu,
+        business: menu.business?.map((item: any) => 
+          item.name === 'Projects' 
+            ? { ...item, name: 'Factories', href: '/factories', icon: <Factory /> }
+            : item
+        ).filter((item: any) => 
+          !item.href?.startsWith('/projects') || item.name === 'Factories'
+        ) || [],
+        reports: menu.reports?.filter((item: any) => 
+          !item.href?.includes('project')
+        ) || [],
+      };
+    } else if (planType === 'PROJECTS_ONLY') {
+      // Hide Manufacturing, Products, Sales, Factories - show only Projects
+      return {
+        ...menu,
+        business: menu.business?.filter((item: any) => 
+          item.name !== 'Manufacturing' &&
+          item.name !== 'Products' &&
+          item.name !== 'Sales' &&
+          item.name !== 'Purchases' &&
+          item.name !== 'Factories' &&
+          !item.href?.startsWith('/manufacturing') &&
+          !item.href?.startsWith('/sales') &&
+          !item.href?.startsWith('/factories')
+        ) || [],
+        reports: menu.reports?.filter((item: any) => 
+          !item.href?.includes('manufacturing')
+        ) || [],
+      };
+    }
+    // COMBINED - show everything (keep Projects, add Factories as separate)
+    return menu;
+  };
+
+  menuStructure = filterMenuByPlan(menuStructure);
 
 
   const bottomItems = [

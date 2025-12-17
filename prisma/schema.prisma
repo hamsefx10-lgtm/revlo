@@ -68,6 +68,7 @@ model Company {
   id                      String                   @id @default(uuid()) @map("_id")
   name                    String                   @unique
   industry                String?
+  planType                String?                  @default("COMBINED") // PROJECTS_ONLY, FACTORIES_ONLY, COMBINED
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
   address                 String?

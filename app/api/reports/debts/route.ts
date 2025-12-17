@@ -46,11 +46,17 @@ export async function GET(req: Request) {
     });
 
     // Also get all expenses that might have debt information for the company
+    // IMPORTANT: Get ALL expenses with category 'Debt' OR (category 'Company Expense' AND subCategory 'Debt')
+    // This includes expenses that may or may not have corresponding transactions
     const allExpenses = await prisma.expense.findMany({
       where: {
         companyId,
         OR: [
           { category: 'Debt' },
+          { 
+            category: 'Company Expense',
+            subCategory: 'Debt'
+          },
           { category: 'Debt Repayment' },
           { description: { contains: 'debt', mode: 'insensitive' } },
           { description: { contains: 'loan', mode: 'insensitive' } },
@@ -69,6 +75,14 @@ export async function GET(req: Request) {
       },
       orderBy: {
         createdAt: 'desc'
+      }
+    });
+
+    // Get all transaction IDs that are linked to expenses (to check which expenses already have transactions)
+    const expenseTransactionMap = new Map<string, boolean>();
+    allTransactions.forEach((tx: any) => {
+      if (tx.expenseId) {
+        expenseTransactionMap.set(tx.expenseId, true);
       }
     });
 
@@ -128,6 +142,8 @@ export async function GET(req: Request) {
 
       if (transaction.customerId && transaction.customer && transaction.companyId === companyId) {
         const customerKey = `${transaction.customerId}_${transaction.companyId}`;
+        const transactionDate = new Date(transaction.transactionDate);
+        
         if (!customerReceivableMap[customerKey]) {
           customerReceivableMap[customerKey] = {
             id: transaction.customerId,
@@ -140,7 +156,8 @@ export async function GET(req: Request) {
             amount: 0,
             received: 0,
             remaining: 0,
-            dueDate: new Date(new Date(transaction.transactionDate).getTime() + (30 * 24 * 60 * 60 * 1000)).toISOString(), // 30 days from transaction date
+            issueDate: transactionDate,
+            dueDate: new Date(transactionDate.getTime() + (30 * 24 * 60 * 60 * 1000)).toISOString(), // 30 days from transaction date
             status: 'Upcoming',
             description: transaction.description || '',
             account: transaction.account?.name || '',
@@ -154,6 +171,12 @@ export async function GET(req: Request) {
             projectValue: transaction.project?.budget ? Number(transaction.project.budget) : 0,
             transactions: []
           };
+        }
+        
+        // Update issue date if this transaction is older
+        if (transactionDate < new Date(customerReceivableMap[customerKey].issueDate || customerReceivableMap[customerKey].dueDate)) {
+          customerReceivableMap[customerKey].issueDate = transactionDate;
+          customerReceivableMap[customerKey].dueDate = new Date(transactionDate.getTime() + (30 * 24 * 60 * 60 * 1000)).toISOString();
         }
         
         if (transaction.type === 'DEBT_TAKEN') {
@@ -228,48 +251,93 @@ export async function GET(req: Request) {
         }
       }
 
-      if (isDebtRelated && expense.customerId && expense.customer && expense.companyId === companyId) {
+      // Process customer receivables from expenses
+      // Check if this is a customer debt expense (category 'Debt' OR 'Company Expense' with subCategory 'Debt')
+      const isCustomerDebtExpense = (expense.category === 'Debt' || 
+                                     (expense.category === 'Company Expense' && expense.subCategory === 'Debt')) &&
+                                     expense.customerId && 
+                                     expense.customer && 
+                                     expense.companyId === companyId;
+      
+      // Also check if expense has description indicating debt to customer
+      const hasDebtDescription = expense.description?.toLowerCase().includes('debt') ||
+                                 expense.description?.toLowerCase().includes('loan') ||
+                                 expense.description?.toLowerCase().includes('deyn') ||
+                                 expense.description?.toLowerCase().includes('qard') ||
+                                 expense.description?.toLowerCase().includes('dayn') ||
+                                 expense.description?.toLowerCase().includes('qardh') ||
+                                 expense.description?.toLowerCase().includes('loo diray') ||
+                                 expense.description?.toLowerCase().includes('lo diray');
+
+      if ((isCustomerDebtExpense || (isDebtRelated && hasDebtDescription)) && 
+          expense.customerId && 
+          expense.customer && 
+          expense.companyId === companyId) {
         const customerKey = `${expense.customerId}_${expense.companyId}`;
-        if (!customerReceivableMap[customerKey]) {
-          customerReceivableMap[customerKey] = {
-            id: expense.customerId,
-            client: expense.customer.name || 'Unknown Client',
-            clientId: expense.customerId,
-            companyId: expense.companyId,
-            companyName: expense.company?.name || 'Unknown Company',
-            project: expense.project?.name || 'General',
-            projectId: expense.projectId || '',
-            amount: expense.category === 'Debt Repayment' ? 0 : amount,
-            received: expense.category === 'Debt Repayment' ? amount : 0,
-            remaining: expense.category === 'Debt Repayment' ? 0 : amount,
-            dueDate: new Date(new Date(expense.createdAt).getTime() + (30 * 24 * 60 * 60 * 1000)).toISOString(),
-            status: expense.category === 'Debt Repayment' ? 'Paid' : 'Upcoming',
-            description: expense.description || '',
-            account: 'Expense Account',
-            phoneNumber: expense.customer.phoneNumber || '',
-            email: expense.customer.email || '',
-            address: expense.customer.address || '',
-            lastPaymentDate: expense.category === 'Debt Repayment' ? expense.createdAt : null,
-            paymentTerms: 'Standard',
-            notes: expense.description || '',
-            projectStatus: expense.project?.status || 'Active',
-            projectValue: expense.project?.budget ? Number(expense.project.budget) : 0,
-            transactions: [expense]
-          };
-        } else {
-          // Add to existing receivable
-          if (expense.category === 'Debt Repayment') {
-            customerReceivableMap[customerKey].received += amount;
-            customerReceivableMap[customerKey].remaining -= amount;
-            customerReceivableMap[customerKey].lastPaymentDate = expense.createdAt;
-            if (customerReceivableMap[customerKey].remaining <= 0) {
-              customerReceivableMap[customerKey].status = 'Paid';
-            }
+        const expenseAmount = Math.abs(amount); // Use absolute value for debt amount
+        
+        // Check if this expense already has a transaction (to avoid double counting)
+        const hasTransaction = expenseTransactionMap.has(expense.id);
+        
+        // Only process if expense doesn't already have a transaction (to avoid double counting)
+        if (!hasTransaction) {
+          if (!customerReceivableMap[customerKey]) {
+            // Create new receivable entry from expense
+            const expenseDate = new Date(expense.expenseDate || expense.createdAt);
+            customerReceivableMap[customerKey] = {
+              id: expense.customerId,
+              client: expense.customer.name || 'Unknown Client',
+              clientId: expense.customerId,
+              companyId: expense.companyId,
+              companyName: expense.company?.name || 'Unknown Company',
+              project: expense.project?.name || 'General',
+              projectId: expense.projectId || '',
+              amount: expense.category === 'Debt Repayment' ? 0 : expenseAmount,
+              received: expense.category === 'Debt Repayment' ? expenseAmount : 0,
+              remaining: expense.category === 'Debt Repayment' ? 0 : expenseAmount,
+              issueDate: expenseDate,
+              dueDate: new Date(expenseDate.getTime() + (30 * 24 * 60 * 60 * 1000)).toISOString(),
+              status: expense.category === 'Debt Repayment' ? 'Paid' : 'Upcoming',
+              description: expense.description || '',
+              account: expense.paidFrom ? 'Account' : 'Expense Account',
+              phoneNumber: expense.customer.phoneNumber || '',
+              email: expense.customer.email || '',
+              address: expense.customer.address || '',
+              lastPaymentDate: expense.category === 'Debt Repayment' ? expenseDate : null,
+              paymentTerms: 'Standard',
+              notes: expense.description || '',
+              projectStatus: expense.project?.status || 'Active',
+              projectValue: expense.project?.budget ? Number(expense.project.budget) : 0,
+              transactions: [expense]
+            };
           } else {
-            customerReceivableMap[customerKey].amount += amount;
-            customerReceivableMap[customerKey].remaining += amount;
+            // Add to existing receivable
+            if (expense.category === 'Debt Repayment') {
+              customerReceivableMap[customerKey].received += expenseAmount;
+              customerReceivableMap[customerKey].remaining = Math.max(0, customerReceivableMap[customerKey].remaining - expenseAmount);
+              const expenseDate = new Date(expense.expenseDate || expense.createdAt);
+              customerReceivableMap[customerKey].lastPaymentDate = expenseDate;
+              if (customerReceivableMap[customerKey].remaining <= 0) {
+                customerReceivableMap[customerKey].status = 'Paid';
+              }
+            } else {
+              // This is a new debt (DEBT_TAKEN equivalent)
+              customerReceivableMap[customerKey].amount += expenseAmount;
+              customerReceivableMap[customerKey].remaining += expenseAmount;
+              
+              // Update issue date to earliest expense date (if this expense is older)
+              const expenseDate = new Date(expense.expenseDate || expense.createdAt);
+              const currentIssueDate = customerReceivableMap[customerKey].issueDate 
+                ? new Date(customerReceivableMap[customerKey].issueDate)
+                : new Date(customerReceivableMap[customerKey].dueDate);
+              
+              if (expenseDate < currentIssueDate) {
+                customerReceivableMap[customerKey].issueDate = expense.expenseDate || expense.createdAt;
+                customerReceivableMap[customerKey].dueDate = new Date(expenseDate.getTime() + (30 * 24 * 60 * 60 * 1000)).toISOString();
+              }
+            }
+            customerReceivableMap[customerKey].transactions.push(expense);
           }
-          customerReceivableMap[customerKey].transactions.push(expense);
         }
       }
     });
@@ -296,14 +364,17 @@ export async function GET(req: Request) {
 
     // Calculate remaining amounts and status for receivables
     const receivables = Object.values(customerReceivableMap).map((receivable: any) => {
+      // Recalculate remaining to ensure accuracy
       receivable.remaining = receivable.amount - receivable.received;
       
-      // Determine status
+      // Determine status based on remaining amount and due date
       if (receivable.remaining <= 0) {
         receivable.status = 'Paid';
       } else {
         const dueDate = new Date(receivable.dueDate);
         const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time to compare dates only
+        
         if (dueDate < today) {
           receivable.status = 'Overdue';
         } else {

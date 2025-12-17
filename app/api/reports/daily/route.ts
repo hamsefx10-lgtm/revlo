@@ -3,13 +3,16 @@ import prisma from '@/lib/db';
 import { getSessionCompanyUser } from '@/lib/auth';
 
 export async function GET(request: Request) {
+  const startTime = Date.now();
   try {
+    console.log('[Daily Report API] Starting request...');
     const sessionUser = await getSessionCompanyUser();
     if (!sessionUser || !sessionUser.companyId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const { companyId } = sessionUser;
     const preparedBy = sessionUser?.userName || 'System';
+    console.log('[Daily Report API] Company ID:', companyId);
 
     const company = await prisma.company.findUnique({
       where: { id: companyId },
@@ -43,6 +46,7 @@ export async function GET(request: Request) {
     previousDay.setDate(selectedDate.getDate() - 1);
     previousDay.setHours(23, 59, 59, 999);
 
+    console.log('[Daily Report API] Fetching debts...');
     // Debts collected on selected date from projects
     const debtsTx = await prisma.transaction.findMany({
       where: {
@@ -60,6 +64,7 @@ export async function GET(request: Request) {
       amount: Number(tx.amount),
     }));
 
+    console.log('[Daily Report API] Fetching expenses...');
     // Expenses for selected date only
       const expenses = await prisma.expense.findMany({
         where: {
@@ -87,6 +92,7 @@ export async function GET(request: Request) {
         }
         
         const baseExpense = {
+        id: exp.id, // Add expense ID for editing
         date: exp.expenseDate?.toISOString().slice(0, 10) || '',
         project: exp.project?.name || String(exp.projectId) || 'Internal',
           category: displayCategory,
@@ -94,6 +100,7 @@ export async function GET(request: Request) {
         amount: Number(exp.amount),
           subCategory: exp.subCategory || null,
           note: exp.note || null,
+          paidFrom: exp.paidFrom || 'Cash', // Add account info
         };
 
         // Add specific fields for company expenses
@@ -181,6 +188,7 @@ export async function GET(request: Request) {
   const totalCompanyExpenses = mappedCompanyExpenses.reduce((sum: number, e: any) => sum + e.amount, 0);
       const totalExpenses = totalProjectExpenses + totalCompanyExpenses;
 
+    console.log('[Daily Report API] Fetching income transactions...');
     // Income for selected date only - with full details
     const incomeTx = await prisma.transaction.findMany({
       where: {
@@ -211,6 +219,7 @@ export async function GET(request: Request) {
     user: tx.user?.fullName || null,
   }));
   
+  console.log('[Daily Report API] Fetching transfer transactions...');
   // Transfer transactions - showing money movement between accounts
   const transferTx = await prisma.transaction.findMany({
     where: {
@@ -268,6 +277,108 @@ export async function GET(request: Request) {
   
   const transfers = Array.from(transferMap.values());
 
+  // Fixed Assets purchased on selected date
+  let fixedAssetsList: any[] = [];
+  let totalFixedAssets = 0;
+  
+  try {
+    console.log('[Daily Report API] Fetching fixed assets...');
+    const fixedAssets = await prisma.fixedAsset.findMany({
+      where: {
+        companyId,
+        purchaseDate: { gte: selectedDate, lt: nextDay },
+      },
+      orderBy: { purchaseDate: 'desc' },
+    });
+    
+    // Get fixed asset transactions to find vendor info
+    const fixedAssetTransactions = await prisma.transaction.findMany({
+      where: {
+        companyId,
+        transactionDate: { gte: selectedDate, lt: nextDay },
+        category: 'FIXED_ASSET_PURCHASE',
+      },
+      include: {
+        vendor: { select: { name: true } },
+      },
+    });
+    
+    // Create a map of asset names to vendors from transactions
+    const assetVendorMap = new Map();
+    fixedAssetTransactions.forEach((tx: any) => {
+      if (tx.description) {
+        const assetNameMatch = tx.description.match(/Fixed Asset Purchase - (.+)/);
+        if (assetNameMatch) {
+          const assetName = assetNameMatch[1];
+          if (!assetVendorMap.has(assetName) && tx.vendor) {
+            assetVendorMap.set(assetName, tx.vendor.name);
+          }
+        }
+      }
+    });
+    
+    fixedAssetsList = fixedAssets.map((asset: any) => ({
+      id: asset.id,
+      name: asset.name,
+      type: asset.type,
+      value: Number(asset.value),
+      purchaseDate: asset.purchaseDate?.toISOString().slice(0, 10) || '',
+      vendor: assetVendorMap.get(asset.name) || null,
+      assignedTo: asset.assignedTo || null,
+    }));
+    
+    totalFixedAssets = fixedAssetsList.reduce((sum: number, asset: any) => sum + asset.value, 0);
+  } catch (fixedAssetError: any) {
+    console.error('Error fetching fixed assets:', fixedAssetError);
+    // Continue without fixed assets if there's an error
+    fixedAssetsList = [];
+    totalFixedAssets = 0;
+  }
+
+  // All other transactions (EXPENSE, DEBT_TAKEN, DEBT_REPAID, etc.) - excluding INCOME and TRANSFER which are already handled
+  let otherTransactionsList: any[] = [];
+  
+  try {
+    console.log('[Daily Report API] Fetching other transactions...');
+    const otherTransactions = await prisma.transaction.findMany({
+      where: {
+        companyId,
+        transactionDate: { gte: selectedDate, lt: nextDay },
+        type: { notIn: ['INCOME', 'TRANSFER_IN', 'TRANSFER_OUT'] },
+      },
+      orderBy: { transactionDate: 'desc' },
+      include: {
+        account: { select: { name: true } },
+        project: { select: { name: true } },
+        customer: { select: { name: true } },
+        vendor: { select: { name: true } },
+        user: { select: { fullName: true } },
+        employee: { select: { fullName: true } },
+      },
+    });
+    
+    otherTransactionsList = otherTransactions.map((tx: any) => ({
+      id: tx.id,
+      description: tx.description || '',
+      amount: Number(tx.amount),
+      type: tx.type,
+      account: tx.account?.name || 'N/A',
+      project: tx.project?.name || null,
+      customer: tx.customer?.name || null,
+      vendor: tx.vendor?.name || null,
+      employee: tx.employee?.fullName || null,
+      user: tx.user?.fullName || null,
+      category: tx.category || null,
+      note: tx.note || null,
+      transactionDate: tx.transactionDate?.toISOString().slice(0, 10) || '',
+    }));
+  } catch (otherTxError: any) {
+    console.error('Error fetching other transactions:', otherTxError);
+    // Continue without other transactions if there's an error
+    otherTransactionsList = [];
+  }
+
+    console.log('[Daily Report API] Fetching account balances...');
     // Fetch live account balances for the company
     const accounts = await prisma.account.findMany({
       where: { companyId },
@@ -339,7 +450,7 @@ export async function GET(request: Request) {
       totalToday = Object.values(balances.today).reduce((sum: number, val: number) => sum + val, 0);
     }
 
-    return NextResponse.json({
+    const responseData = {
       date: selectedDate.toISOString().slice(0, 10),
       companyName,
       companyLogoUrl,
@@ -356,9 +467,22 @@ export async function GET(request: Request) {
       totalCompanyExpenses: totalCompanyExpenses ?? 0,
       totalExpenses: totalExpenses ?? 0,
       debtsCollected,
-    }, { status: 200 });
-  } catch (error) {
+      fixedAssets: fixedAssetsList || [],
+      totalFixedAssets: totalFixedAssets ?? 0,
+      otherTransactions: otherTransactionsList || [],
+    };
+    
+    const duration = Date.now() - startTime;
+    console.log(`[Daily Report API] Request completed in ${duration}ms`);
+    
+    return NextResponse.json(responseData, { status: 200 });
+  } catch (error: any) {
     console.error('Daily Report API error:', error);
-    return NextResponse.json({ message: 'Cilad server ayaa dhacday.' }, { status: 500 });
+    console.error('Error details:', error?.message, error?.stack);
+    return NextResponse.json({ 
+      message: 'Cilad server ayaa dhacday.',
+      error: error?.message || 'Unknown error',
+      stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+    }, { status: 500 });
   }
 }

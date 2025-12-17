@@ -12,13 +12,23 @@ export async function GET(request: Request, { params }: { params: { id: string }
       where: { id },
       include: {
         customer: { select: { id: true, name: true, email: true } },
-        expenses: true,
-        transactions: true,
+        expenses: {
+          include: {
+            employee: { select: { id: true, fullName: true } },
+          }
+        },
+        transactions: {
+          include: {
+            employee: { select: { id: true, fullName: true } },
+          },
+          orderBy: { transactionDate: 'desc' }
+        },
         materialsUsed: true,
         laborRecords: {
           include: {
             employee: { select: { id: true, fullName: true } },
-          }
+          },
+          orderBy: { dateWorked: 'desc' }
         },
         documents: true,
         payments: true,

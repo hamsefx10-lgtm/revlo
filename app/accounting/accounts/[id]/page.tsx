@@ -27,12 +27,13 @@ interface Account {
     description: string; 
     amount: number; 
     type: string; 
-    transactionDate: string; 
-    project?: { name: string; }; 
-    customer?: { name: string; }; 
-    vendor?: { name: string; }; 
-    user?: { fullName: string; }; 
-    employee?: { fullName: string; };
+    transactionDate: string;
+    category?: string | null;
+    project?: { name: string; } | null; 
+    customer?: { name: string; } | null; 
+    vendor?: { name: string; } | null; 
+    user?: { fullName: string; } | null; 
+    employee?: { fullName: string; } | null;
   }[];
   fromTransactions: { 
     id: string; 
@@ -143,6 +144,15 @@ function Page() {
           Account: {account.name}
         </h1>
         <div className="flex flex-row justify-center items-center gap-4 mb-4">
+          <button 
+            onClick={() => router.push(`/accounting/transactions/transfer?fromAccount=${account.id}`)}
+            aria-label="Transfer Money" 
+            title="Transfer Money"
+            className="bg-[#E8F5E9] hover:bg-[#4CAF50]/90 hover:ring-2 hover:ring-[#4CAF50] p-4 rounded-xl flex items-center justify-center cursor-pointer transition duration-150 text-[#4CAF50]"
+          >
+            <Repeat className="" size={30} />
+            <span className="sr-only">Transfer Money</span>
+          </button>
           <Link href={`/accounting/accounts/edit/${account.id}`} aria-label="Edit Account" title="Edit Account">
             <div className="bg-[#FFF4DF] hover:bg-[#F7A400]/90 hover:ring-2 hover:ring-[#F7A400] p-4 rounded-xl flex items-center justify-center cursor-pointer transition duration-150 text-[#F7A400]">
               <Edit className="" size={30} />
@@ -218,32 +228,134 @@ function Page() {
             </div>
           )}
 
-          {/* Transactions Section - Mobile Friendly Card List */}
+          {/* Transactions Section - Desktop Table & Mobile Cards */}
           {activeTab === 'Transactions' && (
             <div>
               <h3 className="text-xl font-bold text-darkGray dark:text-gray-100 mb-3">Dhaqdhaqaaqa Account-kan</h3>
               {account.transactions.length === 0 ? (
                 <p className="text-sm text-mediumGray dark:text-gray-400">Ma jiraan dhaqdhaqaaq lacag ah oo la xiriira account-kan.</p>
               ) : (
-                <div className="flex flex-col gap-3 w-full max-w-full">
-                  {account.transactions.map((trx) => (
-                    <div key={trx.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-lightGray dark:border-gray-700 p-3 w-full min-w-0 max-w-full flex flex-col md:flex-row md:justify-between md:items-center gap-3 sm:gap-5 mb-1 overflow-x-auto">
-                      <div className="flex-1 min-w-0 max-w-full flex flex-col gap-1">
-                        <div className="flex items-center gap-2 mb-1 w-full min-w-0 max-w-full">
-                          {trx.amount >= 0 ? <DollarSign className="text-secondary" size={20}/> : <XCircle className="text-redError" size={20}/>} 
-                          <span className="font-semibold text-darkGray dark:text-gray-100 text-sm md:text-base whitespace-normal break-words truncate w-full min-w-0 max-w-full">{trx.description}</span>
+                <>
+                  {/* Desktop Table View */}
+                  <div className="hidden lg:block overflow-x-auto mb-4">
+                    <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700 bg-white dark:bg-gray-800 rounded-lg">
+                      <thead className="bg-lightGray dark:bg-gray-700">
+                        <tr>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Taariikhda</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Sharaxaad</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Nooca</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Category</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Project</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">La Xiriira</th>
+                          <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Qiimaha</th>
+                          <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-lightGray dark:divide-gray-700">
+                        {account.transactions.map((trx) => {
+                          const isIncome = trx.type === 'INCOME' || trx.type === 'TRANSFER_IN' || trx.type === 'DEBT_REPAID';
+                          const amountColorClass = isIncome ? 'text-secondary' : 'text-redError';
+                          const typeBadgeClass = isIncome 
+                            ? 'bg-secondary/10 text-secondary border border-secondary/20' 
+                            : 'bg-redError/10 text-redError border border-redError/20';
+                          const relatedName = trx.project?.name || trx.customer?.name || trx.vendor?.name || trx.employee?.fullName || trx.user?.fullName || 'N/A';
+                          
+                          return (
+                            <tr key={trx.id} className="hover:bg-lightGray dark:hover:bg-gray-700 transition-colors duration-150">
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-darkGray dark:text-gray-100">
+                                {new Date(trx.transactionDate).toLocaleDateString()}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-mediumGray dark:text-gray-300">
+                                {trx.description}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${typeBadgeClass}`}>
+                                  {trx.type}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-mediumGray dark:text-gray-300">
+                                {trx.category || 'N/A'}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-mediumGray dark:text-gray-300">
+                                {trx.project?.name || 'N/A'}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-mediumGray dark:text-gray-300">
+                                {relatedName}
+                              </td>
+                              <td className={`px-4 py-3 whitespace-nowrap text-right font-semibold ${amountColorClass}`}>
+                                {isIncome ? '+' : '-'}${Math.abs(trx.amount).toLocaleString()}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-right">
+                                <Link href={`/accounting/transactions/${trx.id}`} className="text-primary hover:underline text-xs font-medium">
+                                  Fiiri →
+                                </Link>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile Card View */}
+                  <div className="lg:hidden flex flex-col gap-3 w-full max-w-full">
+                    {account.transactions.map((trx) => {
+                      const isIncome = trx.type === 'INCOME' || trx.type === 'TRANSFER_IN' || trx.type === 'DEBT_REPAID';
+                      const amountColorClass = isIncome ? 'text-secondary' : 'text-redError';
+                      const typeBadgeClass = isIncome 
+                        ? 'bg-secondary/10 text-secondary border border-secondary/20' 
+                        : 'bg-redError/10 text-redError border border-redError/20';
+                      const relatedName = trx.project?.name || trx.customer?.name || trx.vendor?.name || trx.employee?.fullName || trx.user?.fullName || 'N/A';
+                      
+                      return (
+                        <div key={trx.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-lightGray dark:border-gray-700 p-4 w-full">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                {isIncome ? <DollarSign className="text-secondary flex-shrink-0" size={18}/> : <XCircle className="text-redError flex-shrink-0" size={18}/>} 
+                                <span className="font-semibold text-darkGray dark:text-gray-100 text-sm break-words">{trx.description}</span>
+                              </div>
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${typeBadgeClass}`}>
+                                  {trx.type}
+                                </span>
+                                {trx.category && (
+                                  <span className="text-xs text-mediumGray dark:text-gray-400 bg-lightGray dark:bg-gray-700 px-2 py-0.5 rounded">
+                                    {trx.category}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <span className={`font-bold text-lg ${amountColorClass} flex-shrink-0 ml-2`}>
+                              {isIncome ? '+' : '-'}${Math.abs(trx.amount).toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="space-y-1 text-xs text-mediumGray dark:text-gray-400 border-t border-lightGray dark:border-gray-700 pt-2 mt-2">
+                            <div className="flex justify-between">
+                              <span>Taariikhda:</span>
+                              <span>{new Date(trx.transactionDate).toLocaleDateString()}</span>
+                            </div>
+                            {trx.project?.name && (
+                              <div className="flex justify-between">
+                                <span>Project:</span>
+                                <span>{trx.project.name}</span>
+                              </div>
+                            )}
+                            {relatedName !== 'N/A' && (
+                              <div className="flex justify-between">
+                                <span>La Xiriira:</span>
+                                <span>{relatedName}</span>
+                              </div>
+                            )}
+                          </div>
+                          <Link href={`/accounting/transactions/${trx.id}`} className="mt-2 text-primary hover:underline text-xs font-medium block">
+                            Fiiri Faahfaahinta →
+                          </Link>
                         </div>
-                        <div className="text-xs text-mediumGray dark:text-gray-400 whitespace-normal break-all">{new Date(trx.transactionDate).toLocaleDateString()}</div>
-                      </div>
-                      <div className="flex flex-col items-start md:items-end gap-2 min-w-[90px] w-full md:w-auto">
-                        <span className={trx.amount >= 0 ? 'text-secondary font-bold text-lg md:text-xl break-words' : 'text-redError font-bold text-lg md:text-xl break-words'}>
-                            {trx.amount >= 0 ? '+' : '-'}${Math.abs(trx.amount).toLocaleString()}
-                          </span>
-                        <Link href={`/accounting/transactions/${trx.id}`} className="text-primary hover:underline text-xs font-medium w-full md:w-fit block">Fiiri &rarr;</Link>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                      );
+                    })}
+                  </div>
+                </>
               )}
               <Link href="/accounting/transactions/add" className="mt-5 bg-primary text-white py-2 px-4 rounded-lg flex items-center justify-center hover:bg-blue-700 transition w-full sm:w-fit text-sm font-bold">
                   <Plus size={16} className="mr-2"/> Diiwaan Geli Dhaqdhaqaaq

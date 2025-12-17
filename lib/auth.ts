@@ -2,9 +2,9 @@
 import type { Session } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import prisma from './db'; 
-import bcrypt from 'bcryptjs'; 
-import { USER_ROLES } from './constants'; 
+import prisma from './db';
+import bcrypt from 'bcryptjs';
+import { USER_ROLES } from './constants';
 import { getServerSession } from "next-auth/next";
 
 // Hubi in env variables-ka ay jiraan
@@ -27,13 +27,14 @@ declare module 'next-auth' {
       companyName?: string;
       companyId?: string;
       companyLogoUrl?: string;
+      planType?: string;
     };
   }
 }
 
 export const authOptions: any = {
-  adapter: PrismaAdapter(prisma), 
-  
+  adapter: PrismaAdapter(prisma),
+
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -43,26 +44,26 @@ export const authOptions: any = {
       },
       async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
-          return null; 
+          return null;
         }
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
           include: {
             company: {
-              select: { id: true, name: true, logoUrl: true }
+              select: { id: true, name: true, logoUrl: true, planType: true }
             }
           }
         });
 
         if (!user) {
-          return null; 
+          return null;
         }
 
         const passwordMatch = await bcrypt.compare(credentials.password, user.password);
 
         if (!passwordMatch) {
-          return null; 
+          return null;
         }
 
         if (user.status === 'Inactive') {
@@ -72,50 +73,53 @@ export const authOptions: any = {
         return {
           id: user.id,
           email: user.email,
-          name: user.fullName, 
-          role: user.role, 
-          companyName: user.company?.name, 
+          name: user.fullName,
+          role: user.role,
+          companyName: user.company?.name,
           companyId: user.company?.id,
           companyLogoUrl: user.company?.logoUrl || undefined,
+          planType: user.company?.planType || 'COMBINED',
         };
       }
     })
   ],
   session: {
-    strategy: 'jwt', 
+    strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   jwt: {
     secret: process.env.NEXTAUTH_SECRET,
   },
   pages: {
-    signIn: '/login', 
-    error: '/login', 
+    signIn: '/login',
+    error: '/login',
   },
   callbacks: {
     async jwt({ token, user }: { token: any; user?: any }) {
       if (user) {
-        const customUser = user as any; 
+        const customUser = user as any;
 
         token.id = customUser.id;
         token.role = customUser.role;
-        token.name = customUser.name; 
-        token.email = customUser.email; 
+        token.name = customUser.name;
+        token.email = customUser.email;
         if (customUser.companyName) token.companyName = customUser.companyName;
         if (customUser.companyId) token.companyId = customUser.companyId;
         if (customUser.companyLogoUrl) token.companyLogoUrl = customUser.companyLogoUrl;
+        if (customUser.planType) token.planType = customUser.planType;
       }
       return token;
     },
     async session({ session, token }: { session: any; token: any }) {
-      if (token && session.user) { 
+      if (token && session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
-        session.user.name = token.name as string; 
-        session.user.email = token.email as string; 
+        session.user.name = token.name as string;
+        session.user.email = token.email as string;
         if (token.companyName) session.user.companyName = token.companyName as string;
         if (token.companyId) session.user.companyId = token.companyId as string;
         if (token.companyLogoUrl) session.user.companyLogoUrl = token.companyLogoUrl as string;
+        if (token.planType) session.user.planType = token.planType as string;
       }
       return session;
     },
@@ -134,7 +138,7 @@ export const authOptions: any = {
       return `${baseUrl}/dashboard`;
     }
   },
-  secret: process.env.NEXTAUTH_SECRET, 
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 // NextAuth should not be called directly in app directory (Next.js 13+)
@@ -167,8 +171,8 @@ export async function getSessionCompanyUser() {
   if (!session.user?.id) {
     return null; // Return null instead of throwing error
   }
-  return { 
-    companyId: session.user.companyId, 
+  return {
+    companyId: session.user.companyId,
     userId: session.user.id,
     userName: session.user.name,
     companyName: session.user.companyName

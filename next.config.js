@@ -1,6 +1,9 @@
 // next.config.js (for Next.js 14)
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Output standalone for Electron (always enabled for better Electron compatibility)
+  output: 'standalone',
+  
   // Exclude directories with permission issues from file scanning
   webpack: (config, { isServer }) => {
     // Ignore problematic directories in watch mode
