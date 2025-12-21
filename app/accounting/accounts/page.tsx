@@ -9,7 +9,7 @@ import {
   ArrowLeft, Plus, Search, Filter, Calendar, List, LayoutGrid, 
   DollarSign, CreditCard, Banknote, RefreshCw, Eye, Edit, Trash2, Coins, Loader2,
   TrendingUp, TrendingDown, Info as InfoIcon, CheckCircle, XCircle, Clock as ClockIcon,
-  User as UserIcon, Briefcase as BriefcaseIcon, Tag as TagIcon, ChevronRight // General icons for tables
+  User as UserIcon, Briefcase as BriefcaseIcon, Tag as TagIcon, ChevronRight, Repeat // General icons for tables
 } from 'lucide-react';
 import Toast from '../../../components/common/Toast';
 
