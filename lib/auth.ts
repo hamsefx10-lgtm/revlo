@@ -32,7 +32,7 @@ declare module 'next-auth' {
   }
 }
 
-export const authOptions: any = {
+export const authOptions = {
   adapter: PrismaAdapter(prisma),
 
   providers: [
@@ -84,7 +84,7 @@ export const authOptions: any = {
     })
   ],
   session: {
-    strategy: 'jwt',
+    strategy: 'jwt' as const,
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   jwt: {

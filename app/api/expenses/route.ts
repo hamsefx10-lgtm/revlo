@@ -344,7 +344,7 @@ export async function POST(request: Request) {
         transactionAccountId = paidFrom;
       } else {
         // For ALL other company expenses, deduct from paidFrom if provided
-        transactionType = 'EXPENSE';
+      transactionType = 'EXPENSE';
         transactionAccountId = paidFrom;
       }
     }
