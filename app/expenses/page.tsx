@@ -4,9 +4,9 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Layout from '../../components/layouts/Layout';
-import { 
+import {
   Plus, Search, Eye, Edit, Trash2, DollarSign, Package, Briefcase, Building,
-  List, LayoutGrid, Filter, X, ChevronDown, ChevronUp, Check, XCircle, Upload
+  List, LayoutGrid, Filter, X, ChevronDown, ChevronUp, Check, XCircle, Upload, Download, User
 } from 'lucide-react';
 import { calculateEmployeeSalary } from '../../lib/utils';
 import { emitExpenseChange } from '@/lib/client-events';
@@ -51,10 +51,11 @@ export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [employees, setEmployees] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // NEW: Filter data states
   const [projects, setProjects] = useState<any[]>([]);
   const [vendors, setVendors] = useState<any[]>([]);
+  const [customers, setCustomers] = useState<any[]>([]); // NEW: Customers state
   const [categories, setCategories] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterType>('company');
@@ -62,26 +63,31 @@ export default function ExpensesPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10); // Fixed items per page
-  
+
   // Bulk select state
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [approvalFilter, setApprovalFilter] = useState<'all' | 'approved' | 'pending'>('all');
-  
+
   // NEW: Advanced filtering states
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [vendorFilter, setVendorFilter] = useState<string>('all');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all');
-  const [dateRangeFilter, setDateRangeFilter] = useState<{start: string, end: string}>({start: '', end: ''});
-  const [amountRangeFilter, setAmountRangeFilter] = useState<{min: string, max: string}>({min: '', max: ''});
+  const [dateRangeFilter, setDateRangeFilter] = useState<{ start: string, end: string }>({ start: '', end: '' });
+  const [amountRangeFilter, setAmountRangeFilter] = useState<{ min: string, max: string }>({ min: '', max: '' });
   const [projectFilter, setProjectFilter] = useState<string>('all');
   const [employeeFilter, setEmployeeFilter] = useState<string>('all');
+  const [customerFilter, setCustomerFilter] = useState<string>('all'); // NEW: Customer filter state
 
   useEffect(() => {
     fetchExpenses();
     fetchEmployees();
     fetchProjects();
+    fetchExpenses();
+    fetchEmployees();
+    fetchProjects();
     fetchVendors();
+    fetchCustomers(); // NEW: Fetch customers
   }, []);
 
   const fetchExpenses = async () => {
@@ -90,6 +96,15 @@ export default function ExpensesPage() {
       if (res.ok) {
         const data = await res.json();
         setExpenses(data.expenses || []);
+
+        // Extract unique categories AND subcategories dynamically
+        const start = performance.now();
+        const cats = new Set<string>();
+        (data.expenses || []).forEach((e: any) => {
+          if (e.category) cats.add(e.category);
+          if (e.subCategory) cats.add(e.subCategory);
+        });
+        setCategories(Array.from(cats).sort());
       }
     } catch (error) {
       console.error('Error fetching expenses:', error);
@@ -135,6 +150,19 @@ export default function ExpensesPage() {
     }
   };
 
+  // NEW: Fetch customers
+  const fetchCustomers = async () => {
+    try {
+      const res = await fetch('/api/customers');
+      if (res.ok) {
+        const data = await res.json();
+        setCustomers(data.customers || []);
+      }
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+    }
+  };
+
   // Handle expense approval
   const handleApproveExpense = async (expenseId: string) => {
     try {
@@ -145,7 +173,7 @@ export default function ExpensesPage() {
         },
         body: JSON.stringify({ approved: true }),
       });
-      
+
       if (res.ok) {
         // Refresh expenses list
         fetchExpenses();
@@ -167,7 +195,7 @@ export default function ExpensesPage() {
         },
         body: JSON.stringify({ approved: false }),
       });
-      
+
       if (res.ok) {
         // Refresh expenses list
         fetchExpenses();
@@ -193,9 +221,8 @@ export default function ExpensesPage() {
       filtered = filtered.filter(exp => exp.approved === false);
     }
 
-    // NEW: Apply advanced filters
     if (categoryFilter !== 'all') {
-      filtered = filtered.filter(exp => exp.category === categoryFilter);
+      filtered = filtered.filter(exp => exp.category === categoryFilter || exp.subCategory === categoryFilter);
     }
 
     if (projectFilter !== 'all') {
@@ -204,6 +231,11 @@ export default function ExpensesPage() {
 
     if (employeeFilter !== 'all') {
       filtered = filtered.filter(exp => exp.employeeId === employeeFilter);
+    }
+
+    // NEW: Customer filter
+    if (customerFilter !== 'all') {
+      filtered = filtered.filter(exp => exp.customer?.id === customerFilter);
     }
 
     // Date range filter
@@ -225,8 +257,8 @@ export default function ExpensesPage() {
     switch (activeFilter) {
       case 'company':
         // Show company expenses: salary expenses and general services (no project)
-        return filtered.filter(exp => 
-          !exp.project || 
+        return filtered.filter(exp =>
+          !exp.project ||
           (exp.category === 'Company Expense' && exp.subCategory === 'Salary') ||
           (exp.category === 'Company Expense' && exp.subCategory === 'General Services')
         );
@@ -256,10 +288,12 @@ export default function ExpensesPage() {
     setCategoryFilter('all');
     setVendorFilter('all');
     setPaymentStatusFilter('all');
-    setDateRangeFilter({start: '', end: ''});
-    setAmountRangeFilter({min: '', max: ''});
+    setDateRangeFilter({ start: '', end: '' });
+    setAmountRangeFilter({ min: '', max: '' });
+    setProjectFilter('all');
     setProjectFilter('all');
     setEmployeeFilter('all');
+    setCustomerFilter('all'); // Clear customer filter
     setApprovalFilter('all');
   };
 
@@ -335,22 +369,81 @@ export default function ExpensesPage() {
     }
   };
 
+  // NEW: Handle Export to CSV
+  const handleExport = () => {
+    const headers = ['Date', 'Project/Company', 'Category', 'Description', 'Amount', 'Status', 'Paid To/From'];
+
+    // Helper to resolve ID to Name
+    const resolveName = (id: string) => {
+      if (!id) return '';
+      const emp = employees.find(e => e.id === id);
+      if (emp) return emp.fullName;
+      const vend = vendors.find(v => v.id === id);
+      if (vend) return vend.name;
+      const cust = customers.find(c => c.id === id); // Use full customers list
+      if (cust) return cust.name;
+      return id;
+    };
+
+    const csvContent = [
+      headers.join(','),
+      ...filteredExpenses.map(exp => {
+        // Revert: Project Name OR Company Name OR 'Birshiil' (Default)
+        const name = exp.project?.name || exp.company?.name || 'Birshiil';
+
+        // Resolve Paid To/From
+        const paidTo = (exp as any)?.vendor?.name ||
+          (exp as any)?.employee?.fullName ||
+          (exp as any)?.customer?.name ||
+          resolveName(exp.paidFrom);
+
+        const status = exp.approved ? 'Approved' : 'Pending';
+
+        // Consolidate Category: Show SubCategory if available, else Category
+        // Exclude 'Company Expense' text if SubCategory exists
+        const displayCategory = exp.subCategory ? exp.subCategory : exp.category;
+
+        // Combine Description and Note to capture all user-entered text
+        const fullDescription = [exp.description, exp.note].filter(Boolean).join(' - ');
+
+        return [
+          `"${new Date(exp.date).toLocaleDateString()}"`,
+          `"${name}"`,
+          `"${displayCategory}"`,
+          `"${(fullDescription || '').replace(/"/g, '""')}"`,
+          exp.amount,
+          status,
+          `"${paidTo}"`
+        ].join(',');
+      })
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `expenses_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Calculate statistics based on active filter
   const getStatistics = () => {
     // Total amount should always be from all expenses, not filtered
     const totalAmount = expenses.reduce((sum, exp) => sum + exp.amount, 0);
     const totalCount = expenses.length;
-    
+
     // Company expenses: no project OR salary expenses OR general services
-    const companyExpenses = expenses.filter(exp => 
-      !exp.project || 
+    const companyExpenses = expenses.filter(exp =>
+      !exp.project ||
       (exp.category === 'Company Expense' && exp.subCategory === 'Salary') ||
       (exp.category === 'Company Expense' && exp.subCategory === 'General Services')
     );
-    
+
     // Project expenses: has project
     const projectExpenses = expenses.filter(exp => exp.project);
-    
+
     const companyAmount = companyExpenses.reduce((sum, exp) => sum + exp.amount, 0);
     const projectAmount = projectExpenses.reduce((sum, exp) => sum + exp.amount, 0);
 
@@ -395,15 +488,22 @@ export default function ExpensesPage() {
           <p className="text-mediumGray dark:text-gray-400">Maamul iyo eegid kharashyada shirkadda</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-          <Link 
-            href="/expenses/bulk-import" 
+          <button
+            onClick={handleExport}
+            className="bg-green-600 text-white px-4 lg:px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition duration-200 flex items-center justify-center shadow-sm"
+          >
+            <Download size={20} className="mr-2" />
+            Excel
+          </button>
+          <Link
+            href="/expenses/bulk-import"
             className="bg-accent text-white px-4 lg:px-6 py-3 rounded-lg font-semibold hover:bg-accent/80 transition duration-200 flex items-center justify-center"
           >
             <Upload size={20} className="mr-2" />
             Bulk Import
           </Link>
-          <Link 
-            href="/expenses/add" 
+          <Link
+            href="/expenses/add"
             className="bg-primary text-white px-4 lg:px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-200 flex items-center justify-center"
           >
             <Plus size={20} className="mr-2" />
@@ -478,22 +578,20 @@ export default function ExpensesPage() {
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-colors duration-200 ${
-                viewMode === 'list' 
-                  ? 'bg-primary text-white' 
-                  : 'bg-lightGray dark:bg-gray-700 text-mediumGray dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
+              className={`p-2 rounded-lg transition-colors duration-200 ${viewMode === 'list'
+                ? 'bg-primary text-white'
+                : 'bg-lightGray dark:bg-gray-700 text-mediumGray dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
               title="List View"
             >
               <List size={18} />
             </button>
             <button
               onClick={() => setViewMode('cards')}
-              className={`p-2 rounded-lg transition-colors duration-200 ${
-                viewMode === 'cards' 
-                  ? 'bg-primary text-white' 
-                  : 'bg-lightGray dark:bg-gray-700 text-mediumGray dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
+              className={`p-2 rounded-lg transition-colors duration-200 ${viewMode === 'cards'
+                ? 'bg-primary text-white'
+                : 'bg-lightGray dark:bg-gray-700 text-mediumGray dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
               title="Cards View"
             >
               <LayoutGrid size={18} />
@@ -508,31 +606,29 @@ export default function ExpensesPage() {
             <span> oo ka mid ah {activeFilter === 'company' ? 'shirkadda' : 'mashruucyada'}</span>
           </p>
         </div>
-        
+
         {/* Small Filter Buttons */}
         <div className="flex justify-start mt-4">
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setActiveFilter('company')}
-              className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                activeFilter === 'company'
-                  ? 'bg-accent text-white shadow-sm'
-                  : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
+              className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${activeFilter === 'company'
+                ? 'bg-accent text-white shadow-sm'
+                : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
             >
               <div className="flex items-center space-x-1">
                 <Building size={14} />
                 <span>Shirkadda</span>
               </div>
             </button>
-            
+
             <button
               onClick={() => setActiveFilter('project')}
-              className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                activeFilter === 'project'
-                  ? 'bg-accent text-white shadow-sm'
-                  : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
+              className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${activeFilter === 'project'
+                ? 'bg-accent text-white shadow-sm'
+                : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
             >
               <div className="flex items-center space-x-1">
                 <Briefcase size={14} />
@@ -543,11 +639,10 @@ export default function ExpensesPage() {
             {/* Approval Filter Buttons */}
             <button
               onClick={() => setApprovalFilter('all')}
-              className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                approvalFilter === 'all'
-                  ? 'bg-primary text-white shadow-sm'
-                  : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
+              className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${approvalFilter === 'all'
+                ? 'bg-primary text-white shadow-sm'
+                : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
             >
               <div className="flex items-center space-x-1">
                 <span>Dhammaan</span>
@@ -556,11 +651,10 @@ export default function ExpensesPage() {
 
             <button
               onClick={() => setApprovalFilter('pending')}
-              className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                approvalFilter === 'pending'
-                  ? 'bg-yellow-500 text-white shadow-sm'
-                  : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
+              className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${approvalFilter === 'pending'
+                ? 'bg-yellow-500 text-white shadow-sm'
+                : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
             >
               <div className="flex items-center space-x-1">
                 <span>Sugaya</span>
@@ -569,11 +663,10 @@ export default function ExpensesPage() {
 
             <button
               onClick={() => setApprovalFilter('approved')}
-              className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                approvalFilter === 'approved'
-                  ? 'bg-green-500 text-white shadow-sm'
-                  : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
+              className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${approvalFilter === 'approved'
+                ? 'bg-green-500 text-white shadow-sm'
+                : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
             >
               <div className="flex items-center space-x-1">
                 <Check size={14} />
@@ -584,11 +677,10 @@ export default function ExpensesPage() {
             {/* Advanced Filters Toggle */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                showFilters
-                  ? 'bg-primary text-white shadow-sm'
-                  : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-              }`}
+              className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${showFilters
+                ? 'bg-primary text-white shadow-sm'
+                : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
             >
               <div className="flex items-center space-x-1">
                 <Filter size={14} />
@@ -610,7 +702,7 @@ export default function ExpensesPage() {
                 Dhammaan Ka Saar
               </button>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
               {/* Category Filter */}
               <div>
@@ -622,10 +714,9 @@ export default function ExpensesPage() {
                   title="Dooro Nooca Kharashka"
                 >
                   <option value="all">Dhammaan</option>
-                  <option value="Material">Alaab</option>
-                  <option value="Labor">Shaqaale</option>
-                  <option value="Transport">Gaadiid</option>
-                  <option value="Company Expense">Kharashka Shirkadda</option>
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
                 </select>
               </div>
 
@@ -661,13 +752,29 @@ export default function ExpensesPage() {
                 </select>
               </div>
 
+              {/* Customer Filter */}
+              <div>
+                <label className="block text-xs font-medium text-darkGray dark:text-gray-300 mb-0.5">Macaamiil</label>
+                <select
+                  value={customerFilter}
+                  onChange={(e) => setCustomerFilter(e.target.value)}
+                  className="w-full p-1.5 border border-lightGray dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-darkGray dark:text-gray-100 text-xs"
+                  title="Dooro Macaamiil"
+                >
+                  <option value="all">Dhammaan</option>
+                  {customers.map(cust => (
+                    <option key={cust.id} value={cust.id}>{cust.name}</option>
+                  ))}
+                </select>
+              </div>
+
               {/* Date Range Filter */}
               <div>
                 <label className="block text-xs font-medium text-darkGray dark:text-gray-300 mb-0.5">Taariikhda Bilowga</label>
                 <input
                   type="date"
                   value={dateRangeFilter.start}
-                  onChange={(e) => setDateRangeFilter({...dateRangeFilter, start: e.target.value})}
+                  onChange={(e) => setDateRangeFilter({ ...dateRangeFilter, start: e.target.value })}
                   className="w-full p-1.5 border border-lightGray dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-darkGray dark:text-gray-100 text-xs"
                   title="Dooro Taariikhda Bilowga"
                 />
@@ -678,7 +785,7 @@ export default function ExpensesPage() {
                 <input
                   type="date"
                   value={dateRangeFilter.end}
-                  onChange={(e) => setDateRangeFilter({...dateRangeFilter, end: e.target.value})}
+                  onChange={(e) => setDateRangeFilter({ ...dateRangeFilter, end: e.target.value })}
                   className="w-full p-1.5 border border-lightGray dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-darkGray dark:text-gray-100 text-xs"
                   title="Dooro Taariikhda Dhamaadka"
                 />
@@ -691,7 +798,7 @@ export default function ExpensesPage() {
                   type="number"
                   placeholder="0"
                   value={amountRangeFilter.min}
-                  onChange={(e) => setAmountRangeFilter({...amountRangeFilter, min: e.target.value})}
+                  onChange={(e) => setAmountRangeFilter({ ...amountRangeFilter, min: e.target.value })}
                   className="w-full p-1.5 border border-lightGray dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-darkGray dark:text-gray-100 text-xs"
                 />
               </div>
@@ -702,7 +809,7 @@ export default function ExpensesPage() {
                   type="number"
                   placeholder="1000"
                   value={amountRangeFilter.max}
-                  onChange={(e) => setAmountRangeFilter({...amountRangeFilter, max: e.target.value})}
+                  onChange={(e) => setAmountRangeFilter({ ...amountRangeFilter, max: e.target.value })}
                   className="w-full p-1.5 border border-lightGray dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-darkGray dark:text-gray-100 text-xs"
                 />
               </div>
@@ -723,13 +830,15 @@ export default function ExpensesPage() {
                   {/* Header Row */}
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center space-x-2 flex-1 min-w-0">
-                      {expense.project ? (
+                      {(expense as any).customer ? (
+                        <User size={16} className="text-green-600 flex-shrink-0" />
+                      ) : expense.project ? (
                         <Briefcase size={16} className="text-accent flex-shrink-0" />
                       ) : (
                         <Building size={16} className="text-accent flex-shrink-0" />
                       )}
                       <span className="text-sm font-medium text-darkGray dark:text-gray-100 truncate">
-                        {expense.project?.name || expense.company?.name || 'Shirkadda'}
+                        {(expense as any).customer?.name || expense.project?.name || expense.company?.name || 'Shirkadda'}
                       </span>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -740,9 +849,8 @@ export default function ExpensesPage() {
                         type="checkbox"
                         checked={isSelected(expense.id)}
                         onChange={() => toggleSelect(expense.id)}
-                        className={`w-4 h-4 transition-opacity duration-200 ${
-                          selectMode ? 'opacity-100' : 'opacity-30 hover:opacity-100'
-                        }`}
+                        className={`w-4 h-4 transition-opacity duration-200 ${selectMode ? 'opacity-100' : 'opacity-30 hover:opacity-100'
+                          }`}
                         title="Xulo"
                       />
                     </div>
@@ -750,15 +858,15 @@ export default function ExpensesPage() {
 
                   {/* Magac (Project view only) */}
                   {/* isProjectView && ( */}
-                    <div className="text-xs text-mediumGray dark:text-gray-400 mb-1">
-                      <span className="font-medium text-darkGray dark:text-gray-100">Magac:</span>{' '}
-                      {(() => {
-                        const employeeName = (expense as any)?.employee || (expense.employeeId ? (employees.find(emp => emp.id === expense.employeeId)?.fullName) : undefined);
-                        const vendorName = (expense as any)?.vendor?.name as string | undefined;
-                        const customerName = (expense as any)?.customer?.name as string | undefined;
-                        return employeeName || vendorName || customerName || '-';
-                      })()}
-                    </div>
+                  <div className="text-xs text-mediumGray dark:text-gray-400 mb-1">
+                    <span className="font-medium text-darkGray dark:text-gray-100">Magac:</span>{' '}
+                    {(() => {
+                      const employeeName = (expense as any)?.employee || (expense.employeeId ? (employees.find(emp => emp.id === expense.employeeId)?.fullName) : undefined);
+                      const vendorName = (expense as any)?.vendor?.name as string | undefined;
+                      const customerName = (expense as any)?.customer?.name as string | undefined;
+                      return employeeName || vendorName || customerName || '-';
+                    })()}
+                  </div>
                   {/* ) */}
 
                   {/* Description */}
@@ -770,34 +878,32 @@ export default function ExpensesPage() {
                   <div className="flex justify-between items-center mb-3">
                     <div className="text-xs text-mediumGray dark:text-gray-400">
                       {new Date(
-                        expense.category === 'Material' && expense.materialDate ? expense.materialDate : 
-                        expense.category === 'Company Expense' && expense.subCategory === 'Debt' ? expense.date :
-                        expense.date
-                      ).toLocaleDateString('so-SO', { 
-                        day: 'numeric', 
-                        month: 'short', 
-                        year: 'numeric' 
+                        expense.category === 'Material' && expense.materialDate ? expense.materialDate :
+                          expense.category === 'Company Expense' && expense.subCategory === 'Debt' ? expense.date :
+                            expense.date
+                      ).toLocaleDateString('so-SO', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric'
                       })}
                     </div>
                     <div className="flex flex-wrap gap-1">
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        expense.category === 'Material' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${expense.category === 'Material' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
                         expense.category === 'Labor' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                        expense.category === 'Transport' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
-                        expense.category === 'Company Expense' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' :
-                        'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                      }`}>
+                          expense.category === 'Transport' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
+                            expense.category === 'Company Expense' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' :
+                              'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                        }`}>
                         {expense.category}
                       </span>
                       {expense.subCategory && (
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                          expense.subCategory === 'Salary' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${expense.subCategory === 'Salary' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
                           expense.subCategory === 'Material' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200' :
-                          expense.subCategory === 'Equipment' ? 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200' :
-                          expense.subCategory === 'Consultancy' ? 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200' :
-                          expense.subCategory === 'Insurance' ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200' :
-                          'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                        }`}>
+                            expense.subCategory === 'Equipment' ? 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200' :
+                              expense.subCategory === 'Consultancy' ? 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200' :
+                                expense.subCategory === 'Insurance' ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200' :
+                                  'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                          }`}>
                           {expense.subCategory}
                         </span>
                       )}
@@ -810,11 +916,10 @@ export default function ExpensesPage() {
                       Account: {expense.accountName || expense.paidFrom}
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        expense.approved 
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                      }`}>
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${expense.approved
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                        }`}>
                         {expense.approved ? 'La Ansixiyay' : 'Sugaya'}
                       </span>
                       <div className="flex space-x-1">
@@ -881,9 +986,8 @@ export default function ExpensesPage() {
                         type="checkbox"
                         checked={paginatedExpenses.length > 0 && paginatedExpenses.every(e => isSelected(e.id))}
                         onChange={toggleSelectAllOnPage}
-                        className={`w-4 h-4 transition-opacity duration-200 ${
-                          selectMode ? 'opacity-100' : 'opacity-30 hover:opacity-100'
-                        }`}
+                        className={`w-4 h-4 transition-opacity duration-200 ${selectMode ? 'opacity-100' : 'opacity-30 hover:opacity-100'
+                          }`}
                         title="Xulo dhammaan boggan"
                       />
                     </th>
@@ -900,175 +1004,214 @@ export default function ExpensesPage() {
                     <th className="px-2 py-2 text-center text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
-              <tbody className="divide-y divide-lightGray dark:divide-gray-700">
-                {paginatedExpenses.map((expense) => (
-                  <tr key={expense.id} className="hover:bg-lightGray/50 dark:hover:bg-gray-700/50 transition-colors duration-150">
-                    {/* Select checkbox (always visible, faded by default) */}
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      <input
-                        type="checkbox"
-                        checked={isSelected(expense.id)}
-                        onChange={() => toggleSelect(expense.id)}
-                        className={`w-4 h-4 transition-opacity duration-200 ${
-                          selectMode ? 'opacity-100' : 'opacity-30 hover:opacity-100'
-                        }`}
-                        title="Xulo"
-                      />
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      <div className="text-xs font-medium text-darkGray dark:text-gray-100">
-                        {new Date(
-                          expense.category === 'Material' && expense.materialDate ? expense.materialDate : 
-                          expense.category === 'Company Expense' && expense.subCategory === 'Debt' ? expense.date :
-                          expense.date
-                        ).toLocaleDateString('so-SO', { 
-                          day: 'numeric', 
-                          month: 'short', 
-                          year: 'numeric' 
-                        })}
-                      </div>
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      <div className="flex flex-col space-y-1">
-                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                          expense.category === 'Material' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                          expense.category === 'Labor' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                          expense.category === 'Transport' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
-                          expense.category === 'Company Expense' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' :
-                          'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                        }`}>
-                          {expense.category}
-                        </span>
-                        {expense.subCategory && (
-                          <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                            expense.subCategory === 'Salary' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-                            expense.subCategory === 'Material' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200' :
-                            expense.subCategory === 'Equipment' ? 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200' :
-                            expense.subCategory === 'Consultancy' ? 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200' :
-                            expense.subCategory === 'Insurance' ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200' :
-                            'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                          }`}>
-                            {expense.subCategory}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      <div className="flex items-center">
-                        {expense.project ? (
-                          <Briefcase size={14} className="text-primary mr-1" />
-                        ) : (
-                          <Building size={14} className="text-orange-500 mr-1" />
-                        )}
-                        <span className="text-xs text-darkGray dark:text-gray-100">
-                          {expense.project?.name || expense.company?.name || 'Shirkadda'}
-                        </span>
-                      </div>
-                    </td>
-                    {activeFilter === 'project' && (
+                <tbody className="divide-y divide-lightGray dark:divide-gray-700">
+                  {paginatedExpenses.map((expense) => (
+                    <tr key={expense.id} className="hover:bg-lightGray/50 dark:hover:bg-gray-700/50 transition-colors duration-150">
+                      {/* Select checkbox (always visible, faded by default) */}
                       <td className="px-2 py-2 whitespace-nowrap">
-                        <span className="text-xs text-darkGray dark:text-gray-100">
+                        <input
+                          type="checkbox"
+                          checked={isSelected(expense.id)}
+                          onChange={() => toggleSelect(expense.id)}
+                          className={`w-4 h-4 transition-opacity duration-200 ${selectMode ? 'opacity-100' : 'opacity-30 hover:opacity-100'
+                            }`}
+                          title="Xulo"
+                        />
+                      </td>
+                      <td className="px-2 py-2 whitespace-nowrap">
+                        <div className="text-xs font-medium text-darkGray dark:text-gray-100">
+                          {new Date(
+                            expense.category === 'Material' && expense.materialDate ? expense.materialDate :
+                              expense.category === 'Company Expense' && expense.subCategory === 'Debt' ? expense.date :
+                                expense.date
+                          ).toLocaleDateString('so-SO', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                          })}
+                        </div>
+                      </td>
+                      <td className="px-2 py-2 whitespace-nowrap">
+                        <div className="flex flex-col space-y-1">
+                          <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${expense.category === 'Material' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                            expense.category === 'Labor' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                              expense.category === 'Transport' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
+                                expense.category === 'Company Expense' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' :
+                                  'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                            }`}>
+                            {expense.category}
+                          </span>
+                          {expense.subCategory && (
+                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${expense.subCategory === 'Salary' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                              expense.subCategory === 'Material' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200' :
+                                expense.subCategory === 'Equipment' ? 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200' :
+                                  expense.subCategory === 'Consultancy' ? 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200' :
+                                    expense.subCategory === 'Insurance' ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200' :
+                                      'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                              }`}>
+                              {expense.subCategory}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-2 py-2 whitespace-nowrap">
+                        <div className="flex flex-col space-y-1">
+                          {/* Primary relationship - Project or Company */}
+                          <div className="flex items-center">
+                            {expense.project ? (
+                              <>
+                                <Briefcase size={14} className="text-primary mr-1 flex-shrink-0" />
+                                <Link href={`/projects/${expense.project.id}`} className="text-xs text-primary hover:underline font-medium">
+                                  {expense.project.name}
+                                </Link>
+                              </>
+                            ) : (
+                              <>
+                                <Building size={14} className="text-orange-500 mr-1 flex-shrink-0" />
+                                <span className="text-xs text-darkGray dark:text-gray-100">
+                                  {expense.company?.name || 'Shirkadda'}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                          
+                          {/* Secondary relationships - Customer, Employee, Vendor */}
                           {(() => {
-                            const employeeName = (expense as any)?.employee || (expense.employeeId ? (employees.find(emp => emp.id === expense.employeeId)?.fullName) : undefined);
-                            const vendorName = (expense as any)?.vendor?.name as string | undefined;
-                            const customerName = (expense as any)?.customer?.name as string | undefined;
-                            return employeeName || vendorName || customerName || '-';
+                            const customer = (expense as any).customer;
+                            const employee = (expense as any).employee || (expense.employeeId ? employees.find(emp => emp.id === expense.employeeId) : null);
+                            const vendor = (expense as any).vendor;
+                            
+                            if (customer) {
+                              return (
+                                <div className="flex items-center">
+                                  <User size={12} className="text-green-600 mr-1 flex-shrink-0" />
+                                  <Link href={`/customers/${customer.id}`} className="text-xs text-green-600 hover:underline">
+                                    {customer.name}
+                                  </Link>
+                                  <span className="text-xs text-mediumGray dark:text-gray-400 ml-1">(Macmiil)</span>
+                                </div>
+                              );
+                            }
+                            
+                            if (employee) {
+                              return (
+                                <div className="flex items-center">
+                                  <User size={12} className="text-blue-600 mr-1 flex-shrink-0" />
+                                  <span className="text-xs text-blue-600">
+                                    {typeof employee === 'string' ? employee : employee.fullName}
+                                  </span>
+                                  <span className="text-xs text-mediumGray dark:text-gray-400 ml-1">(Shaqaale)</span>
+                                </div>
+                              );
+                            }
+                            
+                            if (vendor) {
+                              return (
+                                <div className="flex items-center">
+                                  <Package size={12} className="text-purple-600 mr-1 flex-shrink-0" />
+                                  <Link href={`/vendors/${vendor.id}`} className="text-xs text-purple-600 hover:underline">
+                                    {vendor.name}
+                                  </Link>
+                                  <span className="text-xs text-mediumGray dark:text-gray-400 ml-1">(Iibiyaha)</span>
+                                </div>
+                              );
+                            }
+                            
+                            return null;
                           })()}
+                        </div>
+                      </td>
+                      <td className="hidden lg:table-cell px-2 py-2">
+                        <div className="text-xs text-darkGray dark:text-gray-100 max-w-xs truncate" title={expense.description}>
+                          {expense.description}
+                        </div>
+                        {expense.note && (
+                          <div className="text-xs text-mediumGray dark:text-gray-400 mt-1 max-w-xs truncate" title={expense.note}>
+                            {expense.note}
+                          </div>
+                        )}
+                        {expense.category === 'Company Expense' && expense.subCategory === 'Salary' && (() => {
+                          const salaryCalc = getSalaryCalculation(expense);
+                          return salaryCalc ? (
+                            <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded text-xs">
+                              <div className="text-blue-800 dark:text-blue-300 font-medium">
+                                {salaryCalc.totalMonths} bilood × ${salaryCalc.monthlySalary.toLocaleString()} = ${salaryCalc.totalSalaryOwed.toLocaleString()}
+                              </div>
+                            </div>
+                          ) : null;
+                        })()}
+                      </td>
+                      <td className="px-2 py-2 whitespace-nowrap text-right">
+                        <span className="text-sm font-bold text-redError">
+                          -{expense.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ETB
                         </span>
                       </td>
-                    )}
-                    <td className="hidden lg:table-cell px-2 py-2">
-                      <div className="text-xs text-darkGray dark:text-gray-100 max-w-xs truncate" title={expense.description}>
-                        {expense.description}
-                      </div>
-                      {expense.note && (
-                        <div className="text-xs text-mediumGray dark:text-gray-400 mt-1 max-w-xs truncate" title={expense.note}>
-                          {expense.note}
-                        </div>
-                      )}
-                      {expense.category === 'Company Expense' && expense.subCategory === 'Salary' && (() => {
-                        const salaryCalc = getSalaryCalculation(expense);
-                        return salaryCalc ? (
-                          <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded text-xs">
-                            <div className="text-blue-800 dark:text-blue-300 font-medium">
-                              {salaryCalc.totalMonths} bilood × ${salaryCalc.monthlySalary.toLocaleString()} = ${salaryCalc.totalSalaryOwed.toLocaleString()}
-                            </div>
-                          </div>
-                        ) : null;
-                      })()}
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-right">
-                      <span className="text-sm font-bold text-redError">
-                        -{expense.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ETB
-                      </span>
-                    </td>
-                    <td className="hidden sm:table-cell px-2 py-2 whitespace-nowrap">
-                      <span className="text-xs text-darkGray dark:text-gray-100">{expense.accountName || expense.paidFrom}</span>
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-center">
-                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                        expense.approved 
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                      <td className="hidden sm:table-cell px-2 py-2 whitespace-nowrap">
+                        <span className="text-xs text-darkGray dark:text-gray-100">{expense.accountName || expense.paidFrom}</span>
+                      </td>
+                      <td className="px-2 py-2 whitespace-nowrap text-center">
+                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${expense.approved
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                           : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                      }`}>
-                        {expense.approved ? 'La Ansixiyay' : 'Sugaya'}
-                      </span>
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-center">
-                      <div className="flex items-center justify-center space-x-1">
-                        <Link
-                          href={`/expenses/${expense.id}`}
-                          className="text-primary hover:text-blue-700 p-1 rounded hover:bg-primary/10 transition-colors duration-200"
-                          title="Eeg faahfaahinta"
-                        >
-                          <Eye size={16} />
-                        </Link>
-                        <Link
-                          href={`/expenses/edit/${expense.id}`}
-                          className="text-accent hover:text-orange-700 p-1 rounded hover:bg-accent/10 transition-colors duration-200"
-                          title="Wax ka beddel"
-                        >
-                          <Edit size={16} />
-                        </Link>
-                        {!expense.approved && (
-                          <>
-                            <button
-                              onClick={() => handleApproveExpense(expense.id)}
-                              className="text-green-600 hover:text-green-700 p-1 rounded hover:bg-green-100 transition-colors duration-200"
-                              title="Ansixi"
-                            >
-                              <Check size={16} />
-                            </button>
-                            <button
-                              onClick={() => handleRejectExpense(expense.id)}
-                              className="text-red-600 hover:text-red-700 p-1 rounded hover:bg-red-100 transition-colors duration-200"
-                              title="Diid"
-                            >
-                              <XCircle size={16} />
-                            </button>
-                          </>
-                        )}
-                        <button
-                          onClick={async () => {
-                            if (selectedIds.size > 0) {
-                              await handleBulkDelete();
-                              return;
-                            }
-                            await deleteExpense(expense);
-                          }}
-                          className="text-redError hover:text-red-700 p-1 rounded hover:bg-redError/10 transition-colors duration-200"
-                          title="Tirtir"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                          }`}>
+                          {expense.approved ? 'La Ansixiyay' : 'Sugaya'}
+                        </span>
+                      </td>
+                      <td className="px-2 py-2 whitespace-nowrap text-center">
+                        <div className="flex items-center justify-center space-x-1">
+                          <Link
+                            href={`/expenses/${expense.id}`}
+                            className="text-primary hover:text-blue-700 p-1 rounded hover:bg-primary/10 transition-colors duration-200"
+                            title="Eeg faahfaahinta"
+                          >
+                            <Eye size={16} />
+                          </Link>
+                          <Link
+                            href={`/expenses/edit/${expense.id}`}
+                            className="text-accent hover:text-orange-700 p-1 rounded hover:bg-accent/10 transition-colors duration-200"
+                            title="Wax ka beddel"
+                          >
+                            <Edit size={16} />
+                          </Link>
+                          {!expense.approved && (
+                            <>
+                              <button
+                                onClick={() => handleApproveExpense(expense.id)}
+                                className="text-green-600 hover:text-green-700 p-1 rounded hover:bg-green-100 transition-colors duration-200"
+                                title="Ansixi"
+                              >
+                                <Check size={16} />
+                              </button>
+                              <button
+                                onClick={() => handleRejectExpense(expense.id)}
+                                className="text-red-600 hover:text-red-700 p-1 rounded hover:bg-red-100 transition-colors duration-200"
+                                title="Diid"
+                              >
+                                <XCircle size={16} />
+                              </button>
+                            </>
+                          )}
+                          <button
+                            onClick={async () => {
+                              if (selectedIds.size > 0) {
+                                await handleBulkDelete();
+                                return;
+                              }
+                              await deleteExpense(expense);
+                            }}
+                            className="text-redError hover:text-red-700 p-1 rounded hover:bg-redError/10 transition-colors duration-200"
+                            title="Tirtir"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
         </div>
       ) : (
         /* Cards View */
@@ -1078,31 +1221,84 @@ export default function ExpensesPage() {
               <div className="p-4 lg:p-6">
                 {/* Header */}
                 <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center">
-                    {expense.project ? (
-                      <Briefcase size={18} className="text-primary mr-2" />
-                    ) : (
-                      <Building size={18} className="text-orange-500 mr-2" />
-                    )}
-                    <span className="text-sm font-medium text-mediumGray dark:text-gray-400">
-                      {expense.project?.name || expense.company?.name || 'Shirkadda'}
-                    </span>
+                  <div className="flex-1">
+                    {/* Primary relationship */}
+                    <div className="flex items-center mb-1">
+                      {expense.project ? (
+                        <>
+                          <Briefcase size={18} className="text-primary mr-2 flex-shrink-0" />
+                          <Link href={`/projects/${expense.project.id}`} className="text-sm font-medium text-primary hover:underline">
+                            {expense.project.name}
+                          </Link>
+                        </>
+                      ) : (
+                        <>
+                          <Building size={18} className="text-orange-500 mr-2 flex-shrink-0" />
+                          <span className="text-sm font-medium text-mediumGray dark:text-gray-400">
+                            {expense.company?.name || 'Shirkadda'}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    
+                    {/* Secondary relationships */}
+                    {(() => {
+                      const customer = (expense as any).customer;
+                      const employee = (expense as any).employee || (expense.employeeId ? employees.find(emp => emp.id === expense.employeeId) : null);
+                      const vendor = (expense as any).vendor;
+                      
+                      if (customer) {
+                        return (
+                          <div className="flex items-center">
+                            <User size={14} className="text-green-600 mr-1 flex-shrink-0" />
+                            <Link href={`/customers/${customer.id}`} className="text-xs text-green-600 hover:underline">
+                              {customer.name}
+                            </Link>
+                            <span className="text-xs text-mediumGray dark:text-gray-400 ml-1">(Macmiil)</span>
+                          </div>
+                        );
+                      }
+                      
+                      if (employee) {
+                        return (
+                          <div className="flex items-center">
+                            <User size={14} className="text-blue-600 mr-1 flex-shrink-0" />
+                            <span className="text-xs text-blue-600">
+                              {typeof employee === 'string' ? employee : employee.fullName}
+                            </span>
+                            <span className="text-xs text-mediumGray dark:text-gray-400 ml-1">(Shaqaale)</span>
+                          </div>
+                        );
+                      }
+                      
+                      if (vendor) {
+                        return (
+                          <div className="flex items-center">
+                            <Package size={14} className="text-purple-600 mr-1 flex-shrink-0" />
+                            <Link href={`/vendors/${vendor.id}`} className="text-xs text-purple-600 hover:underline">
+                              {vendor.name}
+                            </Link>
+                            <span className="text-xs text-mediumGray dark:text-gray-400 ml-1">(Iibiyaha)</span>
+                          </div>
+                        );
+                      }
+                      
+                      return null;
+                    })()}
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      expense.approved 
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                    }`}>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${expense.approved
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                      : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                      }`}>
                       {expense.approved ? 'La Ansixiyay' : 'Sugaya'}
                     </span>
                     <input
                       type="checkbox"
                       checked={isSelected(expense.id)}
                       onChange={() => toggleSelect(expense.id)}
-                      className={`w-4 h-4 transition-opacity duration-200 ${
-                        selectMode ? 'opacity-100' : 'opacity-30 hover:opacity-100'
-                      }`}
+                      className={`w-4 h-4 transition-opacity duration-200 ${selectMode ? 'opacity-100' : 'opacity-30 hover:opacity-100'
+                        }`}
                       title="Xulo"
                     />
                   </div>
@@ -1111,54 +1307,52 @@ export default function ExpensesPage() {
                 {/* Category & Date */}
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex flex-col space-y-1">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      expense.category === 'Material' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${expense.category === 'Material' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
                       expense.category === 'Labor' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                      expense.category === 'Transport' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
-                      expense.category === 'Company Expense' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' :
-                      'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                    }`}>
+                        expense.category === 'Transport' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
+                          expense.category === 'Company Expense' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' :
+                            'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                      }`}>
                       {expense.category}
                     </span>
                     {expense.subCategory && (
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        expense.subCategory === 'Salary' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${expense.subCategory === 'Salary' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
                         expense.subCategory === 'Material' ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200' :
-                        expense.subCategory === 'Equipment' ? 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200' :
-                        expense.subCategory === 'Consultancy' ? 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200' :
-                        expense.subCategory === 'Insurance' ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200' :
-                        'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-                      }`}>
+                          expense.subCategory === 'Equipment' ? 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200' :
+                            expense.subCategory === 'Consultancy' ? 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200' :
+                              expense.subCategory === 'Insurance' ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200' :
+                                'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                        }`}>
                         {expense.subCategory}
                       </span>
                     )}
                   </div>
                   <span className="text-xs text-mediumGray dark:text-gray-400">
                     {new Date(
-                      expense.category === 'Material' && expense.materialDate ? expense.materialDate : 
-                      expense.category === 'Company Expense' && expense.subCategory === 'Debt' ? expense.date :
-                      expense.date
-                    ).toLocaleDateString('so-SO', { 
-                      day: 'numeric', 
-                      month: 'short', 
-                      year: 'numeric' 
+                      expense.category === 'Material' && expense.materialDate ? expense.materialDate :
+                        expense.category === 'Company Expense' && expense.subCategory === 'Debt' ? expense.date :
+                          expense.date
+                    ).toLocaleDateString('so-SO', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric'
                     })}
                   </span>
                 </div>
 
                 {/* Magac (Project view only) */}
                 {/* isProjectView && ( */}
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-mediumGray dark:text-gray-400">Magac:</span>
-                    <span className="text-darkGray dark:text-gray-100 font-medium">
-                      {(() => {
-                        const employeeName = (expense as any)?.employee || (expense.employeeId ? (employees.find(emp => emp.id === expense.employeeId)?.fullName) : undefined);
-                        const vendorName = (expense as any)?.vendor?.name as string | undefined;
-                        const customerName = (expense as any)?.customer?.name as string | undefined;
-                        return employeeName || vendorName || customerName || '-';
-                      })()}
-                    </span>
-                  </div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-mediumGray dark:text-gray-400">Magac:</span>
+                  <span className="text-darkGray dark:text-gray-100 font-medium">
+                    {(() => {
+                      const employeeName = (expense as any)?.employee || (expense.employeeId ? (employees.find(emp => emp.id === expense.employeeId)?.fullName) : undefined);
+                      const vendorName = (expense as any)?.vendor?.name as string | undefined;
+                      const customerName = (expense as any)?.customer?.name as string | undefined;
+                      return employeeName || vendorName || customerName || '-';
+                    })()}
+                  </span>
+                </div>
                 {/* ) */}
 
                 {/* Description */}
@@ -1248,27 +1442,25 @@ export default function ExpensesPage() {
           <button
             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
             disabled={currentPage === 1}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
-              currentPage === 1
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
-                : 'bg-white text-darkGray hover:bg-lightGray border border-lightGray dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 dark:border-gray-600'
-            }`}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${currentPage === 1
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+              : 'bg-white text-darkGray hover:bg-lightGray border border-lightGray dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 dark:border-gray-600'
+              }`}
           >
             Prev
           </button>
-          
+
           <span className="text-sm text-mediumGray dark:text-gray-400">
             Page {currentPage} of {totalPages}
           </span>
-          
+
           <button
             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
             disabled={currentPage === totalPages}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
-              currentPage === totalPages
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
-                : 'bg-white text-darkGray hover:bg-lightGray border border-lightGray dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 dark:border-gray-600'
-            }`}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${currentPage === totalPages
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+              : 'bg-white text-darkGray hover:bg-lightGray border border-lightGray dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 dark:border-gray-600'
+              }`}
           >
             Next
           </button>

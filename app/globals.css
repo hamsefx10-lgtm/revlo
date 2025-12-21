@@ -49,6 +49,16 @@ body {
   scrollbar-color: #cbd5e1 transparent;
 }
 
+/* Hide scrollbar utility for mobile tabs */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Animation utilities */
 @layer utilities {
   .perspective-1000 {

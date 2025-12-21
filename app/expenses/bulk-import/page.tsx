@@ -5,15 +5,15 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Layout from '@/components/layouts/Layout';
-import { 
-  ArrowLeft, Upload, FileSpreadsheet, Download, CheckCircle, XCircle, 
-  Loader2, Info, ChevronRight, Building, Briefcase, Package, Users, 
+import {
+  ArrowLeft, Upload, FileSpreadsheet, Download, CheckCircle, XCircle,
+  Loader2, Info, ChevronRight, Building, Briefcase, Package, Users,
   Truck, Home, CreditCard, AlertCircle, Tag
 } from 'lucide-react';
 import Toast from '@/components/common/Toast';
 
 type ExpenseType = 'company' | 'project';
-type SubCategory = 'Material' | 'Labor' | 'Company Labor' | 'Transport' | 'Rental' | 'Consultancy' | 'Fuel' | 'Other';
+type SubCategory = 'Material' | 'Labor' | 'Company Labor' | 'Transport' | 'Rental' | 'Consultancy' | 'Fuel' | 'Debt' | 'Other';
 
 interface MaterialRow {
   name: string;
@@ -47,9 +47,11 @@ export default function BulkImportExpensesPage() {
   const [loading, setLoading] = useState(false);
   const [importResults, setImportResults] = useState<any>(null);
   const [projects, setProjects] = useState<any[]>([]);
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [accounts, setAccounts] = useState<any[]>([]);
   const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
-  // Fetch projects for project expenses
+  // Fetch projects, customers, and accounts
   React.useEffect(() => {
     if (expenseType === 'project') {
       fetch('/api/projects')
@@ -57,10 +59,22 @@ export default function BulkImportExpensesPage() {
         .then(data => setProjects(data.projects || []))
         .catch(err => console.error('Error fetching projects:', err));
     }
+
+    // Fetch customers for Debt expenses
+    fetch('/api/customers')
+      .then(res => res.json())
+      .then(data => setCustomers(data.customers || []))
+      .catch(err => console.error('Error fetching customers:', err));
+
+    // Fetch accounts for PaidFrom dropdown
+    fetch('/api/accounts')
+      .then(res => res.json())
+      .then(data => setAccounts(data.accounts || []))
+      .catch(err => console.error('Error fetching accounts:', err));
   }, [expenseType]);
 
   // Subcategories based on expense type
-  const companySubCategories: SubCategory[] = ['Material', 'Company Labor', 'Transport', 'Rental', 'Consultancy', 'Fuel', 'Other'];
+  const companySubCategories: SubCategory[] = ['Material', 'Company Labor', 'Transport', 'Rental', 'Consultancy', 'Fuel', 'Debt', 'Other'];
   const projectSubCategories: SubCategory[] = ['Material', 'Labor', 'Transport', 'Rental', 'Consultancy', 'Fuel', 'Other'];
 
   const getSubCategories = () => {
@@ -148,6 +162,17 @@ export default function BulkImportExpensesPage() {
           Note: 'Monthly fuel purchase'
         };
         break;
+      case 'Debt':
+        headers = ['Description', 'Amount', 'LenderName', 'LoanDate', 'PaidFrom', 'Note'];
+        sampleRow = {
+          Description: 'Loan repayment',
+          Amount: '50000',
+          LenderName: 'Ali Abdi',
+          LoanDate: new Date().toISOString().split('T')[0],
+          PaidFrom: 'Cash',
+          Note: 'Partial repayment'
+        };
+        break;
       case 'Other':
         headers = ['Description', 'Amount', 'ExpenseDate', 'PaidFrom', 'Note'];
         sampleRow = {
@@ -204,6 +229,85 @@ export default function BulkImportExpensesPage() {
     setStep(4); // Move to upload step
   };
 
+  // Validate rows - Dynamic validation based on category
+  const validateRows = (rows: any[]) => {
+    const errors: any[] = [];
+    rows.forEach((row, index) => {
+      const rowErrors: string[] = [];
+
+      // Common validations for all categories
+      if (!row.PaidFrom || row.PaidFrom.trim() === '') {
+        rowErrors.push('PaidFrom waa waajib');
+      }
+
+      // Validate ExpenseDate for all categories
+      if (row.ExpenseDate) {
+        const date = new Date(row.ExpenseDate);
+        if (isNaN(date.getTime())) {
+          rowErrors.push('ExpenseDate waa in uu noqdo format sax ah (YYYY-MM-DD)');
+        }
+      }
+
+      // Category-specific validations
+      if (subCategory === 'Material') {
+        if (!row.Name || row.Name.trim() === '') rowErrors.push('Name waa waajib');
+        if (!row.Quantity || isNaN(Number(row.Quantity)) || Number(row.Quantity) <= 0) rowErrors.push('Quantity waa waajib (lambar sax ah)');
+        if (!row.Price || isNaN(Number(row.Price)) || Number(row.Price) <= 0) rowErrors.push('Price waa waajib (lambar sax ah)');
+        if (!row.Unit || row.Unit.trim() === '') rowErrors.push('Unit waa waajib');
+      } else if (subCategory === 'Labor' || subCategory === 'Company Labor') {
+        if (!row.EmployeeName || row.EmployeeName.trim() === '') rowErrors.push('EmployeeName waa waajib');
+        if (!row.Wage || isNaN(Number(row.Wage)) || Number(row.Wage) <= 0) rowErrors.push('Wage waa waajib (lambar sax ah)');
+        if (!row.WorkDescription || row.WorkDescription.trim() === '') rowErrors.push('WorkDescription waa waajib');
+        if (!row.ExpenseDate) rowErrors.push('ExpenseDate waa waajib');
+      } else if (subCategory === 'Debt') {
+        if (!row.Description || row.Description.trim() === '') rowErrors.push('Description waa waajib');
+        if (!row.Amount || isNaN(Number(row.Amount)) || Number(row.Amount) <= 0) rowErrors.push('Amount waa waajib (lambar sax ah)');
+        if (!row.LenderName || row.LenderName.trim() === '') rowErrors.push('LenderName waa waajib');
+        if (!row.LoanDate) {
+          rowErrors.push('LoanDate waa waajib');
+        } else {
+          const date = new Date(row.LoanDate);
+          if (isNaN(date.getTime())) {
+            rowErrors.push('LoanDate waa in uu noqdo format sax ah (YYYY-MM-DD)');
+          }
+        }
+      } else if (subCategory === 'Transport') {
+        if (!row.Description || row.Description.trim() === '') rowErrors.push('Description waa waajib');
+        if (!row.Amount || isNaN(Number(row.Amount)) || Number(row.Amount) <= 0) rowErrors.push('Amount waa waajib (lambar sax ah)');
+        if (!row.ExpenseDate) rowErrors.push('ExpenseDate waa waajib');
+      } else if (subCategory === 'Rental') {
+        if (!row.Description || row.Description.trim() === '') rowErrors.push('Description waa waajib');
+        if (!row.Amount || isNaN(Number(row.Amount)) || Number(row.Amount) <= 0) rowErrors.push('Amount waa waajib (lambar sax ah)');
+        if (!row.ExpenseDate) rowErrors.push('ExpenseDate waa waajib');
+      } else if (subCategory === 'Consultancy') {
+        if (!row.Description || row.Description.trim() === '') rowErrors.push('Description waa waajib');
+        if (!row.Amount || isNaN(Number(row.Amount)) || Number(row.Amount) <= 0) rowErrors.push('Amount waa waajib (lambar sax ah)');
+        if (!row.ExpenseDate) rowErrors.push('ExpenseDate waa waajib');
+      } else if (subCategory === 'Fuel') {
+        if (!row.Description || row.Description.trim() === '') rowErrors.push('Description waa waajib');
+        if (!row.Amount || isNaN(Number(row.Amount)) || Number(row.Amount) <= 0) rowErrors.push('Amount waa waajib (lambar sax ah)');
+        if (!row.ExpenseDate) rowErrors.push('ExpenseDate waa waajib');
+      } else if (subCategory === 'Other') {
+        if (!row.Description || row.Description.trim() === '') rowErrors.push('Description waa waajib');
+        if (!row.Amount || isNaN(Number(row.Amount)) || Number(row.Amount) <= 0) rowErrors.push('Amount waa waajib (lambar sax ah)');
+        if (!row.ExpenseDate) rowErrors.push('ExpenseDate waa waajib');
+      }
+
+      if (rowErrors.length > 0) {
+        errors.push({ row: index + 2, errors: rowErrors });
+      }
+    });
+    setValidationErrors(errors);
+    return errors.length === 0;
+  };
+
+  const handleCellChange = (index: number, key: string, value: string) => {
+    const newData = [...parsedData];
+    newData[index] = { ...newData[index], [key]: value };
+    setParsedData(newData);
+    validateRows(newData);
+  };
+
   // Parse uploaded file
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFile = e.target.files?.[0];
@@ -214,16 +318,16 @@ export default function BulkImportExpensesPage() {
 
     try {
       let text = '';
-      
+
       // Handle CSV files
       if (uploadedFile.name.endsWith('.csv')) {
         text = await uploadedFile.text();
-      } 
+      }
       // Handle Excel files - convert to text (basic implementation)
       else if (uploadedFile.name.endsWith('.xlsx') || uploadedFile.name.endsWith('.xls')) {
-        setToastMessage({ 
-          message: 'Fadlan isticmaal CSV file. Excel files waa la taageerayaa, laakiin CSV ayaa ugu fiican.', 
-          type: 'info' 
+        setToastMessage({
+          message: 'Fadlan isticmaal CSV file. Excel files waa la taageerayaa, laakiin CSV ayaa ugu fiican.',
+          type: 'info'
         });
         // For now, ask user to convert to CSV
         setLoading(false);
@@ -238,16 +342,26 @@ export default function BulkImportExpensesPage() {
         return;
       }
 
+      // Detect delimiter
+      const detectDelimiter = (txt: string): string => {
+        const firstLine = txt.split('\n')[0];
+        if (firstLine.includes(';')) return ';';
+        if (firstLine.includes('\t')) return '\t';
+        return ',';
+      };
+
+      const delimiter = detectDelimiter(text);
+
       // Helper function to parse CSV line with proper quote handling
-      const parseCSVLine = (line: string): string[] => {
+      const parseCSVLine = (line: string, delim: string): string[] => {
         const values: string[] = [];
         let currentValue = '';
         let inQuotes = false;
-        
+
         for (let i = 0; i < line.length; i++) {
           const char = line[i];
           const nextChar = line[i + 1];
-          
+
           if (char === '"') {
             if (inQuotes && nextChar === '"') {
               // Escaped quote
@@ -257,7 +371,7 @@ export default function BulkImportExpensesPage() {
               // Toggle quote state
               inQuotes = !inQuotes;
             }
-          } else if (char === ',' && !inQuotes) {
+          } else if (char === delim && !inQuotes) {
             // End of value
             values.push(currentValue.trim());
             currentValue = '';
@@ -267,12 +381,105 @@ export default function BulkImportExpensesPage() {
         }
         // Add the last value
         values.push(currentValue.trim());
-        
+
         return values;
       };
 
+      // Smart correction for PaidFrom
+      const normalizePaidFrom = (val: string): string => {
+        const lower = val.toLowerCase().trim();
+        if (['ebirr', 'e-birr', 'e birr'].includes(lower)) return 'Ebirr';
+        if (['evc', 'evcplus', 'evc plus'].includes(lower)) return 'EVC Plus';
+        if (['sahal', 'golis'].includes(lower)) return 'Sahal';
+        if (['zaad', 'telesom'].includes(lower)) return 'Zaad';
+        if (['cash', 'lacag', 'kaash'].includes(lower)) return 'Cash';
+        if (['bank', 'account', 'xisaab'].includes(lower)) return 'Bank Account';
+        return val; // Return original if no match
+      };
+
+      // Smart date parsing - handles Excel date formats
+      const parseDate = (dateValue: string): string => {
+        if (!dateValue || dateValue.trim() === '') return '';
+        
+        const trimmed = dateValue.trim();
+        
+        // If already in YYYY-MM-DD format, return as is
+        if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+          return trimmed;
+        }
+        
+        // Handle Excel serial date numbers (days since 1900-01-01)
+        if (/^\d+\.?\d*$/.test(trimmed) && !trimmed.includes('/') && !trimmed.includes('-')) {
+          const excelSerial = parseFloat(trimmed);
+          // Excel date serial numbers start from 1 (Jan 1, 1900)
+          // JavaScript Date uses milliseconds since 1970-01-01
+          // Excel epoch: 1900-01-01, but Excel incorrectly treats 1900 as leap year
+          // So we need to adjust: (excelSerial - 2) * 86400000
+          const jsDate = new Date((excelSerial - 2) * 86400000);
+          if (!isNaN(jsDate.getTime())) {
+            return jsDate.toISOString().split('T')[0];
+          }
+        }
+        
+        // Handle various date formats
+        // MM/DD/YYYY or DD/MM/YYYY
+        if (trimmed.includes('/')) {
+          const parts = trimmed.split('/');
+          if (parts.length === 3) {
+            let month, day, year;
+            // Try MM/DD/YYYY first (US format)
+            if (parts[0].length <= 2 && parts[1].length <= 2 && parts[2].length === 4) {
+              month = parts[0].padStart(2, '0');
+              day = parts[1].padStart(2, '0');
+              year = parts[2];
+              const date = new Date(`${year}-${month}-${day}`);
+              if (!isNaN(date.getTime())) {
+                return date.toISOString().split('T')[0];
+              }
+            }
+            // Try DD/MM/YYYY (European format)
+            if (parts[0].length <= 2 && parts[1].length <= 2 && parts[2].length === 4) {
+              day = parts[0].padStart(2, '0');
+              month = parts[1].padStart(2, '0');
+              year = parts[2];
+              const date = new Date(`${year}-${month}-${day}`);
+              if (!isNaN(date.getTime())) {
+                return date.toISOString().split('T')[0];
+              }
+            }
+          }
+        }
+        
+        // Handle DD-MM-YYYY or YYYY-MM-DD
+        if (trimmed.includes('-')) {
+          const parts = trimmed.split('-');
+          if (parts.length === 3) {
+            // If first part is 4 digits, it's YYYY-MM-DD
+            if (parts[0].length === 4) {
+              return trimmed;
+            }
+            // Otherwise try DD-MM-YYYY
+            if (parts[0].length <= 2 && parts[1].length <= 2 && parts[2].length === 4) {
+              const day = parts[0].padStart(2, '0');
+              const month = parts[1].padStart(2, '0');
+              const year = parts[2];
+              return `${year}-${month}-${day}`;
+            }
+          }
+        }
+        
+        // Try parsing as standard date string
+        const parsedDate = new Date(trimmed);
+        if (!isNaN(parsedDate.getTime())) {
+          return parsedDate.toISOString().split('T')[0];
+        }
+        
+        // Return original if can't parse
+        return trimmed;
+      };
+
       // Parse headers
-      const headers = parseCSVLine(lines[0]).map(h => h.trim());
+      const headers = parseCSVLine(lines[0], delimiter).map(h => h.trim());
 
       if (headers.length === 0) {
         setToastMessage({ message: 'Headers-ka lama helin file-ka', type: 'error' });
@@ -285,15 +492,27 @@ export default function BulkImportExpensesPage() {
       for (let lineIdx = 1; lineIdx < lines.length; lineIdx++) {
         const line = lines[lineIdx];
         if (!line.trim()) continue; // Skip empty lines
-        
-        const values = parseCSVLine(line);
-        
+
+        const values = parseCSVLine(line, delimiter);
+
         // Only process rows that have at least some data
         if (values.every(v => !v.trim())) continue;
-        
+
         const row: any = {};
         headers.forEach((header, index) => {
-          row[header] = (values[index] || '').trim();
+          let value = (values[index] || '').trim();
+
+          // Apply smart correction to specific fields
+          if (header === 'PaidFrom') {
+            value = normalizePaidFrom(value);
+          }
+          
+          // Parse dates from Excel format
+          if (header === 'ExpenseDate' || header === 'LoanDate' || header === 'MaterialDate') {
+            value = parseDate(value);
+          }
+
+          row[header] = value;
         });
         rows.push(row);
       }
@@ -305,44 +524,10 @@ export default function BulkImportExpensesPage() {
       }
 
       // Validate rows
-      const errors: any[] = [];
-      rows.forEach((row, index) => {
-        const rowErrors: string[] = [];
-        
-        if (subCategory === 'Material') {
-          if (!row.Name || row.Name.trim() === '') rowErrors.push('Name is required');
-          if (!row.Quantity || isNaN(Number(row.Quantity)) || Number(row.Quantity) <= 0) rowErrors.push('Valid Quantity is required');
-          if (!row.Price || isNaN(Number(row.Price)) || Number(row.Price) <= 0) rowErrors.push('Valid Price is required');
-          if (!row.Unit || row.Unit.trim() === '') rowErrors.push('Unit is required');
-        } else if (subCategory === 'Labor' || subCategory === 'Company Labor') {
-          if (!row.EmployeeName || row.EmployeeName.trim() === '') rowErrors.push('EmployeeName is required');
-          if (!row.Wage || isNaN(Number(row.Wage)) || Number(row.Wage) <= 0) rowErrors.push('Valid Wage is required');
-          if (!row.WorkDescription || row.WorkDescription.trim() === '') rowErrors.push('WorkDescription is required');
-        } else {
-          if (!row.Description || row.Description.trim() === '') rowErrors.push('Description is required');
-          if (!row.Amount || isNaN(Number(row.Amount)) || Number(row.Amount) <= 0) rowErrors.push('Valid Amount is required');
-        }
-        
-        if (!row.ExpenseDate || row.ExpenseDate.trim() === '') {
-          rowErrors.push('ExpenseDate is required');
-        } else {
-          // Validate date format
-          const date = new Date(row.ExpenseDate);
-          if (isNaN(date.getTime())) {
-            rowErrors.push('Valid ExpenseDate format is required (YYYY-MM-DD)');
-          }
-        }
-        if (!row.PaidFrom || row.PaidFrom.trim() === '') rowErrors.push('PaidFrom is required');
-
-        if (rowErrors.length > 0) {
-          errors.push({ row: index + 2, errors: rowErrors });
-        }
-      });
-
-      setValidationErrors(errors);
+      validateRows(rows);
       setParsedData(rows);
       setStep(5); // Move to preview step
-      
+
       // Reset file input to allow re-uploading the same file
       const fileInput = document.getElementById('file-upload') as HTMLInputElement;
       if (fileInput) {
@@ -383,7 +568,7 @@ export default function BulkImportExpensesPage() {
       });
 
       const result = await response.json();
-      
+
       if (response.ok) {
         setImportResults(result);
         setStep(6); // Move to results step
@@ -419,17 +604,15 @@ export default function BulkImportExpensesPage() {
         <div className="mb-8 flex items-center justify-between max-w-3xl">
           {[1, 2, 3, 4, 5, 6].map((s) => (
             <div key={s} className="flex items-center flex-1">
-              <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
-                step >= s 
-                  ? 'bg-primary border-primary text-white' 
-                  : 'border-lightGray dark:border-gray-700 text-mediumGray dark:text-gray-400'
-              }`}>
+              <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${step >= s
+                ? 'bg-primary border-primary text-white'
+                : 'border-lightGray dark:border-gray-700 text-mediumGray dark:text-gray-400'
+                }`}>
                 {step > s ? <CheckCircle size={20} /> : s}
               </div>
               {s < 6 && (
-                <div className={`flex-1 h-1 mx-2 ${
-                  step > s ? 'bg-primary' : 'bg-lightGray dark:bg-gray-700'
-                }`} />
+                <div className={`flex-1 h-1 mx-2 ${step > s ? 'bg-primary' : 'bg-lightGray dark:bg-gray-700'
+                  }`} />
               )}
             </div>
           ))}
@@ -540,12 +723,67 @@ export default function BulkImportExpensesPage() {
                 <Info size={24} className="text-blue-600 dark:text-blue-400 mr-3 flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="font-semibold text-blue-900 dark:text-blue-300 mb-2">
-                    Tilmaamaha Template-ka
+                    Tilmaamaha Template-ka - {subCategory}
                   </h3>
-                  <p className="text-blue-800 dark:text-blue-300 text-sm">
-                    Template-ka CSV ah ayaa la soo dejin doonaa. Buuxi dhammaan beeraha, 
+                  <p className="text-blue-800 dark:text-blue-300 text-sm mb-3">
+                    Template-ka CSV ah ayaa la soo dejin doonaa. Buuxi dhammaan beeraha,
                     kadib soo geli file-ka marka aad buuxisay.
                   </p>
+                  <div className="bg-white dark:bg-gray-800 rounded p-3 mt-3">
+                    <p className="text-xs font-semibold text-blue-900 dark:text-blue-300 mb-2">
+                      Beeraha Waajibka Ah:
+                    </p>
+                    <ul className="text-xs text-blue-800 dark:text-blue-300 space-y-1 list-disc list-inside">
+                      {subCategory === 'Material' && (
+                        <>
+                          <li>Name - Magaca alaabta</li>
+                          <li>Quantity - Tirada</li>
+                          <li>Price - Qiimaha halbeegga</li>
+                          <li>Unit - Halbeegga (bag, kg, m, etc.)</li>
+                          <li>PaidFrom - Halka laga bixiyay (Cash, Bank Account, etc.)</li>
+                        </>
+                      )}
+                      {(subCategory === 'Labor' || subCategory === 'Company Labor') && (
+                        <>
+                          <li>EmployeeName - Magaca shaqaalaha</li>
+                          <li>Wage - Mushaharka</li>
+                          <li>WorkDescription - Sharaxaadda shaqada</li>
+                          <li>ExpenseDate - Taariikhda</li>
+                          <li>PaidFrom - Halka laga bixiyay</li>
+                        </>
+                      )}
+                      {subCategory === 'Debt' && (
+                        <>
+                          <li>Description - Sharaxaad</li>
+                          <li>Amount - Lacagta</li>
+                          <li>LenderName - Magaca qaadaha</li>
+                          <li>LoanDate - Taariikhda qaadaha</li>
+                          <li>PaidFrom - Halka laga bixiyay</li>
+                        </>
+                      )}
+                      {(subCategory === 'Transport' || subCategory === 'Rental' || subCategory === 'Consultancy' || subCategory === 'Fuel' || subCategory === 'Other') && (
+                        <>
+                          <li>Description - Sharaxaad</li>
+                          <li>Amount - Lacagta</li>
+                          <li>ExpenseDate - Taariikhda</li>
+                          <li>PaidFrom - Halka laga bixiyay</li>
+                          {subCategory === 'Transport' && <li>TransportType - Nooca gaadiidka (optional)</li>}
+                          {subCategory === 'Rental' && (
+                            <>
+                              <li>EquipmentName - Magaca qalabka (optional)</li>
+                              <li>RentalPeriod - Mudada (optional)</li>
+                            </>
+                          )}
+                          {subCategory === 'Consultancy' && (
+                            <>
+                              <li>ConsultantName - Magaca la taliyaha (optional)</li>
+                              <li>ConsultancyType - Nooca talada (optional)</li>
+                            </>
+                          )}
+                        </>
+                      )}
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>
@@ -614,6 +852,24 @@ export default function BulkImportExpensesPage() {
             <h2 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-6">
               Dib u eeg Kharashyada ({parsedData.length} kharash)
             </h2>
+            
+            {/* Category Info Box - Helpful for cashiers */}
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+              <div className="flex items-start">
+                <Info size={20} className="text-blue-600 dark:text-blue-400 mr-2 flex-shrink-0 mt-1" />
+                <div className="text-sm text-blue-800 dark:text-blue-300">
+                  <p className="font-semibold mb-1">Nooca Kharashka: {subCategory}</p>
+                  <p className="text-xs">
+                    {subCategory === 'Material' && 'Fadlan hubi in Name, Quantity, Price, iyo Unit ay sax yihiin.'}
+                    {subCategory === 'Labor' && 'Fadlan hubi in EmployeeName, Wage, iyo WorkDescription ay sax yihiin.'}
+                    {subCategory === 'Debt' && 'Fadlan hubi in Description, Amount, LenderName, iyo LoanDate ay sax yihiin.'}
+                    {(subCategory === 'Transport' || subCategory === 'Rental' || subCategory === 'Consultancy' || subCategory === 'Fuel' || subCategory === 'Other') && 
+                      'Fadlan hubi in Description, Amount, iyo ExpenseDate ay sax yihiin.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {validationErrors.length > 0 && (
               <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
                 <div className="flex items-start">
@@ -622,11 +878,16 @@ export default function BulkImportExpensesPage() {
                     <h3 className="font-semibold text-redError mb-2">
                       Cilado Validation ({validationErrors.length})
                     </h3>
-                    {validationErrors.map((err, idx) => (
-                      <p key={idx} className="text-sm text-red-700 dark:text-red-300">
-                        Row {err.row}: {err.errors.join(', ')}
+                    {validationErrors.slice(0, 10).map((err, idx) => (
+                      <p key={idx} className="text-sm text-red-700 dark:text-red-300 mb-1">
+                        Saf {err.row}: {err.errors.join(', ')}
                       </p>
                     ))}
+                    {validationErrors.length > 10 && (
+                      <p className="text-sm text-red-700 dark:text-red-300 mt-2">
+                        Iyo {validationErrors.length - 10} cilad oo kale...
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -635,28 +896,93 @@ export default function BulkImportExpensesPage() {
               <table className="min-w-full">
                 <thead className="bg-lightGray dark:bg-gray-700">
                   <tr>
-                    {Object.keys(parsedData[0] || {}).map((key) => (
-                      <th key={key} className="px-4 py-3 text-left text-sm font-semibold text-darkGray dark:text-gray-100">
-                        {key}
-                      </th>
-                    ))}
+                    {Object.keys(parsedData[0] || {}).map((key) => {
+                      // Determine if field is required
+                      const isRequired = 
+                        (subCategory === 'Material' && ['Name', 'Quantity', 'Price', 'Unit'].includes(key)) ||
+                        ((subCategory === 'Labor' || subCategory === 'Company Labor') && ['EmployeeName', 'Wage', 'WorkDescription'].includes(key)) ||
+                        (subCategory === 'Debt' && ['Description', 'Amount', 'LenderName', 'LoanDate'].includes(key)) ||
+                        ((subCategory === 'Transport' || subCategory === 'Rental' || subCategory === 'Consultancy' || subCategory === 'Fuel' || subCategory === 'Other') && 
+                         ['Description', 'Amount', 'ExpenseDate'].includes(key)) ||
+                        key === 'PaidFrom';
+                      
+                      return (
+                        <th key={key} className="px-4 py-3 text-left text-sm font-semibold text-darkGray dark:text-gray-100">
+                          {key} {isRequired && <span className="text-redError">*</span>}
+                        </th>
+                      );
+                    })}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-lightGray dark:divide-gray-700">
-                  {parsedData.slice(0, 10).map((row, idx) => (
-                    <tr key={idx} className={validationErrors.some(e => e.row === idx + 2) ? 'bg-red-50 dark:bg-red-900/10' : ''}>
-                      {Object.values(row).map((val: any, i) => (
+                  {parsedData.slice(0, 100).map((row, idx) => (
+                    <tr key={idx} className={validationErrors.some(e => e.row === idx + 2) ? 'bg-red-50 dark:bg-red-900/10' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'}>
+                      {Object.keys(row).map((key, i) => (
                         <td key={i} className="px-4 py-3 text-sm text-mediumGray dark:text-gray-300">
-                          {val}
+                          {key === 'LenderName' || key === 'CustomerName' || key === 'EmployeeName' ? (
+                            <>
+                              <input
+                                type="text"
+                                list={`${key}-suggestions-${idx}`}
+                                value={row[key] || ''}
+                                onChange={(e) => handleCellChange(idx, key, e.target.value)}
+                                className="w-full bg-transparent border-b border-transparent hover:border-lightGray focus:border-primary focus:outline-none transition-colors"
+                                placeholder="Raadi ama qor cusub..."
+                              />
+                              <datalist id={`${key}-suggestions-${idx}`}>
+                                {key === 'LenderName' || key === 'CustomerName' ? (
+                                  customers.map(c => (
+                                    <option key={c.id} value={c.name} />
+                                  ))
+                                ) : (
+                                  // For EmployeeName, you could fetch employees here
+                                  []
+                                )}
+                              </datalist>
+                            </>
+                          ) : key === 'PaidFrom' ? (
+                            <select
+                              value={row[key] || ''}
+                              onChange={(e) => handleCellChange(idx, key, e.target.value)}
+                              className="w-full bg-transparent border-b border-transparent hover:border-lightGray focus:border-primary focus:outline-none transition-colors"
+                            >
+                              <option value="">-- Dooro --</option>
+                              {/* Show existing accounts from system */}
+                              {accounts.map(acc => (
+                                <option key={acc.id} value={acc.name}>
+                                  {acc.name} {acc.balance !== undefined && `(${Number(acc.balance).toLocaleString()})`}
+                                </option>
+                              ))}
+                              {/* Fallback options if accounts not found */}
+                              {accounts.length === 0 && (
+                                <>
+                                  <option value="Cash">Cash</option>
+                                  <option value="Bank Account">Bank Account</option>
+                                  <option value="Ebirr">Ebirr</option>
+                                  <option value="EVC Plus">EVC Plus</option>
+                                  <option value="Sahal">Sahal</option>
+                                  <option value="Zaad">Zaad</option>
+                                </>
+                              )}
+                            </select>
+                          ) : (
+                            <input
+                              type={key.includes('Date') ? 'date' : key.includes('Amount') || key.includes('Price') || key.includes('Wage') || key.includes('Quantity') ? 'number' : 'text'}
+                              value={row[key] || ''}
+                              onChange={(e) => handleCellChange(idx, key, e.target.value)}
+                              className="w-full bg-transparent border-b border-transparent hover:border-lightGray focus:border-primary focus:outline-none transition-colors"
+                              placeholder={key.includes('Date') ? 'YYYY-MM-DD' : ''}
+                            />
+                          )}
                         </td>
                       ))}
                     </tr>
                   ))}
                 </tbody>
               </table>
-              {parsedData.length > 10 && (
+              {parsedData.length > 100 && (
                 <p className="text-center text-mediumGray dark:text-gray-400 mt-4">
-                  ... iyo {parsedData.length - 10} kharash oo kale
+                  Waxa la muujinayaa 100 saf ee ugu horeeya. Dhammaan {parsedData.length} kharash ayaa la soo gelin doonaa.
                 </p>
               )}
             </div>

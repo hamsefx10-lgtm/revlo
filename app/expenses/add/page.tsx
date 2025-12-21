@@ -1907,6 +1907,26 @@ const [consultancyFee, setConsultancyFee] = useState('');
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 p-3 border border-dashed border-primary/30 rounded-lg bg-primary/5 animate-fade-in">
               <h4 className="col-span-full text-base font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Adeegyada Guud (Mashruuc)</h4>
               <div className="md:col-span-2">
+                <label htmlFor="selectedProject_utilities" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Mashruuca <span className="text-redError">*</span></label>
+                <div className="relative">
+                  <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
+                  <select
+                    id="selectedProject_utilities"
+                    required
+                    value={selectedProject}
+                    onChange={(e) => setSelectedProject(e.target.value)}
+                    className={`w-full p-2 pl-8 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.selectedProject ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                  >
+                    <option value="">-- Dooro Mashruuca --</option>
+                    {projects.map(proj => (
+                      <option key={proj.id} value={proj.id}>{proj.name}</option>
+                    ))}
+                  </select>
+                  <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
+                </div>
+                {validationErrors.selectedProject && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.selectedProject}</p>}
+              </div>
+              <div className="md:col-span-2">
                 <label htmlFor="paidFrom_utilities_project" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
                 <div className="relative">
                   <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />

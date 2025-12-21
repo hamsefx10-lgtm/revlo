@@ -660,33 +660,148 @@ const ProjectDetailsPage: React.FC = () => {
 
               {/* Mobile Payments Content */}
               {activeTab === 'Payments' && (
-                <div>
-                  <h4 className="font-bold text-lg mb-2 text-green-700">Kharashaadka Lacagaha (Payments)</h4>
-                  {project.expenses.filter(e => e.category && e.category.toLowerCase() === 'payment').length === 0 ? (
-                    <EmptyState message="Lama diiwaan gelin wax kharash lacag bixin ah." />
-                  ) : (
-                    <div className="space-y-2 mb-6">
-                      {project.expenses.filter(e => e.category && e.category.toLowerCase() === 'payment').map(exp => (
-                        <div key={exp.id} className="bg-white p-3 rounded-lg flex justify-between items-center shadow-sm">
-                          <div>
-                            <p className="font-bold">{exp.description}</p>
-                            <p className="text-xs text-mediumGray">{new Date(exp.expenseDate).toLocaleDateString()}</p>
+                <div className="space-y-6">
+                  {/* Summary Cards */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                      <p className="text-xs text-green-600 dark:text-green-400 mb-1">Lacagaha La Helay</p>
+                      <p className="text-lg font-bold text-green-700 dark:text-green-300">
+                        Br{(typeof project.advancePaid === 'number' ? project.advancePaid : parseFloat(project.advancePaid as any) || 0).toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
+                      <p className="text-xs text-orange-600 dark:text-orange-400 mb-1">Ku Dhiman</p>
+                      <p className="text-lg font-bold text-orange-700 dark:text-orange-300">
+                        Br{(typeof project.remainingAmount === 'number' ? project.remainingAmount : parseFloat(project.remainingAmount as any) || 0).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-200 dark:border-red-800">
+                    <p className="text-xs text-red-600 dark:text-red-400 mb-1">Wadarta Kharashaadka</p>
+                    <p className="text-lg font-bold text-red-700 dark:text-red-300">
+                      Br{((project.expenses || []).reduce((sum: number, e: any) => sum + (typeof e.amount === 'number' ? e.amount : parseFloat(e.amount) || 0), 0) +
+                      (project.laborRecords || []).reduce((sum: number, l: any) => sum + (typeof l.paidAmount === 'number' ? l.paidAmount : parseFloat(l.paidAmount) || 0), 0)).toLocaleString()}
+                    </p>
+                  </div>
+
+                  {/* Customer Payments (Income) */}
+                  <div>
+                    <h4 className="font-bold text-lg mb-3 text-secondary">Lacagaha Macmiilka (Customer Payments)</h4>
+                    {(Array.isArray(project.payments) ? project.payments.length : 0) === 0 ? (
+                      <EmptyState message="Lama diiwaan gelin wax lacag macmiilka ka ah." />
+                    ) : (
+                      <div className="space-y-2">
+                        {(project.payments || []).map(p => (
+                          <div key={p.id} className='bg-white dark:bg-gray-800 p-3 rounded-lg flex justify-between items-center shadow-sm border-l-4 border-secondary'>
+                            <div className="flex-1">
+                              <p className='font-bold text-darkGray dark:text-gray-100'>{p.paymentType || 'Payment'}</p>
+                              <p className='text-xs text-mediumGray dark:text-gray-400'>{p.paymentDate ? new Date(p.paymentDate).toLocaleDateString() : '-'}</p>
+                              {p.receivedIn && (
+                                <p className='text-xs text-mediumGray dark:text-gray-400 mt-1'>Received in: {p.receivedIn}</p>
+                              )}
+                            </div>
+                            <p className='font-bold text-lg text-secondary'>+Br{(typeof p.amount === 'number' ? p.amount : parseFloat(p.amount as any) || 0).toLocaleString()}</p>
                           </div>
-                          <p className="font-bold text-lg text-redError">-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Labor Payments */}
+                  <div>
+                    <h4 className="font-bold text-lg mb-3 text-orange-600">Lacagaha Shaqaalaha (Labor Payments)</h4>
+                    {(() => {
+                      const laborPayments = (project.laborRecords || []).filter((lr: any) => lr.paidAmount > 0);
+                      if (laborPayments.length === 0) {
+                        return <EmptyState message="Lama diiwaan gelin wax lacag shaqaale ah." />;
+                      }
+                      return (
+                        <div className="space-y-2">
+                          {laborPayments.map((lr: any) => (
+                            <div key={lr.id} className='bg-white dark:bg-gray-800 p-3 rounded-lg flex justify-between items-center shadow-sm border-l-4 border-orange-500'>
+                              <div className="flex-1">
+                                <p className='font-bold text-darkGray dark:text-gray-100'>{lr.employeeName || 'Unknown Employee'}</p>
+                                <p className='text-xs text-mediumGray dark:text-gray-400'>{lr.workDescription || '-'}</p>
+                                {lr.dateWorked && (
+                                  <p className='text-xs text-mediumGray dark:text-gray-400 mt-1'>Date: {new Date(lr.dateWorked).toLocaleDateString()}</p>
+                                )}
+                              </div>
+                              <div className="text-right">
+                                <p className='font-bold text-lg text-orange-600'>-Br{(typeof lr.paidAmount === 'number' ? lr.paidAmount : parseFloat(lr.paidAmount) || 0).toLocaleString()}</p>
+                                {lr.remainingWage > 0 && (
+                                  <p className='text-xs text-mediumGray dark:text-gray-400'>Remaining: Br{lr.remainingWage.toLocaleString()}</p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      );
+                    })()}
+                  </div>
+
+                  {/* Project Expenses (Material, Transport, etc.) */}
+                  <div>
+                    <h4 className="font-bold text-lg mb-3 text-redError">Kharashaadka Mashruuca (Project Expenses)</h4>
+                    {(() => {
+                      // Filter out labor expenses (already shown above) and show other expenses
+                      const otherExpenses = (project.expenses || []).filter((e: any) => e.category !== 'Labor');
+                      if (otherExpenses.length === 0) {
+                        return <EmptyState message="Lama diiwaan gelin wax kharash mashruuc ah." />;
+                      }
+                      return (
+                        <div className="space-y-2">
+                          {otherExpenses.map((exp: any) => (
+                            <div key={exp.id} className="bg-white dark:bg-gray-800 p-3 rounded-lg flex justify-between items-center shadow-sm border-l-4 border-red-500">
+                              <div className="flex-1">
+                                <p className="font-bold text-darkGray dark:text-gray-100">{exp.description || '-'}</p>
+                                <p className="text-xs text-mediumGray dark:text-gray-400">{new Date(exp.expenseDate).toLocaleDateString()}</p>
+                                <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-semibold ${
+                                  exp.category === 'Material' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200' :
+                                  exp.category === 'Transport' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-200' :
+                                  'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200'
+                                }`}>
+                                  {exp.category}
+                                </span>
+                              </div>
+                              <p className="font-bold text-lg text-redError">-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount) || 0).toLocaleString()}</p>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  {/* Transactions */}
+                  {project.transactions && project.transactions.length > 0 && (
+                    <div>
+                      <h4 className="font-bold text-lg mb-3 text-primary">Dhaqdhaqaaqa Lacagta (Transactions)</h4>
+                      <div className="space-y-2">
+                        {project.transactions.map((trx: any) => (
+                          <div key={trx.id} className={`bg-white dark:bg-gray-800 p-3 rounded-lg flex justify-between items-center shadow-sm border-l-4 ${
+                            trx.type === 'INCOME' || trx.type === 'DEBT_REPAID' ? 'border-secondary' : 'border-redError'
+                          }`}>
+                            <div className="flex-1">
+                              <p className="font-bold text-darkGray dark:text-gray-100">{trx.description || '-'}</p>
+                              <p className="text-xs text-mediumGray dark:text-gray-400">{new Date(trx.transactionDate).toLocaleDateString()}</p>
+                              <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-semibold ${
+                                trx.type === 'INCOME' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200' :
+                                trx.type === 'EXPENSE' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200' :
+                                trx.type === 'DEBT_TAKEN' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-200' :
+                                'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200'
+                              }`}>
+                                {trx.type}
+                              </span>
+                            </div>
+                            <p className={`font-bold text-lg ${
+                              trx.type === 'INCOME' || trx.type === 'DEBT_REPAID' ? 'text-secondary' : 'text-redError'
+                            }`}>
+                              {trx.type === 'INCOME' || trx.type === 'DEBT_REPAID' ? '+' : '-'}Br{Math.abs(typeof trx.amount === 'number' ? trx.amount : parseFloat(trx.amount) || 0).toLocaleString()}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
-                  <h4 className="font-bold text-lg mb-2 text-primary">Lacagaha</h4>
-                  {(Array.isArray(project.payments) ? project.payments.length : 0) === 0 ? <EmptyState message="Lama diiwaan gelin wax lacag bixin ah." /> : (project.payments || []).map(p => (
-                    <div key={p.id} className='bg-lightGray/50 p-3 rounded-lg flex justify-between items-center'>
-                      <div>
-                        <p className='font-bold'>{p.paymentType || '-'}</p>
-                        <p className='text-xs text-mediumGray'>{p.paymentDate ? new Date(p.paymentDate).toLocaleDateString() : '-'}</p>
-                      </div>
-                      <p className='font-bold text-lg text-secondary'>+Br{(typeof p.amount === 'number' ? p.amount : parseFloat(p.amount as any) || 0).toLocaleString()}</p>
-                    </div>
-                  ))}
                 </div>
               )}
 
@@ -1158,36 +1273,191 @@ const ProjectDetailsPage: React.FC = () => {
                                 )}
 
                   {/* Desktop Payments Content */}
-                                {activeTab === 'Payments' && (
-                    <div>
-                                        <h4 className="font-bold text-lg mb-2 text-green-700">Kharashaadka Lacagaha (Payments)</h4>
-                                        {project.expenses.filter(e => e.category && e.category.toLowerCase() === 'payment').length === 0 ? (
-                                            <EmptyState message="Lama diiwaan gelin wax kharash lacag bixin ah." />
-                                        ) : (
-                                            <div className="space-y-2 mb-6">
-                                                {project.expenses.filter(e => e.category && e.category.toLowerCase() === 'payment').map(exp => (
-                                                    <div key={exp.id} className="bg-white p-3 rounded-lg flex justify-between items-center shadow-sm">
-                                                        <div>
-                                                            <p className="font-bold">{exp.description}</p>
-                                                            <p className="text-xs text-mediumGray">{new Date(exp.expenseDate).toLocaleDateString()}</p>
-                                                        </div>
-                                                        <p className="font-bold text-lg text-redError">-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</p>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                        <h4 className="font-bold text-lg mb-2 text-primary">Lacagaha</h4>
-                                        {(Array.isArray(project.payments) ? project.payments.length : 0) === 0 ? <EmptyState message="Lama diiwaan gelin wax lacag bixin ah." /> : (project.payments || []).map(p => (
-                                            <div key={p.id} className='bg-lightGray/50 p-3 rounded-lg flex justify-between items-center'>
-                                                <div>
-                                                    <p className='font-bold'>{p.paymentType || '-'}</p>
-                                                    <p className='text-xs text-mediumGray'>{p.paymentDate ? new Date(p.paymentDate).toLocaleDateString() : '-'}</p>
-                                                </div>
-                                                <p className='font-bold text-lg text-secondary'>+Br{(typeof p.amount === 'number' ? p.amount : parseFloat(p.amount as any) || 0).toLocaleString()}</p>
-                                            </div>
-                                        ))}
+                  {activeTab === 'Payments' && (
+                    <div className="space-y-6">
+                      {/* Summary Cards */}
+                      <div className="grid grid-cols-4 gap-4">
+                        <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                          <p className="text-sm text-green-600 dark:text-green-400 mb-1">Lacagaha La Helay</p>
+                          <p className="text-2xl font-bold text-green-700 dark:text-green-300">
+                            Br{(typeof project.advancePaid === 'number' ? project.advancePaid : parseFloat(project.advancePaid as any) || 0).toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
+                          <p className="text-sm text-orange-600 dark:text-orange-400 mb-1">Ku Dhiman</p>
+                          <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">
+                            Br{(typeof project.remainingAmount === 'number' ? project.remainingAmount : parseFloat(project.remainingAmount as any) || 0).toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-800">
+                          <p className="text-sm text-red-600 dark:text-red-400 mb-1">Wadarta Kharashaadka</p>
+                          <p className="text-2xl font-bold text-red-700 dark:text-red-300">
+                            Br{((project.expenses || []).reduce((sum: number, e: any) => sum + (typeof e.amount === 'number' ? e.amount : parseFloat(e.amount) || 0), 0) +
+                            (project.laborRecords || []).reduce((sum: number, l: any) => sum + (typeof l.paidAmount === 'number' ? l.paidAmount : parseFloat(l.paidAmount) || 0), 0)).toLocaleString()}
+                          </p>
+                        </div>
+                        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <p className="text-sm text-blue-600 dark:text-blue-400 mb-1">Heshiiska</p>
+                          <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                            Br{(typeof project.agreementAmount === 'number' ? project.agreementAmount : parseFloat(project.agreementAmount as any) || 0).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Customer Payments (Income) */}
+                      <div>
+                        <h4 className="font-bold text-lg mb-3 text-secondary">Lacagaha Macmiilka (Customer Payments)</h4>
+                        {(Array.isArray(project.payments) ? project.payments.length : 0) === 0 ? (
+                          <EmptyState message="Lama diiwaan gelin wax lacag macmiilka ka ah." />
+                        ) : (
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
+                              <thead className="bg-lightGray dark:bg-gray-700">
+                                <tr>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-darkGray dark:text-gray-100">Nooca</th>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-darkGray dark:text-gray-100">Taariikh</th>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-darkGray dark:text-gray-100">Halka La Helay</th>
+                                  <th className="px-4 py-3 text-right text-xs font-medium text-darkGray dark:text-gray-100">Lacag</th>
+                                </tr>
+                              </thead>
+                              <tbody className="bg-white dark:bg-gray-800 divide-y divide-lightGray dark:divide-gray-700">
+                                {(project.payments || []).map(p => (
+                                  <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                    <td className="px-4 py-3 text-sm text-darkGray dark:text-gray-100">{p.paymentType || 'Payment'}</td>
+                                    <td className="px-4 py-3 text-sm text-mediumGray dark:text-gray-400">{p.paymentDate ? new Date(p.paymentDate).toLocaleDateString() : '-'}</td>
+                                    <td className="px-4 py-3 text-sm text-mediumGray dark:text-gray-400">{p.receivedIn || '-'}</td>
+                                    <td className="px-4 py-3 text-right text-sm font-bold text-secondary">+Br{(typeof p.amount === 'number' ? p.amount : parseFloat(p.amount as any) || 0).toLocaleString()}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Labor Payments */}
+                      <div>
+                        <h4 className="font-bold text-lg mb-3 text-orange-600">Lacagaha Shaqaalaha (Labor Payments)</h4>
+                        {(() => {
+                          const laborPayments = (project.laborRecords || []).filter((lr: any) => lr.paidAmount > 0);
+                          if (laborPayments.length === 0) {
+                            return <EmptyState message="Lama diiwaan gelin wax lacag shaqaale ah." />;
+                          }
+                          return (
+                            <div className="overflow-x-auto">
+                              <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
+                                <thead className="bg-lightGray dark:bg-gray-700">
+                                  <tr>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-darkGray dark:text-gray-100">Shaqaale</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-darkGray dark:text-gray-100">Sharaxaad</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-darkGray dark:text-gray-100">Taariikh</th>
+                                    <th className="px-4 py-3 text-right text-xs font-medium text-darkGray dark:text-gray-100">La Bixiyay</th>
+                                    <th className="px-4 py-3 text-right text-xs font-medium text-darkGray dark:text-gray-100">Ku Dhiman</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="bg-white dark:bg-gray-800 divide-y divide-lightGray dark:divide-gray-700">
+                                  {laborPayments.map((lr: any) => (
+                                    <tr key={lr.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                      <td className="px-4 py-3 text-sm font-semibold text-darkGray dark:text-gray-100">{lr.employeeName || 'Unknown'}</td>
+                                      <td className="px-4 py-3 text-sm text-mediumGray dark:text-gray-400">{lr.workDescription || '-'}</td>
+                                      <td className="px-4 py-3 text-sm text-mediumGray dark:text-gray-400">{lr.dateWorked ? new Date(lr.dateWorked).toLocaleDateString() : '-'}</td>
+                                      <td className="px-4 py-3 text-right text-sm font-bold text-orange-600">-Br{(typeof lr.paidAmount === 'number' ? lr.paidAmount : parseFloat(lr.paidAmount) || 0).toLocaleString()}</td>
+                                      <td className="px-4 py-3 text-right text-sm font-semibold text-redError">Br{(typeof lr.remainingWage === 'number' ? lr.remainingWage : parseFloat(lr.remainingWage) || 0).toLocaleString()}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          );
+                        })()}
+                      </div>
+
+                      {/* Project Expenses */}
+                      <div>
+                        <h4 className="font-bold text-lg mb-3 text-redError">Kharashaadka Mashruuca (Project Expenses)</h4>
+                        {(() => {
+                          const otherExpenses = (project.expenses || []).filter((e: any) => e.category !== 'Labor');
+                          if (otherExpenses.length === 0) {
+                            return <EmptyState message="Lama diiwaan gelin wax kharash mashruuc ah." />;
+                          }
+                          return (
+                            <div className="overflow-x-auto">
+                              <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
+                                <thead className="bg-lightGray dark:bg-gray-700">
+                                  <tr>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-darkGray dark:text-gray-100">Sharaxaad</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-darkGray dark:text-gray-100">Nooca</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-darkGray dark:text-gray-100">Taariikh</th>
+                                    <th className="px-4 py-3 text-right text-xs font-medium text-darkGray dark:text-gray-100">Lacag</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="bg-white dark:bg-gray-800 divide-y divide-lightGray dark:divide-gray-700">
+                                  {otherExpenses.map((exp: any) => (
+                                    <tr key={exp.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                      <td className="px-4 py-3 text-sm text-darkGray dark:text-gray-100">{exp.description || '-'}</td>
+                                      <td className="px-4 py-3 text-sm">
+                                        <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                                          exp.category === 'Material' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200' :
+                                          exp.category === 'Transport' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-200' :
+                                          'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200'
+                                        }`}>
+                                          {exp.category}
+                                        </span>
+                                      </td>
+                                      <td className="px-4 py-3 text-sm text-mediumGray dark:text-gray-400">{new Date(exp.expenseDate).toLocaleDateString()}</td>
+                                      <td className="px-4 py-3 text-right text-sm font-bold text-redError">-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount) || 0).toLocaleString()}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          );
+                        })()}
+                      </div>
+
+                      {/* Transactions */}
+                      {project.transactions && project.transactions.length > 0 && (
+                        <div>
+                          <h4 className="font-bold text-lg mb-3 text-primary">Dhaqdhaqaaqa Lacagta (Transactions)</h4>
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
+                              <thead className="bg-lightGray dark:bg-gray-700">
+                                <tr>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-darkGray dark:text-gray-100">Sharaxaad</th>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-darkGray dark:text-gray-100">Nooca</th>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-darkGray dark:text-gray-100">Taariikh</th>
+                                  <th className="px-4 py-3 text-right text-xs font-medium text-darkGray dark:text-gray-100">Lacag</th>
+                                </tr>
+                              </thead>
+                              <tbody className="bg-white dark:bg-gray-800 divide-y divide-lightGray dark:divide-gray-700">
+                                {project.transactions.map((trx: any) => (
+                                  <tr key={trx.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                    <td className="px-4 py-3 text-sm text-darkGray dark:text-gray-100">{trx.description || '-'}</td>
+                                    <td className="px-4 py-3 text-sm">
+                                      <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                                        trx.type === 'INCOME' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200' :
+                                        trx.type === 'EXPENSE' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200' :
+                                        trx.type === 'DEBT_TAKEN' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-200' :
+                                        'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200'
+                                      }`}>
+                                        {trx.type}
+                                      </span>
+                                    </td>
+                                    <td className="px-4 py-3 text-sm text-mediumGray dark:text-gray-400">{new Date(trx.transactionDate).toLocaleDateString()}</td>
+                                    <td className={`px-4 py-3 text-right text-sm font-bold ${
+                                      trx.type === 'INCOME' || trx.type === 'DEBT_REPAID' ? 'text-secondary' : 'text-redError'
+                                    }`}>
+                                      {trx.type === 'INCOME' || trx.type === 'DEBT_REPAID' ? '+' : '-'}Br{Math.abs(typeof trx.amount === 'number' ? trx.amount : parseFloat(trx.amount) || 0).toLocaleString()}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                                )}
+                  )}
 
                   {/* Desktop Documents Content */}
                                 {activeTab === 'Documents' && (

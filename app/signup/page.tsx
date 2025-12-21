@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, User, Building, Chrome, Eye, EyeOff, UserPlus, Briefcase, Factory, Package, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { signIn } from 'next-auth/react';
+import Auth3DBackground from '@/components/Auth3DBackground';
 
 export default function SignUpPage() {
   const [companyName, setCompanyName] = useState('');
@@ -210,55 +211,55 @@ export default function SignUpPage() {
             </div>
 
             {/* Plan Selection */}
-            <div className="pt-2">
-              <label className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-3">Dooro Qorshahaaga</label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="pt-4">
+              <label className="block text-sm font-bold text-darkGray dark:text-gray-300 mb-4">Dooro Qorshahaaga</label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <button
                   type="button"
                   onClick={() => setPlanType('PROJECTS_ONLY')}
-                  className={`relative p-3 rounded-xl border transition-all duration-300 flex flex-col items-center justify-center text-center group ${planType === 'PROJECTS_ONLY'
-                      ? 'border-secondary bg-secondary/10 dark:bg-secondary/20 shadow-sm ring-1 ring-secondary'
-                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-secondary/50 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  className={`relative p-4 rounded-2xl border-2 transition-all duration-200 flex flex-col items-center justify-center text-center group ${planType === 'PROJECTS_ONLY'
+                    ? 'border-secondary bg-secondary/5 shadow-lg shadow-secondary/10 scale-105 z-10'
+                    : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 hover:border-secondary/30 hover:shadow-md'
                     }`}
                 >
-                  {planType === 'PROJECTS_ONLY' && <div className="absolute top-2 right-2 text-secondary"><CheckCircle2 size={16} /></div>}
-                  <div className={`p-2 rounded-full mb-2 transition-colors ${planType === 'PROJECTS_ONLY' ? 'bg-secondary text-white' : 'bg-gray-100 text-gray-400 group-hover:bg-secondary/20 group-hover:text-secondary'}`}>
+                  {planType === 'PROJECTS_ONLY' && <div className="absolute top-2 right-2 text-secondary bg-white dark:bg-gray-900 rounded-full p-0.5"><CheckCircle2 size={16} fill="currentColor" className="text-secondary" /></div>}
+                  <div className={`p-3 rounded-xl mb-3 transition-colors ${planType === 'PROJECTS_ONLY' ? 'bg-gradient-to-br from-secondary to-green-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 group-hover:bg-secondary/10 group-hover:text-secondary'}`}>
                     <Briefcase size={20} />
                   </div>
-                  <div className="font-bold text-sm text-darkGray dark:text-gray-200">Mashruucyada</div>
-                  <div className="text-[10px] text-gray-500 mt-1">Maamulka Mashaariicda</div>
+                  <div className="font-bold text-sm text-darkGray dark:text-white">Mashruucyada</div>
+                  <div className="text-[11px] text-gray-500 font-medium mt-1">Maamulka Mashaariicda</div>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setPlanType('FACTORIES_ONLY')}
-                  className={`relative p-3 rounded-xl border transition-all duration-300 flex flex-col items-center justify-center text-center group ${planType === 'FACTORIES_ONLY'
-                      ? 'border-secondary bg-secondary/10 dark:bg-secondary/20 shadow-sm ring-1 ring-secondary'
-                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-secondary/50 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  className={`relative p-4 rounded-2xl border-2 transition-all duration-200 flex flex-col items-center justify-center text-center group ${planType === 'FACTORIES_ONLY'
+                    ? 'border-secondary bg-secondary/5 shadow-lg shadow-secondary/10 scale-105 z-10'
+                    : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 hover:border-secondary/30 hover:shadow-md'
                     }`}
                 >
-                  {planType === 'FACTORIES_ONLY' && <div className="absolute top-2 right-2 text-secondary"><CheckCircle2 size={16} /></div>}
-                  <div className={`p-2 rounded-full mb-2 transition-colors ${planType === 'FACTORIES_ONLY' ? 'bg-secondary text-white' : 'bg-gray-100 text-gray-400 group-hover:bg-secondary/20 group-hover:text-secondary'}`}>
+                  {planType === 'FACTORIES_ONLY' && <div className="absolute top-2 right-2 text-secondary bg-white dark:bg-gray-900 rounded-full p-0.5"><CheckCircle2 size={16} fill="currentColor" className="text-secondary" /></div>}
+                  <div className={`p-3 rounded-xl mb-3 transition-colors ${planType === 'FACTORIES_ONLY' ? 'bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 group-hover:bg-blue-500/10 group-hover:text-blue-500'}`}>
                     <Factory size={20} />
                   </div>
-                  <div className="font-bold text-sm text-darkGray dark:text-gray-200">Warshadaha</div>
-                  <div className="text-[10px] text-gray-500 mt-1">Maamulka Warshadaha</div>
+                  <div className="font-bold text-sm text-darkGray dark:text-white">Warshadaha</div>
+                  <div className="text-[11px] text-gray-500 font-medium mt-1">Maamulka Warshadaha</div>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setPlanType('COMBINED')}
-                  className={`relative p-3 rounded-xl border transition-all duration-300 flex flex-col items-center justify-center text-center group ${planType === 'COMBINED'
-                      ? 'border-secondary bg-secondary/10 dark:bg-secondary/20 shadow-sm ring-1 ring-secondary'
-                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-secondary/50 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  className={`relative p-4 rounded-2xl border-2 transition-all duration-200 flex flex-col items-center justify-center text-center group ${planType === 'COMBINED'
+                    ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/10 shadow-lg shadow-purple-500/10 scale-105 z-10'
+                    : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 hover:border-purple-500/30 hover:shadow-md'
                     }`}
                 >
-                  {planType === 'COMBINED' && <div className="absolute top-2 right-2 text-secondary"><CheckCircle2 size={16} /></div>}
-                  <div className={`p-2 rounded-full mb-2 transition-colors ${planType === 'COMBINED' ? 'bg-secondary text-white' : 'bg-gray-100 text-gray-400 group-hover:bg-secondary/20 group-hover:text-secondary'}`}>
+                  {planType === 'COMBINED' && <div className="absolute top-2 right-2 text-purple-500 bg-white dark:bg-gray-900 rounded-full p-0.5"><CheckCircle2 size={16} fill="currentColor" className="text-purple-500" /></div>}
+                  <div className={`p-3 rounded-xl mb-3 transition-colors ${planType === 'COMBINED' ? 'bg-gradient-to-br from-purple-500 to-purple-700 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 group-hover:bg-purple-500/10 group-hover:text-purple-500'}`}>
                     <Package size={20} />
                   </div>
-                  <div className="font-bold text-sm text-darkGray dark:text-gray-200">Combined</div>
-                  <div className="text-[10px] text-gray-500 mt-1">Labada Adeegba</div>
+                  <div className="font-bold text-sm text-darkGray dark:text-white">Complete</div>
+                  <div className="text-[11px] text-gray-500 font-medium mt-1">Labada Adeegba</div>
                 </button>
               </div>
             </div>
@@ -309,61 +310,9 @@ export default function SignUpPage() {
         </div>
       </div>
 
-      {/* Right Side - Visual Section (Reused/Adapted) */}
-      <div className="hidden lg:flex w-1/2 relative bg-darkGray overflow-hidden">
-        {/* Animated Background Gradients - Variation */}
-        <div className="absolute bottom-0 -left-1/4 w-full h-full bg-gradient-to-tr from-secondary/30 to-transparent rounded-full blur-3xl opacity-50 animate-pulse"></div>
-        <div className="absolute top-0 -right-1/4 w-full h-full bg-gradient-to-bl from-primary/30 to-transparent rounded-full blur-3xl opacity-50 animate-pulse delay-700"></div>
-
-        {/* Pattern Overlay */}
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
-
-        {/* Content Container */}
-        <div className="relative z-10 flex flex-col justify-center items-center text-white px-12 text-center w-full">
-          {/* 3D-ish Visual for Signup */}
-          <div className="relative w-full max-w-sm mb-12">
-            {/* Floating Cards */}
-            <div className="absolute -top-12 -right-8 bg-white/10 backdrop-blur-xl border border-white/20 p-4 rounded-2xl shadow-xl animate-float">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-500/20 rounded-lg text-green-400"><Factory size={24} /></div>
-                <div className="text-left">
-                  <div className="text-xs text-white/60">Warshad</div>
-                  <div className="font-bold text-sm">+24% Output</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="absolute -bottom-8 -left-8 bg-white/10 backdrop-blur-xl border border-white/20 p-4 rounded-2xl shadow-xl animate-float" style={{ animationDelay: '2s' }}>
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-500/20 rounded-lg text-blue-400"><Briefcase size={24} /></div>
-                <div className="text-left">
-                  <div className="text-xs text-white/60">Mashruuc</div>
-                  <div className="font-bold text-sm">On Time</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Main Dashboard Preview Card */}
-            <div className="aspect-square bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-500">
-              <div className="h-full border-2 border-dashed border-white/10 rounded-2xl flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-tr from-secondary to-primary rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg">
-                    <Package size={32} className="text-white" />
-                  </div>
-                  <h4 className="font-bold text-xl">All-in-One</h4>
-                  <p className="text-sm text-white/60 mt-2">Xal dhameystiran</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <h3 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-secondary to-white">
-            Ku Biir Mustaqbalka
-          </h3>
-          <p className="text-lg text-gray-300 max-w-md">
-            Diiwaangeli shirkaddaada maanta oo hel nidaam casri ah oo kordhiya wax-soo-saarkaaga iyo faa'iidadaada.
-          </p>
-        </div>
+      {/* Right Side - Visual Section */}
+      <div className="hidden lg:flex w-1/2 relative bg-gray-900 overflow-hidden">
+        <Auth3DBackground />
       </div>
     </div>
   );

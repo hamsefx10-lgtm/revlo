@@ -101,6 +101,18 @@ export async function POST(request: Request) {
       }
     }
 
+    if (category === 'Utilities') {
+      if (!projectId) {
+        return NextResponse.json({ message: 'Mashruuca waa waajib.' }, { status: 400 });
+      }
+      if (!description || !description.trim()) {
+        return NextResponse.json({ message: 'Faahfaahinta adeegga waa waajib.' }, { status: 400 });
+      }
+      if (!paidFrom) {
+        return NextResponse.json({ message: 'Akoonka (paidFrom) waa waajib.' }, { status: 400 });
+      }
+    }
+
     let finalWage = amount;
     let projectLabor;
     let existingLabor = null;
@@ -162,7 +174,9 @@ export async function POST(request: Request) {
     let newExpense = null;
     if (category !== 'Labor' || (category === 'Labor' && (!existingLabor || startNewAgreement))) {
       // Always provide a non-empty string for description
-      const safeDescription = description || note || (category === 'Transport' ? transportType : '') || 'Expense';
+      // For Utilities, use the description from form (already validated above)
+      const safeDescription = category === 'Utilities' ? (description || 'Utilities expense') : 
+        (description || note || (category === 'Transport' ? transportType : '') || 'Expense');
       // Determine safePaidFrom to satisfy non-null schema while representing UNPAID
       const safePaidFrom = (category === 'Material' && (reqBody.paymentStatus === 'UNPAID')) ? 'UNPAID' : paidFrom;
       newExpense = await prisma.expense.create({

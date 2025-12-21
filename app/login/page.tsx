@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, LogIn, Chrome, Eye, EyeOff, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { signIn } from 'next-auth/react';
+import Auth3DBackground from '@/components/Auth3DBackground';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -186,52 +187,8 @@ export default function LoginPage() {
       </div>
 
       {/* Right Side - Visual Section */}
-      <div className="hidden lg:flex w-1/2 relative bg-darkGray overflow-hidden">
-        {/* Animated Background Gradients */}
-        <div className="absolute top-0 -left-1/4 w-full h-full bg-gradient-to-br from-primary/30 to-transparent rounded-full blur-3xl opacity-50 animate-pulse"></div>
-        <div className="absolute bottom-0 -right-1/4 w-full h-full bg-gradient-to-tl from-secondary/30 to-transparent rounded-full blur-3xl opacity-50 animate-pulse delay-1000"></div>
-
-        {/* Pattern Overlay */}
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
-
-        {/* Content Container */}
-        <div className="relative z-10 flex flex-col justify-center items-center text-white px-12 text-center w-full">
-          {/* 3D-ish Card Visual */}
-          <div className="w-full max-w-sm aspect-[4/5] bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl mb-12 p-8 transform rotate-y-12 hover:rotate-0 transition-transform duration-700 ease-out flex flex-col justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-6 opacity-80">
-                <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-                <div className="w-3 h-3 rounded-full bg-green-400"></div>
-              </div>
-              <div className="space-y-4">
-                <div className="h-8 w-3/4 bg-white/20 rounded animate-pulse"></div>
-                <div className="h-32 w-full bg-white/10 rounded-lg"></div>
-                <div className="flex gap-2">
-                  <div className="h-10 w-1/2 bg-primary/40 rounded"></div>
-                  <div className="h-10 w-1/2 bg-secondary/40 rounded"></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/10 rounded-xl p-4 mt-8 flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400">
-                <CheckCircle2 size={20} />
-              </div>
-              <div className="text-left">
-                <div className="text-sm font-bold">Nidaamka waa shaqaynayaa</div>
-                <div className="text-xs text-white/60">Dhammaan adeegyadu waa diyaar</div>
-              </div>
-            </div>
-          </div>
-
-          <h3 className="text-3xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-            Ganacsigaaga Maamul
-          </h3>
-          <p className="text-lg text-gray-300 max-w-md">
-            Ku biir kumanaan ganacsi oo u isticmaala Revlo si ay u kordhiyaan faa'iidadooda oo ay u yareeyaan culeyska shaqada.
-          </p>
-        </div>
+      <div className="hidden lg:flex w-1/2 relative bg-gray-900 overflow-hidden">
+        <Auth3DBackground />
       </div>
     </div>
   );
