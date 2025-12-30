@@ -89,7 +89,6 @@ export default function MyProfilePage() {
           </button>
         </div>
       </div>
-// ... (rest of the file content)
 
       {/* Profile Overview Card */}
       <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md mb-8 animate-fade-in-up">
