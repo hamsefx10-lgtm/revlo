@@ -296,7 +296,8 @@ export async function POST(request: Request) {
     let transactionAmount = Number(amount);
     let transactionCustomerId = undefined;
     let transactionVendorId = vendorId || undefined;
-    let transactionAccountId = undefined;
+    // FIX: Initialize with paidFrom as fallback - ensures account balance is always updated when paidFrom exists
+    let transactionAccountId = paidFrom || undefined;
     if (category === 'Debt' || (category === 'Company Expense' && subCategory === 'Debt')) {
       if (paymentStatus === 'REPAID') {
         transactionType = 'DEBT_REPAID';
@@ -394,14 +395,16 @@ export async function POST(request: Request) {
     });
 
     // 3. Update account balance based on transaction type
-    if (transactionAccountId && amount) {
+    // FIX: Use transactionAccountId or paidFrom as fallback to ensure account balance is updated
+    const accountIdToUpdate = transactionAccountId || paidFrom;
+    if (accountIdToUpdate && amount) {
       if (transactionType === 'DEBT_REPAID') {
         // DEBT_REPAID with customerId = customer repays us (money comes IN)
         // DEBT_REPAID with vendorId = we repay vendor (money goes OUT)
         if (transactionCustomerId) {
           // Customer repaying us - add money to account (income)
         await prisma.account.update({
-          where: { id: transactionAccountId },
+          where: { id: accountIdToUpdate },
           data: {
             balance: { increment: Number(amount) },
           },
@@ -409,7 +412,7 @@ export async function POST(request: Request) {
         } else if (transactionVendorId) {
           // We repaying vendor - subtract money from account (expense)
           await prisma.account.update({
-            where: { id: transactionAccountId },
+            where: { id: accountIdToUpdate },
             data: {
               balance: { decrement: Number(amount) },
             },
@@ -418,7 +421,7 @@ export async function POST(request: Request) {
       } else {
         // For all other transactions (EXPENSE, DEBT_TAKEN), subtract money from account
         await prisma.account.update({
-          where: { id: transactionAccountId },
+          where: { id: accountIdToUpdate },
           data: {
             balance: { decrement: Number(amount) },
           },

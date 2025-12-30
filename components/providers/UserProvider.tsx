@@ -50,7 +50,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = () => {
     setUser(null);
-    signOut({ callbackUrl: '/' });
+    signOut({ callbackUrl: '/login' });
   };
 
   return (

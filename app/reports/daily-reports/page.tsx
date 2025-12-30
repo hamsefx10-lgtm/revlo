@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Layout from '../../../components/layouts/Layout';
-import { Download, Printer, Loader2, TrendingUp, TrendingDown, DollarSign, Receipt, FileText, XCircle, Wallet, Calendar, HelpCircle, X, HardDrive, Edit, ExternalLink } from 'lucide-react';
+import { Download, Printer, Loader2, TrendingUp, TrendingDown, DollarSign, Receipt, FileText, XCircle, Wallet, Calendar, HelpCircle, X, HardDrive, Edit, ExternalLink, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -87,21 +87,6 @@ interface DailyReport {
     assignedTo: string | null;
   }>;
   totalFixedAssets?: number;
-  otherTransactions?: Array<{
-    id: string;
-    description: string;
-    amount: number;
-    type: string;
-    account: string;
-    project: string | null;
-    customer: string | null;
-    vendor: string | null;
-    employee: string | null;
-    user: string | null;
-    category: string | null;
-    note: string | null;
-    transactionDate: string;
-  }>;
 }
 
 async function exportPDF(data: DailyReport) {
@@ -522,26 +507,96 @@ export default function DailyReportPage() {
     report.debtsCollected.length > 0 ||
     report.incomeTransactions.length > 0 ||
     report.transfers.length > 0 ||
-    (report.fixedAssets && report.fixedAssets.length > 0) ||
-    (report.otherTransactions && report.otherTransactions.length > 0);
+    (report.fixedAssets && report.fixedAssets.length > 0);
   const hasBalances = report.balances && Object.keys(report.balances.today).length > 0;
 
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto pb-8 print:max-w-full pt-16 print:pt-0">
-        {/* FIXED Date Picker Section - Always Visible */}
-        <div className="mb-3 print:hidden bg-white dark:bg-gray-800 fixed top-0 left-0 right-0 z-50 shadow-md border-b border-blue-300">
-          <div className="py-2 px-4">
-            <div className="flex items-center justify-between max-w-6xl mx-auto">
-              <div className="flex items-center gap-2">
+      <div className="max-w-6xl mx-auto pb-8 print:max-w-full print:pt-0">
+        {/* Modern Date Picker Section - Sticky Below Topbar */}
+        <div className="mb-4 print:hidden bg-white dark:bg-gray-800 sticky top-0 z-30 border-t border-gray-200 dark:border-gray-700 -mx-4 md:-mx-8 px-4 md:px-8">
+          <div className="py-2 max-w-6xl mx-auto">
+            {/* Mobile: Modern Compact Layout */}
+            <div className="md:hidden flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
                 <Calendar className="text-blue-600 dark:text-blue-400" size={18} />
-                <span className="text-base font-semibold text-gray-800 dark:text-gray-200">
-                  Dooro Taariikhda Warbixinta
-                </span>
+              </div>
+              <div className="relative flex-1">
+                <input
+                  type="date"
+                  id="main-report-date-mobile"
+                  value={selectedDate}
+                  onChange={(e) => handleDateChange(e.target.value)}
+                  max={new Date().toISOString().split('T')[0]}
+                  disabled={loading || isChangingDate}
+                  title="Dooro taariikhda warbixinta"
+                  aria-label="Dooro taariikhda warbixinta"
+                  className="w-full px-4 py-2.5 pr-10 border-2 border-blue-300 dark:border-blue-600 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm font-semibold bg-white shadow-sm disabled:opacity-50"
+                />
+                <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-500 pointer-events-none" size={16} />
+              </div>
+              <button
+                onClick={() => {
+                  const currentDate = new Date(selectedDate);
+                  currentDate.setDate(currentDate.getDate() - 1);
+                  handleDateChange(currentDate.toISOString().split('T')[0]);
+                }}
+                disabled={loading || isChangingDate}
+                className="p-2 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-xl transition shadow-sm disabled:opacity-50"
+                title="Hore"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                onClick={() => {
+                  const today = new Date().toISOString().split('T')[0];
+                  handleDateChange(today);
+                }}
+                disabled={loading || isChangingDate}
+                className={`px-3 py-2 rounded-xl font-semibold transition text-xs disabled:opacity-50 flex items-center gap-1.5 shadow-md ${
+                  selectedDate === new Date().toISOString().split('T')[0]
+                    ? 'bg-green-600 text-white shadow-green-200'
+                    : 'bg-green-100 dark:bg-green-800 hover:bg-green-200 dark:hover:bg-green-700 text-green-800 dark:text-green-200'
+                }`}
+                title="Maanta"
+              >
+                <Clock size={16} />
+                <span className="hidden sm:inline">Maanta</span>
+              </button>
+              <button
+                onClick={() => {
+                  const currentDate = new Date(selectedDate);
+                  const tomorrow = new Date(currentDate);
+                  tomorrow.setDate(currentDate.getDate() + 1);
+                  const today = new Date();
+                  if (tomorrow <= today) {
+                    handleDateChange(tomorrow.toISOString().split('T')[0]);
+                  }
+                }}
+                disabled={loading || isChangingDate || selectedDate >= new Date().toISOString().split('T')[0]}
+                className="p-2 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-xl transition shadow-sm disabled:opacity-50"
+                title="Xigta"
+              >
+                <ChevronRight size={18} />
+              </button>
+              {(loading || isChangingDate) && (
+                <Loader2 className="animate-spin text-blue-600 flex-shrink-0" size={18} />
+              )}
               </div>
               
-              <div className="flex items-center gap-1">
-                {/* Quick Access Buttons */}
+            {/* Desktop: Modern Layout */}
+            <div className="hidden md:flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-blue-100 dark:bg-blue-900/30 shadow-md">
+                  <Calendar className="text-blue-600 dark:text-blue-400" size={20} />
+                </div>
+                <div>
+                  <div className="text-base font-bold text-gray-800 dark:text-gray-200">Dooro Taariikhda Warbixinta</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Warbixin maalinlaha ah</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => {
                     const yesterday = new Date();
@@ -549,12 +604,11 @@ export default function DailyReportPage() {
                     handleDateChange(yesterday.toISOString().split('T')[0]);
                   }}
                   disabled={loading || isChangingDate}
-                  className="px-2 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded text-xs transition disabled:opacity-50"
+                  className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-semibold transition shadow-sm disabled:opacity-50"
                 >
                   Shalay
                 </button>
                 
-                {/* Navigation Buttons */}
                 <button
                   onClick={() => {
                     const currentDate = new Date(selectedDate);
@@ -562,13 +616,13 @@ export default function DailyReportPage() {
                     handleDateChange(currentDate.toISOString().split('T')[0]);
                   }}
                   disabled={loading || isChangingDate}
-                  className="p-1 bg-blue-100 dark:bg-blue-800 hover:bg-blue-200 dark:hover:bg-blue-700 text-blue-800 dark:text-blue-200 rounded transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  className="p-2 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-lg transition shadow-sm disabled:opacity-50"
                   title="Maalinta hore"
                 >
-                  ←
+                  <ChevronLeft size={16} />
                 </button>
                 
-                {/* Compact Date Input */}
+                <div className="relative">
                 <input
                   type="date"
                   id="main-report-date"
@@ -576,8 +630,12 @@ export default function DailyReportPage() {
                   onChange={(e) => handleDateChange(e.target.value)}
                   max={new Date().toISOString().split('T')[0]}
                   disabled={loading || isChangingDate}
-                  className="px-2 py-1 border border-blue-400 dark:border-blue-600 rounded focus:ring-1 focus:ring-blue-300 focus:border-blue-600 dark:bg-gray-700 dark:text-white text-sm font-medium min-w-[120px] text-center bg-blue-50 dark:bg-blue-900/20 disabled:opacity-50"
+                    title="Dooro taariikhda warbixinta"
+                    aria-label="Dooro taariikhda warbixinta"
+                    className="px-4 py-2 border-2 border-blue-300 dark:border-blue-600 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm font-semibold bg-white shadow-sm min-w-[140px] text-center disabled:opacity-50"
                 />
+                  <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-500 pointer-events-none" size={16} />
+                </div>
                 
                 <button
                   onClick={() => {
@@ -590,38 +648,38 @@ export default function DailyReportPage() {
                     }
                   }}
                   disabled={loading || isChangingDate || selectedDate >= new Date().toISOString().split('T')[0]}
-                  className="p-1 bg-blue-100 dark:bg-blue-800 hover:bg-blue-200 dark:hover:bg-blue-700 text-blue-800 dark:text-blue-200 rounded transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  className="p-2 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-lg transition shadow-sm disabled:opacity-50"
                   title="Maalinta xigta"
                 >
-                  →
+                  <ChevronRight size={16} />
                 </button>
                 
-                {/* Today Button */}
                 <button
                   onClick={() => {
                     const today = new Date().toISOString().split('T')[0];
                     handleDateChange(today);
                   }}
                   disabled={loading || isChangingDate}
-                  className={`px-2 py-1 rounded font-medium transition text-xs disabled:opacity-50 ${
+                  className={`px-4 py-2 rounded-xl font-semibold transition text-xs disabled:opacity-50 shadow-md flex items-center gap-1.5 ${
                     selectedDate === new Date().toISOString().split('T')[0]
-                      ? 'bg-green-600 text-white'
+                      ? 'bg-green-600 text-white shadow-green-200'
                       : 'bg-green-100 dark:bg-green-800 hover:bg-green-200 dark:hover:bg-green-700 text-green-800 dark:text-green-200'
                   }`}
                 >
-                  Maanta
+                  <Clock size={16} />
+                  <span>Maanta</span>
                 </button>
-              </div>
-            </div>
             
             {(loading || isChangingDate) && (
-              <div className="flex items-center gap-1 ml-2 text-blue-600 dark:text-blue-400">
-                <Loader2 className="animate-spin" size={14} />
+                  <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 ml-2">
+                    <Loader2 className="animate-spin" size={16} />
                 <span className="text-xs font-medium">
                   {isChangingDate ? 'Beddelaya...' : 'Loading...'}
                 </span>
               </div>
             )}
+              </div>
+            </div>
           </div>
         </div>
         
@@ -737,6 +795,8 @@ export default function DailyReportPage() {
                 <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">Caawimada Isticmaalka</h3>
                 <button
                   onClick={() => setShowHelp(false)}
+                  title="Xidh"
+                  aria-label="Xidh caawimada"
                   className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition"
                 >
                   <X size={20} className="text-gray-500" />
@@ -765,20 +825,37 @@ export default function DailyReportPage() {
           </div>
         )}
 
-        {/* Beautiful Header with Selected Date */}
+        {/* MOBILE-OPTIMIZED Header */}
         <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white rounded-t-xl print:rounded-none shadow-xl print:shadow-none mb-6 print:mb-2 overflow-hidden">
-          <div className="relative px-8 py-10 print:py-6">
+          <div className="relative px-4 py-6 md:px-8 md:py-10 print:py-6">
             {/* Decorative pattern */}
             <div className="absolute inset-0 opacity-10">
               <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -mr-32 -mt-32"></div>
               <div className="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full -ml-24 -mb-24"></div>
             </div>
             
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="relative z-10 flex flex-col gap-4">
+              {/* Mobile: Simplified Layout */}
+              <div className="md:hidden">
+                <h1 className="text-2xl font-extrabold mb-1 tracking-tight">{report.companyName || 'Birshiil Work Shop'}</h1>
+                <div className="text-blue-100 text-sm mb-3">Warbixinta Maalinlaha ah</div>
+                <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded-lg px-4 py-2">
+                  <div className="text-xs text-blue-100 uppercase tracking-wide mb-1">Taariikhda</div>
+                  <div className="text-lg font-bold">{report.date}</div>
+                  <div className="text-xs text-blue-200 mt-1">No: D-{report.date.replace(/-/g, '')}</div>
+                </div>
+                {report.preparedBy && (
+                  <div className="mt-2 text-xs text-blue-200">
+                    Diyaariyey: {report.preparedBy}
+                  </div>
+                )}
+              </div>
+              
+              {/* Desktop: Original Layout */}
+              <div className="hidden md:flex md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <h1 className="text-4xl font-extrabold mb-2 tracking-tight">{report.companyName || 'Birshiil Work Shop'}</h1>
                 <div className="text-blue-100 text-lg">Warbixinta Maalinlaha ah</div>
-                {/* Selected Date Display */}
                 <div className="mt-3 flex items-center gap-2">
                   <Calendar size={16} className="text-blue-200" />
                   <span className="text-blue-200 text-sm">
@@ -807,6 +884,8 @@ export default function DailyReportPage() {
                     Diyaariyey: {report.preparedBy}
                   </div>
                 )}
+                </div>
+              </div>
               </div>
         </div>
         </div>
@@ -815,106 +894,167 @@ export default function DailyReportPage() {
         {/* Main Content Container */}
         <div className="bg-white dark:bg-gray-800 rounded-b-xl print:rounded-none shadow-lg print:shadow-none overflow-hidden">
 
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border-b border-gray-200 dark:border-gray-700">
-            <div className="p-6 border-r border-gray-200 dark:border-gray-700 last:border-r-0 text-center bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
-              <div className="flex items-center justify-center mb-3">
-                <div className="p-3 rounded-full bg-green-500 text-white shadow-lg">
-                  <TrendingUp size={28} />
+          {/* Summary Cards - Consistent Grid Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 md:p-6 border-b border-gray-200 dark:border-gray-700">
+            {/* Income Card */}
+            <div className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 border-l-4 border-green-500">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-lg bg-green-100 dark:bg-green-900/30">
+                    <TrendingUp size={20} className="text-green-600 dark:text-green-400" />
+                </div>
+                  <div>
+                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Dakhliga</div>
+                    <div className="text-xl md:text-2xl font-extrabold text-green-700 dark:text-green-300 mt-1">
+                      {report.income.toLocaleString()}
+              </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">ETB</div>
+                  </div>
                 </div>
               </div>
-              <div className="text-xs font-bold text-green-600 dark:text-green-400 uppercase tracking-wider mb-2">Dakhliga</div>
-              <div className="text-3xl font-extrabold text-green-700 dark:text-green-500">{report.income.toLocaleString()}</div>
-              <div className="text-xs font-semibold text-green-600 dark:text-green-400 mt-1">ETB</div>
             </div>
 
-            <div className="p-6 border-r border-gray-200 dark:border-gray-700 last:border-r-0 text-center bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20">
-              <div className="flex items-center justify-center mb-3">
-                <div className="p-3 rounded-full bg-red-500 text-white shadow-lg">
-                  <TrendingDown size={28} />
+            {/* Expenses Card */}
+            <div className="bg-white dark:bg-gray-800 p-5 md:p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 border-l-4 border-red-500">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-lg bg-red-100 dark:bg-red-900/30">
+                    <TrendingDown size={20} className="text-red-600 dark:text-red-400" />
                 </div>
+                  <div>
+                    <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Kharashyada</div>
+                    <div className="text-xl md:text-2xl font-extrabold text-red-700 dark:text-red-300 mt-1">
+                      {totalExpensesIncludingAssets.toLocaleString()}
               </div>
-              <div className="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wider mb-2">Kharashyada</div>
-              <div className="text-3xl font-extrabold text-red-700 dark:text-red-500">{totalExpensesIncludingAssets.toLocaleString()}</div>
-              <div className="text-xs font-semibold text-red-600 dark:text-red-400 mt-1">ETB</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">ETB</div>
               {(report.totalFixedAssets || 0) > 0 && (
                 <div className="text-xs text-red-500 dark:text-red-400 mt-1">
-                  (oo ay ku jiraan Hantida: {(report.totalFixedAssets || 0).toLocaleString()})
+                        (Hantida: {(report.totalFixedAssets || 0).toLocaleString()})
                 </div>
               )}
             </div>
-
-            <div className={`p-6 text-center bg-gradient-to-br ${netFlow >= 0 ? 'from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20' : 'from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20'}`}>
-              <div className="flex items-center justify-center mb-3">
-                <div className={`p-3 rounded-full ${netFlow >= 0 ? 'bg-blue-500' : 'bg-orange-500'} text-white shadow-lg`}>
-                  <DollarSign size={28} />
                 </div>
               </div>
-              <div className={`text-xs font-bold uppercase tracking-wider mb-2 ${netFlow >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'}`}>Net Flow</div>
-              <div className={`text-3xl font-extrabold ${netFlow >= 0 ? 'text-blue-700 dark:text-blue-500' : 'text-orange-700 dark:text-orange-500'}`}>
+            </div>
+
+            {/* Net Flow Card */}
+            <div className={`bg-white dark:bg-gray-800 p-5 md:p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 border-l-4 ${netFlow >= 0 ? 'border-blue-500' : 'border-orange-500'}`}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2.5 rounded-lg ${netFlow >= 0 ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-orange-100 dark:bg-orange-900/30'}`}>
+                    <DollarSign size={20} className={netFlow >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'} />
+                  </div>
+                  <div>
+                    <div className={`text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide`}>Net Flow</div>
+                    <div className={`text-xl md:text-2xl font-extrabold mt-1 ${netFlow >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-orange-700 dark:text-orange-300'}`}>
                 {netFlow >= 0 ? '+' : ''}{netFlow.toLocaleString()}
               </div>
-              <div className={`text-xs font-semibold mt-1 ${netFlow >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'}`}>ETB</div>
+                    <div className={`text-xs text-gray-500 dark:text-gray-400 mt-0.5`}>ETB</div>
+                  </div>
+                </div>
+              </div>
         </div>
       </div>
 
-          {/* Transactions Sections */}
-          <div className="p-8 space-y-8 print:p-4">
-            {/* Income Transactions Section */}
+          {/* Transactions Sections - MOBILE OPTIMIZED */}
+          <div className="p-4 md:p-8 space-y-6 md:space-y-8 print:p-4">
+            {/* Income Transactions Section - MOBILE OPTIMIZED */}
             {report.incomeTransactions.length > 0 && (
               <div className="border border-green-100 dark:border-green-900 rounded-xl overflow-hidden shadow-sm">
-                <div className="bg-white dark:bg-gray-900 px-6 py-4 border-b border-green-100 dark:border-green-900 flex flex-col gap-1">
+                <div className="bg-white dark:bg-gray-900 px-4 md:px-6 py-3 md:py-4 border-b border-green-100 dark:border-green-900 flex flex-col gap-1">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-bold flex items-center text-green-700 dark:text-green-300">
-                      <TrendingUp size={24} className="mr-2 text-green-500" />
-                      Dakhliga Maanta (Faahfaahin)
+                    <h2 className="text-lg md:text-xl font-bold flex items-center text-green-700 dark:text-green-300">
+                      <TrendingUp size={20} className="mr-2 text-green-500" />
+                      <span className="hidden md:inline">Dakhliga Maanta (Faahfaahin)</span>
+                      <span className="md:hidden">Dakhliga</span>
                     </h2>
-                    <div className="px-3 py-1 rounded-full text-sm font-bold bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-200">
-                      {report.incomeTransactions.length} item
+                    <div className="px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-bold bg-green-50 text-green-700 dark:bg-green-900/40 dark:text-green-200">
+                      {report.incomeTransactions.length}
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Waxa lagu tusayaa macmiilka, mashruuca iyo akoonka dakhligu ku dhacay.</p>
+                  <p className="hidden md:block text-xs text-gray-500 dark:text-gray-400">Waxa lagu tusayaa macmiilka, mashruuca iyo akoonka dakhligu ku dhacay.</p>
                 </div>
-                <div className="bg-white dark:bg-gray-800">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-green-50 dark:bg-green-900/20">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase">Sharaxaad</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase hidden md:table-cell">Macmiil</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase hidden lg:table-cell">Mashruuc</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase hidden md:table-cell">Akoon</th>
-                        <th className="px-4 py-3 text-right text-xs font-bold text-green-900 dark:text-green-100 uppercase">Qiimaha</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                
+                {/* Mobile: Card Layout */}
+                <div className="md:hidden bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {report.incomeTransactions.map((tx, i) => (
-                        <tr key={tx.id || i} className="hover:bg-green-50 dark:hover:bg-green-900/10">
-                          <td className="px-4 py-3">
-                            <div className="text-xs text-gray-900 dark:text-gray-300 font-medium">{tx.description}</div>
+                    <div key={tx.id || i} className="p-4 space-y-2">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="text-sm font-semibold text-gray-900 dark:text-gray-300">{tx.description}</div>
+                          <div className="mt-1 space-y-1">
+                            {tx.customer && (
+                              <div className="text-xs text-gray-600 dark:text-gray-400">
+                                <span className="font-medium">Macmiil:</span> {tx.customer}
+                              </div>
+                            )}
+                            {tx.project && (
+                              <div className="text-xs text-gray-600 dark:text-gray-400">
+                                <span className="font-medium">Mashruuc:</span> {tx.project}
+                              </div>
+                            )}
+                            <div className="text-xs text-gray-600 dark:text-gray-400">
+                              <span className="font-medium">Akoon:</span> {tx.account}
+                            </div>
                             {tx.note && (
                               <div className="text-xs text-gray-500 dark:text-gray-500 mt-1 italic">Fiiro: {tx.note}</div>
                             )}
-                          </td>
-                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden md:table-cell">
-                            {tx.customer || '-'}
-                          </td>
-                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden lg:table-cell">
-                            {tx.project || '-'}
-                          </td>
-                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden md:table-cell">
-                            {tx.account}
-                          </td>
-                          <td className="px-4 py-3 text-xs font-semibold text-right text-gray-900 dark:text-gray-300">
-                            {tx.amount.toLocaleString()} ETB
-                          </td>
-                        </tr>
+                          </div>
+                        </div>
+                        <div className="ml-3 text-right">
+                          <div className="text-base font-bold text-green-700 dark:text-green-300">{tx.amount.toLocaleString()}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">ETB</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="p-4 bg-green-100 dark:bg-green-900/30 border-t-2 border-green-300 dark:border-green-700">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-bold text-green-900 dark:text-green-100">WADARTA</span>
+                      <span className="text-lg font-bold text-green-700 dark:text-green-300">{report.income.toLocaleString()} ETB</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Desktop: Card Layout */}
+                <div className="hidden md:block bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {report.incomeTransactions.map((tx, i) => (
+                    <div key={tx.id || i} className="p-4 hover:bg-green-50 dark:hover:bg-green-900/10 transition">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 grid grid-cols-3 gap-4">
+                          <div>
+                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Sharaxaad</div>
+                            <div className="text-sm font-semibold text-gray-900 dark:text-gray-300">{tx.description}</div>
+                            {tx.note && (
+                              <div className="text-xs text-gray-500 dark:text-gray-500 mt-1 italic">Fiiro: {tx.note}</div>
+                            )}
+                          </div>
+                          <div>
+                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Macmiil / Mashruuc</div>
+                            <div className="text-sm text-gray-900 dark:text-gray-300">
+                              {tx.customer && <div>{tx.customer}</div>}
+                              {tx.project && <div className="text-xs text-gray-600 dark:text-gray-400">{tx.project}</div>}
+                              {!tx.customer && !tx.project && <div className="text-gray-400">-</div>}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Akoon</div>
+                            <div className="text-sm text-gray-900 dark:text-gray-300">{tx.account}</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-base font-bold text-green-700 dark:text-green-300">{tx.amount.toLocaleString()}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">ETB</div>
+                        </div>
+                      </div>
+                    </div>
                       ))}
-                      <tr className="bg-green-100 dark:bg-green-900/30 font-bold border-t-2 border-green-300 dark:border-green-700">
-                        <td colSpan={4} className="px-4 py-3 text-xs text-green-900 dark:text-green-100">WADARTA DAKHLIGA</td>
-                        <td className="px-4 py-3 text-xs text-right text-green-700 dark:text-green-300">{report.income.toLocaleString()} ETB</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                  <div className="p-4 bg-green-100 dark:bg-green-900/30 border-t-2 border-green-300 dark:border-green-700">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-bold text-green-900 dark:text-green-100">WADARTA DAKHLIGA</span>
+                      <span className="text-lg font-bold text-green-700 dark:text-green-300">{report.income.toLocaleString()} ETB</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -925,59 +1065,98 @@ export default function DailyReportPage() {
               </div>
             )}
 
-            {/* Transfer Transactions Section */}
+            {/* Transfer Transactions Section - MOBILE OPTIMIZED */}
             {report.transfers.length > 0 && (
               <div className="border border-purple-100 dark:border-purple-900 rounded-xl overflow-hidden shadow-sm">
-                <div className="bg-white dark:bg-gray-900 px-6 py-4 border-b border-purple-100 dark:border-purple-900 flex flex-col gap-1">
+                <div className="bg-white dark:bg-gray-900 px-4 md:px-6 py-3 md:py-4 border-b border-purple-100 dark:border-purple-900 flex flex-col gap-1">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-bold flex items-center text-purple-700 dark:text-purple-300">
-                      <Wallet size={24} className="mr-2 text-purple-500" />
-                      Wareejinta Lacagaha
+                    <h2 className="text-lg md:text-xl font-bold flex items-center text-purple-700 dark:text-purple-300">
+                      <Wallet size={20} className="mr-2 text-purple-500" />
+                      Wareejinta
                     </h2>
-                    <div className="px-3 py-1 rounded-full text-sm font-bold bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200">
-                      {report.transfers.length} item
+                    <div className="px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-bold bg-purple-50 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200">
+                      {report.transfers.length}
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Waxa lagu tusayaa sida lacagtu uga baxday akoon iyo meesha ay u gudubtay.</p>
+                  <p className="hidden md:block text-xs text-gray-500 dark:text-gray-400">Waxa lagu tusayaa sida lacagtu uga baxday akoon iyo meesha ay u gudubtay.</p>
                 </div>
-                <div className="bg-white dark:bg-gray-800">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-purple-50 dark:bg-purple-900/20">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-purple-900 dark:text-purple-100 uppercase">Laga Wareejiyay</th>
-                        <th className="px-4 py-3 text-center text-xs font-bold text-purple-900 dark:text-purple-100 uppercase">→</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-purple-900 dark:text-purple-100 uppercase">Loo Wareejiyay</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-purple-900 dark:text-purple-100 uppercase hidden md:table-cell">Sharaxaad</th>
-                        <th className="px-4 py-3 text-right text-xs font-bold text-purple-900 dark:text-purple-100 uppercase">Qiimaha</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                
+                {/* Mobile: Card Layout */}
+                <div className="md:hidden bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {report.transfers.map((tx, i) => (
-                        <tr key={tx.id || i} className="hover:bg-purple-50 dark:hover:bg-purple-900/10">
-                          <td className="px-4 py-3 text-xs font-semibold text-gray-900 dark:text-gray-300">
-                            {tx.fromAccount}
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30">
+                    <div key={tx.id || i} className="p-4 space-y-2">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex-1">
+                          <div className="text-xs font-semibold text-gray-700 dark:text-gray-400 mb-1">Laga Wareejiyay</div>
+                          <div className="text-sm font-bold text-gray-900 dark:text-gray-300">{tx.fromAccount}</div>
+                        </div>
+                        <div className="mx-2">
+                          <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
                               <span className="text-purple-600 dark:text-purple-300 font-bold">→</span>
                             </div>
-                          </td>
-                          <td className="px-4 py-3 text-xs font-semibold text-gray-900 dark:text-gray-300">
-                            {tx.toAccount}
-                          </td>
-                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden md:table-cell">
-                            {tx.description}
+                        </div>
+                        <div className="flex-1 text-right">
+                          <div className="text-xs font-semibold text-gray-700 dark:text-gray-400 mb-1">Loo Wareejiyay</div>
+                          <div className="text-sm font-bold text-gray-900 dark:text-gray-300">{tx.toAccount}</div>
+                        </div>
+                      </div>
+                      {tx.description && (
+                        <div className="text-xs text-gray-600 dark:text-gray-400">
+                          <span className="font-medium">Sharaxaad:</span> {tx.description}
+                        </div>
+                      )}
+                      {tx.note && (
+                        <div className="text-xs text-gray-500 dark:text-gray-500 italic">Fiiro: {tx.note}</div>
+                      )}
+                      <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-gray-600 dark:text-gray-400">Qiimaha:</span>
+                          <span className="text-base font-bold text-purple-700 dark:text-purple-300">{tx.amount.toLocaleString()} ETB</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Desktop: Card Layout */}
+                <div className="hidden md:block bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {report.transfers.map((tx, i) => (
+                    <div key={tx.id || i} className="p-4 hover:bg-purple-50 dark:hover:bg-purple-900/10 transition">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex-1 grid grid-cols-3 gap-4">
+                          <div>
+                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Laga Wareejiyay</div>
+                            <div className="text-sm font-bold text-gray-900 dark:text-gray-300">{tx.fromAccount}</div>
+                          </div>
+                          <div className="flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                              <span className="text-purple-600 dark:text-purple-300 font-bold text-lg">→</span>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Loo Wareejiyay</div>
+                            <div className="text-sm font-bold text-gray-900 dark:text-gray-300">{tx.toAccount}</div>
+                          </div>
+                        </div>
+                        <div className="text-right min-w-[120px]">
+                          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Qiimaha</div>
+                          <div className="text-base font-bold text-purple-700 dark:text-purple-300">{tx.amount.toLocaleString()} ETB</div>
+                        </div>
+                      </div>
+                      {(tx.description || tx.note) && (
+                        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                          {tx.description && (
+                            <div className="text-xs text-gray-600 dark:text-gray-400">
+                              <span className="font-medium">Sharaxaad:</span> {tx.description}
+                            </div>
+                          )}
                             {tx.note && (
                               <div className="text-xs text-gray-500 dark:text-gray-500 mt-1 italic">Fiiro: {tx.note}</div>
                             )}
-                          </td>
-                          <td className="px-4 py-3 text-xs font-semibold text-right text-gray-900 dark:text-gray-300">
-                            {tx.amount.toLocaleString()} ETB
-                          </td>
-                        </tr>
+                        </div>
+                      )}
+                    </div>
                       ))}
-                    </tbody>
-                  </table>
                 </div>
               </div>
             )}
@@ -987,91 +1166,131 @@ export default function DailyReportPage() {
                 <span>Maalintan laguma samayn wax wareejin ah.</span>
               </div>
             )}
-            {/* Debts Collected */}
+            {/* Debts Collected - CARD LAYOUT */}
             {report.debtsCollected.length > 0 && (
               <div className="border-2 border-orange-200 dark:border-orange-800 rounded-xl overflow-hidden">
-                <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-4">
+                <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 md:px-6 py-3 md:py-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-bold flex items-center">
-                      <FileText size={24} className="mr-2" />
+                    <h2 className="text-lg md:text-xl font-bold flex items-center">
+                      <FileText size={20} className="mr-2" />
                       Debt Repaid / Advance Received
                     </h2>
-                    <div className="bg-white/30 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold">
+                    <div className="bg-white/30 backdrop-blur-sm px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-bold">
                       {report.debtsCollected.length} Item(s)
                     </div>
                   </div>
                 </div>
-                <div className="bg-white dark:bg-gray-800">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-orange-50 dark:bg-orange-900/20">
-                      <tr>
-                        <th className="px-6 py-4 text-left text-sm font-bold text-orange-900 dark:text-orange-100 uppercase tracking-wider">Mashruuc</th>
-                        <th className="px-6 py-4 text-right text-sm font-bold text-orange-900 dark:text-orange-100 uppercase tracking-wider">Qiime</th>
-                </tr>
-              </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <div className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {report.debtsCollected.map((d, i) => (
-                        <tr key={i} className="hover:bg-orange-50 dark:hover:bg-orange-900/10">
-                          <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-300">{d.project}</td>
-                          <td className="px-6 py-4 text-sm font-semibold text-right text-gray-900 dark:text-gray-300">{d.amount.toLocaleString()} ETB</td>
-                  </tr>
+                    <div key={i} className="p-4 hover:bg-orange-50 dark:hover:bg-orange-900/10 transition">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Mashruuc</div>
+                          <div className="text-sm font-semibold text-gray-900 dark:text-gray-300">{d.project}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Qiime</div>
+                          <div className="text-base font-bold text-orange-700 dark:text-orange-300">{d.amount.toLocaleString()} ETB</div>
+                        </div>
+                      </div>
+                    </div>
                 ))}
-                      <tr className="bg-orange-100 dark:bg-orange-900/30 font-bold border-t-2 border-orange-300 dark:border-orange-700">
-                        <td className="px-6 py-4 text-sm text-orange-900 dark:text-orange-100">WADARTA</td>
-                        <td className="px-6 py-4 text-sm text-right text-orange-700 dark:text-orange-300">{report.debtsCollected.reduce((sum, d) => sum + d.amount, 0).toLocaleString()} ETB</td>
-                      </tr>
-              </tbody>
-            </table>
+                  <div className="p-4 bg-orange-100 dark:bg-orange-900/30 border-t-2 border-orange-300 dark:border-orange-700">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-bold text-orange-900 dark:text-orange-100">WADARTA</span>
+                      <span className="text-lg font-bold text-orange-700 dark:text-orange-300">{report.debtsCollected.reduce((sum, d) => sum + d.amount, 0).toLocaleString()} ETB</span>
+                    </div>
+                  </div>
             </div>
           </div>
         )}
 
-            {/* Project Expenses */}
+            {/* Project Expenses - MOBILE OPTIMIZED */}
             {report.projectExpenses.length > 0 && (
               <div className="border-2 border-blue-200 dark:border-blue-800 rounded-xl overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4">
+                <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 md:px-6 py-3 md:py-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-bold flex items-center">
-                      <Receipt size={24} className="mr-2" />
-                      Kharashyada Mashruucyada
+                    <h2 className="text-lg md:text-xl font-bold flex items-center">
+                      <Receipt size={20} className="mr-2" />
+                      <span className="hidden md:inline">Kharashyada Mashruucyada</span>
+                      <span className="md:hidden">Kharashyada</span>
                     </h2>
-                    <div className="bg-white/30 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold">
-                      {report.projectExpenses.length} Item(s)
+                    <div className="bg-white/30 backdrop-blur-sm px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-bold">
+                      {report.projectExpenses.length}
           </div>
           </div>
         </div>
-                <div className="bg-white dark:bg-gray-800">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-blue-50 dark:bg-blue-900/20">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-blue-900 dark:text-blue-100 uppercase">Taariikh</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-blue-900 dark:text-blue-100 uppercase">Mashruuc</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-blue-900 dark:text-blue-100 uppercase">Nooca</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-blue-900 dark:text-blue-100 uppercase hidden md:table-cell">Sharaxaad</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-blue-900 dark:text-blue-100 uppercase hidden lg:table-cell">Account</th>
-                        <th className="px-4 py-3 text-right text-xs font-bold text-blue-900 dark:text-blue-100 uppercase">Qiimaha</th>
-                        <th className="px-4 py-3 text-center text-xs font-bold text-blue-900 dark:text-blue-100 uppercase">Actions</th>
-              </tr>
-            </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                
+                {/* Mobile: Card Layout */}
+                <div className="md:hidden bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {report.projectExpenses.map((e, i) => (
-                        <tr key={e.id || i} className="hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors">
-                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 whitespace-nowrap">{e.date}</td>
-                          <td className="px-4 py-3 text-xs font-medium text-gray-900 dark:text-gray-300">{e.project}</td>
-                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300">
-                            <span className="px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 font-semibold">
+                    <div key={e.id || i} className="p-4 space-y-2">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-xs font-semibold">
                               {e.category}
                             </span>
-                          </td>
-                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden md:table-cell">
-                            <div className="max-w-xs truncate" title={e.description}>{e.description}</div>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{e.date}</span>
+                          </div>
+                          <div className="text-sm font-semibold text-gray-900 dark:text-gray-300 mb-1">{e.project}</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">{e.description}</div>
                             {e.note && (
                               <div className="text-xs text-gray-500 dark:text-gray-500 mt-1 italic">Fiiro: {e.note}</div>
                             )}
-                          </td>
-                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden lg:table-cell">{e.paidFrom || 'Cash'}</td>
-                          <td className="px-4 py-3 text-xs font-semibold text-right text-red-700 dark:text-red-300">{e.amount.toLocaleString()} ETB</td>
-                          <td className="px-4 py-3 text-center">
+                          <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                            <span className="font-medium">Akoon:</span> {e.paidFrom || 'Cash'}
+                          </div>
+                        </div>
+                        <div className="ml-3 flex flex-col items-end gap-2">
+                          <div className="text-base font-bold text-red-700 dark:text-red-300">{e.amount.toLocaleString()}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">ETB</div>
+                          <Link 
+                            href={`/expenses/edit/${e.id}`}
+                            className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                            title="Wax ka beddel"
+                          >
+                            <Edit size={16} />
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="p-4 bg-blue-100 dark:bg-blue-900/30 border-t-2 border-blue-300 dark:border-blue-700">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-bold text-blue-900 dark:text-blue-100">WADARTA</span>
+                      <span className="text-lg font-bold text-blue-700 dark:text-blue-300">{report.totalProjectExpenses.toLocaleString()} ETB</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Desktop: Card Layout */}
+                <div className="hidden md:block bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {report.projectExpenses.map((e, i) => (
+                    <div key={e.id || i} className="p-4 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 grid grid-cols-4 gap-4">
+                          <div>
+                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Taariikh / Mashruuc</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">{e.date}</div>
+                            <div className="text-sm font-semibold text-gray-900 dark:text-gray-300">{e.project}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Nooca</div>
+                            <span className="px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 text-xs font-semibold">
+                              {e.category}
+                            </span>
+                          </div>
+                          <div>
+                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Sharaxaad</div>
+                            <div className="text-sm text-gray-900 dark:text-gray-300">{e.description}</div>
+                            {e.note && (
+                              <div className="text-xs text-gray-500 dark:text-gray-500 mt-1 italic">Fiiro: {e.note}</div>
+                            )}
+                            <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Akoon: {e.paidFrom || 'Cash'}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Actions</div>
                             <Link 
                               href={`/expenses/edit/${e.id}`}
                               className="inline-flex items-center justify-center p-2 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
@@ -1079,68 +1298,117 @@ export default function DailyReportPage() {
                             >
                               <Edit size={16} />
                             </Link>
-                          </td>
-                </tr>
+                          </div>
+                        </div>
+                        <div className="text-right min-w-[100px]">
+                          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Qiimaha</div>
+                          <div className="text-base font-bold text-red-700 dark:text-red-300">{e.amount.toLocaleString()} ETB</div>
+                        </div>
+                      </div>
+                    </div>
               ))}
-                      <tr className="bg-blue-100 dark:bg-blue-900/30 font-bold border-t-2 border-blue-300 dark:border-blue-700">
-                        <td colSpan={5} className="px-4 py-3 text-xs text-blue-900 dark:text-blue-100">WADARTA KHARASHYADA MASHRUUCYADA</td>
-                        <td className="px-4 py-3 text-xs text-right text-blue-700 dark:text-blue-300">{report.totalProjectExpenses.toLocaleString()} ETB</td>
-                        <td></td>
-                      </tr>
-            </tbody>
-          </table>
+                  <div className="p-4 bg-blue-100 dark:bg-blue-900/30 border-t-2 border-blue-300 dark:border-blue-700">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-bold text-blue-900 dark:text-blue-100">WADARTA KHARASHYADA MASHRUUCYADA</span>
+                      <span className="text-lg font-bold text-blue-700 dark:text-blue-300">{report.totalProjectExpenses.toLocaleString()} ETB</span>
+                    </div>
+                  </div>
         </div>
       </div>
             )}
 
-            {/* Company Expenses */}
+            {/* Company Expenses - MOBILE OPTIMIZED */}
             {report.companyExpenses.length > 0 && (
               <div className="border-2 border-green-200 dark:border-green-800 rounded-xl overflow-hidden">
-                <div className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-4">
+                <div className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 md:px-6 py-3 md:py-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-bold flex items-center">
-                      <Receipt size={24} className="mr-2" />
-                      Kharashyada Shirkadda
+                    <h2 className="text-lg md:text-xl font-bold flex items-center">
+                      <Receipt size={20} className="mr-2" />
+                      <span className="hidden md:inline">Kharashyada Shirkadda</span>
+                      <span className="md:hidden">Kharashyada</span>
                     </h2>
-                    <div className="bg-white/30 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold">
-                      {report.companyExpenses.length} Item(s)
+                    <div className="bg-white/30 backdrop-blur-sm px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-bold">
+                      {report.companyExpenses.length}
                     </div>
                   </div>
                 </div>
-                <div className="bg-white dark:bg-gray-800">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-green-50 dark:bg-green-900/20">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase">Taariikh</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase">Nooca Kharashka</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase hidden md:table-cell">Sharaxaad</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-green-900 dark:text-green-100 uppercase hidden lg:table-cell">Account</th>
-                        <th className="px-4 py-3 text-right text-xs font-bold text-green-900 dark:text-green-100 uppercase">Qiimaha</th>
-                        <th className="px-4 py-3 text-center text-xs font-bold text-green-900 dark:text-green-100 uppercase">Actions</th>
-              </tr>
-            </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                
+                {/* Mobile: Card Layout */}
+                <div className="md:hidden bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {report.companyExpenses.map((e, i) => (
-                        <tr key={e.id || i} className="hover:bg-green-50 dark:hover:bg-green-900/10 transition-colors">
-                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 whitespace-nowrap">{e.date}</td>
-                          <td className="px-4 py-3">
-                            <div className="text-xs font-semibold text-gray-900 dark:text-gray-300">{e.category}</div>
+                    <div key={e.id || i} className="p-4 space-y-2">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{e.date}</span>
+                          </div>
+                          <div className="text-sm font-semibold text-gray-900 dark:text-gray-300 mb-1">{e.category}</div>
+                          {e.details && (
+                            <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">{e.details}</div>
+                          )}
+                          {e.subCategory && e.subCategory !== e.category && (
+                            <div className="text-xs text-gray-500 dark:text-gray-500 mb-1">({e.subCategory})</div>
+                          )}
+                          <div className="text-xs text-gray-600 dark:text-gray-400">{e.description}</div>
+                          {e.note && (
+                            <div className="text-xs text-gray-500 dark:text-gray-500 mt-1 italic">Fiiro: {e.note}</div>
+                          )}
+                          <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                            <span className="font-medium">Akoon:</span> {e.paidFrom || 'Cash'}
+                          </div>
+                        </div>
+                        <div className="ml-3 flex flex-col items-end gap-2">
+                          <div className="text-base font-bold text-red-700 dark:text-red-300">{e.amount.toLocaleString()}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">ETB</div>
+                          <Link 
+                            href={`/expenses/edit/${e.id}`}
+                            className="p-2 rounded-lg bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800 transition-colors"
+                            title="Wax ka beddel"
+                          >
+                            <Edit size={16} />
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="p-4 bg-green-100 dark:bg-green-900/30 border-t-2 border-green-300 dark:border-green-700">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-bold text-green-900 dark:text-green-100">WADARTA</span>
+                      <span className="text-lg font-bold text-green-700 dark:text-green-300">{report.totalCompanyExpenses.toLocaleString()} ETB</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Desktop: Card Layout */}
+                <div className="hidden md:block bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {report.companyExpenses.map((e, i) => (
+                    <div key={e.id || i} className="p-4 hover:bg-green-50 dark:hover:bg-green-900/10 transition">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 grid grid-cols-4 gap-4">
+                          <div>
+                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Taariikh</div>
+                            <div className="text-sm text-gray-900 dark:text-gray-300">{e.date}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Nooca Kharashka</div>
+                            <div className="text-sm font-semibold text-gray-900 dark:text-gray-300">{e.category}</div>
                             {e.details && (
                               <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">{e.details}</div>
                             )}
                             {e.subCategory && e.subCategory !== e.category && (
                               <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">({e.subCategory})</div>
                             )}
-                          </td>
-                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden md:table-cell">
-                            <div className="max-w-xs truncate" title={e.description}>{e.description}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Sharaxaad</div>
+                            <div className="text-sm text-gray-900 dark:text-gray-300">{e.description}</div>
                             {e.note && (
                               <div className="text-xs text-gray-500 dark:text-gray-500 mt-1 italic">Fiiro: {e.note}</div>
                             )}
-                          </td>
-                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden lg:table-cell">{e.paidFrom || 'Cash'}</td>
-                          <td className="px-4 py-3 text-xs font-semibold text-right text-red-700 dark:text-red-300">{e.amount.toLocaleString()} ETB</td>
-                          <td className="px-4 py-3 text-center">
+                            <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Akoon: {e.paidFrom || 'Cash'}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Actions</div>
                             <Link 
                               href={`/expenses/edit/${e.id}`}
                               className="inline-flex items-center justify-center p-2 rounded-lg bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800 transition-colors"
@@ -1148,130 +1416,74 @@ export default function DailyReportPage() {
                             >
                               <Edit size={16} />
                             </Link>
-                          </td>
-                </tr>
+                          </div>
+                        </div>
+                        <div className="text-right min-w-[100px]">
+                          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Qiimaha</div>
+                          <div className="text-base font-bold text-red-700 dark:text-red-300">{e.amount.toLocaleString()} ETB</div>
+                        </div>
+                      </div>
+                    </div>
               ))}
-                      <tr className="bg-green-100 dark:bg-green-900/30 font-bold border-t-2 border-green-300 dark:border-green-700">
-                        <td colSpan={4} className="px-4 py-3 text-xs text-green-900 dark:text-green-100">WADARTA KHARASHYADA SHIRKADDA</td>
-                        <td className="px-4 py-3 text-xs text-right text-green-700 dark:text-green-300">{report.totalCompanyExpenses.toLocaleString()} ETB</td>
-                        <td></td>
-                      </tr>
-            </tbody>
-          </table>
+                  <div className="p-4 bg-green-100 dark:bg-green-900/30 border-t-2 border-green-300 dark:border-green-700">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-bold text-green-900 dark:text-green-100">WADARTA KHARASHYADA SHIRKADDA</span>
+                      <span className="text-lg font-bold text-green-700 dark:text-green-300">{report.totalCompanyExpenses.toLocaleString()} ETB</span>
+                    </div>
+                  </div>
         </div>
       </div>
             )}
 
-            {/* Fixed Assets Section */}
+            {/* Fixed Assets Section - CARD LAYOUT */}
             {report.fixedAssets && report.fixedAssets.length > 0 && (
               <div className="border-2 border-indigo-200 dark:border-indigo-800 rounded-xl overflow-hidden">
-                <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white px-6 py-4">
+                <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white px-4 md:px-6 py-3 md:py-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-bold flex items-center">
-                      <HardDrive size={24} className="mr-2" />
+                    <h2 className="text-lg md:text-xl font-bold flex items-center">
+                      <HardDrive size={20} className="mr-2" />
                       Hantida La Gashay (Fixed Assets)
                     </h2>
-                    <div className="bg-white/30 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold">
+                    <div className="bg-white/30 backdrop-blur-sm px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-bold">
                       {report.fixedAssets.length} Item(s)
                     </div>
                   </div>
                 </div>
-                <div className="bg-white dark:bg-gray-800">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-indigo-50 dark:bg-indigo-900/20">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-indigo-900 dark:text-indigo-100 uppercase">Magaca</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-indigo-900 dark:text-indigo-100 uppercase">Nooca</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-indigo-900 dark:text-indigo-100 uppercase hidden md:table-cell">Iibiyaha</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-indigo-900 dark:text-indigo-100 uppercase hidden lg:table-cell">Loo Qoondeeyay</th>
-                        <th className="px-4 py-3 text-right text-xs font-bold text-indigo-900 dark:text-indigo-100 uppercase">Qiimaha</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <div className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {report.fixedAssets.map((asset, i) => (
-                        <tr key={asset.id || i} className="hover:bg-indigo-50 dark:hover:bg-indigo-900/10">
-                          <td className="px-4 py-3">
-                            <div className="text-xs font-medium text-gray-900 dark:text-gray-300">{asset.name}</div>
-                          </td>
-                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300">{asset.type}</td>
-                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden md:table-cell">{asset.vendor || '-'}</td>
-                          <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden lg:table-cell">{asset.assignedTo || '-'}</td>
-                          <td className="px-4 py-3 text-xs font-semibold text-right text-gray-900 dark:text-gray-300">{asset.value.toLocaleString()} ETB</td>
-                        </tr>
-                      ))}
-                      <tr className="bg-indigo-100 dark:bg-indigo-900/30 font-bold border-t-2 border-indigo-300 dark:border-indigo-700">
-                        <td colSpan={4} className="px-4 py-3 text-xs text-indigo-900 dark:text-indigo-100">WADARTA HANTIDA LA GASHAY</td>
-                        <td className="px-4 py-3 text-xs text-right text-indigo-700 dark:text-indigo-300">{(report.totalFixedAssets || 0).toLocaleString()} ETB</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                    <div key={asset.id || i} className="p-4 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 grid grid-cols-4 gap-4">
+                          <div>
+                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Magaca</div>
+                            <div className="text-sm font-semibold text-gray-900 dark:text-gray-300">{asset.name}</div>
                 </div>
+                          <div>
+                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Nooca</div>
+                            <div className="text-sm text-gray-900 dark:text-gray-300">{asset.type}</div>
               </div>
-            )}
-
-            {/* Other Transactions Section */}
-            {report.otherTransactions && report.otherTransactions.length > 0 && (
-              <div className="border-2 border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
-                <div className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-bold flex items-center">
-                      <Receipt size={24} className="mr-2" />
-                      Dhaqdhaqaaqyada Kale
-                    </h2>
-                    <div className="bg-white/30 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold">
-                      {report.otherTransactions.length} Item(s)
+                          <div>
+                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Iibiyaha</div>
+                            <div className="text-sm text-gray-900 dark:text-gray-300">{asset.vendor || '-'}</div>
+                    </div>
+                          <div>
+                            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Loo Qoondeeyay</div>
+                            <div className="text-sm text-gray-900 dark:text-gray-300">{asset.assignedTo || '-'}</div>
+                  </div>
+                </div>
+                        <div className="text-right min-w-[100px]">
+                          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Qiimaha</div>
+                          <div className="text-base font-bold text-indigo-700 dark:text-indigo-300">{asset.value.toLocaleString()} ETB</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="p-4 bg-indigo-100 dark:bg-indigo-900/30 border-t-2 border-indigo-300 dark:border-indigo-700">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-bold text-indigo-900 dark:text-indigo-100">WADARTA HANTIDA LA GASHAY</span>
+                      <span className="text-lg font-bold text-indigo-700 dark:text-indigo-300">{(report.totalFixedAssets || 0).toLocaleString()} ETB</span>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-200 mt-1">Dhaqdhaqaaqyada kale ee dhacay maalintan (DEBT_TAKEN, DEBT_REPAID, EXPENSE, etc.)</p>
-                </div>
-                <div className="bg-white dark:bg-gray-800">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-900/20">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 dark:text-gray-100 uppercase">Sharaxaad</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 dark:text-gray-100 uppercase">Nooca</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 dark:text-gray-100 uppercase hidden md:table-cell">Category</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 dark:text-gray-100 uppercase hidden lg:table-cell">Account</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 dark:text-gray-100 uppercase hidden lg:table-cell">La Xiriira</th>
-                        <th className="px-4 py-3 text-right text-xs font-bold text-gray-900 dark:text-gray-100 uppercase">Qiimaha</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                      {report.otherTransactions.map((tx, i) => {
-                        const isIncome = tx.type === 'DEBT_REPAID';
-                        const relatedName = tx.project || tx.customer || tx.vendor || tx.employee || tx.user || '-';
-                        return (
-                          <tr key={tx.id || i} className="hover:bg-gray-50 dark:hover:bg-gray-900/10">
-                            <td className="px-4 py-3">
-                              <div className="text-xs font-medium text-gray-900 dark:text-gray-300">{tx.description}</div>
-                              {tx.note && (
-                                <div className="text-xs text-gray-500 dark:text-gray-500 mt-1 italic">Fiiro: {tx.note}</div>
-                              )}
-                            </td>
-                            <td className="px-4 py-3">
-                              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                isIncome 
-                                  ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200'
-                                  : 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200'
-                              }`}>
-                                {tx.type}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden md:table-cell">{tx.category || '-'}</td>
-                            <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden lg:table-cell">{tx.account}</td>
-                            <td className="px-4 py-3 text-xs text-gray-900 dark:text-gray-300 hidden lg:table-cell">{relatedName}</td>
-                            <td className={`px-4 py-3 text-xs font-semibold text-right ${
-                              isIncome 
-                                ? 'text-green-700 dark:text-green-300'
-                                : 'text-red-700 dark:text-red-300'
-                            }`}>
-                              {isIncome ? '+' : '-'}{Math.abs(tx.amount).toLocaleString()} ETB
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
                 </div>
               </div>
             )}
@@ -1286,42 +1498,43 @@ export default function DailyReportPage() {
             )}
       </div>
 
-          {/* Account Balances Section (moved below expenses) */}
+          {/* Account Balances Section - MOBILE OPTIMIZED */}
           {hasBalances && (
-            <div className="px-8 pb-8 print:px-4">
-              <div className="rounded-xl border border-blue-100 dark:border-blue-900 bg-blue-50/40 dark:bg-blue-900/10 p-6">
-                <h2 className="text-xl font-bold text-blue-900 dark:text-blue-200 mb-4 flex items-center">
-                  <Wallet size={24} className="mr-2 text-blue-600" />
-                  Account Balances Snapshot
+            <div className="px-4 md:px-8 pb-6 md:pb-8 print:px-4">
+              <div className="rounded-xl border border-blue-100 dark:border-blue-900 bg-blue-50/40 dark:bg-blue-900/10 p-4 md:p-6">
+                <h2 className="text-lg md:text-xl font-bold text-blue-900 dark:text-blue-200 mb-4 flex items-center">
+                  <Wallet size={20} className="mr-2 text-blue-600" />
+                  <span className="hidden md:inline">Account Balances Snapshot</span>
+                  <span className="md:hidden">Balances</span>
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-100 dark:border-blue-800 shadow-sm">
-                    <div className="text-sm font-semibold text-blue-600 dark:text-blue-300 mb-3 uppercase tracking-wide">Previous Day</div>
+                    <div className="text-xs md:text-sm font-semibold text-blue-600 dark:text-blue-300 mb-3 uppercase tracking-wide">Maalinta Hore</div>
                     {Object.entries(report.balances.previous).map(([name, value]) => (
                       <div key={name} className="flex justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{name}</span>
-                        <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{value.toLocaleString()} ETB</span>
+                        <span className="text-xs md:text-sm text-gray-700 dark:text-gray-300 truncate pr-2">{name}</span>
+                        <span className="text-xs md:text-sm font-bold text-gray-900 dark:text-gray-100 whitespace-nowrap">{value.toLocaleString()} ETB</span>
                       </div>
                     ))}
                     {report.totalPrev > 0 && (
                       <div className="flex justify-between py-2 mt-3 border-t border-blue-100 dark:border-blue-700">
-                        <span className="text-sm font-bold text-gray-900 dark:text-gray-100">TOTAL (Prev)</span>
-                        <span className="text-lg font-extrabold text-blue-600">{report.totalPrev.toLocaleString()} ETB</span>
+                        <span className="text-xs md:text-sm font-bold text-gray-900 dark:text-gray-100">TOTAL</span>
+                        <span className="text-base md:text-lg font-extrabold text-blue-600">{report.totalPrev.toLocaleString()} ETB</span>
                       </div>
                     )}
                   </div>
                   <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-blue-100 dark:border-blue-800 shadow-sm">
-                    <div className="text-sm font-semibold text-blue-600 dark:text-blue-300 mb-3 uppercase tracking-wide">Selected Day</div>
+                    <div className="text-xs md:text-sm font-semibold text-blue-600 dark:text-blue-300 mb-3 uppercase tracking-wide">Maalinta Dooratay</div>
                     {Object.entries(report.balances.today).map(([name, value]) => (
                       <div key={name} className="flex justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-b-0">
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{name}</span>
-                        <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{value.toLocaleString()} ETB</span>
+                        <span className="text-xs md:text-sm text-gray-700 dark:text-gray-300 truncate pr-2">{name}</span>
+                        <span className="text-xs md:text-sm font-bold text-gray-900 dark:text-gray-100 whitespace-nowrap">{value.toLocaleString()} ETB</span>
                       </div>
                     ))}
                     {report.totalToday > 0 && (
                       <div className="flex justify-between py-2 mt-3 border-t border-blue-100 dark:border-blue-700">
-                        <span className="text-sm font-bold text-gray-900 dark:text-gray-100">TOTAL (Today)</span>
-                        <span className="text-lg font-extrabold text-blue-600">{report.totalToday.toLocaleString()} ETB</span>
+                        <span className="text-xs md:text-sm font-bold text-gray-900 dark:text-gray-100">TOTAL</span>
+                        <span className="text-base md:text-lg font-extrabold text-blue-600">{report.totalToday.toLocaleString()} ETB</span>
                       </div>
                     )}
                   </div>
@@ -1330,9 +1543,31 @@ export default function DailyReportPage() {
             </div>
           )}
 
-          {/* Enhanced Action Buttons Footer */}
-          <div className="border-t-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-6 print:hidden">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* MOBILE-OPTIMIZED Action Buttons Footer */}
+          <div className="border-t-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-4 md:p-6 print:hidden">
+            {/* Mobile: Stacked Layout */}
+            <div className="md:hidden space-y-3">
+              {/* Action Buttons - Full Width on Mobile */}
+              <div className="flex flex-col gap-2">
+                <button 
+                  onClick={() => exportPDF(report)} 
+                  disabled={loading || !report}
+                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-3 rounded-lg flex items-center justify-center gap-2 transition font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Download size={18} /> Download PDF
+                </button>
+                <button 
+                  onClick={() => window.print()} 
+                  disabled={loading || !report}
+                  className="w-full bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-4 py-3 rounded-lg flex items-center justify-center gap-2 transition font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Printer size={18} /> Print Report
+                </button>
+              </div>
+            </div>
+            
+            {/* Desktop: Original Layout */}
+            <div className="hidden md:flex md:flex-row md:items-center md:justify-between gap-4">
               {/* Date Navigation */}
               <div className="flex items-center gap-2">
                 <button
@@ -1389,7 +1624,6 @@ export default function DailyReportPage() {
                 >
                   <Printer size={18} /> Print Report
                 </button>
-              </div>
             </div>
             </div>
           </div>

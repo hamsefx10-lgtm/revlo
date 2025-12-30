@@ -4,17 +4,17 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Layout from '../../components/layouts/Layout';
-import { 
-  User, Mail, Phone, Building, Briefcase, Settings, Edit, Loader2, DollarSign, 
-  Calendar, Clock, RefreshCw, Award, Activity, Shield, Bell
+import {
+  User, Mail, Phone, Building, Briefcase, Settings, Edit, Loader2, DollarSign,
+  Calendar, Clock, RefreshCw, Activity, Shield
 } from 'lucide-react';
-import Toast from '../../components/common/Toast';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 export default function MyProfilePage() {
+  const { addNotification } = useNotifications();
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -34,9 +34,15 @@ export default function MyProfilePage() {
       })
       .catch((err) => {
         setError(err.message || 'User not found');
+        addNotification({ type: 'error', message: err.message || 'Failed to load profile' });
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [addNotification]);
+
+  const handleRefresh = () => {
+    addNotification({ type: 'info', message: 'Refreshing profile data...' });
+    window.location.reload();
+  };
 
   if (loading) {
     return (
@@ -70,21 +76,20 @@ export default function MyProfilePage() {
 
   return (
     <Layout>
-      {/* Toast Message */}
-      {toastMessage && <Toast message={toastMessage.message} type={toastMessage.type} onClose={() => setToastMessage(null)} />}
-      
+
       {/* Header Section */}
       <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-8 gap-4">
         <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">My Profile</h1>
         <div className="flex flex-col sm:flex-row gap-3">
           <Link href={`/profile/edit/${userProfile.id}`} className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center justify-center">
-          <Edit size={20} className="mr-2" /> Edit Profile
-        </Link>
-          <button onClick={() => window.location.reload()} className="bg-secondary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-green-600 transition duration-200 shadow-md flex items-center justify-center">
+            <Edit size={20} className="mr-2" /> Edit Profile
+          </Link>
+          <button onClick={handleRefresh} className="bg-secondary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-green-600 transition duration-200 shadow-md flex items-center justify-center">
             <RefreshCw size={20} className="mr-2" /> Refresh
           </button>
         </div>
       </div>
+// ... (rest of the file content)
 
       {/* Profile Overview Card */}
       <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md mb-8 animate-fade-in-up">
@@ -95,21 +100,21 @@ export default function MyProfilePage() {
           <div className="text-center md:text-left flex-1">
             <h3 className="text-4xl font-bold text-darkGray dark:text-gray-100 mb-2">{userProfile.name}</h3>
             <p className="text-xl text-mediumGray dark:text-gray-400 mb-1 flex items-center justify-center md:justify-start space-x-2">
-                <User size={20} className="text-primary"/> <span>{userProfile.role}</span>
+              <User size={20} className="text-primary" /> <span>{userProfile.role}</span>
             </p>
             <p className="text-xl text-mediumGray dark:text-gray-400 mb-1 flex items-center justify-center md:justify-start space-x-2">
-                <Building size={20} className="text-primary"/> <span>{userProfile.companyName}</span>
+              <Building size={20} className="text-primary" /> <span>{userProfile.companyName}</span>
             </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-darkGray dark:text-gray-100">
-            <p className="flex items-center space-x-2"><Mail size={18} className="text-primary"/><span>{userProfile.email}</span></p>
-            <p className="flex items-center space-x-2"><Phone size={18} className="text-primary"/><span>{userProfile.phone || 'N/A'}</span></p>
-            <p className="flex items-center space-x-2"><Briefcase size={18} className="text-primary"/><span>{userProfile.projectsCount ?? 0} Projects</span></p>
-            <p className="flex items-center space-x-2"><DollarSign size={18} className="text-primary"/><span>{userProfile.expensesCount ?? 0} Expenses Recorded</span></p>
-            <p className="flex items-center space-x-2"><Calendar size={18} className="text-primary"/><span>Member Since: {userProfile.createdAt ? new Date(userProfile.createdAt).toLocaleDateString() : 'N/A'}</span></p>
-            <p className="flex items-center space-x-2"><Clock size={18} className="text-primary"/><span>Last Login: {userProfile.lastLogin ? new Date(userProfile.lastLogin).toLocaleString() : 'N/A'}</span></p>
+          <p className="flex items-center space-x-2"><Mail size={18} className="text-primary" /><span>{userProfile.email}</span></p>
+          <p className="flex items-center space-x-2"><Phone size={18} className="text-primary" /><span>{userProfile.phone || 'N/A'}</span></p>
+          <p className="flex items-center space-x-2"><Briefcase size={18} className="text-primary" /><span>{userProfile.projectsCount ?? 0} Projects</span></p>
+          <p className="flex items-center space-x-2"><DollarSign size={18} className="text-primary" /><span>{userProfile.expensesCount ?? 0} Expenses Recorded</span></p>
+          <p className="flex items-center space-x-2"><Calendar size={18} className="text-primary" /><span>Member Since: {userProfile.createdAt ? new Date(userProfile.createdAt).toLocaleDateString() : 'N/A'}</span></p>
+          <p className="flex items-center space-x-2"><Clock size={18} className="text-primary" /><span>Last Login: {userProfile.lastLogin ? new Date(userProfile.lastLogin).toLocaleString() : 'N/A'}</span></p>
         </div>
       </div>
 
@@ -126,7 +131,7 @@ export default function MyProfilePage() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
           <div className="flex items-center justify-between">
             <div>
@@ -138,7 +143,7 @@ export default function MyProfilePage() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
           <div className="flex items-center justify-between">
             <div>
@@ -150,7 +155,7 @@ export default function MyProfilePage() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
           <div className="flex items-center justify-between">
             <div>
@@ -180,7 +185,7 @@ export default function MyProfilePage() {
               <p><span className="font-medium text-mediumGray dark:text-gray-400">Role:</span> <span className="text-darkGray dark:text-gray-100">{userProfile.role}</span></p>
             </div>
           </div>
-          
+
           <div className="bg-lightGray/30 dark:bg-gray-700/30 p-4 rounded-lg">
             <h4 className="font-semibold text-darkGray dark:text-gray-100 mb-3 flex items-center">
               <Shield size={20} className="mr-2 text-primary" />
@@ -207,7 +212,7 @@ export default function MyProfilePage() {
               <p className="text-xs text-mediumGray dark:text-gray-400">Update your information</p>
             </div>
           </Link>
-          
+
           <Link href="/settings" className="flex items-center p-4 bg-secondary/10 hover:bg-secondary/20 rounded-lg transition-colors duration-200">
             <Settings size={20} className="text-secondary mr-3" />
             <div>
@@ -215,7 +220,7 @@ export default function MyProfilePage() {
               <p className="text-xs text-mediumGray dark:text-gray-400">Manage your preferences</p>
             </div>
           </Link>
-          
+
           <Link href="/projects" className="flex items-center p-4 bg-accent/10 hover:bg-accent/20 rounded-lg transition-colors duration-200">
             <Briefcase size={20} className="text-accent mr-3" />
             <div>

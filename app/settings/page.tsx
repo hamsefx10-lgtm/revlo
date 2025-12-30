@@ -3,8 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import Layout from '../../components/layouts/Layout';
-import { 
-  Settings, Banknote, Tag, Landmark, Users, Building, Database, Palette, User, HardDrive, Bell, Key, Info
+import {
+  Settings, Banknote, Tag, Landmark, Users, Building, Database, Palette, User, HardDrive, Bell, Key, Info, Globe
 } from 'lucide-react';
 
 export default function SettingsOverviewPage() {
@@ -44,6 +44,16 @@ export default function SettingsOverviewPage() {
 
       {/* Settings Sections - Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8 animate-fade-in-up">
+        {/* Language - New Addition */}
+        <Link href="/settings/language" className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 flex items-center space-x-6 group">
+          <div className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-500 p-4 rounded-full group-hover:bg-indigo-500 group-hover:text-white transition-colors duration-200">
+            <Globe size={32} />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-darkGray dark:text-gray-100 mb-1">Language / Luuqada</h3>
+            <p className="text-xs text-mediumGray dark:text-gray-400">English / Somali</p>
+          </div>
+        </Link>
         <Link href="/settings/accounts" className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 flex items-center space-x-6 group">
           <div className="bg-primary/10 text-primary p-4 rounded-full group-hover:bg-primary group-hover:text-white transition-colors duration-200">
             <Banknote size={32} />

@@ -40,7 +40,7 @@ interface FactoryData {
 }
 
 const FactoryStatusBadge: React.FC<{ status: FactoryData['status'] }> = ({ status }) => {
-  let props: { icon: React.ReactNode; className: string; text: string } = { icon: <Info size={14} />, className: 'bg-gray-500/10 text-gray-500', text: status };
+  let props = { icon: <Info size={14} />, className: 'bg-gray-500/10 text-gray-500', text: status };
   switch (status) {
     case 'Active': props = { icon: <Clock size={14} />, className: 'bg-primary/10 text-primary', text: 'Firfircoon' }; break;
     case 'Inactive': props = { icon: <Info size={14} />, className: 'bg-accent/10 text-accent', text: 'Naafo' }; break;

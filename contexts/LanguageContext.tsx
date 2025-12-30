@@ -38,7 +38,7 @@ interface Translations {
     disconnected: string;
     reconnecting: string;
   };
-  
+
   // Navigation
   navigation: {
     dashboard: string;
@@ -52,7 +52,7 @@ interface Translations {
     profile: string;
     logout: string;
   };
-  
+
   // Notifications
   notifications: {
     title: string;
@@ -79,7 +79,7 @@ interface Translations {
       systemAlert: string;
     };
   };
-  
+
   // Expenses
   expenses: {
     title: string;
@@ -106,7 +106,7 @@ interface Translations {
     createdAt: string;
     updatedAt: string;
   };
-  
+
   // Actions
   actions: {
     print: string;
@@ -125,7 +125,7 @@ interface Translations {
     related: string;
     analytics: string;
   };
-  
+
   // Status
   status: {
     active: string;
@@ -417,9 +417,19 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   // Save language to localStorage when changed
   useEffect(() => {
     localStorage.setItem('language', language);
+
+    // Sync with Google Translate (only in browser)
+    if (typeof window !== 'undefined') {
+      // Use dynamic import to avoid SSR issues
+      import('../lib/google-translate').then((module) => {
+        module.changeGoogleTranslateLanguage(language);
+      }).catch(() => {
+        // Silently fail if Google Translate is not available
+      });
+    }
   }, [language]);
 
-  const isRTL = language === 'so'; // Somali is RTL
+  const isRTL = false; // Somali is LTR (Latin script)
 
   const value: LanguageContextType = {
     language,

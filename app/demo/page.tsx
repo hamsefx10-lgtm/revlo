@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Play, CheckCircle, ArrowRight, X, Menu, Calendar, BarChart3, Users, Settings } from 'lucide-react';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 // --- Navbar Component (Simplified for Demo Page) ---
 const Navbar = () => {
@@ -51,6 +52,15 @@ const Navbar = () => {
 
 // --- Demo Video Section ---
 const DemoHero = () => {
+    const { addNotification } = useNotifications();
+
+    const handleVideoClick = () => {
+        addNotification({
+            type: 'info',
+            message: 'Muuqaalka Demo-ga dhowaan ayaa la soo gelin doonaa! (Coming Soon)'
+        });
+    };
+
     return (
         <section className="pt-32 pb-16 bg-gradient-to-b from-blue-50/50 to-white dark:from-gray-900 dark:to-gray-900">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -65,7 +75,10 @@ const DemoHero = () => {
                 </p>
 
                 {/* Video Player Placeholder */}
-                <div className="relative max-w-5xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-700 aspect-video group cursor-pointer bg-darkGray">
+                <div
+                    onClick={handleVideoClick}
+                    className="relative max-w-5xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-700 aspect-video group cursor-pointer bg-darkGray"
+                >
                     <div className="absolute inset-0 flex items-center justify-center z-10">
                         <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                             <div className="w-16 h-16 bg-white text-primary rounded-full flex items-center justify-center shadow-lg">

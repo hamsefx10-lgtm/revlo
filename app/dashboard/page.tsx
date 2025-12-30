@@ -445,24 +445,24 @@ export default function DashboardPage() {
         <h1 className="text-2xl lg:text-4xl font-bold text-darkGray dark:text-gray-100">Dashboard Overview</h1>
       </div>
       
-      {/* Financial Overview Cards Section - Matching Reports Design */}
+      {/* Financial Overview Cards Section - Solid Dark with Left Border Only */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8 animate-fade-in-up">
         {/* Card 1: Lacagaha la helay (Money Received) */}
-        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md text-center border-l-4 border-secondary">
+        <div className="relative p-4 md:p-6 rounded-xl bg-white dark:bg-gray-800 shadow-md text-center border-l-4 border-secondary">
           <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Lacagaha la helay</h4>
           <p className="text-xl md:text-3xl font-extrabold text-secondary">{formatCurrency(totalIncome)}</p>
           <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Dhammaan lacagaha soo galay</p>
       </div>
 
         {/* Card 2: Kharashyada (Expenses) */}
-        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md text-center border-l-4 border-redError">
+        <div className="relative p-4 md:p-6 rounded-xl bg-white dark:bg-gray-800 shadow-md text-center border-l-4 border-redError">
           <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Kharashyada</h4>
           <p className="text-xl md:text-3xl font-extrabold text-redError">{formatCurrency(totalExpenses)}</p>
           <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Kharashyada guud</p>
         </div>
 
         {/* Card 3: Faa'iidada Dhabta Ah (Realized Profit) */}
-        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md text-center border-l-4 border-secondary">
+        <div className={`relative p-4 md:p-6 rounded-xl bg-white dark:bg-gray-800 shadow-md text-center border-l-4 ${netProfit >= 0 ? 'border-secondary' : 'border-redError'}`}>
           <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Faa'iidada Dhabta Ah</h4>
           <p className={`text-xl md:text-3xl font-extrabold ${netProfit >= 0 ? 'text-secondary' : 'text-redError'}`}>
             {formatCurrency(netProfit)}
@@ -471,7 +471,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Card 4: Mashaariicda Firfircoon (Active Projects) */}
-        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md text-center border-l-4 border-primary">
+        <div className="relative p-4 md:p-6 rounded-xl bg-white dark:bg-gray-800 shadow-md text-center border-l-4 border-primary">
           <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Mashaariicda Firfircoon</h4>
           <p className="text-xl md:text-3xl font-extrabold text-primary">{activeProjects}</p>
           <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Mashaariic socota</p>

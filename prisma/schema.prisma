@@ -857,6 +857,19 @@ model ChatReaction {
   @@map("chat_reactions")
 }
 
+model ContactMessage {
+  id        String   @id @default(uuid()) @map("_id")
+  name      String
+  email     String
+  subject   String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contact_messages")
+}
+
 enum EmployeeCategory {
   COMPANY
   PROJECT

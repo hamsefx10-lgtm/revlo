@@ -1,55 +1,66 @@
-// components/common/Toast.tsx
 'use client';
 
 import React, { useEffect } from 'react';
-import { CheckCircle, XCircle, X, Info as InfoIcon } from 'lucide-react'; // Added InfoIcon
+import { CheckCircle, XCircle, Info, AlertTriangle, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
 interface ToastProps {
+  id: string;
   message: string;
-  type: 'success' | 'error' | 'info'; // MUHIIM: Added 'info' type
-  onClose: () => void;
+  type: ToastType;
+  onClose: (id: string) => void;
 }
 
-const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
-  let bgColor = '';
-  let borderColor = '';
-  let icon = null;
-
-  switch (type) {
-    case 'success':
-      bgColor = 'bg-secondary';
-      borderColor = 'border-secondary';
-      icon = <CheckCircle size={24} />;
-      break;
-    case 'error':
-      bgColor = 'bg-redError';
-      borderColor = 'border-redError';
-      icon = <XCircle size={24} />;
-      break;
-    case 'info': // New info style
-      bgColor = 'bg-primary'; // Using primary color for info
-      borderColor = 'border-primary';
-      icon = <InfoIcon size={24} />;
-      break;
-  }
-
+const Toast: React.FC<ToastProps> = ({ id, message, type, onClose }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
-      onClose();
-    }, 4000);
+      onClose(id);
+    }, 5000);
     return () => clearTimeout(timer);
-  }, [onClose]);
+  }, [id, onClose]);
+
+  const variants = {
+    initial: { opacity: 0, y: 50, scale: 0.3 },
+    animate: { opacity: 1, y: 0, scale: 1 },
+    exit: { opacity: 0, scale: 0.5, transition: { duration: 0.2 } }
+  };
+
+  const styles = {
+    success: 'bg-white dark:bg-gray-800 border-l-4 border-green-500 text-green-600 dark:text-green-400',
+    error: 'bg-white dark:bg-gray-800 border-l-4 border-red-500 text-red-600 dark:text-red-400',
+    warning: 'bg-white dark:bg-gray-800 border-l-4 border-yellow-500 text-yellow-600 dark:text-yellow-400',
+    info: 'bg-white dark:bg-gray-800 border-l-4 border-blue-500 text-blue-600 dark:text-blue-400',
+  };
+
+  const icons = {
+    success: <CheckCircle size={20} />,
+    error: <XCircle size={20} />,
+    warning: <AlertTriangle size={20} />,
+    info: <Info size={20} />,
+  };
 
   return (
-    <div className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fade-in`}>
-      <div className={`bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-sm animate-fade-in-up flex items-center space-x-3 ${bgColor} border ${borderColor}`}>
-        {icon}
-        <span className="font-semibold">{message}</span>
-        <button onClick={onClose} className="ml-auto text-white opacity-70 hover:opacity-100">
-          <X size={20} />
-        </button>
+    <motion.div
+      layout
+      variants={variants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className={`${styles[type]} p-4 rounded-lg shadow-xl flex items-center gap-3 min-w-[300px] pointer-events-auto`}
+    >
+      <div className="flex-shrink-0">
+        {icons[type]}
       </div>
-    </div>
+      <p className="font-medium text-sm text-gray-800 dark:text-white flex-1">{message}</p>
+      <button
+        onClick={() => onClose(id)}
+        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+      >
+        <X size={16} />
+      </button>
+    </motion.div>
   );
 };
 

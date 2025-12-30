@@ -6,8 +6,12 @@ import { useRouter } from 'next/navigation';
 import { Mail, Lock, User, Building, Chrome, Eye, EyeOff, UserPlus, Briefcase, Factory, Package, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import Auth3DBackground from '@/components/Auth3DBackground';
+import { useNotifications } from '@/contexts/NotificationContext';
+
+import LandingNavbar from '@/components/LandingNavbar';
 
 export default function SignUpPage() {
+  const { addNotification } = useNotifications();
   const [companyName, setCompanyName] = useState('');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -17,23 +21,19 @@ export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
-    setSuccess(null);
 
     if (password !== confirmPassword) {
-      setError('Password-yadu isma mid aha.');
+      addNotification({ type: 'error', message: 'Password-yadu isma mid aha.' });
       setLoading(false);
       return;
     }
     if (password.length < 6) {
-      setError('Password-ku waa inuu ugu yaraan 6 xaraf ka koobnaadaa.');
+      addNotification({ type: 'error', message: 'Password-ku waa inuu ugu yaraan 6 xaraf ka koobnaadaa.' });
       setLoading(false);
       return;
     }
@@ -50,7 +50,8 @@ export default function SignUpPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setSuccess('Akoonkaaga si guul leh ayaa loo sameeyay! Waxaa laguugu gudbinayaa dashboard...');
+        addNotification({ type: 'success', message: 'Akoonkaaga si guul leh ayaa loo sameeyay! Waxaa laguugu gudbinayaa dashboard...' });
+
         // Si toos ah user-ka ugu login-geli NextAuth
         await signIn('credentials', {
           redirect: false,
@@ -59,42 +60,34 @@ export default function SignUpPage() {
         });
         setTimeout(() => router.push('/dashboard'), 1000);
       } else {
-        setError(data.message || 'Diiwaan gelintu waa ay guuldareysatay. Fadlan isku day mar kale.');
+        addNotification({ type: 'error', message: data.message || 'Diiwaan gelintu waa ay guuldareysatay. Fadlan isku day mar kale.' });
       }
     } catch (err: any) {
       console.error('Error during registration:', err);
-      setError(err.message || 'Cilad lama filaan ah ayaa dhacday. Fadlan isku day mar kale.');
+      addNotification({ type: 'error', message: err.message || 'Cilad lama filaan ah ayaa dhacday. Fadlan isku day mar kale.' });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 flex font-sans selection:bg-primary/30 selection:text-primary">
+    <div className="min-h-screen bg-white dark:bg-gray-900 flex font-sans selection:bg-primary/30 selection:text-primary relative">
+      <LandingNavbar />
       {/* Left Side - Form Section */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 lg:p-16 relative z-10 bg-white dark:bg-gray-900">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 lg:p-16 pt-32 lg:pt-16 relative z-10 bg-white dark:bg-gray-900">
         <div className="w-full max-w-lg space-y-6 animate-fade-in-up">
           {/* Header */}
           <div className="text-center lg:text-left">
-            <Link href="/" className="inline-block text-4xl font-extrabold tracking-tight text-darkGray dark:text-white mb-2">
+            <Link href="/" className="inline-block text-3xl lg:text-4xl font-extrabold tracking-tight text-darkGray dark:text-white mb-2">
               Rev<span className="text-secondary">lo</span>.
             </Link>
-            <h2 className="text-3xl font-bold text-darkGray dark:text-gray-100 mt-2">Bilow Safarkaaga</h2>
+            <h2 className="text-2xl lg:text-3xl font-bold text-darkGray dark:text-gray-100 mt-2">Bilow Safarkaaga</h2>
             <p className="mt-2 text-mediumGray dark:text-gray-400">
               Sameyso akoon cusub oo maamul ganacsigaaga si casri ah.
             </p>
           </div>
 
-          {error && (
-            <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-md text-sm animate-pulse">
-              {error}
-            </div>
-          )}
-          {success && (
-            <div className="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 rounded-md text-sm animate-pulse">
-              {success}
-            </div>
-          )}
+          {/* Alerts replaced by Global Notifications */}
 
           <form className="mt-8 space-y-5" onSubmit={handleSubmit} autoComplete="off">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

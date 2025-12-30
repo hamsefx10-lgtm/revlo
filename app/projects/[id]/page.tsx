@@ -352,34 +352,50 @@ const ProjectDetailsPage: React.FC = () => {
               {/* Mobile Expenses Content */}
               {activeTab === 'Expenses' && (
                 <div>
-                  {project.expenses.length === 0 ? <EmptyState message="Lama diiwaan gelin wax kharash ah."/> : (
+                  {project.expenses.length === 0 ? (
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-lightGray dark:border-gray-700 p-8 text-center">
+                      <AlertTriangle className="mx-auto text-mediumGray dark:text-gray-400 mb-4" size={48} />
+                      <p className="text-mediumGray dark:text-gray-400 mb-4">Lama diiwaan gelin wax kharash ah.</p>
+                      <Link
+                        href={`/expenses/add?projectId=${project.id}`}
+                        className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                      >
+                        <Plus size={18} />
+                        <span>Ku Dar Kharash</span>
+                      </Link>
+                    </div>
+                  ) : (
                     <div className="space-y-4">
-                      {Object.entries(expensesByCategory).map(([cat, exps]) => (
-                        <div key={cat} className="bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 p-4 rounded-xl shadow-md">
-                          <div className="flex items-center justify-between mb-3">
-                            <h4 className={`text-sm font-semibold ${cat.toLowerCase() === 'labor' ? 'text-blue-800 dark:text-blue-200' : cat.toLowerCase() === 'material' ? 'text-cyan-800 dark:text-cyan-200' : 'text-red-800 dark:text-red-200'}`}>
+                      {Object.entries(expensesByCategory).map(([cat, exps]) => {
+                        const borderColor = cat.toLowerCase() === 'labor' ? 'border-l-4 border-blue-500' : 
+                                          cat.toLowerCase() === 'material' ? 'border-l-4 border-cyan-500' : 
+                                          'border-l-4 border-primary';
+                        return (
+                          <div key={cat} className={`bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 ${borderColor} p-4`}>
+                            <div className="flex items-center justify-between mb-3 pb-2 border-b border-lightGray dark:border-gray-700">
+                              <h4 className={`text-base font-bold ${cat.toLowerCase() === 'labor' ? 'text-blue-600 dark:text-blue-400' : cat.toLowerCase() === 'material' ? 'text-cyan-600 dark:text-cyan-400' : 'text-primary'}`}>
                               {cat}
                             </h4>
-                            <AlertTriangle size={18} className={`${cat.toLowerCase() === 'labor' ? 'text-blue-600' : cat.toLowerCase() === 'material' ? 'text-cyan-600' : 'text-red-600'}`} />
-                          </div>
-                          <p className="text-lg font-bold text-red-600 mb-3">
+                              <p className="text-sm font-semibold text-redError">
                             Total: -Br{exps.reduce((s, e) => s + (typeof e.amount === 'number' ? e.amount : parseFloat(e.amount as any) || 0), 0).toLocaleString()}
                           </p>
+                            </div>
                           <div className="space-y-2">
                             {exps.map(exp => (
-                              <div key={exp.id} className='bg-white p-3 rounded-lg shadow-sm'>
-                                <div className="flex justify-between items-center">
+                                <div key={exp.id} className='bg-lightGray/30 dark:bg-gray-700/30 p-3 rounded-lg'>
+                                  <div className="flex justify-between items-start">
                                   <div className="flex-1 min-w-0">
-                                    <p className='font-bold text-darkGray dark:text-gray-100 truncate'>{exp.description}</p>
-                                    <p className='text-xs text-mediumGray dark:text-gray-400'>{new Date(exp.expenseDate).toLocaleDateString()}</p>
+                                      <p className='font-bold text-darkGray dark:text-gray-100'>{exp.description}</p>
+                                      <p className='text-xs text-mediumGray dark:text-gray-400 mt-1'>{new Date(exp.expenseDate).toLocaleDateString()}</p>
                                   </div>
-                                  <p className='font-bold text-lg text-redError ml-2'>-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</p>
+                                    <p className='font-bold text-lg text-redError ml-3 flex-shrink-0'>-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</p>
                                 </div>
                               </div>
                             ))}
                           </div>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -917,55 +933,73 @@ const ProjectDetailsPage: React.FC = () => {
                   {/* Desktop Expenses Content */}
                     {activeTab === 'Expenses' && (
     <div>
-        {project.expenses.length === 0 ? <EmptyState message="Lama diiwaan gelin wax kharash ah."/> : (
+        {project.expenses.length === 0 ? (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-lightGray dark:border-gray-700 p-12 text-center">
+            <AlertTriangle className="mx-auto text-mediumGray dark:text-gray-400 mb-4" size={48} />
+            <p className="text-mediumGray dark:text-gray-400 mb-4 text-lg">Lama diiwaan gelin wax kharash ah.</p>
+            <Link
+              href={`/expenses/add?projectId=${project.id}`}
+              className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg font-bold text-lg hover:bg-blue-700 transition-colors shadow-lg hover:shadow-primary/40"
+            >
+              <Plus size={20} />
+              <span>Ku Dar Kharash</span>
+            </Link>
+          </div>
+        ) : (
             viewModes.expenses === 'list' ? (
                 <>
-                            {/* Desktop List: Grouped by category with subtotals and colored category heading */}
-                            <div className="space-y-6">
-                        {Object.entries(expensesByCategory).map(([cat, exps]) => (
-                            <div key={cat} className="bg-lightGray/30 rounded-lg p-2">
-                                <div className="mb-2">
-                                    <span className={`block font-bold text-lg ${cat.toLowerCase() === 'labor' ? 'text-blue-500' : cat.toLowerCase() === 'material' ? 'text-cyan-600' : 'text-primary'}`}>{cat}</span>
-                                </div>
-                                <div className="flex justify-between items-center mb-1">
-                                    <span className="font-semibold text-darkGray text-sm">Total: <span className="text-redError">-Br{exps.reduce((s, e) => s + (typeof e.amount === 'number' ? e.amount : parseFloat(e.amount as any) || 0), 0).toLocaleString()}</span></span>
+                            {/* Desktop List: Grouped by category with subtotals and colored category heading - Matching Projects Design */}
+                            <div className="space-y-4">
+                        {Object.entries(expensesByCategory).map(([cat, exps]) => {
+                          const borderColor = cat.toLowerCase() === 'labor' ? 'border-l-4 border-blue-500' : 
+                                            cat.toLowerCase() === 'material' ? 'border-l-4 border-cyan-500' : 
+                                            'border-l-4 border-primary';
+                          return (
+                            <div key={cat} className={`bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 ${borderColor} p-4`}>
+                                <div className="flex items-center justify-between mb-3 pb-2 border-b border-lightGray dark:border-gray-700">
+                                    <span className={`block font-bold text-lg ${cat.toLowerCase() === 'labor' ? 'text-blue-600 dark:text-blue-400' : cat.toLowerCase() === 'material' ? 'text-cyan-600 dark:text-cyan-400' : 'text-primary'}`}>{cat}</span>
+                                    <span className="font-semibold text-darkGray dark:text-gray-100 text-sm">Total: <span className="text-redError">-Br{exps.reduce((s, e) => s + (typeof e.amount === 'number' ? e.amount : parseFloat(e.amount as any) || 0), 0).toLocaleString()}</span></span>
                                 </div>
                                 <div className="space-y-2">
                                     {exps.map(exp => (
-                                        <div key={exp.id} className='bg-white p-3 rounded-lg flex justify-between items-center shadow-sm'>
+                                        <div key={exp.id} className='bg-lightGray/30 dark:bg-gray-700/30 p-3 rounded-lg flex justify-between items-center hover:bg-lightGray/50 dark:hover:bg-gray-700/50 transition-colors'>
                                             <div>
-                                                <p className='font-bold'>{exp.description}</p>
-                                                <p className='text-xs text-mediumGray'>{new Date(exp.expenseDate).toLocaleDateString()}</p>
+                                                <p className='font-bold text-darkGray dark:text-gray-100'>{exp.description}</p>
+                                                <p className='text-xs text-mediumGray dark:text-gray-400'>{new Date(exp.expenseDate).toLocaleDateString()}</p>
                                             </div>
                                             <p className='font-bold text-lg text-redError'>-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</p>
                                         </div>
                                     ))}
                                 </div>
                             </div>
-                        ))}
+                          );
+                        })}
                     </div>
                 </>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {Object.entries(expensesByCategory).map(([cat, exps]) => (
-                        <div key={cat} className="bg-lightGray/30 rounded-lg p-3 shadow">
-                            <div className="mb-2">
-                                <span className={`block font-bold text-xl ${cat.toLowerCase() === 'labor' ? 'text-blue-500' : cat.toLowerCase() === 'material' ? 'text-cyan-600' : 'text-primary'}`}>{cat}</span>
-                            </div>
-                            <div className="flex justify-between items-center mb-2">
-                                <span className="font-semibold text-darkGray text-base">Total: <span className="text-redError">-Br{exps.reduce((s, e) => s + (typeof e.amount === 'number' ? e.amount : parseFloat(e.amount as any) || 0), 0).toLocaleString()}</span></span>
+                    {Object.entries(expensesByCategory).map(([cat, exps]) => {
+                      const borderColor = cat.toLowerCase() === 'labor' ? 'border-l-4 border-blue-500' : 
+                                        cat.toLowerCase() === 'material' ? 'border-l-4 border-cyan-500' : 
+                                        'border-l-4 border-primary';
+                      return (
+                        <div key={cat} className={`bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 ${borderColor} p-4`}>
+                            <div className="flex items-center justify-between mb-3 pb-2 border-b border-lightGray dark:border-gray-700">
+                                <span className={`block font-bold text-lg ${cat.toLowerCase() === 'labor' ? 'text-blue-600 dark:text-blue-400' : cat.toLowerCase() === 'material' ? 'text-cyan-600 dark:text-cyan-400' : 'text-primary'}`}>{cat}</span>
+                                <span className="font-semibold text-darkGray dark:text-gray-100 text-sm">Total: <span className="text-redError">-Br{exps.reduce((s, e) => s + (typeof e.amount === 'number' ? e.amount : parseFloat(e.amount as any) || 0), 0).toLocaleString()}</span></span>
                             </div>
                             <div className="space-y-2">
                                 {exps.map(exp => (
-                                    <div key={exp.id} className="bg-white p-3 rounded-lg flex flex-col gap-1 shadow-sm">
-                                        <span className="font-bold">{exp.description}</span>
-                                        <span className="text-xs text-mediumGray">{new Date(exp.expenseDate).toLocaleDateString()}</span>
+                                    <div key={exp.id} className="bg-lightGray/30 dark:bg-gray-700/30 p-3 rounded-lg flex flex-col gap-1 hover:bg-lightGray/50 dark:hover:bg-gray-700/50 transition-colors">
+                                        <span className="font-bold text-darkGray dark:text-gray-100">{exp.description}</span>
+                                        <span className="text-xs text-mediumGray dark:text-gray-400">{new Date(exp.expenseDate).toLocaleDateString()}</span>
                                         <span className="text-right font-semibold text-redError">-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</span>
                                     </div>
                                 ))}
                             </div>
                         </div>
-                    ))}
+                      );
+                    })}
                 </div>
             )
         )}

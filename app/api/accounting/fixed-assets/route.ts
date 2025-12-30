@@ -35,7 +35,7 @@ export async function POST(request: Request) {
   try {
     const companyId = await getSessionCompanyId();
     const { 
-      name, type, value, purchaseDate, assignedTo, status, depreciationRate
+      name, type, value, purchaseDate, assignedTo, status, depreciationRate, accountId, vendorId, note
     } = await request.json();
     if (!name || !type || typeof value !== 'number' || value <= 0 || !purchaseDate || typeof depreciationRate !== 'number' || depreciationRate < 0 || depreciationRate > 1) {
       return NextResponse.json(
@@ -74,8 +74,49 @@ export async function POST(request: Request) {
         companyId,
       },
     });
+
+    // FIX: If accountId is provided, create transaction and deduct from account balance
+    let createdTransaction: any = null;
+    if (accountId && Number(value) > 0) {
+      // Verify account exists
+      const account = await prisma.account.findFirst({ 
+        where: { id: accountId, companyId } 
+      });
+      
+      if (!account) {
+        return NextResponse.json(
+          { message: 'Account-ka lama helin.' },
+          { status: 400 }
+        );
+      }
+
+      // Create transaction
+      createdTransaction = await prisma.transaction.create({
+        data: {
+          description: `Fixed Asset Purchase - ${name}`,
+          amount: new Decimal(value),
+          type: 'EXPENSE',
+          transactionDate: new Date(purchaseDate),
+          note: note || null,
+          accountId,
+          vendorId: vendorId || null,
+          companyId,
+        },
+      });
+
+      // Deduct from account balance
+      await prisma.account.update({
+        where: { id: accountId },
+        data: { balance: { decrement: Number(value) } },
+      });
+    }
+
     return NextResponse.json(
-      { message: 'Hantida si guul leh ayaa loo daray!', asset: newAsset },
+      { 
+        message: 'Hantida si guul leh ayaa loo daray!', 
+        asset: newAsset,
+        transaction: createdTransaction
+      },
       { status: 201 }
     );
   } catch (error) {

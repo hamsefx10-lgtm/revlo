@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Layout from '@/components/layouts/Layout';
 import { 
   X, DollarSign, Tag, Calendar, MessageSquare, FileUp, Camera, Upload, 
@@ -16,6 +16,8 @@ import { calculateEmployeeSalary } from '@/lib/utils';
 
 export default function AddExpensePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  
   // Expense type: 'project' or 'company'
   // Description field for company material expense
   const [description, setDescription] = useState('');
@@ -266,6 +268,26 @@ const [consultancyFee, setConsultancyFee] = useState('');
     { value: 'Maintenance', label: 'Dayactirka' },
     { value: 'Other', label: 'Kale' }
   ];
+
+  // Read query parameters and set initial values
+  useEffect(() => {
+    const projectId = searchParams.get('projectId');
+    const categoryParam = searchParams.get('category');
+    const employeeId = searchParams.get('employeeId');
+    
+    if (projectId) {
+      setSelectedProject(projectId);
+      setExpenseType('project');
+    }
+    
+    if (categoryParam) {
+      setCategory(categoryParam);
+    }
+    
+    if (employeeId && categoryParam === 'Labor') {
+      setSelectedEmployeeForSalary(employeeId);
+    }
+  }, [searchParams]);
 
   // Fetch options from API
   useEffect(() => {
@@ -762,17 +784,23 @@ const [consultancyFee, setConsultancyFee] = useState('');
       case 'Transport':
         expenseData.amount = amount;
         expenseData.transportType = transportType;
+        // Ensure paidFrom is preserved
+        expenseData.paidFrom = paidFrom;
         break;
       case 'Taxi/Xamaal':
         expenseData.amount = amount;
         expenseData.transportType = taxiXamaalType; // Reuse transportType field in backend
         expenseData.description = description || `Taxi/Xamaal - ${taxiXamaalType}`;
+        // Ensure paidFrom is preserved
+        expenseData.paidFrom = paidFrom;
         break;
       case 'Consultancy':
         expenseData.amount = consultancyFee ? Number(consultancyFee) : 0;
         expenseData.consultantName = consultantName;
         expenseData.consultancyType = consultancyType;
         expenseData.consultancyFee = consultancyFee ? Number(consultancyFee) : 0;
+        // Ensure paidFrom is preserved
+        expenseData.paidFrom = paidFrom;
         break;
         case 'Equipment Rental':
           expenseData.amount = rentalFee ? Number(rentalFee) : 0;
@@ -782,6 +810,8 @@ const [consultancyFee, setConsultancyFee] = useState('');
           expenseData.supplierName = supplierName;
           expenseData.projectId = selectedProject;
           expenseData.bankAccountId = selectedBankAccount;
+          // Equipment Rental uses bankAccountId, but also preserve paidFrom for fallback
+          expenseData.paidFrom = selectedBankAccount || paidFrom;
           break;
       case 'Utilities':
         expenseData.amount = amount;
@@ -789,6 +819,8 @@ const [consultancyFee, setConsultancyFee] = useState('');
         expenseData.category = 'Utilities';
         expenseData.projectId = expenseType === 'project' ? selectedProject : undefined;
         expenseData.companyExpenseType = expenseType === 'company' ? 'Utilities' : undefined;
+        // Ensure paidFrom is preserved
+        expenseData.paidFrom = paidFrom;
         break;
       case 'Company Expense':
         expenseData.category = 'Company Expense';
@@ -819,18 +851,26 @@ const [consultancyFee, setConsultancyFee] = useState('');
           case 'Office Rent':
             expenseData.amount = amount;
             expenseData.officeRentPeriod = officeRentPeriod;
+            // Ensure paidFrom is preserved
+            expenseData.paidFrom = paidFrom;
             break;
           case 'Electricity':
             expenseData.amount = amount;
             expenseData.electricityMeterReading = electricityMeterReading;
+            // Ensure paidFrom is preserved
+            expenseData.paidFrom = paidFrom;
             break;
           case 'Marketing':
             expenseData.amount = amount;
             expenseData.marketingCampaignName = marketingCampaignName;
+            // Ensure paidFrom is preserved
+            expenseData.paidFrom = paidFrom;
             break;
           case 'Utilities':
             expenseData.amount = amount;
             expenseData.description = description;
+            // Ensure paidFrom is preserved
+            expenseData.paidFrom = paidFrom;
             break;
           case 'Material':
             // For company Material expense, send as category: 'Material', projectId: null
@@ -850,6 +890,8 @@ const [consultancyFee, setConsultancyFee] = useState('');
             expenseData.lenderName = lenderName;
             expenseData.loanDate = loanDate;
             expenseData.expenseDate = loanDate; // Use loanDate as expenseDate for Debt expenses
+            // Ensure paidFrom is preserved
+            expenseData.paidFrom = paidFrom;
             if (lenderName) {
               expenseData.customerId = lenderName;
               // Also store customer name for display
@@ -883,6 +925,8 @@ const [consultancyFee, setConsultancyFee] = useState('');
             expenseData.coverageEndDate = coverageEndDate;
             expenseData.deductible = deductible;
             expenseData.insuranceCompany = insuranceCompany;
+            // Ensure paidFrom is preserved
+            expenseData.paidFrom = paidFrom;
             break;
           case 'Legal & Compliance':
             expenseData.amount = totalLegalCost;
@@ -893,6 +937,8 @@ const [consultancyFee, setConsultancyFee] = useState('');
             expenseData.hoursBilled = hoursBilled;
             expenseData.legalHourlyRate = legalHourlyRate;
             expenseData.additionalCosts = additionalCosts;
+            // Ensure paidFrom is preserved
+            expenseData.paidFrom = paidFrom;
             break;
           case 'Travel & Accommodation':
             expenseData.amount = totalTravelCost;
@@ -905,14 +951,20 @@ const [consultancyFee, setConsultancyFee] = useState('');
             expenseData.accommodationCost = accommodationCost;
             expenseData.mealsCost = mealsCost;
             expenseData.otherTravelCosts = otherTravelCosts;
+            // Ensure paidFrom is preserved
+            expenseData.paidFrom = paidFrom;
             break;
           default:
             expenseData.amount = amount;
+            // Ensure paidFrom is preserved
+            expenseData.paidFrom = paidFrom;
             break;
         }
         break;
       default:
         expenseData.amount = amount;
+        // Ensure paidFrom is preserved
+        expenseData.paidFrom = paidFrom;
         break;
     }
 
@@ -994,7 +1046,12 @@ const [consultancyFee, setConsultancyFee] = useState('');
         setSelectedVendor(''); setPaymentStatus('UNPAID'); setInvoiceNumber('');
         setAllCustomers([]);
         setValidationErrors({});
+        const projectId = searchParams.get('projectId');
+        if (projectId) {
+          router.push(`/projects/${projectId}`);
+        } else {
         router.push('/expenses');
+        }
         return;
       }
       // If Company Labor, submit to /api/expenses/company with all required backend fields
@@ -1038,7 +1095,12 @@ const [consultancyFee, setConsultancyFee] = useState('');
         setSelectedVendor(''); setPaymentStatus('UNPAID'); setInvoiceNumber('');
         setAllCustomers([]);
         setValidationErrors({});
+        const projectId = searchParams.get('projectId');
+        if (projectId) {
+          router.push(`/projects/${projectId}`);
+        } else {
         router.push('/expenses');
+        }
         return;
       }
       // Otherwise, submit as normal
@@ -1118,7 +1180,12 @@ const [consultancyFee, setConsultancyFee] = useState('');
       setSelectedVendor(''); setPaymentStatus('UNPAID'); setInvoiceNumber('');
       setAllCustomers([]);
       setValidationErrors({});
+      const projectId = searchParams.get('projectId');
+      if (projectId) {
+        router.push(`/projects/${projectId}`);
+      } else {
       router.push('/expenses');
+      }
     } catch (error: any) {
       console.error('Expense submission error:', error);
       setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka kharashka la diiwaan gelinayay.', type: 'error' });

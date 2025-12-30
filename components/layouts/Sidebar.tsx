@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Briefcase, DollarSign, Users, Truck,
   Settings, X, UserCircle, LogOut,
   Landmark, UserCogIcon, Shield, Calendar, Menu, Wrench, Factory,
-  Package, BarChart3, Scissors, MessageCircle, ShoppingCart, Tag
+  Package, BarChart3, Scissors, MessageCircle, ShoppingCart, Tag, Mail
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -106,6 +106,7 @@ const menuConfig = {
     admin: [
       { name: 'Users', href: '/settings/users', icon: <Shield />, group: 'Administration' },
       { name: 'Fiscal Years', href: '/admin/fiscal-years', icon: <Calendar />, group: 'Administration' },
+      { name: 'Contact Messages', href: '/admin/contact-messages', icon: <Mail />, group: 'Administration' },
       { name: 'Admin', href: '/admin', icon: <Wrench />, group: 'Administration' },
     ]
   },

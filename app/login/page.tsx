@@ -6,19 +6,21 @@ import { useRouter } from 'next/navigation';
 import { Mail, Lock, LogIn, Chrome, Eye, EyeOff, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import Auth3DBackground from '@/components/Auth3DBackground';
+import { useNotifications } from '@/contexts/NotificationContext';
+
+import LandingNavbar from '@/components/LandingNavbar';
 
 export default function LoginPage() {
+  const { addNotification } = useNotifications();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
 
     const result = await signIn('credentials', {
       redirect: false,
@@ -27,35 +29,39 @@ export default function LoginPage() {
     });
 
     if (result?.ok) {
+      addNotification({
+        type: 'success',
+        message: 'Si guul leh ayaad ku gashay! Waad soo dhowaal.'
+      });
       // Optional: Add a slight delay for success animation before redirect
       setTimeout(() => router.push('/dashboard'), 500);
     } else {
-      setError(result?.error || 'Login failed. Please check your credentials.');
+      addNotification({
+        type: 'error',
+        message: result?.error || 'Login failed. Fadlan hubi emailkaaga iyo passwordkaaga.'
+      });
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 flex font-sans selection:bg-primary/30 selection:text-primary">
+    <div className="min-h-screen bg-white dark:bg-gray-900 flex font-sans selection:bg-primary/30 selection:text-primary relative">
+      <LandingNavbar />
       {/* Left Side - Form Section */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 lg:p-16 relative z-10 bg-white dark:bg-gray-900">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 lg:p-16 pt-32 lg:pt-16 relative z-10 bg-white dark:bg-gray-900">
         <div className="w-full max-w-md space-y-8 animate-fade-in-up">
           {/* Header */}
           <div className="text-center lg:text-left">
-            <Link href="/" className="inline-block text-4xl font-extrabold tracking-tight text-darkGray dark:text-white mb-2">
+            <Link href="/" className="inline-block text-3xl lg:text-4xl font-extrabold tracking-tight text-darkGray dark:text-white mb-2">
               Rev<span className="text-secondary">lo</span>.
             </Link>
-            <h2 className="text-3xl font-bold text-darkGray dark:text-gray-100 mt-4">Soo Dhowow Mar Kale!</h2>
+            <h2 className="text-2xl lg:text-3xl font-bold text-darkGray dark:text-gray-100 mt-4">Soo Dhowow Mar Kale!</h2>
             <p className="mt-2 text-mediumGray dark:text-gray-400">
               Fadlan gali xogtaada si aad u sii wadato howlahaaga.
             </p>
           </div>
 
-          {error && (
-            <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-md text-sm animate-pulse">
-              {error}
-            </div>
-          )}
+          {/* Error display removed in favor of Toast */}
 
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">

@@ -9,7 +9,7 @@ import {
   CheckCircle, XCircle, RefreshCw, Download, Upload, Trash2, Edit,
   BarChart, PieChart, LineChart, Activity, Clock, DollarSign, Briefcase,
   Building, CreditCard, Truck, Package, Calendar, Mail, Bell, Search,
-  Filter, Plus, Eye, Lock, Unlock, Archive, RotateCcw, Zap, Target
+  Filter, Plus, Eye, Lock, Unlock, Archive, RotateCcw, Zap, Target, MessageSquare
 } from 'lucide-react';
 
 export default function AdminToolsPage() {
@@ -219,6 +219,28 @@ export default function AdminToolsPage() {
                 <div className="flex items-center">
                   <Activity size={18} className="mr-3 text-accent" />
                   <span className="text-darkGray dark:text-gray-100 font-medium">Audit Logs</span>
+                </div>
+                <ArrowLeft size={16} className="text-mediumGray dark:text-gray-400 transform rotate-180" />
+              </div>
+            </Link>
+          </div>
+        </div>
+
+        {/* Contact Messages */}
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
+          <div className="flex items-center mb-4">
+            <div className="bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200 p-3 rounded-full mr-4">
+              <Mail size={24} />
+            </div>
+            <h3 className="text-xl font-bold text-darkGray dark:text-gray-100">Contact Messages</h3>
+          </div>
+          <p className="text-mediumGray dark:text-gray-400 mb-4">View and manage messages from the contact form.</p>
+          <div className="space-y-2">
+            <Link href="/admin/contact-messages" className="block p-3 rounded-lg bg-lightGray dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <MessageSquare size={18} className="mr-3 text-primary" />
+                  <span className="text-darkGray dark:text-gray-100 font-medium">View All Messages</span>
                 </div>
                 <ArrowLeft size={16} className="text-mediumGray dark:text-gray-400 transform rotate-180" />
               </div>

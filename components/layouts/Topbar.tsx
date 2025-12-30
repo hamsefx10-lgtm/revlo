@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Bell, Menu, LogOut, Settings, User as UserIcon, ChevronFirst, ChevronLast, X, CheckCircle, Globe, Languages } from 'lucide-react';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { initializeGoogleTranslate, changeGoogleTranslateLanguage, removeGoogleTranslate } from '../../lib/google-translate';
 
 interface TopbarProps {
   onOpenSidebar: () => void; // mobile menu
@@ -38,6 +39,33 @@ const Topbar: React.FC<TopbarProps> = ({
   const { language, setLanguage, t } = useLanguage();
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
+
+  // Initialize Google Translate on mount
+  useEffect(() => {
+    // Wait a bit to ensure DOM is ready
+    const timer = setTimeout(() => {
+      initializeGoogleTranslate();
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Handle language change with Google Translate
+  const handleLanguageChange = (newLanguage: 'so' | 'en') => {
+    setLanguage(newLanguage);
+    setShowLanguageDropdown(false);
+    
+    // Trigger Google Translate
+    if (newLanguage === 'so') {
+      // When switching to Somali, use Google Translate
+      setTimeout(() => {
+        changeGoogleTranslateLanguage('so');
+      }, 300);
+    } else {
+      // When switching to English, remove Google Translate (show original)
+      removeGoogleTranslate();
+    }
+  };
   return (
     <header className={`w-full flex items-center justify-between bg-white dark:bg-gray-800 shadow-md py-3 px-4 md:px-8 border-b border-lightGray dark:border-gray-700 z-20 transition-all duration-300
       ${rounded ? 'rounded-lg' : ''}`}>
@@ -99,10 +127,7 @@ const Topbar: React.FC<TopbarProps> = ({
             <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-lightGray dark:border-gray-700 z-50">
               <div className="p-2">
                 <button 
-                  onClick={() => {
-                    setLanguage('so');
-                    setShowLanguageDropdown(false);
-                  }}
+                  onClick={() => handleLanguageChange('so')}
                   className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 flex items-center space-x-2 ${
                     language === 'so' 
                       ? 'bg-primary text-white' 
@@ -113,10 +138,7 @@ const Topbar: React.FC<TopbarProps> = ({
                   <span>Soomaali</span>
                 </button>
                 <button 
-                  onClick={() => {
-                    setLanguage('en');
-                    setShowLanguageDropdown(false);
-                  }}
+                  onClick={() => handleLanguageChange('en')}
                   className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 flex items-center space-x-2 ${
                     language === 'en' 
                       ? 'bg-primary text-white' 

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Layout from '../../../components/layouts/Layout';
 import { 
   ArrowLeft, Plus, Search, Filter, Edit, Trash2, Package, DollarSign, 
-  Tag, Loader2, CheckCircle, XCircle, RefreshCw, Eye, Info as InfoIcon
+  Tag, Loader2, CheckCircle, XCircle, RefreshCw, Eye, Info as InfoIcon, ChevronRight
 } from 'lucide-react';
 import Toast from '../../../components/common/Toast';
 
@@ -78,89 +78,84 @@ export default function ProductsPage() {
 
   return (
     <Layout>
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+      {/* --- Page Header --- */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div className="flex items-center space-x-4">
             <Link href="/manufacturing" className="p-2 hover:bg-lightGray dark:hover:bg-gray-700 rounded-lg transition">
               <ArrowLeft size={24} className="text-darkGray dark:text-gray-100" />
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-darkGray dark:text-gray-100">Kataloogga Alaabta</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-darkGray dark:text-gray-100">Kataloogga Alaabta</h1>
               <p className="text-mediumGray dark:text-gray-400 mt-1">Maamul alaabta iyo qiimaha</p>
             </div>
           </div>
+        <div className="flex gap-3 self-start md:self-center">
           <Link
             href="/manufacturing/products/add"
-            className="bg-secondary text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition flex items-center space-x-2"
+            className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-lg hover:shadow-primary/40 flex items-center gap-2"
           >
             <Plus size={20} />
             <span>Ku Dar Alaab Cusub</span>
           </Link>
         </div>
+              </div>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-lightGray dark:border-gray-700">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-mediumGray dark:text-gray-400 text-sm">Wadarta Alaabta</p>
-                <p className="text-2xl font-bold text-darkGray dark:text-gray-100 mt-1">{totalProducts}</p>
-              </div>
-              <Package className="text-secondary" size={32} />
+      {/* --- Product Statistics Cards --- */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 animate-fade-in-up">
+        <div className="bg-white dark:bg-gray-800 p-3 md:p-4 sm:p-5 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 w-full text-center border-l-4 border-secondary flex flex-col items-center justify-center min-h-[120px]">
+          <Package className="text-secondary mb-2" size={22} />
+          <h4 className="text-xs font-semibold text-secondary mb-1 truncate">Wadarta Alaabta</h4>
+          <span className="text-2xl md:text-3xl font-bold text-secondary">{totalProducts}</span>
             </div>
+        <div className="bg-white dark:bg-gray-800 p-3 md:p-4 sm:p-5 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 w-full text-center border-l-4 border-secondary flex flex-col items-center justify-center min-h-[120px]">
+          <CheckCircle className="text-secondary mb-2" size={22} />
+          <h4 className="text-xs font-semibold text-secondary mb-1 truncate">Alaabta Firfircoon</h4>
+          <span className="text-2xl md:text-3xl font-bold text-secondary">{activeProducts}</span>
           </div>
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-lightGray dark:border-gray-700">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-mediumGray dark:text-gray-400 text-sm">Alaabta Firfircoon</p>
-                <p className="text-2xl font-bold text-darkGray dark:text-gray-100 mt-1">{activeProducts}</p>
-              </div>
-              <CheckCircle className="text-green-500" size={32} />
-            </div>
-          </div>
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-lightGray dark:border-gray-700">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-mediumGray dark:text-gray-400 text-sm">Qaybaha</p>
-                <p className="text-2xl font-bold text-darkGray dark:text-gray-100 mt-1">{categories.length}</p>
-              </div>
-              <Tag className="text-primary" size={32} />
-            </div>
+        <div className="bg-white dark:bg-gray-800 p-3 md:p-4 sm:p-5 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 w-full text-center border-l-4 border-primary flex flex-col items-center justify-center min-h-[120px]">
+          <Tag className="text-primary mb-2" size={22} />
+          <h4 className="text-xs font-semibold text-primary mb-1 truncate">Qaybaha</h4>
+          <span className="text-2xl md:text-3xl font-bold text-primary">{categories.length}</span>
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-lightGray dark:border-gray-700">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
+      {/* --- Search, Filter Bar --- */}
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md mb-8 flex flex-col lg:flex-row items-center space-y-4 lg:space-y-0 lg:space-x-4 animate-fade-in-up">
+        <div className="relative w-full lg:flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
               <input
                 type="text"
-                placeholder="Raadi alaabta..."
+            placeholder="Search alaabta..."
+            className="w-full p-3 pl-10 border border-lightGray dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-secondary"
               />
             </div>
+        
+        <div className="relative w-full sm:w-48">
+          <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400 z-10" size={18} />
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="px-4 py-2 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-secondary"
+            className="w-full p-3 pl-10 border border-lightGray dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 appearance-none"
             >
               <option value="all">Dhammaan Qaybaha</option>
               {categories.map(cat => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>
-            <button
-              onClick={fetchProducts}
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition flex items-center space-x-2"
-            >
-              <RefreshCw size={18} />
-              <span>Dib u soo celi</span>
-            </button>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400">
+            <ChevronRight className="transform rotate-90" size={18} />
           </div>
+        </div>
+        
+        <button
+          onClick={fetchProducts}
+          className="p-2.5 rounded-lg bg-primary text-white hover:bg-blue-700 transition-colors duration-200"
+          title="Dib u soo celi"
+        >
+          <RefreshCw size={18} />
+        </button>
         </div>
 
         {/* Products Table */}
@@ -169,7 +164,7 @@ export default function ProductsPage() {
             <Loader2 className="animate-spin text-primary" size={32} />
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="bg-white dark:bg-gray-800 p-12 rounded-lg shadow border border-lightGray dark:border-gray-700 text-center">
+        <div className="bg-white dark:bg-gray-800 p-12 rounded-xl shadow-md border border-lightGray dark:border-gray-700 text-center">
             <Package className="mx-auto text-mediumGray dark:text-gray-400 mb-4" size={48} />
             <p className="text-mediumGray dark:text-gray-400 text-lg">Ma jiro alaab la heli karo</p>
             <Link href="/manufacturing/products/add" className="text-secondary hover:underline mt-2 inline-block">
@@ -177,7 +172,7 @@ export default function ProductsPage() {
             </Link>
           </div>
         ) : (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-lightGray dark:border-gray-700 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-lightGray dark:border-gray-700 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-lightGray dark:bg-gray-700">
@@ -250,7 +245,6 @@ export default function ProductsPage() {
             </div>
           </div>
         )}
-      </div>
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (

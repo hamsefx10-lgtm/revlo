@@ -12,12 +12,24 @@ export default function AboutPage() {
             <LandingNavbar />
 
             {/* Hero Section */}
-            <section className="pt-32 pb-20 bg-gray-50 dark:bg-gray-800/50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <h1 className="text-4xl md:text-6xl font-extrabold text-darkGray dark:text-white mb-6">
+            <section className="relative pt-32 pb-32 md:pb-48 flex items-center justify-center overflow-hidden">
+                {/* Background Image */}
+                <div className="absolute inset-0 z-0">
+                    <Image
+                        src="/about-hero.png"
+                        alt="Revlo Team"
+                        fill
+                        className="object-cover"
+                        priority
+                    />
+                    <div className="absolute inset-0 bg-gray-900/80 backdrop-blur-[2px]"></div>
+                </div>
+
+                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <h1 className="text-3xl md:text-6xl font-extrabold text-white mb-6">
                         Hadafkayagu waa <span className="text-primary">Horumarinta</span> Ganacsiga Afrika
                     </h1>
-                    <p className="max-w-3xl mx-auto text-xl text-mediumGray dark:text-gray-400 leading-relaxed">
+                    <p className="max-w-3xl mx-auto text-xl text-gray-200 leading-relaxed font-medium">
                         Revlo ma ahan kaliya software; waa lamaanahaaga ganacsiga. Waxaan u taaganahay inaan casriyeeyno habka ganacsiga Soomaalidu u shaqeeyo.
                     </p>
                 </div>
