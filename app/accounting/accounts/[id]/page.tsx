@@ -59,7 +59,7 @@ function Page() {
   const [account, setAccount] = useState<Account | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('Overview');
-  const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ id: string; message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   const fetchAccountDetails = async () => {
     setLoading(true);
@@ -77,7 +77,7 @@ function Page() {
       setAccount(processedAccount);
     } catch (error: any) {
       console.error('Error fetching account details:', error);
-      setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka faahfaahinta account-ka la soo gelinayay.', type: 'error' });
+      setToastMessage({ id: Date.now().toString(), message: error.message || 'Cilad ayaa dhacday marka faahfaahinta account-ka la soo gelinayay.', type: 'error' });
       setAccount(null);
       router.push('/accounting/accounts');
     } finally {
@@ -93,11 +93,11 @@ function Page() {
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || 'Failed to delete account');
-        setToastMessage({ message: data.message || 'Account-ka si guul leh ayaa loo tirtiray!', type: 'success' });
+        setToastMessage({ id: Date.now().toString(), message: data.message || 'Account-ka si guul leh ayaa loo tirtiray!', type: 'success' });
         router.push('/accounting/accounts');
       } catch (error: any) {
         console.error('Error deleting account:', error);
-        setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka account-ka la tirtirayay.', type: 'error' });
+        setToastMessage({ id: Date.now().toString(), message: error.message || 'Cilad ayaa dhacday marka account-ka la tirtirayay.', type: 'error' });
       }
     }
   };
@@ -127,7 +127,7 @@ function Page() {
           <Link href="/accounting/accounts" className="mt-4 inline-block text-primary hover:underline">Ku Noqo Accounts-ka &rarr;</Link>
         </div>
         {toastMessage && (
-          <Toast message={toastMessage.message} type={toastMessage.type} onClose={() => setToastMessage(null)} />
+          <Toast id={toastMessage.id} message={toastMessage.message} type={toastMessage.type} onClose={(id) => setToastMessage(null)} />
         )}
       </Layout>
     );
@@ -411,7 +411,7 @@ function Page() {
       </div>
 
       {toastMessage && (
-        <Toast message={toastMessage.message} type={toastMessage.type} onClose={() => setToastMessage(null)} />
+        <Toast id={toastMessage.id} message={toastMessage.message} type={toastMessage.type} onClose={(id) => setToastMessage(null)} />
       )}
     </Layout>
   );

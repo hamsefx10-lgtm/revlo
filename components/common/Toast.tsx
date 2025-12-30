@@ -7,19 +7,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
 interface ToastProps {
-  id: string;
+  id?: string;
   message: string;
   type: ToastType;
-  onClose: (id: string) => void;
+  onClose: (id?: string) => void;
 }
 
 const Toast: React.FC<ToastProps> = ({ id, message, type, onClose }) => {
+  const toastId = id || `toast-${Date.now()}-${Math.random()}`;
   useEffect(() => {
     const timer = setTimeout(() => {
-      onClose(id);
+      onClose(toastId);
     }, 5000);
     return () => clearTimeout(timer);
-  }, [id, onClose]);
+  }, [toastId, onClose]);
 
   const variants = {
     initial: { opacity: 0, y: 50, scale: 0.3 },
@@ -55,7 +56,7 @@ const Toast: React.FC<ToastProps> = ({ id, message, type, onClose }) => {
       </div>
       <p className="font-medium text-sm text-gray-800 dark:text-white flex-1">{message}</p>
       <button
-        onClick={() => onClose(id)}
+        onClick={() => onClose(toastId)}
         className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
       >
         <X size={16} />
