@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     }
     const { companyId, userId } = sessionData;
     const reqBody = await request.json();
-    const { description, amount, category, subCategory, paidFrom, expenseDate, note, employeeId, laborPaidAmount = 0, agreedWage, startNewAgreement } = reqBody;
+    const { description, amount, category, subCategory, paidFrom, expenseDate, note, employeeId, laborPaidAmount = 0, agreedWage, startNewAgreement, customerId } = reqBody;
     
     // General required fields
     if (!category) {
@@ -153,22 +153,36 @@ export async function POST(request: Request) {
           companyId,
           userId,
           employeeId: employeeId || undefined,
+          // Store customerId for Debt expenses
+          ...(customerId ? { customerId } : {}),
         },
       });
     }
 
     // 2. Create a corresponding transaction (always for every expense)
-    const transactionAmount = -Math.abs(Number(finalAmount));
+    // Determine transaction type: DEBT_TAKEN if subCategory is 'Debt' and customerId exists
+    let transactionType: 'INCOME' | 'EXPENSE' | 'TRANSFER_IN' | 'TRANSFER_OUT' | 'DEBT_TAKEN' | 'DEBT_REPAID' | 'OTHER' = 'EXPENSE';
+    let transactionAmount = -Math.abs(Number(finalAmount));
+    let transactionCustomerId = undefined;
+    
+    if (category === 'Company Expense' && subCategory === 'Debt' && customerId) {
+      // This is a customer loan - create DEBT_TAKEN transaction
+      transactionType = 'DEBT_TAKEN';
+      transactionCustomerId = customerId;
+      transactionAmount = Math.abs(Number(finalAmount)); // Positive for DEBT_TAKEN
+    }
+    
     await prisma.transaction.create({
       data: {
         description: description?.trim() || '',
         amount: transactionAmount,
-        type: 'EXPENSE',
+        type: transactionType,
         transactionDate: new Date(expenseDate),
         note: note?.trim() || null,
         accountId: paidFrom,
         expenseId: newExpense?.id || null,
         employeeId: employeeId || undefined,
+        customerId: transactionCustomerId,
         userId,
         companyId,
       },
