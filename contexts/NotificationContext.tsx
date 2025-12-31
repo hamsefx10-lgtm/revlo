@@ -88,8 +88,12 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     playNotificationSound(notification.type);
   }, []);
 
-  const removeToast = useCallback((id: string) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
+  const removeToast = useCallback((id?: string) => {
+    if (id) {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    } else {
+      setToasts([]);
+    }
   }, []);
 
   const markAsRead = (id: string) => {
