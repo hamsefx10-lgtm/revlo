@@ -29,12 +29,22 @@ export default function LoginPage() {
     });
 
     if (result?.ok) {
+      // Fetch session data to determine planType
+      const response = await fetch('/api/auth/session');
+      const session = await response.json();
+
       addNotification({
         type: 'success',
         message: 'Si guul leh ayaad ku gashay! Waad soo dhowaal.'
       });
-      // Optional: Add a slight delay for success animation before redirect
-      setTimeout(() => router.push('/dashboard'), 500);
+      // Redirect based on planType
+      setTimeout(() => {
+        if (session?.user?.planType === 'SHOPS_ONLY') {
+          router.push('/shop/dashboard');
+        } else {
+          router.push('/dashboard');
+        }
+      }, 500);
     } else {
       addNotification({
         type: 'error',

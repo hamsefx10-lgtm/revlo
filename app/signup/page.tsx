@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Mail, Lock, User, Building, Chrome, Eye, EyeOff, UserPlus, Briefcase, Factory, Package, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Mail, Lock, User, Building, Chrome, Eye, EyeOff, UserPlus, Briefcase, Factory, Package, ArrowRight, CheckCircle2, Store } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import Auth3DBackground from '@/components/Auth3DBackground';
 import { useNotifications } from '@/contexts/NotificationContext';
@@ -17,7 +17,7 @@ export default function SignUpPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [planType, setPlanType] = useState('COMBINED'); // PROJECTS_ONLY, FACTORIES_ONLY, COMBINED
+  const [planType, setPlanType] = useState('COMBINED'); // PROJECTS_ONLY, FACTORIES_ONLY, SHOPS_ONLY, COMBINED
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -58,7 +58,11 @@ export default function SignUpPage() {
           email,
           password,
         });
-        setTimeout(() => router.push('/dashboard'), 1000);
+        if (planType === 'SHOPS_ONLY') {
+          setTimeout(() => router.push('/shop/dashboard'), 1000);
+        } else {
+          setTimeout(() => router.push('/dashboard'), 1000);
+        }
       } else {
         addNotification({ type: 'error', message: data.message || 'Diiwaan gelintu waa ay guuldareysatay. Fadlan isku day mar kale.' });
       }
@@ -206,53 +210,66 @@ export default function SignUpPage() {
             {/* Plan Selection */}
             <div className="pt-4">
               <label className="block text-sm font-bold text-darkGray dark:text-gray-300 mb-4">Dooro Qorshahaaga</label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
                 <button
                   type="button"
                   onClick={() => setPlanType('PROJECTS_ONLY')}
-                  className={`relative p-4 rounded-2xl border-2 transition-all duration-200 flex flex-col items-center justify-center text-center group ${planType === 'PROJECTS_ONLY'
+                  className={`relative p-3 rounded-2xl border-2 transition-all duration-200 flex flex-col items-center justify-center text-center group ${planType === 'PROJECTS_ONLY'
                     ? 'border-secondary bg-secondary/5 shadow-lg shadow-secondary/10 scale-105 z-10'
                     : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 hover:border-secondary/30 hover:shadow-md'
                     }`}
                 >
                   {planType === 'PROJECTS_ONLY' && <div className="absolute top-2 right-2 text-secondary bg-white dark:bg-gray-900 rounded-full p-0.5"><CheckCircle2 size={16} fill="currentColor" className="text-secondary" /></div>}
-                  <div className={`p-3 rounded-xl mb-3 transition-colors ${planType === 'PROJECTS_ONLY' ? 'bg-gradient-to-br from-secondary to-green-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 group-hover:bg-secondary/10 group-hover:text-secondary'}`}>
-                    <Briefcase size={20} />
+                  <div className={`p-2.5 rounded-xl mb-2 transition-colors ${planType === 'PROJECTS_ONLY' ? 'bg-gradient-to-br from-secondary to-green-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 group-hover:bg-secondary/10 group-hover:text-secondary'}`}>
+                    <Briefcase size={18} />
                   </div>
-                  <div className="font-bold text-sm text-darkGray dark:text-white">Mashruucyada</div>
-                  <div className="text-[11px] text-gray-500 font-medium mt-1">Maamulka Mashaariicda</div>
+                  <div className="font-bold text-xs text-darkGray dark:text-white">Mashruucyada</div>
+                  {/* <div className="text-[10px] text-gray-500 font-medium mt-1">Maamulka Mashaariicda</div> */}
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setPlanType('FACTORIES_ONLY')}
-                  className={`relative p-4 rounded-2xl border-2 transition-all duration-200 flex flex-col items-center justify-center text-center group ${planType === 'FACTORIES_ONLY'
+                  className={`relative p-3 rounded-2xl border-2 transition-all duration-200 flex flex-col items-center justify-center text-center group ${planType === 'FACTORIES_ONLY'
                     ? 'border-secondary bg-secondary/5 shadow-lg shadow-secondary/10 scale-105 z-10'
                     : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 hover:border-secondary/30 hover:shadow-md'
                     }`}
                 >
                   {planType === 'FACTORIES_ONLY' && <div className="absolute top-2 right-2 text-secondary bg-white dark:bg-gray-900 rounded-full p-0.5"><CheckCircle2 size={16} fill="currentColor" className="text-secondary" /></div>}
-                  <div className={`p-3 rounded-xl mb-3 transition-colors ${planType === 'FACTORIES_ONLY' ? 'bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 group-hover:bg-blue-500/10 group-hover:text-blue-500'}`}>
-                    <Factory size={20} />
+                  <div className={`p-2.5 rounded-xl mb-2 transition-colors ${planType === 'FACTORIES_ONLY' ? 'bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 group-hover:bg-blue-500/10 group-hover:text-blue-500'}`}>
+                    <Factory size={18} />
                   </div>
-                  <div className="font-bold text-sm text-darkGray dark:text-white">Warshadaha</div>
-                  <div className="text-[11px] text-gray-500 font-medium mt-1">Maamulka Warshadaha</div>
+                  <div className="font-bold text-xs text-darkGray dark:text-white">Warshadaha</div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPlanType('SHOPS_ONLY')}
+                  className={`relative p-3 rounded-2xl border-2 transition-all duration-200 flex flex-col items-center justify-center text-center group ${planType === 'SHOPS_ONLY'
+                    ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/10 shadow-lg shadow-orange-500/10 scale-105 z-10'
+                    : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 hover:border-orange-500/30 hover:shadow-md'
+                    }`}
+                >
+                  {planType === 'SHOPS_ONLY' && <div className="absolute top-2 right-2 text-orange-500 bg-white dark:bg-gray-900 rounded-full p-0.5"><CheckCircle2 size={16} fill="currentColor" className="text-orange-500" /></div>}
+                  <div className={`p-2.5 rounded-xl mb-2 transition-colors ${planType === 'SHOPS_ONLY' ? 'bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 group-hover:bg-orange-500/10 group-hover:text-orange-500'}`}>
+                    <Store size={18} />
+                  </div>
+                  <div className="font-bold text-xs text-darkGray dark:text-white">Dukaan</div>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setPlanType('COMBINED')}
-                  className={`relative p-4 rounded-2xl border-2 transition-all duration-200 flex flex-col items-center justify-center text-center group ${planType === 'COMBINED'
+                  className={`relative p-3 rounded-2xl border-2 transition-all duration-200 flex flex-col items-center justify-center text-center group ${planType === 'COMBINED'
                     ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/10 shadow-lg shadow-purple-500/10 scale-105 z-10'
                     : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 hover:border-purple-500/30 hover:shadow-md'
                     }`}
                 >
                   {planType === 'COMBINED' && <div className="absolute top-2 right-2 text-purple-500 bg-white dark:bg-gray-900 rounded-full p-0.5"><CheckCircle2 size={16} fill="currentColor" className="text-purple-500" /></div>}
-                  <div className={`p-3 rounded-xl mb-3 transition-colors ${planType === 'COMBINED' ? 'bg-gradient-to-br from-purple-500 to-purple-700 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 group-hover:bg-purple-500/10 group-hover:text-purple-500'}`}>
-                    <Package size={20} />
+                  <div className={`p-2.5 rounded-xl mb-2 transition-colors ${planType === 'COMBINED' ? 'bg-gradient-to-br from-purple-500 to-purple-700 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 group-hover:bg-purple-500/10 group-hover:text-purple-500'}`}>
+                    <Package size={18} />
                   </div>
-                  <div className="font-bold text-sm text-darkGray dark:text-white">Complete</div>
-                  <div className="text-[11px] text-gray-500 font-medium mt-1">Labada Adeegba</div>
+                  <div className="font-bold text-xs text-darkGray dark:text-white">Dhammaan</div>
                 </button>
               </div>
             </div>
@@ -301,12 +318,12 @@ export default function SignUpPage() {
             </Link>
           </p>
         </div>
-      </div>
+      </div >
 
       {/* Right Side - Visual Section */}
-      <div className="hidden lg:flex w-1/2 relative bg-gray-900 overflow-hidden">
+      < div className="hidden lg:flex w-1/2 relative bg-gray-900 overflow-hidden" >
         <Auth3DBackground />
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }

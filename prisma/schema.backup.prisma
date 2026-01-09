@@ -47,7 +47,7 @@ model User {
   // Shop Management Relations
   products       Product[]        @relation("UserProducts")
   shopCustomers  Customer[]       @relation("UserCustomers")
-  vendors        ShopVendor[]         @relation("UserShopVendors")
+  vendors        Vendor[]         @relation("UserShopVendors")
   sales          Sale[]           @relation("UserSales")
   purchaseOrders PurchaseOrder[]  @relation("UserPurchaseOrders")
   stockMovements StockMovement[]  @relation("UserStockMovements")
@@ -108,7 +108,7 @@ model Company {
   shareholders            Shareholder[]
   transactions            Transaction[]
   users                   User[]
-  vendors        ShopVendor[]
+  vendors                 Vendor[]
   pendingExpenses         PendingExpense[]
   telegramChats           TelegramChat[]
   telegramUsers           TelegramUserLink[]
@@ -354,7 +354,7 @@ model Expense {
   fiscalYear      FiscalYear?      @relation(fields: [fiscalYearId], references: [id])
   project         Project?         @relation(fields: [projectId], references: [id])
   user            User?            @relation(fields: [userId], references: [id])
-  vendor          ShopVendor?          @relation(fields: [vendorId], references: [id])
+  vendor          Vendor?          @relation(fields: [vendorId], references: [id])
   transactions    Transaction[]
 
   @@map("expenses")
@@ -736,7 +736,7 @@ model MaterialPurchase {
   company           Company          @relation(fields: [companyId], references: [id])
   fiscalYear        FiscalYear?      @relation(fields: [fiscalYearId], references: [id])
   productionOrder   ProductionOrder? @relation(fields: [productionOrderId], references: [id])
-  vendor            ShopVendor           @relation(fields: [vendorId], references: [id])
+  vendor            Vendor           @relation(fields: [vendorId], references: [id])
 
   @@map("material_purchases")
 }
@@ -933,3 +933,137 @@ model Product {
 
   @@map("products")
 }
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  email     String?
+  phone     String
+  address   String?
+  status    String   @default("Active") // Active, Inactive
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  user      User     @relation("UserCustomers", fields: [userId], references: [id])
+  sales     Sale[]
+
+  @@map("shop_customers")
+}
+
+model ShopVendor {
+  id          String          @id @default(uuid())
+  name        String
+  contactPerson String?
+  email       String?
+  phone       String
+  address     String?
+  category    String?
+  status      String          @default("Active")
+  userId      String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  
+  user          User            @relation("UserShopVendors", fields: [userId], references: [id])
+  products      Product[]
+  purchaseOrders PurchaseOrder[]
+
+  @@map("shop_vendors")
+}
+
+model Sale {
+  id            String     @id @default(uuid())
+  invoiceNumber String     @unique
+  customerId    String?
+  userId        String
+  subtotal      Float
+  tax           Float
+  total         Float
+  paymentMethod String     @default("Cash") // Cash, Card, Mobile Money
+  status        String     @default("Completed")
+  notes         String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  
+  user          User       @relation("UserSales", fields: [userId], references: [id])
+  customer      Customer?  @relation(fields: [customerId], references: [id])
+  items         SaleItem[]
+
+  @@map("sales")
+}
+
+model SaleItem {
+  id          String   @id @default(uuid())
+  saleId      String
+  productId   String
+  productName String
+  quantity    Int
+  unitPrice   Float
+  total       Float
+  createdAt   DateTime @default(now())
+  
+  sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product     Product  @relation(fields: [productId], references: [id])
+
+  @@map("sale_items")
+}
+
+model PurchaseOrder {
+  id               String              @id @default(uuid())
+  poNumber         String              @unique
+  vendorId         String
+  userId           String
+  subtotal         Float
+  tax              Float
+  total            Float
+  status           String              @default("Pending") // Pending, Ordered, Received, Cancelled
+  expectedDelivery DateTime?
+  notes            String?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  
+  user             User                @relation("UserPurchaseOrders", fields: [userId], references: [id])
+  vendor           Vendor              @relation(fields: [vendorId], references: [id])
+  items            PurchaseOrderItem[]
+
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id          String        @id @default(uuid())
+  poId        String
+  productId   String
+  productName String
+  quantity    Int
+  unitCost    Float
+  total       Float
+  createdAt   DateTime      @default(now())
+  
+  purchaseOrder PurchaseOrder @relation(fields: [poId], references: [id], onDelete: Cascade)
+  product       Product       @relation(fields: [productId], references: [id])
+
+  @@map("purchase_order_items")
+}
+
+model StockMovement {
+  id        String   @id @default(uuid())
+  productId String
+  type      String   // Sale, Purchase, Adjustment, Return
+  quantity  Int      // Positive for additions, negative for reductions
+  reference String?  // Invoice number, PO number, etc.
+  userId    String
+  createdAt DateTime @default(now())
+  
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation("UserStockMovements", fields: [userId], references: [id])
+
+  @@map("stock_movements")
+}
+
+// Add these relations to the User model:
+// products      Product[]       @relation("UserProducts")
+// customers     Customer[]      @relation("UserCustomers")
+// vendors       Vendor[]        @relation("UserShopVendors")
+// sales         Sale[]          @relation("UserSales")
+// purchaseOrders PurchaseOrder[] @relation("UserPurchaseOrders")
+// stockMovements StockMovement[] @relation("UserStockMovements")
