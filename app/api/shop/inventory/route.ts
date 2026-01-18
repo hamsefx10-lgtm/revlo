@@ -1,62 +1,105 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// Temporary in-memory storage (replace with database later)
-let products: any[] = [];
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+import prisma from '@/lib/prisma';
 
 // GET /api/shop/inventory - List all products
 export async function GET(req: NextRequest) {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const { searchParams } = new URL(req.url);
         const search = searchParams.get('search') || '';
-        const status = searchParams.get('status');
+        const status = searchParams.get('status') || 'All';
 
-        let filtered = products;
+        const where: any = {
+            userId: session.user.id,
+        };
+
+        if (status !== 'All') {
+            where.status = status;
+        }
 
         if (search) {
-            filtered = filtered.filter(p =>
-                p.name.toLowerCase().includes(search.toLowerCase()) ||
-                p.sku.toLowerCase().includes(search.toLowerCase())
-            );
+            where.OR = [
+                { name: { contains: search, mode: 'insensitive' } },
+                { sku: { contains: search, mode: 'insensitive' } },
+            ];
         }
 
-        if (status && status !== 'All') {
-            filtered = filtered.filter(p => p.status === status);
-        }
+        const products = await prisma.product.findMany({
+            where,
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
 
-        return NextResponse.json({ products: filtered });
+        return NextResponse.json({ products });
     } catch (error) {
         console.error('Error fetching inventory:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
 
-// POST /api/shop/inventory - Create new product
+// POST /api/shop/inventory - Add new product
 export async function POST(req: NextRequest) {
     try {
-        const body = await req.json();
-        const { name, category, description, costPrice, sellingPrice, stock, minStock } = body;
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
 
-        if (!name || !costPrice || !sellingPrice || stock === undefined) {
+        const body = await req.json();
+        const { name, sku, category, costPrice, sellingPrice, stock, minStock, description } = body;
+
+        // Basic validation
+        if (!name || !sku || !sellingPrice) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        const product = {
-            id: `prod_${Date.now()}`,
-            name,
-            sku: `SKU-${Date.now()}`,
-            category: category || 'Uncategorized',
-            description: description || '',
-            costPrice: parseFloat(costPrice),
-            sellingPrice: parseFloat(sellingPrice),
-            stock: parseInt(stock),
-            minStock: parseInt(minStock) || 5,
-            status: parseInt(stock) > parseInt(minStock || 5) ? 'In Stock' :
-                parseInt(stock) > 0 ? 'Low Stock' : 'Out of Stock',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        };
+        // Check for duplicate SKU
+        const existingProduct = await prisma.product.findUnique({
+            where: { sku },
+        });
 
-        products.push(product);
+        if (existingProduct) {
+            return NextResponse.json({ error: 'Product with this SKU already exists' }, { status: 400 });
+        }
+
+        // Determine status
+        const status = stock > minStock ? 'In Stock' : stock > 0 ? 'Low Stock' : 'Out of Stock';
+
+        const product = await prisma.product.create({
+            data: {
+                name,
+                sku,
+                category: category || 'General',
+                costPrice: parseFloat(costPrice) || 0,
+                sellingPrice: parseFloat(sellingPrice),
+                stock: parseInt(stock) || 0,
+                minStock: parseInt(minStock) || 5,
+                description,
+                status,
+                userId: session.user.id,
+                supplierId: body.supplierId || null,
+            },
+        });
+
+        // Track initial stock movement
+        if (stock > 0) {
+            await prisma.stockMovement.create({
+                data: {
+                    productId: product.id,
+                    type: 'Adjustment', // Initial stock
+                    quantity: parseInt(stock),
+                    userId: session.user.id,
+                    reference: 'Initial stock',
+                },
+            });
+        }
 
         return NextResponse.json({ product }, { status: 201 });
     } catch (error) {

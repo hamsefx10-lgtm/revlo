@@ -10,6 +10,53 @@ import { useNotifications } from '@/contexts/NotificationContext';
 
 import LandingNavbar from '@/components/LandingNavbar';
 
+interface InputGroupProps {
+  id: string;
+  label: string;
+  icon: any;
+  type?: string;
+  placeholder?: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  required?: boolean;
+  isPassword?: boolean;
+  showPassword?: boolean;
+  togglePassword?: () => void;
+}
+
+const InputGroup = ({
+  id, label, icon: Icon, type = 'text', placeholder, value, onChange, required = true, isPassword = false, showPassword = false, togglePassword
+}: InputGroupProps) => (
+  <div className="group">
+    <label htmlFor={id} className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">{label}</label>
+    <div className="relative">
+      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <Icon className="h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
+      </div>
+      <input
+        type={type}
+        id={id}
+        name={id}
+        placeholder={placeholder}
+        required={required}
+        value={value}
+        onChange={onChange}
+        className={`block w-full pl-10 ${isPassword ? 'pr-10' : 'pr-3'} py-3 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-gray-50 dark:bg-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition duration-200 sm:text-sm`}
+      />
+      {isPassword && (
+        <button
+          type="button"
+          onClick={togglePassword}
+          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+          tabIndex={-1}
+        >
+          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+        </button>
+      )}
+    </div>
+  </div>
+);
+
 export default function SignUpPage() {
   const { addNotification } = useNotifications();
   const [companyName, setCompanyName] = useState('');
@@ -17,10 +64,11 @@ export default function SignUpPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [planType, setPlanType] = useState('COMBINED'); // PROJECTS_ONLY, FACTORIES_ONLY, SHOPS_ONLY, COMBINED
+  const [planType, setPlanType] = useState('SHOPS_ONLY'); // PROJECTS_ONLY, FACTORIES_ONLY, SHOPS_ONLY
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [successSent, setSuccessSent] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,12 +100,12 @@ export default function SignUpPage() {
       if (response.ok) {
         addNotification({ type: 'success', message: 'Akoonkaaga si guul leh ayaa loo sameeyay! Waxaa laguugu gudbinayaa dashboard...' });
 
-        // Si toos ah user-ka ugu login-geli NextAuth
         await signIn('credentials', {
           redirect: false,
           email,
           password,
         });
+
         if (planType === 'SHOPS_ONLY') {
           setTimeout(() => router.push('/shop/dashboard'), 1000);
         } else {
@@ -73,6 +121,37 @@ export default function SignUpPage() {
       setLoading(false);
     }
   };
+
+  if (successSent) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center p-4 selection:bg-primary/30 selection:text-primary">
+        <LandingNavbar />
+        <div className="w-full max-w-lg bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 animate-in fade-in zoom-in duration-300 text-center">
+          <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle2 className="w-10 h-10 text-green-600 dark:text-green-400" />
+          </div>
+          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-4">Email Waa La Diray!</h2>
+          <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
+            Waxaan kuu dirnay email xaqiijin ah. Fadlan hubi inbox-kaaga <strong>{email}</strong> oo guji link-ga si aad u dhamaystirto.
+          </p>
+          <div className="space-y-4">
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center w-full py-3 px-6 border border-transparent rounded-xl shadow-sm text-base font-bold text-white bg-primary hover:bg-primary/90 transition-all"
+            >
+              Tag Bogga Login-ka
+            </Link>
+            <button
+              onClick={() => window.location.reload()}
+              className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 underline"
+            >
+              Ma heshay email-ka? Dib u dir
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 flex font-sans selection:bg-primary/30 selection:text-primary relative">
@@ -95,182 +174,102 @@ export default function SignUpPage() {
 
           <form className="mt-8 space-y-5" onSubmit={handleSubmit} autoComplete="off">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="group">
-                <label htmlFor="companyName" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Shirkadda</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Building className="h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
-                  </div>
-                  <input
-                    type="text"
-                    id="companyName"
-                    name="companyName"
-                    placeholder="Company Name"
-                    required
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-gray-50 dark:bg-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition duration-200 sm:text-sm"
-                  />
-                </div>
-              </div>
-              <div className="group">
-                <label htmlFor="fullName" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Magacaaga</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
-                  </div>
-                  <input
-                    type="text"
-                    id="fullName"
-                    name="fullName"
-                    placeholder="Full Name"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-gray-50 dark:bg-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition duration-200 sm:text-sm"
-                  />
-                </div>
-              </div>
+              <InputGroup
+                id="companyName"
+                label="Shirkadda"
+                icon={Building}
+                placeholder="Company Name"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+              />
+              <InputGroup
+                id="fullName"
+                label="Magacaaga"
+                icon={User}
+                placeholder="Full Name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+              />
             </div>
 
-            <div className="group">
-              <label htmlFor="email" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Email Address</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
-                </div>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  placeholder="name@company.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-gray-50 dark:bg-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition duration-200 sm:text-sm"
-                />
-              </div>
-            </div>
+            <InputGroup
+              id="email"
+              type="email"
+              label="Email Address"
+              icon={Mail}
+              placeholder="name@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="group">
-                <label htmlFor="password" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Password</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
-                  </div>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    id="password"
-                    name="password"
-                    placeholder="••••••••"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full pl-10 pr-10 py-3 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-gray-50 dark:bg-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition duration-200 sm:text-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                    tabIndex={-1}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
-              <div className="group">
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Xaqiiji</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
-                  </div>
-                  <input
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    placeholder="••••••••"
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="block w-full pl-10 pr-10 py-3 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-gray-50 dark:bg-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition duration-200 sm:text-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                    tabIndex={-1}
-                  >
-                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
+              <InputGroup
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                label="Password"
+                icon={Lock}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                isPassword
+                showPassword={showPassword}
+                togglePassword={() => setShowPassword(!showPassword)}
+              />
+              <InputGroup
+                id="confirmPassword"
+                type={showConfirmPassword ? 'text' : 'password'}
+                label="Xaqiiji"
+                icon={Lock}
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                isPassword
+                showPassword={showConfirmPassword}
+                togglePassword={() => setShowConfirmPassword(!showConfirmPassword)}
+              />
             </div>
 
             {/* Plan Selection */}
-            <div className="pt-4">
-              <label className="block text-sm font-bold text-darkGray dark:text-gray-300 mb-4">Dooro Qorshahaaga</label>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
-                <button
-                  type="button"
-                  onClick={() => setPlanType('PROJECTS_ONLY')}
-                  className={`relative p-3 rounded-2xl border-2 transition-all duration-200 flex flex-col items-center justify-center text-center group ${planType === 'PROJECTS_ONLY'
-                    ? 'border-secondary bg-secondary/5 shadow-lg shadow-secondary/10 scale-105 z-10'
-                    : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 hover:border-secondary/30 hover:shadow-md'
-                    }`}
-                >
-                  {planType === 'PROJECTS_ONLY' && <div className="absolute top-2 right-2 text-secondary bg-white dark:bg-gray-900 rounded-full p-0.5"><CheckCircle2 size={16} fill="currentColor" className="text-secondary" /></div>}
-                  <div className={`p-2.5 rounded-xl mb-2 transition-colors ${planType === 'PROJECTS_ONLY' ? 'bg-gradient-to-br from-secondary to-green-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 group-hover:bg-secondary/10 group-hover:text-secondary'}`}>
-                    <Briefcase size={18} />
-                  </div>
-                  <div className="font-bold text-xs text-darkGray dark:text-white">Mashruucyada</div>
-                  {/* <div className="text-[10px] text-gray-500 font-medium mt-1">Maamulka Mashaariicda</div> */}
-                </button>
+            <div className="pt-2">
+              <label className="block text-sm font-bold text-darkGray dark:text-gray-300 mb-4">Choose Business Type</label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  { id: 'SHOPS_ONLY', label: 'Shop', icon: Store, color: 'text-orange-500', activeBorder: 'border-orange-500', activeBg: 'bg-orange-500/5', desc: 'Supermarket & POS' },
+                  { id: 'FACTORIES_ONLY', label: 'Factory', icon: Factory, color: 'text-blue-500', activeBorder: 'border-blue-500', activeBg: 'bg-blue-500/5', desc: 'Manufacturing' },
+                  { id: 'PROJECTS_ONLY', label: 'Projects', icon: Briefcase, color: 'text-secondary', activeBorder: 'border-secondary', activeBg: 'bg-secondary/5', desc: 'Construction' },
+                ].map((plan) => {
+                  const Icon = plan.icon;
+                  const isSelected = planType === plan.id;
 
-                <button
-                  type="button"
-                  onClick={() => setPlanType('FACTORIES_ONLY')}
-                  className={`relative p-3 rounded-2xl border-2 transition-all duration-200 flex flex-col items-center justify-center text-center group ${planType === 'FACTORIES_ONLY'
-                    ? 'border-secondary bg-secondary/5 shadow-lg shadow-secondary/10 scale-105 z-10'
-                    : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 hover:border-secondary/30 hover:shadow-md'
-                    }`}
-                >
-                  {planType === 'FACTORIES_ONLY' && <div className="absolute top-2 right-2 text-secondary bg-white dark:bg-gray-900 rounded-full p-0.5"><CheckCircle2 size={16} fill="currentColor" className="text-secondary" /></div>}
-                  <div className={`p-2.5 rounded-xl mb-2 transition-colors ${planType === 'FACTORIES_ONLY' ? 'bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 group-hover:bg-blue-500/10 group-hover:text-blue-500'}`}>
-                    <Factory size={18} />
-                  </div>
-                  <div className="font-bold text-xs text-darkGray dark:text-white">Warshadaha</div>
-                </button>
+                  return (
+                    <button
+                      key={plan.id}
+                      type="button"
+                      onClick={() => setPlanType(plan.id)}
+                      className={`relative p-4 rounded-2xl border-2 transition-all duration-300 flex flex-col items-start text-left group hover:shadow-md ${isSelected
+                        ? `${plan.activeBorder} ${plan.activeBg} shadow-sm`
+                        : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600'
+                        }`}
+                    >
+                      {/* Checkmark Circle */}
+                      <div className={`absolute top-3 right-3 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? `border-current ${plan.color} bg-white dark:bg-gray-900` : 'border-gray-300 dark:border-gray-600'
+                        }`}>
+                        {isSelected && <div className={`w-2.5 h-2.5 rounded-full bg-current ${plan.color}`}></div>}
+                      </div>
 
-                <button
-                  type="button"
-                  onClick={() => setPlanType('SHOPS_ONLY')}
-                  className={`relative p-3 rounded-2xl border-2 transition-all duration-200 flex flex-col items-center justify-center text-center group ${planType === 'SHOPS_ONLY'
-                    ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/10 shadow-lg shadow-orange-500/10 scale-105 z-10'
-                    : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 hover:border-orange-500/30 hover:shadow-md'
-                    }`}
-                >
-                  {planType === 'SHOPS_ONLY' && <div className="absolute top-2 right-2 text-orange-500 bg-white dark:bg-gray-900 rounded-full p-0.5"><CheckCircle2 size={16} fill="currentColor" className="text-orange-500" /></div>}
-                  <div className={`p-2.5 rounded-xl mb-2 transition-colors ${planType === 'SHOPS_ONLY' ? 'bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 group-hover:bg-orange-500/10 group-hover:text-orange-500'}`}>
-                    <Store size={18} />
-                  </div>
-                  <div className="font-bold text-xs text-darkGray dark:text-white">Dukaan</div>
-                </button>
 
-                <button
-                  type="button"
-                  onClick={() => setPlanType('COMBINED')}
-                  className={`relative p-3 rounded-2xl border-2 transition-all duration-200 flex flex-col items-center justify-center text-center group ${planType === 'COMBINED'
-                    ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/10 shadow-lg shadow-purple-500/10 scale-105 z-10'
-                    : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800 hover:border-purple-500/30 hover:shadow-md'
-                    }`}
-                >
-                  {planType === 'COMBINED' && <div className="absolute top-2 right-2 text-purple-500 bg-white dark:bg-gray-900 rounded-full p-0.5"><CheckCircle2 size={16} fill="currentColor" className="text-purple-500" /></div>}
-                  <div className={`p-2.5 rounded-xl mb-2 transition-colors ${planType === 'COMBINED' ? 'bg-gradient-to-br from-purple-500 to-purple-700 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 group-hover:bg-purple-500/10 group-hover:text-purple-500'}`}>
-                    <Package size={18} />
-                  </div>
-                  <div className="font-bold text-xs text-darkGray dark:text-white">Dhammaan</div>
-                </button>
+
+                      <div className={`p-2.5 rounded-xl mb-3 transition-colors ${isSelected ? 'bg-white dark:bg-gray-900 shadow-sm' : 'bg-gray-50 dark:bg-gray-700'} ${plan.color}`}>
+                        <Icon size={20} />
+                      </div>
+
+                      <div>
+                        <div className={`font-bold text-sm ${isSelected ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'}`}>{plan.label}</div>
+                        <div className="text-[11px] text-gray-500 dark:text-gray-400 font-medium mt-0.5 leading-tight">{plan.desc}</div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

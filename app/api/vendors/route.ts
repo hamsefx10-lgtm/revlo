@@ -11,10 +11,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const vendors = await prisma.vendor.findMany({
-      where: {
-        companyId: session.user.companyId,
-      },
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search') || '';
+
+    const where: any = {
+      companyId: session.user.companyId,
+    };
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { contactPerson: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    const vendors = await prisma.shopVendor.findMany({
+      where,
       orderBy: {
         name: 'asc'
       }
@@ -58,7 +70,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Vendor name is required' }, { status: 400 });
     }
 
-    const vendor = await prisma.vendor.create({
+    const vendor = await prisma.shopVendor.create({
       data: {
         name,
         type,
@@ -69,7 +81,8 @@ export async function POST(request: NextRequest) {
         address,
         productsServices,
         notes,
-        companyId: session.user.companyId
+        companyId: session.user.companyId,
+        userId: session.user.id
       }
     });
 

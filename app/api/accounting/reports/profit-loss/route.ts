@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     // Calculate date range based on filter
     let dateFilter: any = {};
     const today = new Date();
-    
+
     switch (dateRange) {
       case 'This Month':
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -59,7 +59,7 @@ export async function GET(request: Request) {
         project: { select: { id: true, name: true, status: true } },
         account: { select: { name: true } },
         customer: { select: { name: true } },
-        vendor: { select: { name: true } },
+        // vendor: { select: { name: true } },
         user: { select: { fullName: true } },
       },
       orderBy: { transactionDate: 'desc' },
@@ -73,7 +73,7 @@ export async function GET(request: Request) {
       },
       include: {
         project: { select: { id: true, name: true, status: true } },
-        vendor: { select: { name: true } },
+        // vendor: { select: { name: true } },
         customer: { select: { name: true } },
         user: { select: { fullName: true } },
       },
@@ -148,12 +148,12 @@ export async function GET(request: Request) {
           },
         },
       },
-    }).then(projects => 
+    }).then(projects =>
       projects.map(project => {
         const totalIncome = project.transactions.reduce((sum, trx) => sum + Number(trx.amount), 0);
         const totalDirectCosts = project.expenses.reduce((sum, exp) => sum + Number(exp.amount), 0);
         const netProfit = totalIncome - totalDirectCosts;
-        
+
         return {
           projectId: project.id,
           projectName: project.name,
@@ -203,7 +203,7 @@ export async function GET(request: Request) {
     const realizedProjectProfit = projectGroups
       .filter(p => p.projectStatus === 'Completed')
       .reduce((sum, p) => sum + p.netProfit, 0);
-    
+
     const potentialProjectProfit = projectGroups
       .filter(p => p.projectStatus === 'Active')
       .reduce((sum, p) => sum + p.netProfit, 0);
@@ -211,45 +211,45 @@ export async function GET(request: Request) {
     // Generate monthly summary for charts
     const monthlySummary = [];
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
+
     for (let i = 0; i < 12; i++) {
       const monthStart = new Date(today.getFullYear(), i, 1);
       const monthEnd = new Date(today.getFullYear(), i + 1, 0);
-      
+
       const monthProjectIncome = allTransactions
-        .filter(trx => 
-          trx.type === 'INCOME' && 
+        .filter(trx =>
+          trx.type === 'INCOME' &&
           trx.projectId &&
-          trx.transactionDate >= monthStart && 
+          trx.transactionDate >= monthStart &&
           trx.transactionDate <= monthEnd
         )
         .reduce((sum, trx) => sum + Number(trx.amount), 0);
-      
+
       const monthDirectCosts = allExpenses
-        .filter(exp => 
+        .filter(exp =>
           exp.projectId &&
           ['Material', 'Labor', 'Transport'].includes(exp.category) &&
-          exp.expenseDate >= monthStart && 
+          exp.expenseDate >= monthStart &&
           exp.expenseDate <= monthEnd
         )
         .reduce((sum, exp) => sum + Number(exp.amount), 0);
-      
+
       const monthOperatingExpenses = [
-        ...allExpenses.filter(exp => 
+        ...allExpenses.filter(exp =>
           (!exp.projectId || exp.category === 'Company Expense') &&
-          exp.expenseDate >= monthStart && 
+          exp.expenseDate >= monthStart &&
           exp.expenseDate <= monthEnd
         ),
-        ...allTransactions.filter(trx => 
-          trx.type === 'EXPENSE' && 
+        ...allTransactions.filter(trx =>
+          trx.type === 'EXPENSE' &&
           !trx.projectId &&
-          trx.transactionDate >= monthStart && 
+          trx.transactionDate >= monthStart &&
           trx.transactionDate <= monthEnd
         )
       ].reduce((sum, item) => sum + Number(item.amount), 0);
-      
+
       const monthNetProfit = monthProjectIncome - monthDirectCosts - monthOperatingExpenses;
-      
+
       monthlySummary.push({
         month: months[i],
         projectIncome: monthProjectIncome,

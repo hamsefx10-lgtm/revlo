@@ -24,7 +24,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
         project: { select: { id: true, name: true } },     // Include ID
         expense: { select: { id: true, description: true } }, // Include ID
         customer: { select: { id: true, name: true } },    // Include ID
-        vendor: { select: { id: true, name: true } },      // Include ID
+        // vendor: { select: { id: true, name: true } },      // Include ID
         user: { select: { id: true, fullName: true } },    // Include ID
         employee: { select: { id: true, fullName: true } }, // Include ID
       },
@@ -54,8 +54,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
-    const { 
-      description, amount, type, transactionDate, note, 
+    const {
+      description, amount, type, transactionDate, note,
       accountId, fromAccountId, toAccountId, // Account IDs
       projectId, expenseId, customerId, vendorId, employeeId // Related entity IDs
     } = await request.json();
@@ -130,10 +130,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       const customer = await prisma.customer.findUnique({ where: { id: customerId } });
       if (!customer) return NextResponse.json({ message: 'Macmiilka la xiriira lama helin.' }, { status: 400 });
     }
-    if (vendorId) {
+    /* if (vendorId) {
       const vendor = await prisma.vendor.findUnique({ where: { id: vendorId } });
       if (!vendor) return NextResponse.json({ message: 'Iibiyaha la xiriira lama helin.' }, { status: 400 });
-    }
+    } */
     if (employeeId) {
       const employee = await prisma.employee.findUnique({ where: { id: employeeId } });
       if (!employee) return NextResponse.json({ message: 'Shaqaalaha la xiriira lama helin.' }, { status: 400 });

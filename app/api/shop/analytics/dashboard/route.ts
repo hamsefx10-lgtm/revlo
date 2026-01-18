@@ -1,154 +1,105 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
+import { startOfDay, subDays, format } from 'date-fns';
 
-// GET /api/shop/analytics/dashboard - Get dashboard analytics
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
         const session = await getServerSession(authOptions);
-
         if (!session?.user?.id) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { searchParams } = new URL(req.url);
-        const period = searchParams.get('period') || '7'; // days
-        const daysAgo = parseInt(period);
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - daysAgo);
+        const userId = session.user.id;
 
-        // Parallel queries for better performance
-        const [
-            totalRevenue,
-            totalSales,
-            totalProducts,
-            lowStockProducts,
-            recentSales,
-            topProducts,
-            salesByDay
-        ] = await Promise.all([
-            // Total Revenue
-            prisma.sale.aggregate({
-                where: {
-                    userId: session.user.id,
-                    createdAt: { gte: startDate }
-                },
-                _sum: { total: true }
-            }),
-
-            // Total Sales Count
-            prisma.sale.count({
-                where: {
-                    userId: session.user.id,
-                    createdAt: { gte: startDate }
-                }
-            }),
-
-            // Total Products
-            prisma.product.count({
-                where: { userId: session.user.id }
-            }),
-
-            // Low Stock Products
-            prisma.product.count({
-                where: {
-                    userId: session.user.id,
-                    stock: { lte: prisma.product.fields.minStock }
-                }
-            }),
-
-            // Recent Sales
-            prisma.sale.findMany({
-                where: { userId: session.user.id },
-                orderBy: { createdAt: 'desc' },
-                take: 5,
-                include: {
-                    customer: true,
-                    items: {
-                        take: 3
-                    }
-                }
-            }),
-
-            // Top Selling Products
-            prisma.saleItem.groupBy({
-                by: ['productId'],
-                where: {
-                    sale: {
-                        userId: session.user.id,
-                        createdAt: { gte: startDate }
-                    }
-                },
-                _sum: {
-                    quantity: true,
-                    total: true
-                },
-                orderBy: {
-                    _sum: {
-                        quantity: 'desc'
-                    }
-                },
-                take: 5
-            }),
-
-            // Sales by day for chart
-            prisma.$queryRaw`
-                SELECT 
-                    DATE("createdAt") as date,
-                    COUNT(*) as count,
-                    SUM(total) as revenue
-                FROM "Sale"
-                WHERE "userId" = ${session.user.id}
-                AND "createdAt" >= ${startDate}
-                GROUP BY DATE("createdAt")
-                ORDER BY date ASC
-            `
-        ]);
-
-        // Get product details for top products
-        const topProductIds = topProducts.map(p => p.productId);
-        const productDetails = await prisma.product.findMany({
-            where: { id: { in: topProductIds } },
-            select: { id: true, name: true, sellingPrice: true }
+        // 1. Total Revenue & Orders
+        const salesAggregate = await prisma.sale.aggregate({
+            where: { userId },
+            _sum: { total: true },
+            _count: { id: true },
         });
 
-        const topProductsWithDetails = topProducts.map(tp => {
-            const product = productDetails.find(p => p.id === tp.productId);
+        // 2. Active Products & Stock
+        const productsCount = await prisma.product.count({
+            where: { userId },
+        });
+
+        const lowStockCount = await prisma.product.count({
+            where: {
+                userId,
+                status: 'Low Stock'
+            },
+        });
+
+        // 3. Low Stock Items (Top 5)
+        const lowStockItems = await prisma.product.findMany({
+            where: {
+                userId,
+                stock: { lte: 10 } // Assuming 10 is generic threshold, or use status
+            },
+            take: 5,
+            orderBy: { stock: 'asc' },
+            select: { id: true, name: true, stock: true }
+        });
+
+        // 4. Sales Chart Data (Last 7 days)
+        const last7Days = Array.from({ length: 7 }, (_, i) => {
+            const d = subDays(new Date(), 6 - i);
             return {
-                ...tp,
-                product
+                date: d,
+                name: format(d, 'EEE'), // Mon, Tue...
+                sales: 0
             };
         });
 
-        // Calculate previous period for comparison
-        const prevStartDate = new Date(startDate);
-        prevStartDate.setDate(prevStartDate.getDate() - daysAgo);
+        const startDate = startOfDay(subDays(new Date(), 6));
 
-        const prevRevenue = await prisma.sale.aggregate({
+        const recentSales = await prisma.sale.findMany({
             where: {
-                userId: session.user.id,
-                createdAt: { gte: prevStartDate, lt: startDate }
+                userId,
+                createdAt: { gte: startDate }
             },
-            _sum: { total: true }
+            select: {
+                createdAt: true,
+                total: true
+            }
         });
 
-        const revenueChange = prevRevenue._sum.total
-            ? ((totalRevenue._sum.total || 0) - prevRevenue._sum.total) / prevRevenue._sum.total * 100
-            : 0;
+        // Aggregate sales by day
+        recentSales.forEach(sale => {
+            const dayName = format(sale.createdAt, 'EEE');
+            const day = last7Days.find(d => d.name === dayName);
+            if (day) {
+                day.sales += sale.total;
+            }
+        });
+
+        // 5. Unpaid Purchase Orders (Pending)
+        const unpaidOrders = await prisma.purchaseOrder.findMany({
+            where: {
+                userId,
+                paymentStatus: { not: 'Paid' }
+            },
+            include: {
+                vendor: true
+            },
+            take: 5,
+            orderBy: { createdAt: 'desc' }
+        });
 
         return NextResponse.json({
             metrics: {
-                totalRevenue: totalRevenue._sum.total || 0,
-                totalSales,
-                totalProducts,
-                lowStockProducts,
-                revenueChange: Math.round(revenueChange * 10) / 10
+                revenue: salesAggregate._sum.total || 0,
+                orders: salesAggregate._count.id || 0,
+                products: productsCount,
+                lowStock: lowStockCount
             },
-            recentSales,
-            topProducts: topProductsWithDetails,
-            salesByDay
+            chartData: last7Days,
+            lowStockItems,
+            unpaidOrders
         });
+
     } catch (error) {
         console.error('Error fetching dashboard analytics:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

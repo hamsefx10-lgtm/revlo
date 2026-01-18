@@ -32,8 +32,8 @@ export async function GET(request: Request) {
         // companyId: companyId, // Mustaqbalka, ku dar filter-kan
       },
       include: {
-          project: { select: { id: true, name: true } },
-          customer: { select: { id: true, name: true } },
+        project: { select: { id: true, name: true } },
+        customer: { select: { id: true, name: true } },
       },
       orderBy: {
         paymentDate: 'desc',
@@ -42,68 +42,68 @@ export async function GET(request: Request) {
 
     // Fetch all expenses related to loans/debts (for repayment schedule)
     const loanRepayments = await prisma.expense.findMany({
-        where: {
-            category: 'Company Expense',
-            subCategory: 'Debt Repayment',
-            expenseDate: {
-                gte: startDate,
-                lte: endDate,
-            },
-            // companyId: companyId
+      where: {
+        category: 'Company Expense',
+        subCategory: 'Debt Repayment',
+        expenseDate: {
+          gte: startDate,
+          lte: endDate,
         },
-        include: {
-            vendor: { select: { id: true, name: true } } // Assuming vendor is the lender
-        }
+        // companyId: companyId
+      },
+      include: {
+        // vendor: { select: { id: true, name: true } } // Assuming vendor is the lender
+      }
     });
 
     // Combine and process data into PaymentScheduleItem format
     const paymentSchedule: any[] = [];
 
     clientPayments.forEach(pay => {
-        // For simplicity, assuming all client payments are "Upcoming" unless marked as "Paid"
-        // In a real system, you'd track due dates for project milestones.
-        const currentStatus = (pay.amount.toNumber() === 0) ? 'Upcoming' : 'Paid'; // Simplified status
-        
-        paymentSchedule.push({
-            id: pay.id,
-            description: `Client Payment - ${pay.project?.name || pay.customer?.name || 'N/A'}`,
-            amount: pay.amount.toNumber(),
-            dueDate: pay.paymentDate.toISOString(), // Assuming paymentDate is the due date for simplicity
-            status: currentStatus,
-            relatedEntity: { 
-                type: pay.projectId ? 'Project' : (pay.customerId ? 'Customer' : 'Other'), 
-                name: pay.project?.name || pay.customer?.name || 'N/A',
-                id: pay.projectId || pay.customerId || 'N/A'
-            },
-            paidAmount: currentStatus === 'Paid' ? pay.amount.toNumber() : 0,
-            remainingAmount: currentStatus === 'Paid' ? 0 : pay.amount.toNumber(),
-        });
+      // For simplicity, assuming all client payments are "Upcoming" unless marked as "Paid"
+      // In a real system, you'd track due dates for project milestones.
+      const currentStatus = (pay.amount.toNumber() === 0) ? 'Upcoming' : 'Paid'; // Simplified status
+
+      paymentSchedule.push({
+        id: pay.id,
+        description: `Client Payment - ${pay.project?.name || pay.customer?.name || 'N/A'}`,
+        amount: pay.amount.toNumber(),
+        dueDate: pay.paymentDate.toISOString(), // Assuming paymentDate is the due date for simplicity
+        status: currentStatus,
+        relatedEntity: {
+          type: pay.projectId ? 'Project' : (pay.customerId ? 'Customer' : 'Other'),
+          name: pay.project?.name || pay.customer?.name || 'N/A',
+          id: pay.projectId || pay.customerId || 'N/A'
+        },
+        paidAmount: currentStatus === 'Paid' ? pay.amount.toNumber() : 0,
+        remainingAmount: currentStatus === 'Paid' ? 0 : pay.amount.toNumber(),
+      });
     });
 
     loanRepayments.forEach(rep => {
-        // For simplicity, assuming all loan repayments are "Paid" once recorded as expense
-        paymentSchedule.push({
-            id: rep.id,
-            description: `Loan Repayment - ${rep.vendor?.name || 'N/A'}`,
-            amount: rep.amount.toNumber(),
-            dueDate: rep.expenseDate.toISOString(), // Assuming expenseDate is the due date
-            status: 'Paid', // Once recorded as expense, it's paid
-            relatedEntity: { 
-                type: 'Loan', 
-                name: rep.vendor?.name || 'N/A',
-                id: rep.vendor?.id || 'N/A'
-            },
-            paidAmount: rep.amount.toNumber(),
-            remainingAmount: 0,
-        });
+      // For simplicity, assuming all loan repayments are "Paid" once recorded as expense
+      paymentSchedule.push({
+        id: rep.id,
+        description: `Loan Repayment - ${'N/A'}`, // Vendor unavailable
+        amount: rep.amount.toNumber(),
+        dueDate: rep.expenseDate.toISOString(), // Assuming expenseDate is the due date
+        status: 'Paid', // Once recorded as expense, it's paid
+        relatedEntity: {
+          type: 'Loan',
+          name: 'N/A', // Vendor unavailable
+          id: 'N/A'
+        },
+        paidAmount: rep.amount.toNumber(),
+        remainingAmount: 0,
+      });
     });
 
     // Apply filters (status and type)
     const filteredSchedule = paymentSchedule.filter(item => {
-        const matchesStatus = statusFilter === 'All' || item.status === statusFilter;
-        const matchesType = typeFilter === 'All' || item.relatedEntity.type === typeFilter;
-        // Date filtering is handled by Prisma query, but can add more here if needed
-        return matchesStatus && matchesType;
+      const matchesStatus = statusFilter === 'All' || item.status === statusFilter;
+      const matchesType = typeFilter === 'All' || item.relatedEntity.type === typeFilter;
+      // Date filtering is handled by Prisma query, but can add more here if needed
+      return matchesStatus && matchesType;
     });
 
     return NextResponse.json(

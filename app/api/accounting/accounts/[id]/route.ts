@@ -23,7 +23,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
           include: {
             project: { select: { name: true } },
             customer: { select: { name: true } },
-            vendor: { select: { name: true } },
+            // vendor: { select: { name: true } }, // Relation currently disabled in schema
             user: { select: { fullName: true } },
             employee: { select: { fullName: true } },
           },
@@ -97,7 +97,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       data: {
         name,
         type,
-  balance: Number(balance),
+        balance: Number(balance),
         currency,
         updatedAt: new Date(),
       },

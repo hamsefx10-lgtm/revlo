@@ -40,12 +40,12 @@ export async function GET(request: Request) {
             name: true,
           }
         },
-        vendor: {
+        /* vendor: {
           select: {
             id: true,
             name: true,
           }
-        },
+        }, */
         customer: {
           select: {
             id: true,
@@ -80,22 +80,22 @@ export async function GET(request: Request) {
     });
 
     // Fetch account information for all unique account IDs
-  const accountIds = [...new Set(expenses.map((exp: any) => exp.paidFrom).filter(Boolean))];
+    const accountIds = [...new Set(expenses.map((exp: any) => exp.paidFrom).filter(Boolean))];
     const accounts = await prisma.account.findMany({
       where: { id: { in: accountIds } },
       select: { id: true, name: true },
     });
-    
+
     // Create a map for quick lookup
-  const accountMap = new Map(accounts.map((acc: any) => [acc.id, acc.name]));
+    const accountMap = new Map(accounts.map((acc: any) => [acc.id, acc.name]));
 
     // Map to frontend format: always return amount as number, project name, etc.
-  const mappedExpenses = expenses.map((exp: any) => ({
+    const mappedExpenses = expenses.map((exp: any) => ({
       id: exp.id,
       date: exp.expenseDate,
       project: exp.project ? { id: exp.project.id, name: exp.project.name } : undefined,
       company: exp.company ? { id: exp.company.id, name: exp.company.name } : undefined,
-      vendor: exp.vendor ? { id: exp.vendor.id, name: exp.vendor.name } : undefined,
+      // vendor: exp.vendor ? { id: exp.vendor.id, name: exp.vendor.name } : undefined,
       customer: exp.customer ? { id: exp.customer.id, name: exp.customer.name } : undefined,
       category: exp.category,
       subCategory: exp.subCategory || undefined,
@@ -105,7 +105,7 @@ export async function GET(request: Request) {
       accountName: accountMap.get(exp.paidFrom) || exp.paidFrom, // Show account name or fallback to ID
       note: exp.note,
       approved: exp.approved,
-      employee: exp.employee ? exp.employee.fullName : undefined,
+      employee: exp.employee ? { id: exp.employee.id, name: exp.employee.fullName } : undefined,
       employeeId: exp.employeeId || undefined,
       expenseCategory: exp.expenseCategory ? exp.expenseCategory.name : undefined,
       createdAt: exp.createdAt,
@@ -142,7 +142,7 @@ export async function POST(request: Request) {
       materials, // <-- NEW: for Material expenses
       receiptUrl, // NEW: for receipt image URL
       // NEW: Vendor payment tracking fields
-      vendorId,
+      // vendorId,
       paymentStatus,
       invoiceNumber,
       paymentDate,
@@ -173,19 +173,20 @@ export async function POST(request: Request) {
     // For Material expenses, always require materials array
     if (category === 'Material' && (!Array.isArray(materials) || materials.length === 0)) {
       return NextResponse.json(
-        { message: 'Materials waa waajib (ugu yaraan hal alaab).'},
+        { message: 'Materials waa waajib (ugu yaraan hal alaab).' },
         { status: 400 }
       );
     }
 
     // NEW: Vendor payment validation for Material expenses
-    if (category === 'Material') {
+    /* if (category === 'Material') {
       if (!vendorId) {
         return NextResponse.json(
           { message: 'Iibiyaha waa waajib kharashyada alaabta.' },
           { status: 400 }
         );
-      }
+      } */
+    if (category === 'Material') { // Reduced check
       if (!paymentStatus || !['PAID', 'UNPAID'].includes(paymentStatus)) {
         return NextResponse.json(
           { message: 'Xaaladda lacag bixinta waa waajib.' },
@@ -264,13 +265,13 @@ export async function POST(request: Request) {
         // Always set employeeId for salary payments, and for any expense with employeeId
         employeeId: (category === 'Company Expense' && finalSubCategory === 'Salary' && employeeId) ? employeeId : (employeeId ? employeeId : undefined),
         // Store materials array if present and category is Material (project or company)
-        ...( ((category === 'Material' || (category === 'Company Expense' && finalSubCategory === 'Material')) && Array.isArray(materials)) ? { materials } : {} ),
+        ...(((category === 'Material' || (category === 'Company Expense' && finalSubCategory === 'Material')) && Array.isArray(materials)) ? { materials } : {}),
         // NEW: Store customerId for company debts
         ...(customerId ? { customerId } : {}),
         // NEW: Store receipt URL if provided
         ...(receiptUrl ? { receiptUrl } : {}),
         // NEW: Store vendor payment tracking fields
-        ...(vendorId ? { vendorId } : {}),
+        // ...(vendorId ? { vendorId } : {}),
         ...(paymentStatus ? { paymentStatus } : {}),
         ...(invoiceNumber ? { invoiceNumber } : {}),
         ...(paymentDate ? { paymentDate: new Date(paymentDate) } : {}),
@@ -295,7 +296,7 @@ export async function POST(request: Request) {
     let transactionType: 'INCOME' | 'EXPENSE' | 'TRANSFER_IN' | 'TRANSFER_OUT' | 'DEBT_TAKEN' | 'DEBT_REPAID' | 'OTHER' = 'EXPENSE';
     let transactionAmount = Number(amount);
     let transactionCustomerId = undefined;
-    let transactionVendorId = vendorId || undefined;
+    let transactionVendorId = undefined; // vendorId || undefined;
     // FIX: Initialize with paidFrom as fallback - ensures account balance is always updated when paidFrom exists
     let transactionAccountId = paidFrom || undefined;
     if (category === 'Debt' || (category === 'Company Expense' && subCategory === 'Debt')) {
@@ -326,13 +327,13 @@ export async function POST(request: Request) {
         transactionAccountId = paidFrom;
       } else if (paymentStatus === 'REPAID') {
         transactionType = 'DEBT_REPAID';
-        transactionVendorId = vendorId;
+        // transactionVendorId = vendorId;
         // When repaying vendor debt, if paidFrom is selected, deduct from that account
         transactionAccountId = paidFrom || undefined;
       } else {
         // If unpaid, create debt transaction (vendor debt)
         transactionType = 'DEBT_TAKEN';
-        transactionVendorId = vendorId; // Track vendor on transaction
+        // transactionVendorId = vendorId; // Track vendor on transaction
         // If paidFrom is provided even for unpaid, deduct from account (user is paying now)
         transactionAccountId = paidFrom || undefined;
       }
@@ -345,7 +346,7 @@ export async function POST(request: Request) {
         transactionAccountId = paidFrom;
       } else {
         // For ALL other company expenses, deduct from paidFrom if provided
-      transactionType = 'EXPENSE';
+        transactionType = 'EXPENSE';
         transactionAccountId = paidFrom;
       }
     }
@@ -403,12 +404,12 @@ export async function POST(request: Request) {
         // DEBT_REPAID with vendorId = we repay vendor (money goes OUT)
         if (transactionCustomerId) {
           // Customer repaying us - add money to account (income)
-        await prisma.account.update({
-          where: { id: accountIdToUpdate },
-          data: {
-            balance: { increment: Number(amount) },
-          },
-        });
+          await prisma.account.update({
+            where: { id: accountIdToUpdate },
+            data: {
+              balance: { increment: Number(amount) },
+            },
+          });
         } else if (transactionVendorId) {
           // We repaying vendor - subtract money from account (expense)
           await prisma.account.update({
@@ -443,7 +444,7 @@ export async function POST(request: Request) {
       const updatedProject = await prisma.project.findUnique({
         where: { id: projectId }
       });
-      
+
       if (updatedProject && Number(updatedProject.remainingAmount) <= 0) {
         await prisma.project.update({
           where: { id: projectId },

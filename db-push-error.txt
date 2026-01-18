@@ -1,0 +1,47 @@
+﻿node.exe : Environment 
+variables loaded from .env
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+    + CategoryInfo          
+    : NotSpecified: (Envir  
+  onment variables loaded   
+  from .env:String) [],     
+RemoteException
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "neondb", schema "public" at "ep-blue-violet-ad0xhu8r-pooler.c-2.us-east-1.aws.neon.tech"
+Error: insert or update on 
+table "expenses" violates 
+foreign key constraint 
+"expenses_vendorId_fkey"
+   0: sql_schema_connector::
+apply_migration::migration_s
+tep
+           with 
+step=AddForeignKey { 
+foreign_key_id: 
+ForeignKeyId(28) }
+             at schema-engin
+e\connectors\sql-schema-conn
+ector\src\apply_migration.rs
+:28
+   1: sql_schema_connector::
+apply_migration::apply_migra
+tion
+             at schema-engin
+e\connectors\sql-schema-conn
+ector\src\apply_migration.rs
+:11
+   2: schema_core::state::Sc
+hemaPush
+             at schema-engin
+e\core\src\state.rs:515
+

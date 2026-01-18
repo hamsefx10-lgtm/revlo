@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
     Search,
@@ -10,41 +10,36 @@ import {
     Briefcase,
     Clock,
     Shield,
-    CalendarDays
+    CalendarDays,
+    Loader2
 } from 'lucide-react';
 import StatusBadge from '@/components/shop/ui/StatusBadge';
+import { format } from 'date-fns';
 
 // --- TYPES ---
 interface Employee {
     id: string;
-    name: string;
-    role: 'Manager' | 'Cashier' | 'Stock Clerk' | 'Security';
+    fullName: string;
+    role: string;
     phone: string;
     email: string;
-    shift: 'Morning' | 'Afternoon' | 'Night';
-    status: 'Active' | 'On Leave' | 'Terminated';
-    joinedDate: string;
+    isActive: boolean;
+    createdAt: string;
+    monthlySalary: number;
 }
 
-// --- DUMMY DATA ---
-const EMPLOYEES_DATA: Employee[] = [
-    { id: '1', name: 'Abdi Hassan', role: 'Manager', phone: '+252 61 555 1234', email: 'abdi.hassan@shop.so', shift: 'Morning', status: 'Active', joinedDate: '2023-01-15' },
-    { id: '2', name: 'Muna Jibril', role: 'Cashier', phone: '+252 61 222 3344', email: 'muna.jibril@shop.so', shift: 'Morning', status: 'Active', joinedDate: '2023-06-10' },
-    { id: '3', name: 'Farah Mohamed', role: 'Stock Clerk', phone: '+252 61 333 4455', email: 'farah.m@shop.so', shift: 'Afternoon', status: 'Active', joinedDate: '2023-09-01' },
-    { id: '4', name: 'Amina Ali', role: 'Cashier', phone: '+252 61 777 8899', email: 'amina.ali@shop.so', shift: 'Afternoon', status: 'On Leave', joinedDate: '2023-03-22' },
-    { id: '5', name: 'Yusuf Dhere', role: 'Security', phone: '+252 61 999 0011', email: '-', shift: 'Night', status: 'Active', joinedDate: '2022-11-05' },
-];
-
-const RoleBadge = ({ role }: { role: Employee['role'] }) => {
-    const styles = {
-        'Manager': 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
-        'Cashier': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-        'Stock Clerk': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
-        'Security': 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
-    };
+const RoleBadge = ({ role }: { role: string }) => {
+    // Simple hashing for color
+    const colors = [
+        'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
+        'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+        'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
+        'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+    ];
+    const index = role.length % colors.length;
 
     return (
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-bold ${styles[role]}`}>
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-bold ${colors[index]}`}>
             <Briefcase size={12} /> {role}
         </span>
     );
@@ -52,9 +47,35 @@ const RoleBadge = ({ role }: { role: Employee['role'] }) => {
 
 export default function EmployeesPage() {
     const [search, setSearch] = useState('');
+    const [employees, setEmployees] = useState<Employee[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const filteredData = EMPLOYEES_DATA.filter(e =>
-        e.name.toLowerCase().includes(search.toLowerCase()) ||
+    useEffect(() => {
+        fetchEmployees();
+    }, [search]); // Re-fetch on search or filter locally? Search param is used in API, so re-fetch is good.
+    // Debounce search ideally, but for now direct effect is fine if traffic low.
+
+    // Better: Filter locally if list is small, or debounced API.
+    // Given the API supports search, let's use API but maybe with delay. 
+    // For simplicity, let's fetch all and filter locally for responsiveness, or API.
+    // If I use API dependency, typing causes many requests.
+    // I'll fetch ALL once, then filter locally.
+
+    const fetchEmployees = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('/api/shop/employees'); // Fetch all
+            const data = await response.json();
+            setEmployees(data.employees || []);
+        } catch (error) {
+            console.error('Error loading employees:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const filteredData = employees.filter(e =>
+        e.fullName.toLowerCase().includes(search.toLowerCase()) ||
         e.role.toLowerCase().includes(search.toLowerCase())
     );
 
@@ -97,68 +118,76 @@ export default function EmployeesPage() {
             </div>
 
             {/* TABLE CARD */}
-            <div className="bg-white dark:bg-[#1f2937] border border-gray-100 dark:border-gray-800 rounded-[2rem] shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-gray-900 border border-lightGray dark:border-gray-800 rounded-[2rem] shadow-sm overflow-hidden min-h-[300px] relative animate-fade-in-up">
+
+                {loading && (
+                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
+                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    </div>
+                )}
+
                 <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-gray-50/50 dark:bg-gray-800/20 border-b border-gray-100 dark:border-gray-800">
-                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Employee</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Role</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Contact</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Shift</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Joined Date</th>
-                                <th className="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Actions</th>
+                            <tr className="border-b border-lightGray dark:border-gray-800">
+                                <th className="pl-8 py-5 text-left text-[10px] font-black text-mediumGray uppercase tracking-wider">Employee</th>
+                                <th className="px-6 py-5 text-left text-[10px] font-black text-mediumGray uppercase tracking-wider">Role</th>
+                                <th className="px-6 py-5 text-left text-[10px] font-black text-mediumGray uppercase tracking-wider">Contact</th>
+                                <th className="px-6 py-5 text-center text-[10px] font-black text-mediumGray uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-5 text-left text-[10px] font-black text-mediumGray uppercase tracking-wider">Joined Date</th>
+                                <th className="px-6 py-5 text-right text-[10px] font-black text-mediumGray uppercase tracking-wider pr-8">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                            {filteredData.map((e) => (
-                                <tr key={e.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors group">
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500 font-bold border border-gray-200 dark:border-gray-600">
-                                                {e.name.charAt(0)}
-                                            </div>
-                                            <div>
-                                                <span className="block font-bold text-gray-900 dark:text-white text-sm">{e.name}</span>
-                                                <span className="text-xs text-gray-400">ID: {e.id}</span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <RoleBadge role={e.role} />
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300 flex flex-col gap-1">
-                                        <span>{e.phone}</span>
-                                        <span className="text-xs text-gray-400">{e.email}</span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 w-fit">
-                                            <Clock size={14} className="text-gray-400" />
-                                            <span className="text-xs font-bold text-gray-700 dark:text-gray-300">{e.shift}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                                            <CalendarDays size={14} />
-                                            {e.joinedDate}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-center flex justify-center">
-                                        <StatusBadge status={e.status} />
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button className="p-2 text-gray-400 hover:text-[#3498DB] hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
-                                                <Shield size={18} />
-                                            </button>
-                                            <button className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                                                <MoreVertical size={18} />
-                                            </button>
-                                        </div>
+                        <tbody className="divide-y divide-lightGray dark:divide-gray-800">
+                            {filteredData.length === 0 && !loading ? (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-12 text-center text-mediumGray font-medium">
+                                        No employees found. <Link href="/shop/employees/add" className="text-primary hover:underline font-bold">Add one?</Link>
                                     </td>
                                 </tr>
-                            ))}
+                            ) : (
+                                filteredData.map((e) => (
+                                    <tr key={e.id} className="hover:bg-primary/5 dark:hover:bg-gray-800/50 transition-colors group cursor-pointer" onClick={() => window.location.href = `/shop/employees/${e.id}`}>
+                                        <td className="pl-8 py-5 whitespace-nowrap">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center text-mediumGray font-black text-lg border border-lightGray dark:border-gray-600 uppercase shadow-inner group-hover:from-primary/20 group-hover:to-blue-600/20 group-hover:text-primary group-hover:border-primary/20 transition-all">
+                                                    {e.fullName.charAt(0)}
+                                                </div>
+                                                <div>
+                                                    <span className="block font-bold text-darkGray dark:text-white text-sm group-hover:text-primary transition-colors">{e.fullName}</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-5 whitespace-nowrap">
+                                            <RoleBadge role={e.role} />
+                                        </td>
+                                        <td className="px-6 py-5 whitespace-nowrap">
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-sm font-bold text-darkGray dark:text-gray-200">{e.phone || '-'}</span>
+                                                <span className="text-xs font-medium text-mediumGray">{e.email || '-'}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-5 whitespace-nowrap text-center">
+                                            <div className="flex justify-center">
+                                                <StatusBadge status={e.isActive ? 'Active' : 'Inactive'} />
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-5 whitespace-nowrap">
+                                            <div className="flex items-center gap-2 text-sm font-medium text-mediumGray">
+                                                <CalendarDays size={16} className="text-primary/60" />
+                                                {format(new Date(e.createdAt), 'MMM dd, yyyy')}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-5 whitespace-nowrap text-right pr-8">
+                                            <div className="flex items-center justify-end" onClick={(ev) => ev.stopPropagation()}>
+                                                <Link href={`/shop/employees/${e.id}`} className="p-2.5 text-mediumGray hover:text-primary hover:bg-primary/10 rounded-xl transition-all active:scale-95">
+                                                    <MoreVertical size={20} />
+                                                </Link>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>

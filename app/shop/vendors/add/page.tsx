@@ -12,19 +12,58 @@ import {
     Package
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 export default function AddVendorPage() {
+    const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+
+    // Form State
+    const [formData, setFormData] = useState({
+        companyName: '',
+        contactPerson: '',
+        category: '',
+        phone: '',
+        email: '',
+        address: ''
+    });
 
     const CATEGORIES = ['Food & Beverages', 'Electronics', 'Furniture', 'Clothing', 'Raw Materials', 'Packaging'];
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleChange = (field: string, value: string) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        setTimeout(() => {
+
+        try {
+            const response = await fetch('/api/shop/vendors', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to create vendor');
+            }
+
+            toast.success(`${formData.companyName} has been added to vendors.`);
+
+            setTimeout(() => {
+                router.push('/shop/vendors');
+            }, 1000);
+
+        } catch (error: any) {
+            console.error('Error creating vendor:', error);
+            toast.error(error.message || 'Failed to create vendor');
+        } finally {
             setIsLoading(false);
-            alert('Vendor added successfully!');
-        }, 1500);
+        }
     };
 
     return (
@@ -59,19 +98,36 @@ export default function AddVendorPage() {
                         </h3>
 
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Company Name</label>
-                            <input type="text" placeholder="e.g. Al-Nur Wholesalers" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all" required />
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Company Name *</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. Al-Nur Wholesalers"
+                                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all"
+                                value={formData.companyName}
+                                onChange={(e) => handleChange('companyName', e.target.value)}
+                                required
+                            />
                         </div>
 
                         <div>
                             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Contact Person</label>
-                            <input type="text" placeholder="e.g. Mohamed Nur" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all" required />
+                            <input
+                                type="text"
+                                placeholder="e.g. Mohamed Nur"
+                                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all"
+                                value={formData.contactPerson}
+                                onChange={(e) => handleChange('contactPerson', e.target.value)}
+                            />
                         </div>
 
                         <div>
                             <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Category</label>
-                            <select className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all appearance-none cursor-pointer text-gray-700 dark:text-gray-300">
-                                <option value="" disabled selected>Select Category...</option>
+                            <select
+                                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all appearance-none cursor-pointer text-gray-700 dark:text-gray-300"
+                                value={formData.category}
+                                onChange={(e) => handleChange('category', e.target.value)}
+                            >
+                                <option value="">Select Category...</option>
                                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                             </select>
                         </div>
@@ -89,7 +145,13 @@ export default function AddVendorPage() {
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                                     <Phone size={18} />
                                 </div>
-                                <input type="tel" placeholder="+252 61 XXX XXXX" className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all" required />
+                                <input
+                                    type="tel"
+                                    placeholder="+252 61 XXX XXXX"
+                                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all"
+                                    value={formData.phone}
+                                    onChange={(e) => handleChange('phone', e.target.value)}
+                                />
                             </div>
                         </div>
 
@@ -99,7 +161,13 @@ export default function AddVendorPage() {
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                                     <Mail size={18} />
                                 </div>
-                                <input type="email" placeholder="vendor@example.com" className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all" />
+                                <input
+                                    type="email"
+                                    placeholder="vendor@example.com"
+                                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all"
+                                    value={formData.email}
+                                    onChange={(e) => handleChange('email', e.target.value)}
+                                />
                             </div>
                         </div>
 
@@ -109,7 +177,13 @@ export default function AddVendorPage() {
                                 <div className="absolute top-3 left-0 pl-3 flex items-start pointer-events-none text-gray-400">
                                     <MapPin size={18} />
                                 </div>
-                                <textarea rows={3} placeholder="Full address..." className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all resize-none"></textarea>
+                                <textarea
+                                    rows={3}
+                                    placeholder="Full address..."
+                                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all resize-none"
+                                    value={formData.address}
+                                    onChange={(e) => handleChange('address', e.target.value)}
+                                ></textarea>
                             </div>
                         </div>
                     </div>
@@ -125,7 +199,14 @@ export default function AddVendorPage() {
                         disabled={isLoading}
                         className="px-8 py-3 rounded-xl bg-[#2ECC71] hover:bg-[#27AE60] text-white font-bold shadow-lg shadow-green-500/20 hover:shadow-green-500/30 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                        {isLoading ? 'Saving...' : <><CheckCircle2 size={18} /> Save Vendor</>}
+                        {isLoading ? (
+                            <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                Saving...
+                            </>
+                        ) : (
+                            <><CheckCircle2 size={18} /> Save Vendor</>
+                        )}
                     </button>
                 </div>
 

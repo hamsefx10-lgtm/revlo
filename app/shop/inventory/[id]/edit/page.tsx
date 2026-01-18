@@ -1,44 +1,161 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Save,
     ArrowLeft,
     Package,
     CheckCircle2,
-    AlertCircle
+    AlertCircle,
+    Loader2
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function EditProductPage() {
     const params = useParams();
     const router = useRouter();
+    const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
+    const [isFetching, setIsFetching] = useState(true);
 
-    // Mock data - replace with actual API call
     const [formData, setFormData] = useState({
-        name: 'iPhone 15 Pro Max',
-        category: 'Electronics',
-        supplier: 'TechWorld Imports',
-        description: 'Latest flagship smartphone with advanced camera system.',
-        costPrice: 1000,
-        sellingPrice: 1200,
-        stock: 45,
-        minStock: 10
+        name: '',
+        category: '',
+        supplierId: '',
+        description: '',
+        costPrice: 0,
+        sellingPrice: 0,
+        stock: 0,
+        minStock: 5
     });
 
-    const CATEGORIES = ['Electronics', 'Food & Beverages', 'Furniture', 'Clothing', 'Beauty'];
-    const SUPPLIERS = ['Al-Nur Wholesalers', 'SomFresh Distributors', 'TechWorld Imports', 'Golden Grain Co.'];
+    // State for Lists
+    const [categories, setCategories] = useState<string[]>([]);
+    const [suppliers, setSuppliers] = useState<{ id: string, name: string }[]>([]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    // Modal State
+    const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+    const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [newSupplierData, setNewSupplierData] = useState({ name: '', contact: '' });
+
+    useEffect(() => {
+        const fetchInitialData = async () => {
+            try {
+                // Fetch lists in parallel
+                const [productRes, catsRes, vendsRes] = await Promise.all([
+                    fetch(`/api/shop/inventory/${params.id}`),
+                    fetch('/api/shop/categories'),
+                    fetch('/api/shop/vendors')
+                ]);
+
+                if (catsRes.ok) setCategories(await catsRes.json());
+                if (vendsRes.ok) {
+                    const data = await vendsRes.json();
+                    setSuppliers((data.vendors || []).map((v: any) => ({ id: v.id, name: v.companyName || v.name })));
+                }
+
+                if (!productRes.ok) throw new Error('Product not found');
+                const data = await productRes.json();
+                const product = data.product;
+
+                setFormData({
+                    name: product.name,
+                    category: product.category,
+                    supplierId: product.supplierId || '',
+                    description: product.description || '',
+                    costPrice: product.costPrice,
+                    sellingPrice: product.sellingPrice,
+                    stock: product.stock,
+                    minStock: product.minStock
+                });
+            } catch (error) {
+                console.error('Error loading data:', error);
+                toast({
+                    title: "Error",
+                    description: "Failed to load product details.",
+                    variant: "destructive"
+                });
+            } finally {
+                setIsFetching(false);
+            }
+        };
+
+        if (params.id) {
+            fetchInitialData();
+        }
+    }, [params.id, toast]);
+
+    const handleCreateCategory = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newCategoryName) return;
+        setCategories(prev => [...prev, newCategoryName]);
+        handleChange('category', newCategoryName);
+        setIsCategoryModalOpen(false);
+        setNewCategoryName('');
+    };
+
+    const handleCreateSupplier = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newSupplierData.name) return;
+
+        try {
+            const res = await fetch('/api/shop/vendors', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    companyName: newSupplierData.name,
+                    contactPerson: newSupplierData.contact,
+                    category: 'General'
+                })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                const newVendor = { id: data.vendor.id, name: data.vendor.name || data.vendor.companyName };
+                setSuppliers(prev => [...prev, newVendor]);
+                handleChange('supplierId', newVendor.id);
+                setIsSupplierModalOpen(false);
+                setNewSupplierData({ name: '', contact: '' });
+                toast({ title: "Supplier added successfully" });
+            }
+        } catch (error) {
+            console.error('Error adding supplier:', error);
+            toast({ title: "Failed to add supplier", variant: "destructive" });
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        setTimeout(() => {
-            setIsLoading(false);
-            alert('Product updated successfully!');
+
+        try {
+            const response = await fetch(`/api/shop/inventory/${params.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) throw new Error('Failed to update product');
+
+            toast({
+                title: "Success",
+                description: "Product updated successfully.",
+            });
+
             router.push(`/shop/inventory/${params.id}`);
-        }, 1500);
+        } catch (error) {
+            console.error('Error updating product:', error);
+            toast({
+                title: "Error",
+                description: "Failed to update product.",
+                variant: "destructive"
+            });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleChange = (field: string, value: any) => {
@@ -89,23 +206,42 @@ export default function EditProductPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Category</label>
+                                <label className="flex justify-between items-center text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                                    Category
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsCategoryModalOpen(true)}
+                                        className="text-[#3498DB] hover:text-[#2980B9] text-[10px] flex items-center gap-1"
+                                    >
+                                        + New
+                                    </button>
+                                </label>
                                 <select
                                     value={formData.category}
                                     onChange={(e) => handleChange('category', e.target.value)}
                                     className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all appearance-none cursor-pointer text-gray-700 dark:text-gray-300"
                                 >
-                                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Supplier</label>
+                                <label className="flex justify-between items-center text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                                    Supplier
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsSupplierModalOpen(true)}
+                                        className="text-[#3498DB] hover:text-[#2980B9] text-[10px] flex items-center gap-1"
+                                    >
+                                        + New
+                                    </button>
+                                </label>
                                 <select
-                                    value={formData.supplier}
-                                    onChange={(e) => handleChange('supplier', e.target.value)}
+                                    value={formData.supplierId}
+                                    onChange={(e) => handleChange('supplierId', e.target.value)}
                                     className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all appearance-none cursor-pointer text-gray-700 dark:text-gray-300"
                                 >
-                                    {SUPPLIERS.map(s => <option key={s} value={s}>{s}</option>)}
+                                    <option value="">Select Supplier</option>
+                                    {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                                 </select>
                             </div>
                         </div>
@@ -207,6 +343,78 @@ export default function EditProductPage() {
                 </div>
 
             </form>
+
+            {/* QUICK CREATE MODALS */}
+            {isCategoryModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+                    <form onSubmit={handleCreateCategory} className="bg-white dark:bg-[#1f2937] rounded-2xl w-full max-w-sm p-6 shadow-2xl">
+                        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Add New Category</h3>
+                        <input
+                            autoFocus
+                            type="text"
+                            placeholder="Category Name"
+                            value={newCategoryName}
+                            onChange={e => setNewCategoryName(e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none mb-4 font-medium"
+                        />
+                        <div className="flex justify-end gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setIsCategoryModalOpen(false)}
+                                className="px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 font-bold text-sm"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={!newCategoryName}
+                                className="px-6 py-2 rounded-lg bg-[#3498DB] text-white font-bold text-sm hover:bg-blue-600 disabled:opacity-50"
+                            >
+                                Add Category
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
+
+            {isSupplierModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+                    <form onSubmit={handleCreateSupplier} className="bg-white dark:bg-[#1f2937] rounded-2xl w-full max-w-sm p-6 shadow-2xl">
+                        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Add New Supplier</h3>
+                        <input
+                            autoFocus
+                            type="text"
+                            placeholder="Supplier Name"
+                            value={newSupplierData.name}
+                            onChange={e => setNewSupplierData(prev => ({ ...prev, name: e.target.value }))}
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none mb-3 font-medium"
+                        />
+                        <input
+                            type="text"
+                            placeholder="Contact Info (Optional)"
+                            value={newSupplierData.contact}
+                            onChange={e => setNewSupplierData(prev => ({ ...prev, contact: e.target.value }))}
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none mb-4 font-medium"
+                        />
+                        <div className="flex justify-end gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setIsSupplierModalOpen(false)}
+                                className="px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 font-bold text-sm"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={!newSupplierData.name}
+                                className="px-6 py-2 rounded-lg bg-[#3498DB] text-white font-bold text-sm hover:bg-blue-600 disabled:opacity-50"
+                            >
+                                Add Supplier
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
 
         </div>
     );

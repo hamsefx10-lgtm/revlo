@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     ArrowLeft,
     Package,
@@ -17,36 +17,67 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import StatusBadge from '@/components/shop/ui/StatusBadge';
 
-// Mock data - replace with actual API call
-const PRODUCT_DETAILS = {
-    id: '1',
-    name: 'iPhone 15 Pro Max',
-    sku: 'ELE-001',
-    category: 'Electronics',
-    supplier: 'TechWorld Imports',
-    description: 'Latest flagship smartphone with advanced camera system and A17 Pro chip.',
-    costPrice: 1000,
-    sellingPrice: 1200,
-    stock: 45,
-    minStock: 10,
-    status: 'In Stock' as const,
-    lastRestocked: '2024-01-05',
-    createdAt: '2023-12-01',
-    image: '/placeholder-product.jpg'
-};
-
-const STOCK_HISTORY = [
-    { date: '2024-01-05', type: 'Restock', quantity: 50, note: 'Purchase Order #PO-001' },
-    { date: '2024-01-03', type: 'Sale', quantity: -5, note: 'Daily Sales' },
-    { date: '2023-12-28', type: 'Restock', quantity: 30, note: 'Purchase Order #PO-002' },
-];
+// Data fetched from API now
 
 export default function ProductDetailsPage() {
     const params = useParams();
     const [isEditing, setIsEditing] = useState(false);
+    const [product, setProduct] = useState<any>(null);
+    const [history, setHistory] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const profit = PRODUCT_DETAILS.sellingPrice - PRODUCT_DETAILS.costPrice;
-    const profitMargin = ((profit / PRODUCT_DETAILS.sellingPrice) * 100).toFixed(1);
+    useEffect(() => {
+        const fetchProduct = async () => {
+            try {
+                const response = await fetch(`/api/shop/inventory/${params.id}`);
+                if (!response.ok) throw new Error('Product not found');
+                const data = await response.json();
+                setProduct(data.product);
+
+                // Format history
+                const formattedHistory = (data.history || []).map((h: any) => ({
+                    date: new Date(h.createdAt).toLocaleDateString(),
+                    type: h.type,
+                    quantity: h.quantity,
+                    note: h.reference || '-'
+                }));
+                setHistory(formattedHistory);
+            } catch (error) {
+                console.error('Error loading product:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (params.id) {
+            fetchProduct();
+        }
+    }, [params.id]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3498DB]"></div>
+            </div>
+        );
+    }
+
+    if (!product) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+                <AlertCircle size={48} className="text-red-500" />
+                <h2 className="text-xl font-bold">Product not found</h2>
+                <Link href="/shop/inventory" className="text-[#3498DB] hover:underline">
+                    Back to Inventory
+                </Link>
+            </div>
+        );
+    }
+
+    const profit = product.sellingPrice - product.costPrice;
+    const profitMargin = product.sellingPrice > 0
+        ? ((profit / product.sellingPrice) * 100).toFixed(1)
+        : '0.0';
 
     return (
         <div className="min-h-screen animate-fade-in pb-20 font-sans w-full max-w-7xl mx-auto p-4 md:p-8">
@@ -95,22 +126,22 @@ export default function ProductDetailsPage() {
                             <div className="flex-1">
                                 <div className="flex items-start justify-between mb-4">
                                     <div>
-                                        <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{PRODUCT_DETAILS.name}</h2>
-                                        <p className="text-sm text-gray-500 font-mono">SKU: {PRODUCT_DETAILS.sku}</p>
+                                        <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{product.name}</h2>
+                                        <p className="text-sm text-gray-500 font-mono">SKU: {product.sku}</p>
                                     </div>
-                                    <StatusBadge status={PRODUCT_DETAILS.status} />
+                                    <StatusBadge status={product.status} />
                                 </div>
 
-                                <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">{PRODUCT_DETAILS.description}</p>
+                                <p className="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">{product.description || 'No description provided.'}</p>
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <p className="text-xs font-bold text-gray-400 uppercase mb-1">Category</p>
-                                        <p className="font-bold text-gray-900 dark:text-white">{PRODUCT_DETAILS.category}</p>
+                                        <p className="font-bold text-gray-900 dark:text-white">{product.category}</p>
                                     </div>
                                     <div>
                                         <p className="text-xs font-bold text-gray-400 uppercase mb-1">Supplier</p>
-                                        <p className="font-bold text-gray-900 dark:text-white">{PRODUCT_DETAILS.supplier}</p>
+                                        <p className="font-bold text-gray-900 dark:text-white">{product.supplier?.name || '-'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -124,25 +155,29 @@ export default function ProductDetailsPage() {
                         </h3>
 
                         <div className="space-y-3">
-                            {STOCK_HISTORY.map((entry, idx) => (
-                                <div key={idx} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                                    <div className="flex items-center gap-4">
-                                        <div className={`p-2 rounded-lg ${entry.type === 'Restock' ? 'bg-[#2ECC71]/10 text-[#2ECC71]' : 'bg-red-500/10 text-red-500'}`}>
-                                            {entry.type === 'Restock' ? <TrendingUp size={18} /> : <TrendingUp size={18} className="rotate-180" />}
+                            {history.length === 0 ? (
+                                <p className="text-gray-500 text-sm">No stock history available.</p>
+                            ) : (
+                                history.map((entry, idx) => (
+                                    <div key={idx} className="flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                        <div className="flex items-center gap-4">
+                                            <div className={`p-2 rounded-lg ${entry.type === 'Restock' || entry.quantity > 0 ? 'bg-[#2ECC71]/10 text-[#2ECC71]' : 'bg-red-500/10 text-red-500'}`}>
+                                                {entry.quantity > 0 ? <TrendingUp size={18} /> : <TrendingUp size={18} className="rotate-180" />}
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-gray-900 dark:text-white text-sm">{entry.type}</p>
+                                                <p className="text-xs text-gray-500">{entry.note}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="font-bold text-gray-900 dark:text-white text-sm">{entry.type}</p>
-                                            <p className="text-xs text-gray-500">{entry.note}</p>
+                                        <div className="text-right">
+                                            <p className={`font-black text-lg ${entry.quantity > 0 ? 'text-[#2ECC71]' : 'text-red-500'}`}>
+                                                {entry.quantity > 0 ? '+' : ''}{entry.quantity}
+                                            </p>
+                                            <p className="text-xs text-gray-400">{entry.date}</p>
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        <p className={`font-black text-lg ${entry.quantity > 0 ? 'text-[#2ECC71]' : 'text-red-500'}`}>
-                                            {entry.quantity > 0 ? '+' : ''}{entry.quantity}
-                                        </p>
-                                        <p className="text-xs text-gray-400">{entry.date}</p>
-                                    </div>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                     </div>
                 </div>
@@ -155,10 +190,10 @@ export default function ProductDetailsPage() {
                         <div className="absolute -right-10 -top-10 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
                         <div className="relative z-10">
                             <p className="text-green-100 text-xs font-bold uppercase tracking-wider mb-2">Selling Price</p>
-                            <h2 className="text-4xl font-black mb-4">ETB {PRODUCT_DETAILS.sellingPrice.toLocaleString()}</h2>
+                            <h2 className="text-4xl font-black mb-4">ETB {product.sellingPrice.toLocaleString()}</h2>
                             <div className="flex items-center justify-between pt-4 border-t border-white/20">
                                 <span className="text-sm text-green-100">Cost Price</span>
-                                <span className="font-bold">ETB {PRODUCT_DETAILS.costPrice.toLocaleString()}</span>
+                                <span className="font-bold">ETB {product.costPrice.toLocaleString()}</span>
                             </div>
                         </div>
                     </div>
@@ -174,7 +209,7 @@ export default function ProductDetailsPage() {
                                 <p className="text-2xl font-black text-gray-900 dark:text-white">{profitMargin}%</p>
                             </div>
                         </div>
-                        <p className="text-sm text-gray-500">Profit per unit: <span className="font-bold text-[#2ECC71]">ETB {profit}</span></p>
+                        <p className="text-sm text-gray-500">Profit per unit: <span className="font-bold text-[#2ECC71]">ETB {profit.toLocaleString()}</span></p>
                     </div>
 
                     {/* Stock Level */}
@@ -185,12 +220,12 @@ export default function ProductDetailsPage() {
                             </div>
                             <div>
                                 <p className="text-xs font-bold text-gray-400 uppercase">Current Stock</p>
-                                <p className="text-2xl font-black text-gray-900 dark:text-white">{PRODUCT_DETAILS.stock} units</p>
+                                <p className="text-2xl font-black text-gray-900 dark:text-white">{product.stock} units</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                             <AlertCircle size={14} className="text-[#F39C12]" />
-                            <span className="text-gray-500">Min. stock level: <span className="font-bold">{PRODUCT_DETAILS.minStock}</span></span>
+                            <span className="text-gray-500">Min. stock level: <span className="font-bold">{product.minStock}</span></span>
                         </div>
                     </div>
 
@@ -198,11 +233,13 @@ export default function ProductDetailsPage() {
                     <div className="bg-white dark:bg-[#1f2937] border border-gray-100 dark:border-gray-800 rounded-[2rem] p-6 shadow-sm space-y-3">
                         <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-500">Last Restocked</span>
-                            <span className="font-bold text-gray-900 dark:text-white text-sm">{PRODUCT_DETAILS.lastRestocked}</span>
+                            <span className="font-bold text-gray-900 dark:text-white text-sm">
+                                {history.find((h: any) => h.quantity > 0)?.date || '-'}
+                            </span>
                         </div>
                         <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-500">Created On</span>
-                            <span className="font-bold text-gray-900 dark:text-white text-sm">{PRODUCT_DETAILS.createdAt}</span>
+                            <span className="font-bold text-gray-900 dark:text-white text-sm">{new Date(product.createdAt).toLocaleDateString()}</span>
                         </div>
                     </div>
 

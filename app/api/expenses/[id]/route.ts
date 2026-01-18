@@ -62,7 +62,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
             role: true
           }
         },
-        vendor: { // Ku dar macluumaadka kiriyaha haddii uu la xiriira
+        /* vendor: { // Removed temporarily due to schema issue
           select: {
             id: true,
             name: true,
@@ -71,7 +71,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
             email: true,
             address: true
           }
-        },
+        }, */
         customer: { // Ku dar macluumaadka macaamiisha haddii uu la xiriira
           select: {
             id: true,
@@ -104,12 +104,33 @@ export async function GET(request: Request, { params }: { params: { id: string }
             address: true,
             phone: true
           }
+        },
+        account: { // Fetch Account Name directly if relation exists
+          select: {
+            id: true,
+            name: true
+          }
         }
       },
     });
 
     if (!expense) {
       return NextResponse.json({ message: 'Kharashka lama helin.' }, { status: 404 });
+    }
+
+    // Manual Account Name Lookup if relation failed but ID exists
+    let accountName = expense.paidFrom;
+    if (expense.account) {
+      accountName = expense.account.name;
+    } else if (expense.paidFrom && !expense.account) {
+      // Try to find account by ID stored in paidFrom
+      // This handles cases where 'paidFrom' has ID but 'accountId' relation is null
+      const relatedAccount = await prisma.account.findUnique({
+        where: { id: expense.paidFrom }
+      });
+      if (relatedAccount) {
+        accountName = relatedAccount.name;
+      }
     }
 
     // Transform the expense data to match frontend interface
@@ -129,7 +150,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       subCategory: expense.subCategory,
       description: expense.description,
       amount: typeof expense.amount === 'object' && 'toNumber' in expense.amount ? expense.amount.toNumber() : Number(expense.amount),
-      paidFrom: expense.paidFrom,
+      paidFrom: accountName, // Use resolved Name
       note: expense.note,
       approved: expense.approved,
       receiptUrl: expense.receiptUrl || undefined,
@@ -144,14 +165,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
         phoneNumber: expense.employee.phoneNumber,
         email: expense.employee.email
       } : undefined,
-      vendor: expense.vendor ? {
-        id: expense.vendor.id,
-        name: expense.vendor.name,
-        contactPerson: expense.vendor.contactPerson,
-        phoneNumber: expense.vendor.phoneNumber,
-        email: expense.vendor.email,
-        address: expense.vendor.address
-      } : undefined,
+      vendor: undefined,
       customer: expense.customer ? {
         id: expense.customer.id,
         name: expense.customer.name,
@@ -339,21 +353,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         rentalFee: body.rentalFee,
         supplierName: body.supplierName,
         bankAccountId: body.bankAccountId,
-        // wage: body.wage, // Field doesn't exist in schema
-        // laborPaidAmount: body.laborPaidAmount, // Field doesn't exist in schema
-        // workDescription: body.workDescription, // Field doesn't exist in schema
-        // employeeName: body.employeeName, // Field doesn't exist in schema
-        // companyExpenseType: body.companyExpenseType, // Field doesn't exist in schema
-        // salaryPaymentAmount: body.salaryPaymentAmount, // Field doesn't exist in schema
-        // officeRentPeriod: body.officeRentPeriod, // Field doesn't exist in schema
-        // electricityMeterReading: body.electricityMeterReading, // Field doesn't exist in schema
-        // fuelVehicle: body.fuelVehicle, // Field doesn't exist in schema
-        // fuelLiters: body.fuelLiters, // Field doesn't exist in schema
-        // marketingCampaignName: body.marketingCampaignName, // Field doesn't exist in schema
-        // lenderName: body.lenderName, // Field doesn't exist in schema
-        // loanDate: body.loanDate, // Field doesn't exist in schema
-        // debtRepaymentAmount: body.debtRepaymentAmount, // Field doesn't exist in schema
-        // selectedDebt: body.selectedDebt, // Field doesn't exist in schema
       },
       include: {
         project: {
@@ -375,16 +374,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
             department: true,
             phoneNumber: true,
             email: true
-          }
-        },
-        vendor: {
-          select: {
-            id: true,
-            name: true,
-            contactPerson: true,
-            phoneNumber: true,
-            email: true,
-            address: true
           }
         },
         customer: {
@@ -418,6 +407,12 @@ export async function PUT(request: Request, { params }: { params: { id: string }
             name: true,
             address: true,
             phone: true
+          }
+        },
+        account: {
+          select: {
+            id: true,
+            name: true
           }
         }
       },
@@ -509,22 +504,10 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
         where: { expenseId: id }
       });
 
-      // 3b. If this was a labor expense, clean up linked project labor record
-      // We perform this check here. If the helper function needs to be atomic, we'd need to pass 'tx' to it.
-      // For now, let's keep it robust. If labor record fails, we shouldn't necessarily block expense deletion 
-      // unless strict consistency is required. However, for "Partial Failure" fix, we should try to include it.
-      // Since 'removeProjectLaborPayment' uses prisma directly, we can't easily wrap it in 'tx' without refactoring it.
-      // We will call it OUTSIDE the transaction for now BUT before the final delete? 
-      // Risk: If tx commits but this fails? No.
-      // Better: We copy the logic essential for clean up here or refactor helper.
-      // Let's refactor the essential part inline or assume it won't throw hard errors.
-      // ACTUALLY: The user's main issue is the crash. Let's wrap the core financial reversals in the transaction.
-      // The Labor cleanup is specific. Let's try to run it safely.
+      // 3b. Labor cleanup is specific and handled via helper below to avoid complex transaction logic
     });
 
-    // Run Labor cleanup separately (safe mode) - or refactor to take TX if strictly needed.
-    // Given the complexity of finding the matching record, let's run it safely.
-    // If it fails, it's not a financial consistency disaster like the account balance.
+    // Run Labor cleanup separately (safe mode)
     if (
       existingExpense.category &&
       (existingExpense.category === 'Labor' || existingExpense.category.toLowerCase() === 'labor') &&

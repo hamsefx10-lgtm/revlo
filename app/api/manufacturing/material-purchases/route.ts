@@ -1,237 +1,100 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { getSessionCompanyId } from '@/app/api/manufacturing/auth';
 
-// GET - Fetch all material purchases for the company
-export async function GET(request: NextRequest) {
+// GET /api/manufacturing/material-purchases
+export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions) as any;
-    if (!session || !session.user || !session.user.companyId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const companyId = await getSessionCompanyId();
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search') || '';
+
+    const where: any = { companyId };
+
+    if (search) {
+      where.OR = [
+        { materialName: { contains: search, mode: 'insensitive' } },
+        { invoiceNumber: { contains: search, mode: 'insensitive' } },
+        { vendor: { name: { contains: search, mode: 'insensitive' } } }
+      ];
     }
 
-    const materialPurchases = await prisma.materialPurchase.findMany({
-      where: {
-        companyId: session.user.companyId,
-      },
+    const purchases = await prisma.materialPurchase.findMany({
+      where,
+      orderBy: { purchaseDate: 'desc' },
       include: {
-        vendor: {
-          select: {
-            id: true,
-            name: true,
-            contactPerson: true,
-            phone: true,
-          },
-        },
-        productionOrder: {
-          select: {
-            id: true,
-            orderNumber: true,
-            productName: true,
-          },
-        },
-      },
-      orderBy: {
-        purchaseDate: 'desc',
-      },
+        vendor: { select: { id: true, name: true } }
+      }
     });
 
-    return NextResponse.json({
-      success: true,
-      materialPurchases: materialPurchases || []
-    });
+    return NextResponse.json({ purchases });
   } catch (error) {
-    console.error('Error fetching material purchases:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch material purchases' },
-      { status: 500 }
-    );
+    console.error('Error fetching purchases:', error);
+    return NextResponse.json({ message: 'Error fetching purchases' }, { status: 500 });
   }
 }
 
-// POST - Create a new material purchase
-export async function POST(request: NextRequest) {
+// POST /api/manufacturing/material-purchases
+export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions) as any;
-    if (!session || !session.user || !session.user.companyId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    const companyId = await getSessionCompanyId();
     const body = await request.json();
-    const {
-      materialName,
-      quantity,
-      unit,
-      unitPrice,
-      totalPrice,
-      vendorId,
-      purchaseDate,
-      invoiceNumber,
-      notes,
-      productionOrderId,
-      accountId, // Account from which to deduct money
-    } = body;
 
-    // Validate required fields
-    if (!materialName || !quantity || !unitPrice || !vendorId || !purchaseDate || !accountId) {
-      return NextResponse.json(
-        { error: 'Material name, quantity, unit price, vendor, purchase date, and account are required' },
-        { status: 400 }
-      );
-    }
-
-    // Check if vendor exists
-    const vendor = await prisma.vendor.findFirst({
-      where: {
-        id: vendorId,
-        companyId: session.user.companyId,
-      },
-    });
-
-    if (!vendor) {
-      return NextResponse.json(
-        { error: 'Vendor not found' },
-        { status: 404 }
-      );
-    }
-
-    // Check if account exists and has sufficient balance
-    const account = await prisma.account.findFirst({
-      where: {
-        id: accountId,
-        companyId: session.user.companyId,
-        isActive: true
-      }
-    });
-
-    if (!account) {
-      return NextResponse.json(
-        { error: 'Account not found or inactive' },
-        { status: 404 }
-      );
-    }
-
-    const purchaseAmount = parseFloat(totalPrice) || parseFloat(quantity) * parseFloat(unitPrice);
-    
-    if (account.balance < purchaseAmount) {
-      return NextResponse.json(
-        { error: `Insufficient balance. Available: ${account.balance}, Required: ${purchaseAmount}` },
-        { status: 400 }
-      );
-    }
-
-    // Check if production order exists (if provided)
-    if (productionOrderId) {
-      const productionOrder = await prisma.productionOrder.findFirst({
-        where: {
-          id: productionOrderId,
-          companyId: session.user.companyId,
-        },
-      });
-
-      if (!productionOrder) {
-        return NextResponse.json(
-          { error: 'Production order not found' },
-          { status: 404 }
-        );
-      }
-    }
-
-    // Create material purchase
-    const materialPurchase = await prisma.materialPurchase.create({
+    // 1. Create Purchase Record
+    const purchase = await prisma.materialPurchase.create({
       data: {
-        materialName,
-        quantity: parseFloat(quantity),
-        unit: unit || 'pcs',
-        unitPrice: parseFloat(unitPrice),
-        totalPrice: parseFloat(totalPrice) || parseFloat(quantity) * parseFloat(unitPrice),
-        vendorId,
-        purchaseDate: new Date(purchaseDate),
-        invoiceNumber,
-        notes,
-        companyId: session.user.companyId,
-        productionOrderId: productionOrderId || null,
-      },
-    });
-
-    // Update account balance (deduct money)
-    await prisma.account.update({
-      where: { id: accountId },
-      data: {
-        balance: account.balance - purchaseAmount
+        companyId,
+        materialName: body.materialName,
+        quantity: parseFloat(body.quantity),
+        unit: body.unit,
+        unitPrice: parseFloat(body.unitPrice),
+        totalPrice: parseFloat(body.totalPrice),
+        vendorId: body.vendorId,
+        purchaseDate: new Date(body.purchaseDate),
+        invoiceNumber: body.invoiceNumber,
+        notes: body.notes
       }
     });
 
-    // Create accounting transaction for the purchase
-    try {
-      await prisma.transaction.create({
-        data: {
-          description: `Alaabta la soo gashay: ${materialName}`,
-          amount: purchaseAmount,
-          type: 'EXPENSE',
-          category: 'Material Purchase',
-          transactionDate: new Date(purchaseDate),
-          companyId: session.user.companyId,
-          vendorId: vendorId,
-          accountId: accountId,
-        },
-      });
-    } catch (transactionError) {
-      console.warn('Transaction creation failed:', transactionError);
-      // Don't fail the purchase if transaction creation fails
-    }
-
-    // Update inventory automatically
-    try {
-      const existingItem = await prisma.inventoryItem.findFirst({
-        where: {
-          name: materialName,
-          companyId: session.user.companyId,
-        },
+    // 2. Automate Inventory Update?
+    // If the user selects "Update Inventory", we should increase stock.
+    // For now, let's assume we do if the material exists in InventoryItem.
+    if (body.updateInventory) {
+      const item = await prisma.inventoryItem.findFirst({
+        where: { name: body.materialName, companyId }
       });
 
-      if (existingItem) {
-        // Update existing inventory item
+      if (item) {
+        // Update average cost? Or just increment stock?
+        // Simple increment for now.
         await prisma.inventoryItem.update({
-          where: { id: existingItem.id },
+          where: { id: item.id },
           data: {
-            inStock: existingItem.inStock + parseFloat(quantity),
-            lastUpdated: new Date(),
-          },
+            inStock: { increment: parseFloat(body.quantity) },
+            purchasePrice: parseFloat(body.unitPrice) // Update latest cost
+          }
         });
       } else {
-        // Create new inventory item for raw material
+        // Create item if not exists? Maybe optional.
+        // Let's create it.
         await prisma.inventoryItem.create({
           data: {
-            name: materialName,
+            companyId,
+            name: body.materialName,
             category: 'Raw Materials',
-            inStock: parseFloat(quantity),
-            unit: unit || 'pcs',
-            sellingPrice: parseFloat(unitPrice) * 1.2, // 20% markup
-            minStock: 10,
-            purchasePrice: parseFloat(unitPrice),
-            company: {
-              connect: { id: session.user.companyId }
-            }
-          },
+            unit: body.unit,
+            inStock: parseFloat(body.quantity),
+            minStock: 0,
+            purchasePrice: parseFloat(body.unitPrice),
+            sellingPrice: 0
+          }
         });
       }
-    } catch (inventoryError) {
-      console.warn('Inventory update failed:', inventoryError);
-      // Don't fail the purchase if inventory update fails
     }
 
-    return NextResponse.json({
-      ...materialPurchase,
-      message: 'Material purchase created and inventory updated successfully'
-    }, { status: 201 });
+    return NextResponse.json({ purchase, message: 'Purchase recorded' });
   } catch (error) {
-    console.error('Error creating material purchase:', error);
-    return NextResponse.json(
-      { error: 'Failed to create material purchase' },
-      { status: 500 }
-    );
+    console.error('Error creating purchase:', error);
+    return NextResponse.json({ message: 'Error creating purchase' }, { status: 500 });
   }
 }
-

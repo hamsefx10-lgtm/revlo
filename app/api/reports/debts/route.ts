@@ -18,7 +18,7 @@ export async function GET(req: Request) {
         ]
       },
       include: {
-        vendor: true,
+        // vendor: true,
         customer: true,
         account: true,
         project: true,
@@ -53,7 +53,7 @@ export async function GET(req: Request) {
         companyId,
         OR: [
           { category: 'Debt' },
-          { 
+          {
             category: 'Company Expense',
             subCategory: 'Debt'
           },
@@ -68,7 +68,7 @@ export async function GET(req: Request) {
         ]
       },
       include: {
-        vendor: true,
+        // vendor: true,
         customer: true,
         project: true,
         company: true,
@@ -93,22 +93,22 @@ export async function GET(req: Request) {
     // Process transactions (only for the current company)
     allTransactions.forEach((transaction: any) => {
       const amount = Number(transaction.amount) || 0;
-      
-      if (transaction.vendorId && transaction.vendor && transaction.companyId === companyId) {
+
+      if (transaction.vendorId /* && transaction.vendor */ && transaction.companyId === companyId) {
         const vendorKey = `${transaction.vendorId}_${transaction.companyId}`;
         if (!vendorDebtMap[vendorKey]) {
           vendorDebtMap[vendorKey] = {
             id: transaction.vendorId,
-            lender: transaction.vendor.name || 'Unknown Vendor',
+            lender: /* transaction.vendor.name || */ 'Unknown Vendor',
             lenderId: transaction.vendorId,
             companyId: transaction.companyId,
             companyName: transaction.company?.name || 'Unknown Company',
             type: transaction.description?.toLowerCase().includes('loan') ? 'Loan' :
-                  transaction.description?.toLowerCase().includes('equipment') ? 'Equipment Purchase' :
-                  transaction.description?.toLowerCase().includes('service') ? 'Service Payment' :
+              transaction.description?.toLowerCase().includes('equipment') ? 'Equipment Purchase' :
+                transaction.description?.toLowerCase().includes('service') ? 'Service Payment' :
                   transaction.description?.toLowerCase().includes('investor') ? 'Investor Loan' :
-                  transaction.description?.toLowerCase().includes('supplier') ? 'Supplier Credit' :
-                  'Supplier Credit', // Default type
+                    transaction.description?.toLowerCase().includes('supplier') ? 'Supplier Credit' :
+                      'Supplier Credit', // Default type
             amount: 0,
             paid: 0,
             remaining: 0,
@@ -119,9 +119,9 @@ export async function GET(req: Request) {
             projectId: transaction.projectId || '',
             description: transaction.description || '',
             account: transaction.account?.name || '',
-            phoneNumber: transaction.vendor.phoneNumber || '',
-            email: transaction.vendor.email || '',
-            address: transaction.vendor.address || '',
+            phoneNumber: /* transaction.vendor.phoneNumber || */ '',
+            email: /* transaction.vendor.email || */ '',
+            address: /* transaction.vendor.address || */ '',
             lastPaymentDate: null,
             interestRate: null,
             paymentTerms: 'Standard',
@@ -129,21 +129,21 @@ export async function GET(req: Request) {
             transactions: []
           };
         }
-        
+
         if (transaction.type === 'DEBT_TAKEN') {
           vendorDebtMap[vendorKey].amount += amount;
         } else if (transaction.type === 'DEBT_REPAID') {
           vendorDebtMap[vendorKey].paid += amount;
           vendorDebtMap[vendorKey].lastPaymentDate = transaction.transactionDate;
         }
-        
+
         vendorDebtMap[vendorKey].transactions.push(transaction);
       }
 
       if (transaction.customerId && transaction.customer && transaction.companyId === companyId) {
         const customerKey = `${transaction.customerId}_${transaction.companyId}`;
         const transactionDate = new Date(transaction.transactionDate);
-        
+
         if (!customerReceivableMap[customerKey]) {
           customerReceivableMap[customerKey] = {
             id: transaction.customerId,
@@ -172,20 +172,20 @@ export async function GET(req: Request) {
             transactions: []
           };
         }
-        
+
         // Update issue date if this transaction is older
         if (transactionDate < new Date(customerReceivableMap[customerKey].issueDate || customerReceivableMap[customerKey].dueDate)) {
           customerReceivableMap[customerKey].issueDate = transactionDate;
           customerReceivableMap[customerKey].dueDate = new Date(transactionDate.getTime() + (30 * 24 * 60 * 60 * 1000)).toISOString();
         }
-        
+
         if (transaction.type === 'DEBT_TAKEN') {
           customerReceivableMap[customerKey].amount += amount;
         } else if (transaction.type === 'DEBT_REPAID') {
           customerReceivableMap[customerKey].received += amount;
           customerReceivableMap[customerKey].lastPaymentDate = transaction.transactionDate;
         }
-        
+
         customerReceivableMap[customerKey].transactions.push(transaction);
       }
     });
@@ -193,24 +193,24 @@ export async function GET(req: Request) {
     // Process expenses that might contain debt information
     allExpenses.forEach((expense: any) => {
       const amount = Number(expense.amount) || 0;
-      
+
       // Check if this expense is related to debts
       const isDebtRelated = expense.category === 'Debt' ||
-                           expense.category === 'Debt Repayment' ||
-                           expense.description?.toLowerCase().includes('debt') ||
-                           expense.description?.toLowerCase().includes('loan') ||
-                           expense.description?.toLowerCase().includes('credit') ||
-                           expense.description?.toLowerCase().includes('deyn') ||
-                           expense.description?.toLowerCase().includes('qard') ||
-                           expense.description?.toLowerCase().includes('dayn') ||
-                           expense.description?.toLowerCase().includes('qardh');
+        expense.category === 'Debt Repayment' ||
+        expense.description?.toLowerCase().includes('debt') ||
+        expense.description?.toLowerCase().includes('loan') ||
+        expense.description?.toLowerCase().includes('credit') ||
+        expense.description?.toLowerCase().includes('deyn') ||
+        expense.description?.toLowerCase().includes('qard') ||
+        expense.description?.toLowerCase().includes('dayn') ||
+        expense.description?.toLowerCase().includes('qardh');
 
-      if (isDebtRelated && expense.vendorId && expense.vendor && expense.companyId === companyId) {
+      if (isDebtRelated && expense.vendorId /* && expense.vendor */ && expense.companyId === companyId) {
         const vendorKey = `${expense.vendorId}_${expense.companyId}`;
         if (!vendorDebtMap[vendorKey]) {
           vendorDebtMap[vendorKey] = {
             id: expense.vendorId,
-            lender: expense.vendor.name || 'Unknown Vendor',
+            lender: /* expense.vendor.name || */ 'Unknown Vendor',
             lenderId: expense.vendorId,
             companyId: expense.companyId,
             companyName: expense.company?.name || 'Unknown Company',
@@ -225,9 +225,9 @@ export async function GET(req: Request) {
             projectId: expense.projectId || '',
             description: expense.description || '',
             account: 'Expense Account',
-            phoneNumber: expense.vendor.phoneNumber || '',
-            email: expense.vendor.email || '',
-            address: expense.vendor.address || '',
+            phoneNumber: /* expense.vendor.phoneNumber || */ '',
+            email: /* expense.vendor.email || */ '',
+            address: /* expense.vendor.address || */ '',
             lastPaymentDate: expense.category === 'Debt Repayment' ? expense.createdAt : null,
             interestRate: null,
             paymentTerms: 'Standard',
@@ -253,32 +253,32 @@ export async function GET(req: Request) {
 
       // Process customer receivables from expenses
       // Check if this is a customer debt expense (category 'Debt' OR 'Company Expense' with subCategory 'Debt')
-      const isCustomerDebtExpense = (expense.category === 'Debt' || 
-                                     (expense.category === 'Company Expense' && expense.subCategory === 'Debt')) &&
-                                     expense.customerId && 
-                                     expense.customer && 
-                                     expense.companyId === companyId;
-      
+      const isCustomerDebtExpense = (expense.category === 'Debt' ||
+        (expense.category === 'Company Expense' && expense.subCategory === 'Debt')) &&
+        expense.customerId &&
+        expense.customer &&
+        expense.companyId === companyId;
+
       // Also check if expense has description indicating debt to customer
       const hasDebtDescription = expense.description?.toLowerCase().includes('debt') ||
-                                 expense.description?.toLowerCase().includes('loan') ||
-                                 expense.description?.toLowerCase().includes('deyn') ||
-                                 expense.description?.toLowerCase().includes('qard') ||
-                                 expense.description?.toLowerCase().includes('dayn') ||
-                                 expense.description?.toLowerCase().includes('qardh') ||
-                                 expense.description?.toLowerCase().includes('loo diray') ||
-                                 expense.description?.toLowerCase().includes('lo diray');
+        expense.description?.toLowerCase().includes('loan') ||
+        expense.description?.toLowerCase().includes('deyn') ||
+        expense.description?.toLowerCase().includes('qard') ||
+        expense.description?.toLowerCase().includes('dayn') ||
+        expense.description?.toLowerCase().includes('qardh') ||
+        expense.description?.toLowerCase().includes('loo diray') ||
+        expense.description?.toLowerCase().includes('lo diray');
 
-      if ((isCustomerDebtExpense || (isDebtRelated && hasDebtDescription)) && 
-          expense.customerId && 
-          expense.customer && 
-          expense.companyId === companyId) {
+      if ((isCustomerDebtExpense || (isDebtRelated && hasDebtDescription)) &&
+        expense.customerId &&
+        expense.customer &&
+        expense.companyId === companyId) {
         const customerKey = `${expense.customerId}_${expense.companyId}`;
         const expenseAmount = Math.abs(amount); // Use absolute value for debt amount
-        
+
         // Check if this expense already has a transaction (to avoid double counting)
         const hasTransaction = expenseTransactionMap.has(expense.id);
-        
+
         // Only process if expense doesn't already have a transaction (to avoid double counting)
         if (!hasTransaction) {
           if (!customerReceivableMap[customerKey]) {
@@ -324,13 +324,13 @@ export async function GET(req: Request) {
               // This is a new debt (DEBT_TAKEN equivalent)
               customerReceivableMap[customerKey].amount += expenseAmount;
               customerReceivableMap[customerKey].remaining += expenseAmount;
-              
+
               // Update issue date to earliest expense date (if this expense is older)
               const expenseDate = new Date(expense.expenseDate || expense.createdAt);
-              const currentIssueDate = customerReceivableMap[customerKey].issueDate 
+              const currentIssueDate = customerReceivableMap[customerKey].issueDate
                 ? new Date(customerReceivableMap[customerKey].issueDate)
                 : new Date(customerReceivableMap[customerKey].dueDate);
-              
+
               if (expenseDate < currentIssueDate) {
                 customerReceivableMap[customerKey].issueDate = expense.expenseDate || expense.createdAt;
                 customerReceivableMap[customerKey].dueDate = new Date(expenseDate.getTime() + (30 * 24 * 60 * 60 * 1000)).toISOString();
@@ -345,7 +345,7 @@ export async function GET(req: Request) {
     // Calculate remaining amounts and status for debts
     const debts = Object.values(vendorDebtMap).map((debt: any) => {
       debt.remaining = debt.amount - debt.paid;
-      
+
       // Determine status
       if (debt.remaining <= 0) {
         debt.status = 'Paid';
@@ -358,7 +358,7 @@ export async function GET(req: Request) {
           debt.status = 'Active';
         }
       }
-      
+
       return debt;
     });
 
@@ -366,7 +366,7 @@ export async function GET(req: Request) {
     const receivables = Object.values(customerReceivableMap).map((receivable: any) => {
       // Recalculate remaining to ensure accuracy
       receivable.remaining = receivable.amount - receivable.received;
-      
+
       // Determine status based on remaining amount and due date
       if (receivable.remaining <= 0) {
         receivable.status = 'Paid';
@@ -374,14 +374,14 @@ export async function GET(req: Request) {
         const dueDate = new Date(receivable.dueDate);
         const today = new Date();
         today.setHours(0, 0, 0, 0); // Reset time to compare dates only
-        
+
         if (dueDate < today) {
           receivable.status = 'Overdue';
         } else {
           receivable.status = 'Upcoming';
         }
       }
-      
+
       return receivable;
     });
 
@@ -390,14 +390,14 @@ export async function GET(req: Request) {
       const agreementAmount = Number(project.agreementAmount || 0);
       const advancePaid = Number(project.advancePaid || 0);
       const remainingAmount = agreementAmount - advancePaid;
-      
+
       // Calculate debt transactions for this project
       const projectDebtTransactions = project.transactions.filter((trx: any) => trx.type === 'DEBT_TAKEN');
       const projectRepaymentTransactions = project.transactions.filter((trx: any) => trx.type === 'DEBT_REPAID');
-      
+
       const totalDebtAmount = projectDebtTransactions.reduce((sum: number, trx: any) => sum + Number(trx.amount), 0);
       const totalRepaidAmount = projectRepaymentTransactions.reduce((sum: number, trx: any) => sum + Number(trx.amount), 0);
-      
+
       return {
         id: project.id,
         lender: project.customer?.name || 'Unknown Customer',

@@ -28,10 +28,10 @@ export async function GET(request: Request) {
         // companyId: companyId // Mustaqbalka, ku dar filter-kan
       },
       include: {
-          project: { select: { name: true } },
-          customer: { select: { name: true } },
-          vendor: { select: { name: true } },
-          user: { select: { fullName: true } },
+        project: { select: { name: true } },
+        customer: { select: { name: true } },
+        // vendor: { select: { name: true } },
+        user: { select: { fullName: true } },
       }
     });
 
@@ -51,24 +51,24 @@ export async function GET(request: Request) {
 
     // Soo deji mashaariicda bilaabmay ama dhammaystiran maanta (simulated)
     const projectsStartedToday = await prisma.project.count({
-        where: { 
-            createdAt: { gte: today, lt: tomorrow },
-            // companyId: companyId
-        }
+      where: {
+        createdAt: { gte: today, lt: tomorrow },
+        // companyId: companyId
+      }
     });
     const projectsCompletedToday = await prisma.project.count({
-        where: { 
-            actualCompletionDate: { gte: today, lt: tomorrow },
-            // companyId: companyId
-        }
+      where: {
+        actualCompletionDate: { gte: today, lt: tomorrow },
+        // companyId: companyId
+      }
     });
 
     // Soo deji users-ka cusub maanta (simulated)
     const newUsersToday = await prisma.user.count({
-        where: { 
-            createdAt: { gte: today, lt: tomorrow },
-            // companyId: companyId
-        }
+      where: {
+        createdAt: { gte: today, lt: tomorrow },
+        // companyId: companyId
+      }
     });
 
 
@@ -83,12 +83,12 @@ export async function GET(request: Request) {
         projectsCompletedToday: projectsCompletedToday,
         newUsersToday: newUsersToday,
         recentActivities: dailyTransactions.map((trx: any) => ({ // Soo deji dhaqdhaqaaqyo dhawaan ah
-            id: trx.id,
-            type: trx.type,
-            description: trx.description,
-            amount: trx.amount.toNumber(),
-            date: trx.transactionDate.toISOString(),
-            user: trx.user?.fullName || 'N/A',
+          id: trx.id,
+          type: trx.type,
+          description: trx.description,
+          amount: trx.amount.toNumber(),
+          date: trx.transactionDate.toISOString(),
+          user: trx.user?.fullName || 'N/A',
         })),
       },
       { status: 200 }

@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Layout from '@/components/layouts/Layout';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { 
+import {
   DollarSign, Briefcase, Banknote, ArrowUpRight, ArrowDownLeft, TrendingUp, TrendingDown,
   CheckCircle, Clock, XCircle, Plus, Info, MessageSquare, User, Package, Bell, CalendarCheck,
   LineChart as LineChartIcon, BarChart as BarChartIcon, PieChart as PieChartIcon,
@@ -175,10 +175,10 @@ function WeatherWidget() {
     }
   };
 
-  const WeatherIcon = weather.icon === 'Sun' ? Sun : 
-                     weather.icon === 'Cloud' ? Cloud : 
-                     weather.icon === 'CloudRain' ? CloudRain : 
-                     weather.icon === 'CloudSnow' ? CloudSnow : Sun;
+  const WeatherIcon = weather.icon === 'Sun' ? Sun :
+    weather.icon === 'Cloud' ? Cloud :
+      weather.icon === 'CloudRain' ? CloudRain :
+        weather.icon === 'CloudSnow' ? CloudSnow : Sun;
 
   return (
     <div className="bg-gradient-to-r from-sky-400 to-blue-500 p-6 rounded-xl text-white animate-fade-in-up">
@@ -236,8 +236,8 @@ interface DashboardStats {
 interface DashboardCardProps {
   title: string;
   value: string;
-  trend?: 'up' | 'down'; 
-  colorClass: string; 
+  trend?: 'up' | 'down';
+  colorClass: string;
   icon: React.ReactNode;
   description?: string; // Optional detailed description
 }
@@ -276,8 +276,8 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 interface DashboardCardProps {
   title: string;
   value: string;
-  trend?: 'up' | 'down'; 
-  colorClass: string; 
+  trend?: 'up' | 'down';
+  colorClass: string;
   icon: React.ReactNode;
   description?: string; // Optional detailed description
 }
@@ -292,7 +292,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, trend, colo
     return { border: 'border-primary', bg: 'bg-primary/10' };
   };
   const colors = getColorClasses(colorClass);
-  
+
   return (
     <div className={`bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md border-l-4 ${colors.border} hover:shadow-xl transition-all duration-300 animate-fade-in-up transform hover:-translate-y-1`}>
       <div className="flex items-center justify-between mb-3">
@@ -307,17 +307,17 @@ const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, trend, colo
             )}
           </div>
         </div>
-    </div>
-    <div className="flex items-center justify-between">
+      </div>
+      <div className="flex items-center justify-between">
         <p className={`text-2xl font-extrabold ${colorClass}`}>{value}</p>
-      {trend && (
-        <span className={`flex items-center text-sm font-medium ${trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
-          {trend === 'up' ? <TrendingUp size={16} className="mr-1" /> : <TrendingDown size={16} className="mr-1" />}
-        </span>
-      )}
+        {trend && (
+          <span className={`flex items-center text-sm font-medium ${trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
+            {trend === 'up' ? <TrendingUp size={16} className="mr-1" /> : <TrendingDown size={16} className="mr-1" />}
+          </span>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
 };
 
 // Recent Activity Item
@@ -333,58 +333,58 @@ interface ActivityItemProps {
 }
 
 const ActivityItem: React.FC<ActivityItemProps> = ({ activity, formatCurrency }) => {
-    let icon: React.ReactNode;
-    let iconBgClass = '';
-    let iconColorClass = '';
-    let amountDisplay = null;
+  let icon: React.ReactNode;
+  let iconBgClass = '';
+  let iconColorClass = '';
+  let amountDisplay = null;
 
-    switch (activity.type) {
-        case 'expense':
-            icon = <DollarSign size={18} />;
-            iconBgClass = 'bg-redError/10';
-            iconColorClass = 'text-redError';
-            amountDisplay = <span className="font-semibold text-redError">-{formatCurrency(Math.abs(activity.amount || 0))}</span>;
-            break;
-        case 'project':
-            icon = <Briefcase size={18} />;
-            iconBgClass = 'bg-primary/10';
-            iconColorClass = 'text-primary';
-            amountDisplay = activity.amount ? <span className="font-semibold text-secondary">+{formatCurrency(activity.amount)}</span> : null;
-            break;
-        case 'income': 
-            icon = <Banknote size={18} />;
-            iconBgClass = 'bg-secondary/10';
-            iconColorClass = 'text-secondary';
-            amountDisplay = <span className="font-semibold text-secondary">+{formatCurrency(Math.abs(activity.amount || 0))}</span>;
-            break;
-        case 'system':
-            icon = <Bell size={18} />;
-            iconBgClass = 'bg-accent/10';
-            iconColorClass = 'text-accent';
-            break;
-        default:
-            icon = <Info size={18} />;
-            iconBgClass = 'bg-mediumGray/10';
-            iconColorClass = 'text-mediumGray';
-    }
+  switch (activity.type) {
+    case 'expense':
+      icon = <DollarSign size={18} />;
+      iconBgClass = 'bg-redError/10';
+      iconColorClass = 'text-redError';
+      amountDisplay = <span className="font-semibold text-redError">-{formatCurrency(Math.abs(activity.amount || 0))}</span>;
+      break;
+    case 'project':
+      icon = <Briefcase size={18} />;
+      iconBgClass = 'bg-primary/10';
+      iconColorClass = 'text-primary';
+      amountDisplay = activity.amount ? <span className="font-semibold text-secondary">+{formatCurrency(activity.amount)}</span> : null;
+      break;
+    case 'income':
+      icon = <Banknote size={18} />;
+      iconBgClass = 'bg-secondary/10';
+      iconColorClass = 'text-secondary';
+      amountDisplay = <span className="font-semibold text-secondary">+{formatCurrency(Math.abs(activity.amount || 0))}</span>;
+      break;
+    case 'system':
+      icon = <Bell size={18} />;
+      iconBgClass = 'bg-accent/10';
+      iconColorClass = 'text-accent';
+      break;
+    default:
+      icon = <Info size={18} />;
+      iconBgClass = 'bg-mediumGray/10';
+      iconColorClass = 'text-mediumGray';
+  }
 
-    return (
-        <li className="flex items-center justify-between py-3 border-b border-lightGray dark:border-gray-700 last:border-b-0 group">
-            <div className="flex items-center space-x-3">
-                <div className={`p-2 rounded-full ${iconBgClass} ${iconColorClass} transition-all duration-200 group-hover:scale-110`}>
-                    {icon}
-                </div>
-                <div>
-                    <p className="text-darkGray dark:text-gray-100 font-medium">{activity.description}</p>
-                    <p className="text-sm text-mediumGray dark:text-gray-400">
-                        {activity.user && <span>by {activity.user} &bull; </span>}
-                        {new Date(activity.date).toLocaleString()}
-                    </p>
-                </div>
-            </div>
-            {amountDisplay}
-        </li>
-    );
+  return (
+    <li className="flex items-center justify-between py-3 border-b border-lightGray dark:border-gray-700 last:border-b-0 group">
+      <div className="flex items-center space-x-3">
+        <div className={`p-2 rounded-full ${iconBgClass} ${iconColorClass} transition-all duration-200 group-hover:scale-110`}>
+          {icon}
+        </div>
+        <div>
+          <p className="text-darkGray dark:text-gray-100 font-medium">{activity.description}</p>
+          <p className="text-sm text-mediumGray dark:text-gray-400">
+            {activity.user && <span>by {activity.user} &bull; </span>}
+            {new Date(activity.date).toLocaleString()}
+          </p>
+        </div>
+      </div>
+      {amountDisplay}
+    </li>
+  );
 };
 
 
@@ -401,6 +401,14 @@ export default function DashboardPage() {
       setLoading(true);
       setError(null);
       try {
+        // Check Plan Type first
+        const planRes = await fetch('/api/company/plan-type');
+        const planData = await planRes.json();
+        if (planData.planType === 'FACTORIES_ONLY') {
+          window.location.href = '/manufacturing';
+          return;
+        }
+
         const res = await fetch(`/api/dashboard/stats`);
         if (!res.ok) throw new Error("Server error");
         const json = await res.json();
@@ -429,9 +437,9 @@ export default function DashboardPage() {
   } = stats;
 
   const currentTotalBalance = totalBankBalance + totalMobileMoneyBalance + totalCashBalance;
-  
+
   // Calculate monthly comparison percentages
-  const incomeChange = lastMonthIncome > 0 
+  const incomeChange = lastMonthIncome > 0
     ? ((thisMonthIncome - lastMonthIncome) / lastMonthIncome * 100).toFixed(1)
     : thisMonthIncome > 0 ? '100' : '0';
   const expenseChange = lastMonthExpenses > 0
@@ -444,7 +452,7 @@ export default function DashboardPage() {
       <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6 gap-4">
         <h1 className="text-2xl lg:text-4xl font-bold text-darkGray dark:text-gray-100">Dashboard Overview</h1>
       </div>
-      
+
       {/* Financial Overview Cards Section - Solid Dark with Left Border Only */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8 animate-fade-in-up">
         {/* Card 1: Lacagaha la helay (Money Received) */}
@@ -452,7 +460,7 @@ export default function DashboardPage() {
           <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Lacagaha la helay</h4>
           <p className="text-xl md:text-3xl font-extrabold text-secondary">{formatCurrency(totalIncome)}</p>
           <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Dhammaan lacagaha soo galay</p>
-      </div>
+        </div>
 
         {/* Card 2: Kharashyada (Expenses) */}
         <div className="relative p-4 md:p-6 rounded-xl bg-white dark:bg-gray-800 shadow-md text-center border-l-4 border-redError">
@@ -491,11 +499,10 @@ export default function DashboardPage() {
               {accountBreakdown.slice(0, 5).map((acc, idx) => (
                 <div key={idx} className="flex items-center justify-between p-3 bg-lightGray dark:bg-gray-700 rounded-lg">
                   <div className="flex items-center space-x-3">
-                    <div className={`w-2 h-2 rounded-full ${
-                      acc.type === 'BANK' ? 'bg-blue-500' : 
-                      acc.type === 'MOBILE_MONEY' ? 'bg-green-500' : 
-                      'bg-orange-500'
-                    }`}></div>
+                    <div className={`w-2 h-2 rounded-full ${acc.type === 'BANK' ? 'bg-blue-500' :
+                        acc.type === 'MOBILE_MONEY' ? 'bg-green-500' :
+                          'bg-orange-500'
+                      }`}></div>
                     <div>
                       <p className="text-sm font-medium text-darkGray dark:text-gray-100">{acc.name}</p>
                       <p className="text-xs text-mediumGray dark:text-gray-400">{acc.type}</p>
@@ -601,7 +608,7 @@ export default function DashboardPage() {
                   <p className="text-sm font-medium text-darkGray dark:text-gray-100 mb-2 truncate">{cat.name}</p>
                   <p className="text-lg font-bold text-redError mb-2">{formatCurrency(cat.amount)}</p>
                   <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-redError h-2 rounded-full transition-all duration-500"
                       style={{ width: `${percentage}%` }}
                     ></div>
@@ -620,8 +627,8 @@ export default function DashboardPage() {
           Ficillo Dhaqso leh
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <Link 
-            href="/expenses/add" 
+          <Link
+            href="/expenses/add"
             className="bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/30 dark:to-emerald-800/30 p-4 rounded-lg border border-green-200 dark:border-green-700 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
           >
             <div className="bg-green-500/20 dark:bg-green-500/30 p-3 rounded-lg w-fit mb-3 group-hover:scale-110 transition-transform">
@@ -631,8 +638,8 @@ export default function DashboardPage() {
             <p className="text-xs text-gray-600 dark:text-gray-400">Ku dar lacag dhexdhexaad</p>
           </Link>
 
-          <Link 
-            href="/projects/add" 
+          <Link
+            href="/projects/add"
             className="bg-gradient-to-br from-blue-50 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-800/30 p-4 rounded-lg border border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
           >
             <div className="bg-blue-500/20 dark:bg-blue-500/30 p-3 rounded-lg w-fit mb-3 group-hover:scale-110 transition-transform">
@@ -642,8 +649,8 @@ export default function DashboardPage() {
             <p className="text-xs text-gray-600 dark:text-gray-400">Abuur mashruuc cusub</p>
           </Link>
 
-          <Link 
-            href="/inventory/store" 
+          <Link
+            href="/inventory/store"
             className="bg-gradient-to-br from-orange-50 to-amber-100 dark:from-orange-900/30 dark:to-amber-800/30 p-4 rounded-lg border border-orange-200 dark:border-orange-700 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
           >
             <div className="bg-orange-500/20 dark:bg-orange-500/30 p-3 rounded-lg w-fit mb-3 group-hover:scale-110 transition-transform">
@@ -653,8 +660,8 @@ export default function DashboardPage() {
             <p className="text-xs text-gray-600 dark:text-gray-400">Maaree alaab</p>
           </Link>
 
-          <Link 
-            href="/reports" 
+          <Link
+            href="/reports"
             className="bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-800/30 p-4 rounded-lg border border-purple-200 dark:border-purple-700 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
           >
             <div className="bg-purple-500/20 dark:bg-purple-500/30 p-3 rounded-lg w-fit mb-3 group-hover:scale-110 transition-transform">
@@ -777,7 +784,7 @@ export default function DashboardPage() {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip 
+                <Tooltip
                   contentStyle={{ backgroundColor: 'white', border: '1px solid #ddd', borderRadius: '8px' }}
                   labelStyle={{ color: '#2C3E50', fontWeight: 'bold' }}
                   itemStyle={{ color: '#2C3E50' }}
@@ -842,5 +849,5 @@ export default function DashboardPage() {
       {/* Quick Add Floating Button (already in Layout.tsx) */}
     </Layout>
   );
-// ...existing code...
+  // ...existing code...
 }

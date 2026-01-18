@@ -10,7 +10,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-  const session = (await getServerSession(authOptions)) as import('next-auth').Session | null;
+    const session = (await getServerSession(authOptions)) as import('next-auth').Session | null;
     if (!session?.user?.companyId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -45,11 +45,11 @@ export async function GET(
           include: {
             account: true,
             project: true,
-            vendor: true,
+            // vendor: true,
           },
         }),
       },
-      
+
       // Balance Sheet
       balanceSheet: {
         assets: await prisma.account.findMany({
@@ -71,7 +71,7 @@ export async function GET(
           },
         }),
       },
-      
+
       // Cash Flow
       cashFlow: {
         operating: await prisma.transaction.findMany({
@@ -95,7 +95,7 @@ export async function GET(
           },
         }),
       },
-      
+
       // Project Performance
       projectPerformance: await prisma.project.findMany({
         where: {

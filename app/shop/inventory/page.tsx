@@ -7,7 +7,8 @@ import {
     Package,
     Download,
     Edit,
-    Trash2
+    Trash2,
+    Upload
 } from 'lucide-react';
 import Link from 'next/link';
 import StatusBadge from '@/components/shop/ui/StatusBadge';
@@ -119,6 +120,12 @@ export default function InventoryPage() {
                     <button className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2">
                         <Download size={18} /> Export
                     </button>
+                    <Link href="/shop/inventory/bulk-import" className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2">
+                        <Upload size={18} /> Import
+                    </Link>
+                    <Link href="/shop/inventory/adjust" className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2">
+                        <Edit size={18} /> Adjust Stock
+                    </Link>
                     <Link href="/shop/inventory/add" className="px-5 py-2.5 rounded-xl bg-[#3498DB] hover:bg-[#2980B9] text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all flex items-center gap-2">
                         <Plus size={18} /> Add Product
                     </Link>

@@ -1,181 +1,76 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { getSessionCompanyId } from '@/app/api/manufacturing/auth';
 
-// GET - Get a specific product
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+// GET /api/manufacturing/products/[id]
+export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-  const session = await getServerSession(authOptions) as any;
-    if (!session?.user?.companyId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const productId = params.id;
-
+    const companyId = await getSessionCompanyId();
     const product = await prisma.productCatalog.findFirst({
-      where: {
-        id: productId,
-        companyId: session.user.companyId,
-      },
+      where: { id: params.id, companyId },
+      include: {
+        billOfMaterials: true
+      }
     });
 
     if (!product) {
-      return NextResponse.json(
-        { error: 'Product not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: 'Product not found' }, { status: 404 });
     }
 
-    return NextResponse.json(product);
+    return NextResponse.json({ product });
   } catch (error) {
     console.error('Error fetching product:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch product' },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: 'Error fetching product' }, { status: 500 });
   }
 }
 
-// PUT - Update a product
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+// PUT /api/manufacturing/products/[id]
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
-  const session = await getServerSession(authOptions) as any;
-    if (!session?.user?.companyId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const productId = params.id;
+    const companyId = await getSessionCompanyId();
     const body = await request.json();
-    const { name, description, category, unit, standardCost, sellingPrice } = body;
 
-    // Validate required fields
-    if (!name) {
-      return NextResponse.json(
-        { error: 'Product name is required' },
-        { status: 400 }
-      );
-    }
-
-    // Check if product exists
-    const existingProduct = await prisma.productCatalog.findFirst({
-      where: {
-        id: productId,
-        companyId: session.user.companyId,
-      },
-    });
-
-    if (!existingProduct) {
-      return NextResponse.json(
-        { error: 'Product not found' },
-        { status: 404 }
-      );
-    }
-
-    // Check if name already exists (excluding current product)
-    const nameExists = await prisma.productCatalog.findFirst({
-      where: {
-        name: name,
-        companyId: session.user.companyId,
-        id: { not: productId },
-      },
-    });
-
-    if (nameExists) {
-      return NextResponse.json(
-        { error: 'Product name already exists' },
-        { status: 400 }
-      );
-    }
-
-    // Update product
-    const updatedProduct = await prisma.productCatalog.update({
-      where: {
-        id: productId,
-      },
+    const product = await prisma.productCatalog.updateMany({
+      where: { id: params.id, companyId },
       data: {
-        name,
-        description,
-        category,
-        unit,
-        standardCost: standardCost ? parseFloat(standardCost) : 0,
-        sellingPrice: sellingPrice ? parseFloat(sellingPrice) : 0,
-      },
+        name: body.name,
+        description: body.description,
+        category: body.category,
+        unit: body.unit,
+        standardCost: body.standardCost,
+        sellingPrice: body.sellingPrice,
+        isActive: body.isActive
+      }
     });
 
-    return NextResponse.json(updatedProduct);
+    if (product.count === 0) {
+      return NextResponse.json({ message: 'Product not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: 'Product updated successfully' });
   } catch (error) {
     console.error('Error updating product:', error);
-    return NextResponse.json(
-      { error: 'Failed to update product' },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: 'Error updating product' }, { status: 500 });
   }
 }
 
-// DELETE - Delete a product
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+// DELETE /api/manufacturing/products/[id]
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-  const session = await getServerSession(authOptions) as any;
-    if (!session?.user?.companyId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const companyId = await getSessionCompanyId();
 
-    const productId = params.id;
-
-    // Check if product exists
-    const existingProduct = await prisma.productCatalog.findFirst({
-      where: {
-        id: productId,
-        companyId: session.user.companyId,
-      },
+    // Check usage?
+    const count = await prisma.productCatalog.deleteMany({
+      where: { id: params.id, companyId }
     });
 
-    if (!existingProduct) {
-      return NextResponse.json(
-        { error: 'Product not found' },
-        { status: 404 }
-      );
+    if (count.count === 0) {
+      return NextResponse.json({ message: 'Product not found' }, { status: 404 });
     }
-
-    // Check if product is used in any production orders
-    const productionOrders = await prisma.productionOrder.findMany({
-      where: {
-        productId: productId,
-        companyId: session.user.companyId,
-      },
-    });
-
-    if (productionOrders.length > 0) {
-      return NextResponse.json(
-        { error: 'Cannot delete product that is used in production orders' },
-        { status: 400 }
-      );
-    }
-
-    // Delete product
-    await prisma.productCatalog.delete({
-      where: {
-        id: productId,
-      },
-    });
 
     return NextResponse.json({ message: 'Product deleted successfully' });
   } catch (error) {
     console.error('Error deleting product:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete product' },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: 'Cannot delete product (may be used in orders)' }, { status: 500 });
   }
 }
-

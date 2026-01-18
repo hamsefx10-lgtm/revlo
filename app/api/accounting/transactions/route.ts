@@ -25,17 +25,17 @@ export async function GET(request: Request) {
 
     // Build where clause
     let whereClause: any = { companyId };
-    
+
     // Add type filter if specified
     if (type && ['INCOME', 'EXPENSE', 'DEBT_TAKEN', 'DEBT_REPAID', 'TRANSFER_IN', 'TRANSFER_OUT'].includes(type)) {
       whereClause.type = type;
     }
-    
+
     // Add project filter if specified
     if (projectId) {
       whereClause.projectId = projectId;
     }
-    
+
     // If includeDebts is true, prioritize debt transactions
     if (includeDebts) {
       whereClause = {
@@ -49,7 +49,7 @@ export async function GET(request: Request) {
         whereClause.projectId = projectId;
       }
     }
-    
+
     // If includeProjectDebts is true, get debt transactions linked to projects
     if (includeProjectDebts) {
       whereClause = {
@@ -69,7 +69,7 @@ export async function GET(request: Request) {
         project: { select: { name: true } },
         expense: { select: { description: true } },
         customer: { select: { name: true } },
-        vendor: { select: { name: true } },
+        // vendor: { select: { name: true } },
         user: { select: { fullName: true } },
         employee: { select: { fullName: true } },
       },
@@ -106,10 +106,10 @@ export async function POST(request: Request) {
     const companyId = (session as any).user.companyId;
     const userId = (session as any).user.id;
 
-    const { 
-      description, amount, type, transactionDate, note, 
+    const {
+      description, amount, type, transactionDate, note,
       accountId, // Account ID
-      projectId, expenseId, customerId, vendorId, employeeId // Related entity IDs
+      projectId, expenseId, customerId, employeeId // Related entity IDs (vendorId removed temporarily)
     } = await request.json();
 
     if (!description || typeof amount !== 'number' || !type || !transactionDate) {
@@ -150,10 +150,10 @@ export async function POST(request: Request) {
       const customer = await prisma.customer.findFirst({ where: { id: customerId, companyId } });
       if (!customer) return NextResponse.json({ message: 'Macmiilka la xiriira lama helin.' }, { status: 400 });
     }
-    if (vendorId) {
+    /* if (vendorId) {
       const vendor = await prisma.vendor.findFirst({ where: { id: vendorId, companyId } });
       if (!vendor) return NextResponse.json({ message: 'Iibiyaha la xiriira lama helin.' }, { status: 400 });
-    }
+    } */
     if (employeeId) {
       const employee = await prisma.employee.findFirst({ where: { id: employeeId, companyId } });
       if (!employee) return NextResponse.json({ message: 'Shaqaalaha la xiriira lama helin.' }, { status: 400 });
@@ -171,7 +171,7 @@ export async function POST(request: Request) {
         projectId: projectId || null,
         expenseId: expenseId || null,
         customerId: customerId || null,
-        vendorId: vendorId || null,
+        // vendorId: vendorId || null,
         employeeId: employeeId || null,
         userId,
         companyId,

@@ -6,77 +6,77 @@ import {
   LayoutDashboard, Briefcase, DollarSign, Users, Truck,
   Settings, X, UserCircle, LogOut,
   Landmark, UserCogIcon, Shield, Calendar, Menu, Wrench, Factory,
-  Package, BarChart3, Scissors, MessageCircle, ShoppingCart, Tag, Mail
+  Package, BarChart3, Scissors, MessageCircle, ShoppingCart, Tag, Mail,
+  ClipboardList, LayoutGrid, Hammer
 } from 'lucide-react';
+
+import { usePathname } from 'next/navigation';
+
+interface SidebarProps {
+  setIsSidebarOpen: (open: boolean) => void;
+  isCollapsed: boolean;
+  currentTime?: Date;
+  currentUser: any; // Using any for now to avoid extensive type imports, or refine if User type is available
+  currentCompany: any;
+  handleLogout: () => void;
+  onNavItemClick?: () => void;
+}
 
 interface NavItemProps {
   name: string;
   href: string;
   icon: React.ReactNode;
-  isCollapsed: boolean;
+  isCollapsed?: boolean;
   onClick?: () => void;
   badge?: number;
-  isActive?: boolean;
-  group?: string;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ 
-  name, 
-  href, 
-  icon, 
-  isCollapsed, 
-  onClick, 
-  badge, 
-  isActive,
-  group 
-}) => (
-  <li>
-    <Link
-      href={href}
-      onClick={onClick}
-      className={`flex items-center text-lg py-2 px-3 rounded-md text-white hover:bg-primary/80 transition-all duration-300 group relative
-                 ${isCollapsed ? 'justify-center' : 'justify-start'} space-x-3 animate-slide-in
-                 ${isActive ? 'bg-primary/60 border-l-4 border-secondary' : ''}`}
-    >
-      <div className="text-2xl relative">
-        {React.cloneElement(icon as React.ReactElement, { 
-          className: `text-white group-hover:text-secondary dark:group-hover:text-secondary transition-colors duration-200
-                     ${isActive ? 'text-secondary' : ''}` 
-        })}
-        {badge && badge > 0 && (
-          <span className="absolute -top-2 -right-2 bg-redError text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-            {badge > 9 ? '9+' : badge}
+const NavItem: React.FC<NavItemProps> = ({ name, href, icon, isCollapsed, onClick, badge }) => {
+  const pathname = usePathname();
+  const isActive = pathname === href || pathname?.startsWith(`${href}/`);
+
+  return (
+    <li>
+      <Link
+        href={href}
+        onClick={onClick}
+        className={`
+          flex items-center py-2.5 px-3 mx-2 rounded-xl transition-all duration-300 group relative
+          ${isActive
+            ? 'bg-primary text-white shadow-lg shadow-primary/30'
+            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-darkGray dark:hover:text-white'
+          }
+          ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'}
+        `}
+      >
+        <span className={`text-xl transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
+          {icon}
+        </span>
+
+        {!isCollapsed && (
+          <span className="font-medium text-sm truncate flex-1">
+            {name}
           </span>
         )}
-      </div>
-      {/* Tooltip on hover when collapsed */}
-      {isCollapsed ? (
-        <span className="opacity-0 absolute left-full ml-4 w-auto bg-darkGray text-white text-sm px-3 py-2 rounded-lg shadow-xl whitespace-nowrap invisible group-hover:visible group-hover:opacity-100 z-50 transition-all duration-200">
-          {name}
-        </span>
-      ) : (
-        <div className="flex-1">
-        <span className="truncate transition-all duration-300">{name}</span>
-          {group && (
-            <span className="text-xs text-mediumGray/70 block">{group}</span>
-          )}
-        </div>
-      )}
-    </Link>
-  </li>
-);
 
-interface SidebarProps {
-  setIsSidebarOpen?: (isOpen: boolean) => void;
-  isCollapsed: boolean;
-  currentTime: Date;
-  currentUser: { name: string; email: string; avatar: string; id: string; role: string; } | null;
-  currentCompany: { name: string; logoUrl?: string | null };
-  handleLogout: () => Promise<void>;
-  onNavItemClick?: () => void;
-}
+        {/* Badge */}
+        {badge && !isCollapsed && (
+          <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+            {badge}
+          </span>
+        )}
 
-// Enhanced menu configuration with grouping
+        {/* Tooltip for collapsed state */}
+        {isCollapsed && (
+          <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 transition-opacity">
+            {name}
+          </div>
+        )}
+      </Link>
+    </li>
+  );
+};
+
 const menuConfig = {
   ADMIN: {
     main: [
@@ -84,10 +84,8 @@ const menuConfig = {
     ],
     business: [
       { name: 'Projects', href: '/projects', icon: <Briefcase />, group: 'Business' },
-      { name: 'Manufacturing', href: '/manufacturing', icon: <Factory />, group: 'Business' },
-      { name: 'Products', href: '/manufacturing/products', icon: <Tag />, group: 'Business' },
+      { name: 'Workshop', href: '/workshop', icon: <Hammer />, group: 'Business' },
       { name: 'Sales', href: '/sales', icon: <ShoppingCart />, group: 'Business' },
-      { name: 'Purchases', href: '/manufacturing/material-purchases', icon: <Package />, group: 'Business' },
       { name: 'Vendors', href: '/vendors', icon: <Users />, group: 'Business' },
       { name: 'Customers', href: '/customers', icon: <Users />, group: 'Business' },
       { name: 'Employees', href: '/employees', icon: <UserCogIcon />, group: 'Business' },
@@ -97,11 +95,9 @@ const menuConfig = {
       { name: 'Expenses', href: '/expenses', icon: <DollarSign />, group: 'Financial', badge: 3 },
       { name: 'Accounting', href: '/accounting', icon: <Landmark />, group: 'Financial' },
       { name: 'Inventory', href: '/inventory', icon: <Package />, group: 'Financial' },
-      { name: 'Vendors', href: '/vendors', icon: <Truck />, group: 'Financial' },
     ],
     reports: [
       { name: 'Reports', href: '/reports', icon: <BarChart3 />, group: 'Reports' },
-      { name: 'Manufacturing Reports', href: '/manufacturing/reports', icon: <Factory />, group: 'Reports' },
     ],
     admin: [
       { name: 'Users', href: '/settings/users', icon: <Shield />, group: 'Administration' },
@@ -116,10 +112,8 @@ const menuConfig = {
     ],
     business: [
       { name: 'Projects', href: '/projects', icon: <Briefcase />, group: 'Business' },
-      { name: 'Manufacturing', href: '/manufacturing', icon: <Factory />, group: 'Business' },
-      { name: 'Products', href: '/manufacturing/products', icon: <Tag />, group: 'Business' },
+      { name: 'Workshop', href: '/workshop', icon: <Hammer />, group: 'Business' },
       { name: 'Sales', href: '/sales', icon: <ShoppingCart />, group: 'Business' },
-      { name: 'Purchases', href: '/manufacturing/material-purchases', icon: <Package />, group: 'Business' },
       { name: 'Vendors', href: '/vendors', icon: <Users />, group: 'Business' },
       { name: 'Customers', href: '/customers', icon: <Users />, group: 'Business' },
       { name: 'Employees', href: '/employees', icon: <UserCogIcon />, group: 'Business' },
@@ -129,11 +123,9 @@ const menuConfig = {
       { name: 'Expenses', href: '/expenses', icon: <DollarSign />, group: 'Financial' },
       { name: 'Accounting', href: '/accounting', icon: <Landmark />, group: 'Financial' },
       { name: 'Inventory', href: '/inventory', icon: <Package />, group: 'Financial' },
-      { name: 'Vendors', href: '/vendors', icon: <Truck />, group: 'Financial' },
     ],
     reports: [
       { name: 'Reports', href: '/reports', icon: <BarChart3 />, group: 'Reports' },
-      { name: 'Manufacturing Reports', href: '/manufacturing/reports', icon: <Factory />, group: 'Reports' },
     ],
     admin: [
       { name: 'Fiscal Years', href: '/admin/fiscal-years', icon: <Calendar />, group: 'Administration' },
@@ -146,8 +138,6 @@ const menuConfig = {
     ],
     business: [
       { name: 'Projects', href: '/projects', icon: <Briefcase />, group: 'Business' },
-      { name: 'Manufacturing', href: '/manufacturing', icon: <Factory />, group: 'Business' },
-      { name: 'Purchases', href: '/manufacturing/material-purchases', icon: <Package />, group: 'Business' },
       { name: 'Vendors', href: '/vendors', icon: <Users />, group: 'Business' },
       { name: 'Company Chat', href: '/chat', icon: <MessageCircle />, group: 'Business' },
     ],
@@ -222,25 +212,31 @@ const Sidebar: React.FC<SidebarProps> = ({
   // Filter menu items based on planType
   const filterMenuByPlan = (menu: any) => {
     if (planType === 'FACTORIES_ONLY') {
-      // Replace Projects with Factories, show only Manufacturing-related items
+      // STRICT Factory OS Menu
       return {
-        ...menu,
-        business: menu.business?.map((item: any) => 
-          item.name === 'Projects' 
-            ? { ...item, name: 'Factories', href: '/factories', icon: <Factory /> }
-            : item
-        ).filter((item: any) => 
-          !item.href?.startsWith('/projects') || item.name === 'Factories'
-        ) || [],
-        reports: menu.reports?.filter((item: any) => 
-          !item.href?.includes('project')
-        ) || [],
+        main: [
+          { name: 'Factory OS', href: '/manufacturing', icon: <Factory />, group: 'Main' }, // Main Dashboard
+        ],
+        business: [
+          { name: 'Production', href: '/manufacturing/production-orders', icon: <ClipboardList />, group: 'Operations' },
+          { name: 'Inventory', href: '/manufacturing/inventory', icon: <Package />, group: 'Operations' },
+          { name: 'Recipes (BOM)', href: '/manufacturing/bom', icon: <LayoutGrid />, group: 'Engineering' },
+        ],
+        financial: [
+          { name: 'Purchases', href: '/manufacturing/material-purchases', icon: <Truck />, group: 'Finance' },
+          // Expenses might still be relevant
+          { name: 'Expenses', href: '/expenses', icon: <DollarSign />, group: 'Finance' },
+        ],
+        reports: [
+          { name: 'Reports', href: '/manufacturing/reports', icon: <BarChart3 />, group: 'Analytics' },
+        ],
+        admin: menu.admin || [] // Keep admin if they have it
       };
     } else if (planType === 'PROJECTS_ONLY') {
       // Hide Manufacturing, Products, Sales, Factories - show only Projects
       return {
         ...menu,
-        business: menu.business?.filter((item: any) => 
+        business: menu.business?.filter((item: any) =>
           item.name !== 'Manufacturing' &&
           item.name !== 'Products' &&
           item.name !== 'Sales' &&
@@ -250,12 +246,12 @@ const Sidebar: React.FC<SidebarProps> = ({
           !item.href?.startsWith('/sales') &&
           !item.href?.startsWith('/factories')
         ) || [],
-        reports: menu.reports?.filter((item: any) => 
+        reports: menu.reports?.filter((item: any) =>
           !item.href?.includes('manufacturing')
         ) || [],
       };
     }
-    // COMBINED - show everything (keep Projects, add Factories as separate)
+    // COMBINED - show everything
     return menu;
   };
 
@@ -315,71 +311,47 @@ const Sidebar: React.FC<SidebarProps> = ({
           {/* Sidebar */}
           <aside
             className={`
-              h-full bg-darkGray dark:bg-gray-900 text-white flex flex-col shadow-xl
+              h-full bg-white dark:bg-[#0f172a] flex flex-col shadow-2xl
               w-60 transition-transform duration-300 ease-in-out
-              rounded-tr-[0.2rem] rounded-br-[0.2rem]
-              fixed top-0 left-0 z-50 border-r border-gray-800
+              fixed top-0 left-0 z-50 border-r border-gray-100 dark:border-gray-800
               ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
-              bg-[linear-gradient(135deg,_#233047_80%,_#1e293b_100%)]
               min-w-[240px] max-w-[240px]
             `}
           >
             {/* Top: Logo, Close Button */}
-            <div className="flex items-center justify-between px-4 py-4 border-b border-gray-700">
-              <span className="text-3xl font-extrabold tracking-wide select-none">
-                Revl<span className="text-secondary">o</span>.
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-800/50">
+              <span className="text-2xl font-black tracking-tight select-none text-gray-900 dark:text-white">
+                Revl<span className="text-blue-600 dark:text-blue-500">o</span>.
               </span>
               <button
                 onClick={() => setMobileOpen(false)}
-                className="p-2 rounded-full hover:bg-primary/20 transition-colors"
+                className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 aria-label="Close sidebar"
               >
-                <X size={24} />
+                <X size={20} />
               </button>
             </div>
-
-            {/* Company Profile */}
-            {currentCompany && (
-              <Link href="/settings/company-profile" className="group flex items-center p-3 rounded-md text-white hover:bg-primary/80 transition-all duration-300 mb-4">
-                {currentCompany.logoUrl ? (
-                  <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center border-2 border-primary/50 shadow-md flex-shrink-0">
-                    <img
-                      src={currentCompany.logoUrl}
-                      alt={currentCompany.name || 'Company Logo'}
-                      className="w-12 h-12 rounded-full object-contain"
-                    />
-                  </div>
-                ) : (
-                  <div className="rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg w-12 h-12 text-2xl border-2 border-primary/50 shadow-md flex-shrink-0">
-                    {currentCompany.name?.charAt(0)?.toUpperCase() || 'C'}
-                  </div>
-                )}
-                <div className="text-left flex-1 animate-fade-in ml-3">
-                  <h3 className="text-base font-bold text-white leading-tight">{currentCompany.name}</h3>
-                  <p className="text-xs text-mediumGray dark:text-gray-400 leading-tight">Company Profile</p>
-                </div>
-              </Link>
-            )}
 
             {/* Navigation */}
             <nav className="flex-1 overflow-y-auto px-1 custom-scrollbar">
               <div className="space-y-4 pb-8">
-                {Object.entries(menuStructure).map(([sectionName, items]) => 
+                {Object.entries(menuStructure).map(([sectionName, items]) =>
                   renderMenuSection(sectionName, items)
                 )}
               </div>
             </nav>
             {/* Bottom: Settings, Logout */}
-            <div className="px-2 pb-4 border-t border-gray-700 bg-darkGray/90 dark:bg-gray-900/90">
+            {/* Bottom: Settings, Logout */}
+            <div className="px-2 pb-6 border-t border-gray-100 dark:border-gray-800 pt-4">
               <ul className="space-y-1">
                 {bottomItems.map((item) =>
                   item.name === 'Log Out' ? (
                     <li key={item.name}>
                       <button
                         onClick={item.onClick}
-                        className="w-full flex items-center text-lg py-2 px-3 rounded-md text-redError hover:bg-redError/10 transition-colors duration-300 group relative justify-start space-x-3 animate-slide-in"
+                        className="w-full flex items-center text-sm font-medium py-2.5 px-3 mx-2 rounded-xl text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors duration-300 group relative justify-start space-x-3"
                       >
-                        <span className="text-2xl">{item.icon}</span>
+                        <span className="text-xl">{item.icon}</span>
                         <span className="truncate transition-all duration-300">{item.name}</span>
                       </button>
                     </li>
@@ -404,76 +376,49 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside
       className={`
-        h-full bg-darkGray dark:bg-gray-900 text-white flex flex-col shadow-xl
-        ${collapsed ? 'w-16 min-w-[64px] max-w-[64px]' : 'w-60 min-w-[240px] max-w-[240px]'}
-        transition-all duration-300 ease-in-out
-        rounded-tr-[0.2rem] rounded-br-[0.2rem]
+        h-full bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-xl flex flex-col shadow-[1px_0_20px_rgba(0,0,0,0.03)] dark:shadow-none
+        ${collapsed ? 'w-20 min-w-[80px] max-w-[80px]' : 'w-64 min-w-[256px] max-w-[256px]'}
+        transition-all duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)]
         fixed md:static top-0 left-0 z-40
-        border-r border-gray-800
-        bg-[linear-gradient(135deg,_#233047_80%,_#1e293b_100%)]
+        border-r border-gray-200/60 dark:border-gray-800
       `}
     >
-      {/* Top: Logo only */}
-      <div className="flex items-center justify-center px-4 py-4 border-b border-gray-700">
-        {currentCompany.logoUrl ? (
-          <img
-            src={currentCompany.logoUrl}
-            alt={currentCompany.name || 'Company Logo'}
-            className={`${collapsed ? 'h-8 w-8 rounded-full' : 'h-8 w-auto rounded-md'} object-contain bg-lightGray/20 dark:bg-gray-700/60 px-2 py-1`}
-          />
+      {/* Top: Branding / Logo */}
+      <div className={`flex items-center ${collapsed ? 'justify-center' : 'pl-8'} py-8 mb-2 transition-all duration-300`}>
+        {collapsed ? (
+          <div className="h-10 w-10 bg-green-500 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-green-500/30">
+            R<span className="text-green-100"></span>
+          </div>
         ) : (
-        <span className="text-3xl font-extrabold tracking-wide select-none">
-          {collapsed ? <>R<span className="text-secondary">.</span></> : <>Revl<span className="text-secondary">o</span>.</>}
-        </span>
+          <span className="text-3xl font-black tracking-tighter select-none text-gray-900 dark:text-white flex items-center gap-1">
+            Revl<span className="text-green-500 text-4xl leading-none mt-1">o</span>
+          </span>
         )}
       </div>
-
-
-      {/* Company Profile */}
-      {!collapsed && currentCompany && (
-        <Link href="/settings/company-profile" className="group flex items-center p-3 rounded-md text-white hover:bg-primary/80 transition-all duration-300 mb-4">
-          {currentCompany.logoUrl ? (
-            <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center border-2 border-primary/50 shadow-md flex-shrink-0">
-              <img
-                src={currentCompany.logoUrl}
-                alt={currentCompany.name || 'Company Logo'}
-                className="w-10 h-10 rounded-full object-contain"
-              />
-            </div>
-          ) : (
-            <div className="rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg w-12 h-12 text-2xl border-2 border-primary/50 shadow-md flex-shrink-0">
-              {currentCompany.name?.charAt(0)?.toUpperCase() || 'C'}
-            </div>
-          )}
-          <div className="text-left flex-1 animate-fade-in ml-3">
-            <h3 className="text-base font-bold text-white leading-tight">{currentCompany.name}</h3>
-            <p className="text-xs text-mediumGray dark:text-gray-400 leading-tight">Company Profile</p>
-          </div>
-        </Link>
-      )}
 
 
       {/* Navigation (scrollable) */}
       <nav className="flex-1 overflow-y-auto px-1 sidebar-scrollbar">
         <div className="space-y-4 pb-8">
-          {Object.entries(menuStructure).map(([sectionName, items]) => 
+          {Object.entries(menuStructure).map(([sectionName, items]) =>
             renderMenuSection(sectionName, items)
           )}
         </div>
       </nav>
 
       {/* Bottom: Settings, Logout */}
+      {/* Bottom: Settings, Logout */}
       {!collapsed && (
-        <div className="px-2 pb-4 border-t border-gray-700 bg-darkGray/90 dark:bg-gray-900/90">
+        <div className="px-2 pb-6 border-t border-gray-100 dark:border-gray-800 pt-4 bg-gray-50/50 dark:bg-gray-900/30">
           <ul className="space-y-1">
             {bottomItems.map((item) =>
               item.name === 'Log Out' ? (
                 <li key={item.name}>
                   <button
                     onClick={item.onClick}
-                    className="w-full flex items-center text-lg py-2 px-3 rounded-md text-redError hover:bg-redError/10 transition-colors duration-300 group relative justify-start space-x-3 animate-slide-in"
+                    className="w-full flex items-center text-sm font-medium py-2.5 px-3 mx-2 rounded-xl text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors duration-300 group relative justify-start space-x-3"
                   >
-                    <span className="text-2xl">{item.icon}</span>
+                    <span className="text-xl">{item.icon}</span>
                     <span className="truncate transition-all duration-300">{item.name}</span>
                   </button>
                 </li>

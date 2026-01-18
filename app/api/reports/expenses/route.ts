@@ -11,16 +11,16 @@ export async function GET(request: Request) {
 		}
 		const { companyId } = sessionUser;
 		// Fetch all expenses for the company
-			const expenses = await prisma.expense.findMany({
-				where: { companyId },
-				orderBy: { expenseDate: 'desc' },
-				include: {
-					project: { select: { name: true } },
-					user: { select: { fullName: true } },
-					vendor: { select: { name: true } },
-					expenseCategory: { select: { name: true } },
-				},
-			});
+		const expenses = await prisma.expense.findMany({
+			where: { companyId },
+			orderBy: { expenseDate: 'desc' },
+			include: {
+				project: { select: { name: true } },
+				user: { select: { fullName: true } },
+				// vendor: { select: { name: true } },
+				expenseCategory: { select: { name: true } },
+			},
+		});
 
 		// Aggregate totals
 		const companyExpenses = await prisma.expense.aggregate({
@@ -35,19 +35,19 @@ export async function GET(request: Request) {
 		const projectAmount = projectExpenses._sum?.amount ? Number(projectExpenses._sum.amount) : 0;
 
 		// Map expenses to frontend format
-			const mappedExpenses = expenses.map((exp: any) => ({
-				id: exp.id,
-				date: exp.expenseDate?.toISOString().slice(0, 10) || '',
-				project: exp.project?.name || exp.projectId || 'Internal',
-				category: exp.expenseCategory?.name || exp.category || '',
-				description: exp.description || '',
-				amount: typeof exp.amount === 'object' && 'toNumber' in exp.amount ? exp.amount.toNumber() : Number(exp.amount),
-				paidFrom: exp.paidFrom || '',
-				note: exp.note || '',
-				approved: exp.approved || false,
-				user: exp.user?.fullName || '',
-				vendor: exp.vendor?.name || '',
-			}));
+		const mappedExpenses = expenses.map((exp: any) => ({
+			id: exp.id,
+			date: exp.expenseDate?.toISOString().slice(0, 10) || '',
+			project: exp.project?.name || exp.projectId || 'Internal',
+			category: exp.expenseCategory?.name || exp.category || '',
+			description: exp.description || '',
+			amount: typeof exp.amount === 'object' && 'toNumber' in exp.amount ? exp.amount.toNumber() : Number(exp.amount),
+			paidFrom: exp.paidFrom || '',
+			note: exp.note || '',
+			approved: exp.approved || false,
+			user: exp.user?.fullName || '',
+			vendor: exp.vendor?.name || '',
+		}));
 
 		return NextResponse.json({
 			expenses: mappedExpenses,

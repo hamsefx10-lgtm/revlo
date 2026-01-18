@@ -71,56 +71,125 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
     // Verify order exists and belongs to company
     const existingOrder = await prisma.productionOrder.findFirst({
-      where: { id, companyId }
+      where: { id, companyId },
+      include: {
+        billOfMaterials: true
+      }
     });
 
     if (!existingOrder) {
       return NextResponse.json({ message: 'Amarka warshadaha lama helin.' }, { status: 404 });
     }
 
-    const updatedOrder = await prisma.productionOrder.update({
-      where: { id },
-      data: {
-        orderNumber: body.orderNumber,
-        productName: body.productName,
-        quantity: body.quantity ? parseInt(body.quantity) : undefined,
-        status: body.status,
-        priority: body.priority,
-        startDate: body.startDate ? new Date(body.startDate) : null,
-        dueDate: body.dueDate ? new Date(body.dueDate) : null,
-        completedDate: body.completedDate ? new Date(body.completedDate) : null,
-        notes: body.notes,
-        customerId: body.customerId,
-        productId: body.productId,
-      },
-      include: {
-        customer: {
-          select: {
-            id: true,
-            name: true
-          }
-        },
-        billOfMaterials: true,
-        workOrders: {
-          include: {
-            assignedTo: {
-              select: {
-                id: true,
-                fullName: true
-              }
+    // Check if Status is changing to COMPLETED
+    const isCompleting = body.status === 'COMPLETED' && existingOrder.status !== 'COMPLETED';
+
+    if (isCompleting) {
+      // Run logic in a transaction
+      const updatedOrder = await prisma.$transaction(async (tx) => {
+        // 1. Deduct Raw Materials
+        for (const bom of existingOrder.billOfMaterials) {
+          // Find correct inventory item by name
+          const materialItem = await tx.inventoryItem.findFirst({
+            where: {
+              name: bom.materialName,
+              companyId
             }
+          });
+
+          if (materialItem) {
+            await tx.inventoryItem.update({
+              where: { id: materialItem.id },
+              data: { inStock: { decrement: bom.quantity } }
+            });
           }
         }
-      }
-    });
 
-    return NextResponse.json(
-      { 
-        message: 'Amarka warshadaha si guul leh ayaa la cusboonaysiiyay!', 
-        order: updatedOrder 
-      },
-      { status: 200 }
-    );
+        // 2. Add Finished Goods
+        const productItem = await tx.inventoryItem.findFirst({
+          where: {
+            name: existingOrder.productName,
+            companyId
+          }
+        });
+
+        if (productItem) {
+          await tx.inventoryItem.update({
+            where: { id: productItem.id },
+            data: { inStock: { increment: existingOrder.quantity } }
+          });
+        } else {
+          // Create if not exists (Auto-create finished good in inventory)
+          await tx.inventoryItem.create({
+            data: {
+              name: existingOrder.productName,
+              category: 'Finished Goods',
+              unit: 'pcs',
+              inStock: existingOrder.quantity,
+              minStock: 0,
+              purchasePrice: 0,
+              sellingPrice: 0,
+              companyId
+            }
+          });
+        }
+
+        // 3. Update Order Status
+        return await tx.productionOrder.update({
+          where: { id },
+          data: {
+            status: 'COMPLETED',
+            completedDate: new Date(),
+            notes: body.notes || existingOrder.notes
+          },
+          include: {
+            customer: { select: { id: true, name: true } },
+            billOfMaterials: true,
+            workOrders: true
+          }
+        });
+      });
+
+      return NextResponse.json(
+        {
+          message: 'Amarka waa la dhammeeyay, kaydkana waa la cusboonaysiiyay!',
+          order: updatedOrder
+        },
+        { status: 200 }
+      );
+
+    } else {
+      // Standard Update (Not Completing) details
+      const updatedOrder = await prisma.productionOrder.update({
+        where: { id },
+        data: {
+          orderNumber: body.orderNumber,
+          productName: body.productName,
+          quantity: body.quantity ? parseInt(body.quantity) : undefined,
+          status: body.status,
+          priority: body.priority,
+          startDate: body.startDate ? new Date(body.startDate) : undefined,
+          dueDate: body.dueDate ? new Date(body.dueDate) : undefined,
+          notes: body.notes,
+          customerId: body.customerId,
+          productId: body.productId,
+        },
+        include: {
+          customer: { select: { id: true, name: true } },
+          billOfMaterials: true,
+          workOrders: true
+        }
+      });
+
+      return NextResponse.json(
+        {
+          message: 'Amarka warshadaha si guul leh ayaa la cusboonaysiiyay!',
+          order: updatedOrder
+        },
+        { status: 200 }
+      );
+    }
+
   } catch (error) {
     console.error(`Cilad ayaa dhacday marka amarka warshadaha ${params.id} la cusboonaysiinayay:`, error);
     return NextResponse.json(

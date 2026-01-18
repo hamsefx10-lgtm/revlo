@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ChevronRight, Edit, Trash2, ArrowLeft, Calendar, User, Package, Clock, DollarSign, Play, Pause, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import { ChevronRight, Edit, Trash2, ArrowLeft, Calendar, User, Package, Clock, DollarSign, Play, Pause, CheckCircle, XCircle, RefreshCw, Square, Loader2 } from 'lucide-react';
 import Layout from '@/components/layouts/Layout';
 import Toast from '@/components/common/Toast';
 
@@ -65,6 +65,7 @@ export default function ViewProductionOrderPage() {
   const [productionOrder, setProductionOrder] = useState<ProductionOrder | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const [completing, setCompleting] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
@@ -78,7 +79,7 @@ export default function ViewProductionOrderPage() {
       const response = await fetch(`/api/manufacturing/production-orders/${productionOrderId}`);
       if (response.ok) {
         const data = await response.json();
-        setProductionOrder(data);
+        setProductionOrder(data.order);
       } else {
         setToast({ message: 'Qalad ayaa dhacay marka la soo saarayay amarka', type: 'error' });
       }
@@ -145,6 +146,7 @@ export default function ViewProductionOrderPage() {
   };
 
   const updateStatus = async (newStatus: string) => {
+    if (newStatus === 'COMPLETED') setCompleting(true);
     try {
       const response = await fetch(`/api/manufacturing/production-orders/${productionOrderId}`, {
         method: 'PUT',
@@ -153,7 +155,9 @@ export default function ViewProductionOrderPage() {
         },
         body: JSON.stringify({
           status: newStatus,
-          ...(newStatus === 'COMPLETED' && { completedDate: new Date().toISOString() })
+          orderNumber: productionOrder?.orderNumber, // Maintain required fields
+          productName: productionOrder?.productName,
+          // If status is completed, the backend logic handles date and stock
         }),
       });
 
@@ -166,63 +170,61 @@ export default function ViewProductionOrderPage() {
       }
     } catch (error) {
       setToast({ message: 'Error updating status', type: 'error' });
+    } finally {
+      setCompleting(false);
     }
   };
 
-  const getNextStatus = (currentStatus: string) => {
-    switch (currentStatus) {
-      case 'PLANNED':
-        return 'IN_PROGRESS';
-      case 'IN_PROGRESS':
-        return 'COMPLETED';
-      default:
-        return null;
+  // Work Order Actions
+  const handleWorkOrderAction = async (workOrderId: string, action: 'start' | 'complete' | 'reset') => {
+    // Find current work order
+    const wo = productionOrder?.workOrders?.find(w => w.id === workOrderId);
+    if (!wo) return;
+
+    let payload: any = {};
+
+    if (action === 'start') {
+      payload = {
+        status: 'IN_PROGRESS',
+        startTime: new Date().toISOString(),
+        stage: wo.stage, description: wo.description // Required by API validation
+      };
+    } else if (action === 'complete') {
+      const endTime = new Date();
+      const startTime = wo.startTime ? new Date(wo.startTime) : endTime;
+      const durationHours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+
+      payload = {
+        status: 'COMPLETED',
+        endTime: endTime.toISOString(),
+        actualHours: durationHours.toFixed(2),
+        stage: wo.stage, description: wo.description
+      };
+    } else if (action === 'reset') {
+      payload = {
+        status: 'PENDING',
+        startTime: null,
+        endTime: null,
+        actualHours: null,
+        stage: wo.stage, description: wo.description
+      };
     }
-  };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'PLANNED':
-        return <Clock size={16} />;
-      case 'IN_PROGRESS':
-        return <Play size={16} />;
-      case 'COMPLETED':
-        return <CheckCircle size={16} />;
-      case 'CANCELLED':
-        return <XCircle size={16} />;
-      default:
-        return <Clock size={16} />;
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'LOW':
-        return 'bg-gray-100 text-gray-800';
-      case 'MEDIUM':
-        return 'bg-blue-100 text-blue-800';
-      case 'HIGH':
-        return 'bg-orange-100 text-orange-800';
-      case 'URGENT':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-
-  const getPriorityText = (priority: string) => {
-    switch (priority) {
-      case 'LOW':
-        return 'Hoos';
-      case 'MEDIUM':
-        return 'Dhexe';
-      case 'HIGH':
-        return 'Sare';
-      case 'URGENT':
-        return 'Degdeg';
-      default:
-        return priority;
+    try {
+      const res = await fetch(`/api/manufacturing/work-orders/${workOrderId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        setToast({ message: `Work Order ${action}ed successfully`, type: 'success' });
+        fetchProductionOrder();
+      } else {
+        setToast({ message: 'Failed to update work order', type: 'error' });
+      }
+    } catch (e) {
+      console.error(e);
+      setToast({ message: 'Error connecting to server', type: 'error' });
     }
   };
 
@@ -230,7 +232,7 @@ export default function ViewProductionOrderPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <Loader2 className="animate-spin text-[#3498DB]" size={32} />
         </div>
       </Layout>
     );
@@ -241,272 +243,244 @@ export default function ViewProductionOrderPage() {
       <Layout>
         <div className="text-center py-8">
           <p className="text-gray-500">Amarka lama helin</p>
+          <button onClick={() => router.push('/manufacturing')} className="mt-4 text-[#3498DB] underline">Go Back</button>
         </div>
       </Layout>
     );
   }
 
-  const totalMaterialCost = (productionOrder.billOfMaterials || []).reduce((sum, bom) => sum + bom.totalCost, 0);
-  const totalEstimatedHours = (productionOrder.workOrders || []).reduce((sum, wo) => sum + wo.estimatedHours, 0);
+  const totalMaterialCost = (productionOrder.billOfMaterials || []).reduce((sum, bom) => sum + (Number(bom.totalCost) || 0), 0);
+  const totalEstimatedHours = (productionOrder.workOrders || []).reduce((sum, wo) => sum + (Number(wo.estimatedHours) || 0), 0);
 
   return (
     <Layout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-          <a href="/manufacturing" className="hover:text-blue-600">Warshadaha</a>
+          <a href="/manufacturing" className="hover:text-blue-600">Factory OS</a>
           <ChevronRight className="w-4 h-4" />
-          <a href="/manufacturing/production-orders" className="hover:text-blue-600">Amarka Warshadaha</a>
+          <a href="/manufacturing/production-orders" className="hover:text-blue-600">Production Orders</a>
           <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-900">{productionOrder.orderNumber}</span>
+          <span className="text-gray-900 font-bold">{productionOrder.orderNumber}</span>
         </div>
 
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{productionOrder.orderNumber}</h1>
-            <p className="text-gray-600">{productionOrder.productName}</p>
+            <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3">
+              {productionOrder.orderNumber}
+              <span className={`px-3 py-1.5 rounded-xl text-sm font-bold border ${getStatusColor(productionOrder.status)} border-transparent`}>
+                {getStatusText(productionOrder.status)}
+              </span>
+            </h1>
+            <p className="text-gray-500 font-medium mt-1">{productionOrder.productName}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            {productionOrder.status !== 'COMPLETED' && (
+              <button
+                onClick={() => updateStatus('COMPLETED')}
+                disabled={completing}
+                className="bg-green-600 text-white px-5 py-2.5 rounded-xl hover:bg-green-700 flex items-center gap-2 shadow-lg shadow-green-500/20 font-bold transition-all hover:-translate-y-0.5"
+              >
+                {completing ? <Loader2 className="animate-spin w-4 h-4" /> : <CheckCircle className="w-5 h-5" />}
+                Complete Order
+              </button>
+            )}
+
             <button
               onClick={() => router.push(`/manufacturing/production-orders/${productionOrderId}/edit`)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+              className="bg-[#3498DB] text-white px-5 py-2.5 rounded-xl hover:bg-blue-600 shadow-lg shadow-blue-500/20 font-bold transition-all hover:-translate-y-0.5 flex items-center gap-2"
             >
               <Edit className="w-4 h-4" />
-              Wax ka beddel
+              Edit
             </button>
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+              className="bg-red-50 text-red-600 px-5 py-2.5 rounded-xl hover:bg-red-100 font-bold transition-colors flex items-center gap-2"
             >
-              {deleting ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  Tirtirid...
-                </>
-              ) : (
-                <>
-                  <Trash2 className="w-4 h-4" />
-                  Tirtir
-                </>
-              )}
-            </button>
-            <button
-              onClick={() => router.push('/manufacturing')}
-              className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Dib u noqo
+              {deleting ? <Loader2 className="animate-spin w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
             </button>
           </div>
         </div>
 
-        {/* Status and Priority */}
-        <div className="flex gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700">Xaaladda:</span>
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(productionOrder.status)}`}>
-              {getStatusText(productionOrder.status)}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700">Darajada:</span>
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(productionOrder.priority)}`}>
-              {getPriorityText(productionOrder.priority)}
-            </span>
-          </div>
-        </div>
 
         {/* Basic Information */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-semibold mb-4">Macluumaadka Aasaasiga</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="flex items-center gap-3">
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+          <h2 className="text-lg font-bold mb-4 text-gray-800">Order Overview</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl">
               <div className="p-2 bg-blue-100 rounded-lg">
                 <Package className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Tirada</p>
-                <p className="font-semibold">{productionOrder.quantity} pcs</p>
+                <p className="text-xs text-gray-500 font-bold uppercase">Quantity</p>
+                <p className="font-bold text-gray-900 text-lg">{productionOrder.quantity} <span className="text-sm font-medium text-gray-400">units</span></p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <User className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Macmiilka</p>
-                <p className="font-semibold">{productionOrder.customer?.name || 'N/A'}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
+
+            <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl">
               <div className="p-2 bg-purple-100 rounded-lg">
                 <Calendar className="w-5 h-5 text-purple-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Taariikhda Dhammaadka</p>
-                <p className="font-semibold">
-                  {productionOrder.dueDate ? new Date(productionOrder.dueDate).toLocaleDateString('so-SO') : 'N/A'}
+                <p className="text-xs text-gray-500 font-bold uppercase">Due Date</p>
+                <p className="font-bold text-gray-900 text-lg">
+                  {productionOrder.dueDate ? new Date(productionOrder.dueDate).toLocaleDateString() : 'N/A'}
                 </p>
               </div>
             </div>
-            {productionOrder.startDate && (
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-orange-100 rounded-lg">
-                  <Clock className="w-5 h-5 text-orange-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Taariikhda Bilawga</p>
-                  <p className="font-semibold">
-                    {new Date(productionOrder.startDate).toLocaleDateString('so-SO')}
-                  </p>
-                </div>
-              </div>
-            )}
-            <div className="flex items-center gap-3">
+
+            <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl">
               <div className="p-2 bg-yellow-100 rounded-lg">
                 <DollarSign className="w-5 h-5 text-yellow-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Qiimaha Alaabta</p>
-                <p className="font-semibold">${totalMaterialCost.toFixed(2)}</p>
+                <p className="text-xs text-gray-500 font-bold uppercase">Est. Material Cost</p>
+                <p className="font-bold text-gray-900 text-lg">${totalMaterialCost.toFixed(2)}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+
+            <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl">
               <div className="p-2 bg-indigo-100 rounded-lg">
                 <Clock className="w-5 h-5 text-indigo-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Saacadaha la filayo</p>
-                <p className="font-semibold">{totalEstimatedHours} saac</p>
+                <p className="text-xs text-gray-500 font-bold uppercase">Est. Hours</p>
+                <p className="font-bold text-gray-900 text-lg">{totalEstimatedHours} <span className="text-sm font-medium text-gray-400">hrs</span></p>
               </div>
             </div>
           </div>
-          {productionOrder.notes && (
-            <div className="mt-4">
-              <p className="text-sm font-medium text-gray-700 mb-1">Qoraal</p>
-              <p className="text-gray-600 bg-gray-50 p-3 rounded-lg">{productionOrder.notes}</p>
+
+          <div className="mt-6 flex gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 items-start">
+            <div className="mt-1"><RefreshCw size={16} className="text-gray-400" /></div>
+            <div>
+              <p className="text-xs font-bold text-gray-500 uppercase mb-1">Notes</p>
+              <p className="text-sm text-gray-600 font-medium">{productionOrder.notes || 'No additional notes provided.'}</p>
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Bill of Materials */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-semibold mb-4">Liiska Alaabta (Bill of Materials)</h2>
-          {(productionOrder.billOfMaterials || []).length === 0 ? (
-            <p className="text-gray-500 text-center py-4">Weli ma jiro alaab la diiwaan gelin</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Magaca Alaabta
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tirada
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Unugga
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Qiimaha Unugga
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Qiimaha Guud
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Qoraal
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {(productionOrder.billOfMaterials || []).map((bom, index) => (
-                    <tr key={bom.id || index}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {bom.materialName}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {bom.quantity}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {bom.unit}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        ${bom.costPerUnit.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        ${bom.totalCost.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        {bom.notes || '-'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot className="bg-gray-50">
-                  <tr>
-                    <td colSpan={4} className="px-6 py-3 text-right text-sm font-medium text-gray-900">
-                      Wadarta:
-                    </td>
-                    <td className="px-6 py-3 text-sm font-bold text-gray-900">
-                      ${totalMaterialCost.toFixed(2)}
-                    </td>
-                    <td></td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          )}
-        </div>
+        {/* Work Orders (Execution) */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+              <div className="w-2 h-6 bg-[#3498DB] rounded-full"></div>
+              Production Stages
+            </h2>
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{productionOrder?.workOrders?.length || 0} Stages</span>
+          </div>
 
-        {/* Work Orders */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-semibold mb-4">Amarka Shaqada (Work Orders)</h2>
           {(productionOrder.workOrders || []).length === 0 ? (
-            <p className="text-gray-500 text-center py-4">Weli ma jiro heer shaqo la diiwaan gelin</p>
+            <div className="text-center py-10 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+              <Clock className="mx-auto text-gray-300 mb-2" size={32} />
+              <p className="text-gray-500">No work orders defined.</p>
+            </div>
           ) : (
             <div className="space-y-4">
               {(productionOrder.workOrders || []).map((workOrder, index) => (
-                <div key={workOrder.id || index} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h3 className="font-semibold text-lg">{workOrder.stage}</h3>
-                      <p className="text-gray-600">{workOrder.description}</p>
-                    </div>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(workOrder.status)}`}>
-                      {getStatusText(workOrder.status)}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <span className="font-medium text-gray-700">Saacadaha la filayo:</span>
-                      <span className="ml-2">{workOrder.estimatedHours} saac</span>
-                    </div>
-                    {workOrder.actualHours && (
-                      <div>
-                        <span className="font-medium text-gray-700">Saacadaha dhabta ah:</span>
-                        <span className="ml-2">{workOrder.actualHours} saac</span>
+                <div key={workOrder.id || index} className={`
+                    border rounded-xl p-5 transition-all
+                    ${workOrder.status === 'IN_PROGRESS' ? 'border-[#3498DB] ring-1 ring-[#3498DB]/20 bg-blue-50/20' :
+                    workOrder.status === 'COMPLETED' ? 'border-green-200 bg-green-50/30' : 'border-gray-200'}
+                `}>
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className={`
+                            w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm
+                            ${workOrder.status === 'COMPLETED' ? 'bg-green-100 text-green-600' :
+                          workOrder.status === 'IN_PROGRESS' ? 'bg-blue-100 text-[#3498DB] animate-pulse' : 'bg-gray-100 text-gray-500'}
+                        `}>
+                        {workOrder.status === 'COMPLETED' ? <CheckCircle size={18} /> : (index + 1)}
                       </div>
-                    )}
-                    {workOrder.assignedTo && (
                       <div>
-                        <span className="font-medium text-gray-700">Shaqaalaha:</span>
-                        <span className="ml-2">{workOrder.assignedTo?.fullName || 'N/A'}</span>
+                        <h3 className="font-bold text-gray-900 text-lg">{workOrder.stage}</h3>
+                        <p className="text-sm text-gray-500 font-medium">{workOrder.description}</p>
                       </div>
-                    )}
-                  </div>
-                  {workOrder.notes && (
-                    <div className="mt-3">
-                      <span className="font-medium text-gray-700">Qoraal:</span>
-                      <p className="text-gray-600 mt-1">{workOrder.notes}</p>
                     </div>
-                  )}
+
+                    <div className="flex items-center gap-3">
+                      <div className="text-right mr-4 hidden md:block">
+                        <p className="text-xs text-gray-400 font-bold uppercase">Timer</p>
+                        <p className="font-mono text-lg font-bold text-gray-700">
+                          {workOrder.actualHours ? `${workOrder.actualHours} hrs` :
+                            workOrder.startTime ? 'Running...' :
+                              `${workOrder.estimatedHours} hrs est.`}
+                        </p>
+                      </div>
+
+                      {workOrder.status === 'PENDING' && (
+                        <button
+                          onClick={() => handleWorkOrderAction(workOrder.id, 'start')}
+                          className="px-4 py-2 bg-[#3498DB] text-white rounded-lg font-bold text-sm hover:bg-blue-600 flex items-center gap-2 shadow-lg shadow-blue-500/20"
+                        >
+                          <Play size={16} fill="currentColor" /> Start
+                        </button>
+                      )}
+
+                      {workOrder.status === 'IN_PROGRESS' && (
+                        <button
+                          onClick={() => handleWorkOrderAction(workOrder.id, 'complete')}
+                          className="px-4 py-2 bg-green-600 text-white rounded-lg font-bold text-sm hover:bg-green-700 flex items-center gap-2 animate-pulse"
+                        >
+                          <Square size={16} fill="currentColor" /> Complete
+                        </button>
+                      )}
+
+                      {workOrder.status === 'COMPLETED' && (
+                        <button
+                          disabled
+                          className="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg font-bold text-sm flex items-center gap-2 cursor-not-allowed"
+                        >
+                          <CheckCircle size={16} /> Done
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </div>
+
+        {/* Bill of Materials */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+          <h2 className="text-lg font-bold mb-4 text-gray-800">Bill of Materials</h2>
+          {(productionOrder.billOfMaterials || []).length === 0 ? (
+            <p className="text-gray-500 text-center py-4">No materials registered.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50/50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Material</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Quantity</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">Unit Cost</th>
+                    <th className="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Total</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-100">
+                  {(productionOrder.billOfMaterials || []).map((bom, index) => (
+                    <tr key={bom.id || index}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                        {bom.materialName}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">
+                        {bom.quantity} <span className="text-xs text-gray-400">{bom.unit}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium hidden md:table-cell">
+                        ${Number(bom.costPerUnit).toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-right">
+                        ${Number(bom.totalCost).toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
       </div>
 
       {toast && (

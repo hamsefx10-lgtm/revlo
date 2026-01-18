@@ -1,16 +1,24 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import ShopSidebar from '@/components/shop/ShopSidebar';
 import ShopHeader from '@/components/shop/ShopHeader';
+import { Toaster } from 'sonner';
 
 export default function ShopLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
+    const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
     return (
-        <div className="flex min-h-screen bg-[#f8f9fa] dark:bg-[#0b1120] font-sans selection:bg-[#3498DB]/30 selection:text-[#3498DB]">
+        <div className="flex h-screen overflow-hidden bg-[#f8f9fa] dark:bg-[#0b1120] font-sans selection:bg-[#3498DB]/30 selection:text-[#3498DB]">
             {/* Sidebar */}
-            <ShopSidebar />
+            <ShopSidebar
+                mobileOpen={mobileSidebarOpen}
+                setMobileOpen={setMobileSidebarOpen}
+            />
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col min-w-0 relative">
@@ -22,7 +30,7 @@ export default function ShopLayout({
                 </div>
 
                 {/* Header */}
-                <ShopHeader />
+                <ShopHeader onMenuClick={() => setMobileSidebarOpen(true)} />
 
                 {/* Page Content */}
                 <main className="flex-1 overflow-y-auto overflow-x-hidden relative z-10 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
@@ -31,6 +39,10 @@ export default function ShopLayout({
                     </div>
                 </main>
             </div>
+
+            {/* Toast Notifications */}
+            <Toaster position="top-right" richColors />
         </div>
     );
 }
+

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     ArrowLeft,
     User,
@@ -11,35 +11,64 @@ import {
     ShoppingBag,
     DollarSign,
     TrendingUp,
-    Edit
+    Edit,
+    Loader2
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-
-// Mock data
-const CUSTOMER_DATA = {
-    id: '1',
-    name: 'Ahmed Ali Mohamed',
-    email: 'ahmed.ali@example.com',
-    phone: '+252 61 555 1234',
-    address: 'Km4, Hodan District, Mogadishu',
-    joinDate: '2023-06-15',
-    status: 'Active' as const,
-    totalPurchases: 45,
-    totalSpent: 125000,
-    averageOrderValue: 2777,
-    lastPurchase: '2024-01-05'
-};
-
-const PURCHASE_HISTORY = [
-    { id: 'INV-001', date: '2024-01-05', items: 3, amount: 3500, status: 'Completed' },
-    { id: 'INV-002', date: '2024-01-02', items: 1, amount: 1200, status: 'Completed' },
-    { id: 'INV-003', date: '2023-12-28', items: 5, amount: 4800, status: 'Completed' },
-    { id: 'INV-004', date: '2023-12-20', items: 2, amount: 2100, status: 'Completed' },
-];
+import { format } from 'date-fns';
 
 export default function CustomerProfilePage() {
     const params = useParams();
+    const [loading, setLoading] = useState(true);
+    const [customer, setCustomer] = useState<any>(null);
+    const [stats, setStats] = useState({
+        totalSpent: 0,
+        totalOrders: 0,
+        averageOrderValue: 0
+    });
+    const [history, setHistory] = useState<any[]>([]);
+
+    useEffect(() => {
+        if (params.id) {
+            fetchCustomerData();
+        }
+    }, [params.id]);
+
+    const fetchCustomerData = async () => {
+        try {
+            const response = await fetch(`/api/shop/customers/${params.id}`);
+            if (!response.ok) return; // Handle error
+            const data = await response.json();
+
+            if (data.customer) {
+                setCustomer(data.customer);
+                setStats(data.analytics);
+                setHistory(data.history || []);
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="animate-spin text-blue-500" size={32} />
+            </div>
+        );
+    }
+
+    if (!customer) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center">
+                <h2 className="text-xl font-bold">Customer not found</h2>
+                <Link href="/shop/customers" className="text-blue-500 hover:underline mt-2">Go Back</Link>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen animate-fade-in pb-20 font-sans w-full max-w-7xl mx-auto p-4 md:p-8">
@@ -77,13 +106,13 @@ export default function CustomerProfilePage() {
                     <div className="bg-white dark:bg-[#1f2937] border border-gray-100 dark:border-gray-800 rounded-[2rem] p-8 shadow-sm">
                         <div className="flex items-start gap-6">
                             {/* Avatar */}
-                            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#F39C12] to-[#E67E22] flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-orange-500/20 flex-shrink-0">
-                                {CUSTOMER_DATA.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#F39C12] to-[#E67E22] flex items-center justify-center text-white text-3xl font-black shadow-lg shadow-orange-500/20 flex-shrink-0 uppercase">
+                                {customer.name ? customer.name.slice(0, 2) : 'CU'}
                             </div>
 
                             {/* Details */}
                             <div className="flex-1">
-                                <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-4">{CUSTOMER_DATA.name}</h2>
+                                <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-4">{customer.name}</h2>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="flex items-center gap-3">
@@ -92,7 +121,7 @@ export default function CustomerProfilePage() {
                                         </div>
                                         <div>
                                             <p className="text-xs text-gray-400 font-bold uppercase">Email</p>
-                                            <p className="text-sm font-medium text-gray-900 dark:text-white">{CUSTOMER_DATA.email}</p>
+                                            <p className="text-sm font-medium text-gray-900 dark:text-white">{customer.email || 'N/A'}</p>
                                         </div>
                                     </div>
 
@@ -102,7 +131,7 @@ export default function CustomerProfilePage() {
                                         </div>
                                         <div>
                                             <p className="text-xs text-gray-400 font-bold uppercase">Phone</p>
-                                            <p className="text-sm font-medium text-gray-900 dark:text-white">{CUSTOMER_DATA.phone}</p>
+                                            <p className="text-sm font-medium text-gray-900 dark:text-white">{customer.phone || 'N/A'}</p>
                                         </div>
                                     </div>
 
@@ -112,7 +141,7 @@ export default function CustomerProfilePage() {
                                         </div>
                                         <div>
                                             <p className="text-xs text-gray-400 font-bold uppercase">Address</p>
-                                            <p className="text-sm font-medium text-gray-900 dark:text-white">{CUSTOMER_DATA.address}</p>
+                                            <p className="text-sm font-medium text-gray-900 dark:text-white">{customer.address || 'N/A'}</p>
                                         </div>
                                     </div>
 
@@ -122,7 +151,9 @@ export default function CustomerProfilePage() {
                                         </div>
                                         <div>
                                             <p className="text-xs text-gray-400 font-bold uppercase">Customer Since</p>
-                                            <p className="text-sm font-medium text-gray-900 dark:text-white">{CUSTOMER_DATA.joinDate}</p>
+                                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                                {customer.createdAt ? format(new Date(customer.createdAt), 'MMM yyyy') : '-'}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -142,19 +173,53 @@ export default function CustomerProfilePage() {
                                     <tr className="bg-gray-50/50 dark:bg-gray-800/20 border-b border-gray-100 dark:border-gray-800">
                                         <th className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase">Invoice</th>
                                         <th className="px-6 py-3 text-left text-xs font-bold text-gray-400 uppercase">Date</th>
-                                        <th className="px-6 py-3 text-center text-xs font-bold text-gray-400 uppercase">Items</th>
+                                        <th className="px-6 py-3 text-center text-xs font-bold text-gray-400 uppercase">Status</th>
                                         <th className="px-6 py-3 text-right text-xs font-bold text-gray-400 uppercase">Amount</th>
+                                        <th className="px-6 py-3 text-right text-xs font-bold text-gray-400 uppercase">Balance</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                                    {PURCHASE_HISTORY.map((purchase) => (
-                                        <tr key={purchase.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
-                                            <td className="px-6 py-4 font-mono text-sm font-bold text-[#3498DB]">{purchase.id}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">{purchase.date}</td>
-                                            <td className="px-6 py-4 text-center text-sm font-bold text-gray-900 dark:text-white">{purchase.items}</td>
-                                            <td className="px-6 py-4 text-right text-sm font-black text-gray-900 dark:text-white">ETB {purchase.amount.toLocaleString()}</td>
-                                        </tr>
-                                    ))}
+                                    {history.length === 0 ? (
+                                        <tr><td colSpan={5} className="p-6 text-center text-gray-500">No purchase history available.</td></tr>
+                                    ) : (
+                                        history.map((purchase) => {
+                                            const paid = purchase.paidAmount || (purchase.paymentStatus === 'Paid' ? purchase.total : 0);
+                                            const balance = purchase.total - paid;
+
+                                            // Determine display status if not explicitly 'Credit'/'Partial' but has balance?
+                                            // Rely on purchase.paymentStatus mainly.
+
+                                            return (
+                                                <tr key={purchase.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
+                                                    <td className="px-6 py-4 font-mono text-sm font-bold text-[#3498DB]">
+                                                        <Link href={`/shop/sales/${purchase.id}`}>{purchase.invoiceNumber || purchase.id}</Link>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
+                                                        {format(new Date(purchase.createdAt), 'MMM dd, yyyy')}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center">
+                                                        <span className={`px-2 py-1 rounded-lg text-xs font-bold uppercase ${purchase.paymentStatus === 'Paid' ? 'bg-green-100 text-green-700' :
+                                                                purchase.paymentStatus === 'Credit' ? 'bg-red-100 text-red-700' :
+                                                                    purchase.paymentStatus === 'Partial' ? 'bg-orange-100 text-orange-700' :
+                                                                        'bg-gray-100 text-gray-600'
+                                                            }`}>
+                                                            {purchase.paymentStatus || 'Paid'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right text-sm font-black text-gray-900 dark:text-white">
+                                                        ETB {purchase.total.toLocaleString()}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right text-sm font-bold">
+                                                        {balance > 0 ? (
+                                                            <span className="text-red-500">ETB {balance.toFixed(2)}</span>
+                                                        ) : (
+                                                            <span className="text-gray-300">-</span>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -164,12 +229,32 @@ export default function CustomerProfilePage() {
                 {/* RIGHT: Stats */}
                 <div className="space-y-6">
 
+                    {/* Total Debt (New) */}
+                    {(() => {
+                        const totalDebt = history.reduce((sum, sale) => {
+                            const paid = sale.paidAmount || (sale.paymentStatus === 'Paid' ? sale.total : 0);
+                            const balance = sale.total - paid;
+                            return sum + Math.max(0, balance);
+                        }, 0);
+
+                        return (
+                            <div className={`p-6 rounded-[2rem] shadow-xl relative overflow-hidden text-white ${totalDebt > 0 ? 'bg-gradient-to-br from-red-500 to-red-600 shadow-red-500/20' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
+                                <div className="absolute -right-10 -top-10 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+                                <div className="relative z-10">
+                                    <p className="text-red-100 text-xs font-bold uppercase tracking-wider mb-2">Total Debt</p>
+                                    <h2 className="text-4xl font-black mb-2">ETB {totalDebt.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
+                                    <p className="text-red-100 text-sm">{totalDebt > 0 ? 'Outstanding Balance' : 'No outstanding debt'}</p>
+                                </div>
+                            </div>
+                        );
+                    })()}
+
                     {/* Total Spent */}
                     <div className="bg-gradient-to-br from-[#2ECC71] to-[#27AE60] p-6 rounded-[2rem] shadow-xl shadow-green-500/20 text-white relative overflow-hidden">
                         <div className="absolute -right-10 -top-10 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
                         <div className="relative z-10">
                             <p className="text-green-100 text-xs font-bold uppercase tracking-wider mb-2">Total Spent</p>
-                            <h2 className="text-4xl font-black mb-2">ETB {CUSTOMER_DATA.totalSpent.toLocaleString()}</h2>
+                            <h2 className="text-2xl font-black mb-2">ETB {stats.totalSpent.toLocaleString()}</h2>
                             <p className="text-green-100 text-sm">Lifetime value</p>
                         </div>
                     </div>
@@ -182,10 +267,10 @@ export default function CustomerProfilePage() {
                             </div>
                             <div>
                                 <p className="text-xs font-bold text-gray-400 uppercase">Total Orders</p>
-                                <p className="text-2xl font-black text-gray-900 dark:text-white">{CUSTOMER_DATA.totalPurchases}</p>
+                                <p className="text-2xl font-black text-gray-900 dark:text-white">{stats.totalOrders}</p>
                             </div>
                         </div>
-                        <p className="text-sm text-gray-500">Last purchase: <span className="font-bold">{CUSTOMER_DATA.lastPurchase}</span></p>
+                        {history.length > 0 && <p className="text-sm text-gray-500">Last: <span className="font-bold">{format(new Date(history[0].createdAt), 'MMM dd')}</span></p>}
                     </div>
 
                     {/* Average Order */}
@@ -196,18 +281,9 @@ export default function CustomerProfilePage() {
                             </div>
                             <div>
                                 <p className="text-xs font-bold text-gray-400 uppercase">Avg. Order Value</p>
-                                <p className="text-2xl font-black text-gray-900 dark:text-white">ETB {CUSTOMER_DATA.averageOrderValue.toLocaleString()}</p>
+                                <p className="text-2xl font-black text-gray-900 dark:text-white">ETB {Math.round(stats.averageOrderValue).toLocaleString()}</p>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Status Badge */}
-                    <div className="bg-white dark:bg-[#1f2937] border border-gray-100 dark:border-gray-800 rounded-[2rem] p-6 shadow-sm">
-                        <p className="text-xs font-bold text-gray-400 uppercase mb-3">Account Status</p>
-                        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2ECC71]/10 text-[#2ECC71] border border-[#2ECC71]/20 font-bold">
-                            <div className="w-2 h-2 rounded-full bg-[#2ECC71] animate-pulse"></div>
-                            {CUSTOMER_DATA.status}
-                        </span>
                     </div>
 
                 </div>

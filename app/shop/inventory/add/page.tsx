@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Save,
     ArrowLeft,
@@ -22,6 +22,7 @@ export default function AddProductPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
+        sku: '',
         category: '',
         supplier: '',
         description: '',
@@ -31,11 +32,156 @@ export default function AddProductPage() {
         minStock: '5'
     });
 
-    const CATEGORIES = ['Electronics', 'Food & Beverages', 'Furniture', 'Clothing', 'Beauty'];
-    const SUPPLIERS = ['Al-Nur Wholesalers', 'SomFresh Distributors', 'TechWorld Imports', 'Golden Grain Co.'];
+    // List State
+    const [categories, setCategories] = useState<string[]>([]);
+    const [suppliers, setSuppliers] = useState<{ id: string, name: string }[]>([]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [catsRes, vendsRes] = await Promise.all([
+                    fetch('/api/shop/categories'),
+                    fetch('/api/shop/vendors')
+                ]);
+
+                if (catsRes.ok) setCategories(await catsRes.json());
+                if (vendsRes.ok) {
+                    const data = await vendsRes.json();
+                    setSuppliers((data.vendors || []).map((v: any) => ({ id: v.id, name: v.companyName || v.name })));
+                }
+            } catch (e) {
+                console.error("Error fetching form data", e);
+            }
+        };
+        fetchData();
+    }, []);
+
+    // Modal State
+    const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+    const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [newSupplierData, setNewSupplierData] = useState({ name: '', contact: '' });
+
+    // --- BARCODE SCANNING LOGIC ---
+    const lastKeyTime = React.useRef<number>(0);
+    const barcodeBuffer = React.useRef<string>('');
+    const skuInputRef = React.useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            const target = e.target as HTMLElement;
+            // Check if user is typing in a field that isn't the SKU input
+            // We want to allow normal typing in Name, Description, etc.
+            const isTypingField = (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') && target !== skuInputRef.current;
+
+            const currentTime = Date.now();
+            const gap = currentTime - lastKeyTime.current;
+            lastKeyTime.current = currentTime;
+
+            // Scanner Logic: Detect bursts of fast input (< 60ms is typical for scanners)
+            if (gap > 60) {
+                // If the gap is large, we assume manual typing.
+                // Reset buffer to avoid accumulating random slow keystrokes
+                if (barcodeBuffer.current.length > 0) {
+                    barcodeBuffer.current = '';
+                }
+            }
+
+            if (e.key === 'Enter') {
+                // ALWAYS prevent default form submission on Enter if we have a buffer
+                // This stops the "disappearing" issue which is caused by the form submitting prematurely
+                if (barcodeBuffer.current.length > 2) {
+                    e.preventDefault();
+                    e.stopPropagation(); // Stop bubbling
+
+                    if (isTypingField) {
+                        // If user is safely typing elsewhere, just clear buffer
+                        barcodeBuffer.current = '';
+                        return;
+                    }
+
+                    const scannedCode = barcodeBuffer.current;
+
+                    // Update State
+                    setFormData(prev => ({ ...prev, sku: scannedCode }));
+
+                    // Show success
+                    toast({
+                        title: "Barcode Scanned!",
+                        description: `SKU: ${scannedCode}`,
+                        // duration: 2000,
+                        // className: "bg-green-500 text-white border-none"
+                    });
+
+                    // Focus SKU input with slight delay to ensure render cycle
+                    if (skuInputRef.current) {
+                        skuInputRef.current.value = scannedCode; // Direct DOM update
+                        skuInputRef.current.focus();
+                    }
+
+                    barcodeBuffer.current = '';
+                    return false;
+                }
+
+                // Even if no buffer, if we are in the SKU field, Enter should NOT submit the form
+                if (target === skuInputRef.current) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                barcodeBuffer.current = '';
+            } else if (e.key.length === 1) {
+                // Append printable chars to buffer
+                barcodeBuffer.current += e.key;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+    // ------------------------------
 
     const handleChange = (field: string, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleCreateCategory = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newCategoryName) return;
+        setCategories(prev => [...prev, newCategoryName]);
+        handleChange('category', newCategoryName);
+        setIsCategoryModalOpen(false);
+        setNewCategoryName('');
+    };
+
+    const handleCreateSupplier = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newSupplierData.name) return;
+
+        try {
+            const res = await fetch('/api/shop/vendors', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    companyName: newSupplierData.name,
+                    contactPerson: newSupplierData.contact,
+                    category: 'General'
+                })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                const newVendor = { id: data.vendor.id, name: data.vendor.name || data.vendor.companyName };
+                setSuppliers(prev => [...prev, newVendor]);
+                handleChange('supplier', newVendor.id);
+                setIsSupplierModalOpen(false);
+                setNewSupplierData({ name: '', contact: '' });
+                toast({ title: "Supplier added successfully" });
+            }
+        } catch (error) {
+            console.error('Error adding supplier:', error);
+            toast({ title: "Failed to add supplier", variant: "destructive" });
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -48,12 +194,14 @@ export default function AddProductPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: formData.name,
+                    sku: formData.sku,
                     category: formData.category,
                     description: formData.description,
                     costPrice: parseFloat(formData.costPrice),
                     sellingPrice: parseFloat(formData.sellingPrice),
                     stock: parseInt(formData.stock),
-                    minStock: parseInt(formData.minStock)
+                    minStock: parseInt(formData.minStock),
+                    supplierId: formData.supplier || null
                 })
             });
 
@@ -127,7 +275,16 @@ export default function AddProductPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Category *</label>
+                                <label className="flex justify-between items-center text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                                    Category *
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsCategoryModalOpen(true)}
+                                        className="text-[#3498DB] hover:text-[#2980B9] text-[10px] flex items-center gap-1"
+                                    >
+                                        + New
+                                    </button>
+                                </label>
                                 <select
                                     value={formData.category}
                                     onChange={(e) => handleChange('category', e.target.value)}
@@ -135,18 +292,43 @@ export default function AddProductPage() {
                                     required
                                 >
                                     <option value="">Select...</option>
-                                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
                                 </select>
                             </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">SKU (Stock Keeping Unit) *</label>
+                            <input
+                                ref={skuInputRef}
+                                type="text"
+                                placeholder="e.g. BAR-001"
+                                value={formData.sku}
+                                onChange={(e) => handleChange('sku', e.target.value)}
+                                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all"
+                                required
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Supplier</label>
+                                <label className="flex justify-between items-center text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                                    Supplier
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsSupplierModalOpen(true)}
+                                        className="text-[#3498DB] hover:text-[#2980B9] text-[10px] flex items-center gap-1"
+                                    >
+                                        + New
+                                    </button>
+                                </label>
                                 <select
                                     value={formData.supplier}
                                     onChange={(e) => handleChange('supplier', e.target.value)}
                                     className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all appearance-none cursor-pointer text-gray-700 dark:text-gray-300"
                                 >
                                     <option value="">Select...</option>
-                                    {SUPPLIERS.map(s => <option key={s} value={s}>{s}</option>)}
+                                    {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                                 </select>
                             </div>
                         </div>
@@ -201,14 +383,13 @@ export default function AddProductPage() {
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Initial Stock Quantity *</label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Initial Stock Quantity <span className="text-gray-300 font-normal lowercase">(optional for opening stock)</span></label>
                             <input
                                 type="number"
                                 placeholder="0"
                                 value={formData.stock}
                                 onChange={(e) => handleChange('stock', e.target.value)}
                                 className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all"
-                                required
                             />
                         </div>
 
@@ -253,6 +434,78 @@ export default function AddProductPage() {
                 </div>
 
             </form>
+
+            {/* QUICK CREATE MODALS */}
+            {isCategoryModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+                    <form onSubmit={handleCreateCategory} className="bg-white dark:bg-[#1f2937] rounded-2xl w-full max-w-sm p-6 shadow-2xl">
+                        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Add New Category</h3>
+                        <input
+                            autoFocus
+                            type="text"
+                            placeholder="Category Name"
+                            value={newCategoryName}
+                            onChange={e => setNewCategoryName(e.target.value)}
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none mb-4 font-medium"
+                        />
+                        <div className="flex justify-end gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setIsCategoryModalOpen(false)}
+                                className="px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 font-bold text-sm"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={!newCategoryName}
+                                className="px-6 py-2 rounded-lg bg-[#3498DB] text-white font-bold text-sm hover:bg-blue-600 disabled:opacity-50"
+                            >
+                                Add Category
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
+
+            {isSupplierModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+                    <form onSubmit={handleCreateSupplier} className="bg-white dark:bg-[#1f2937] rounded-2xl w-full max-w-sm p-6 shadow-2xl">
+                        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Add New Supplier</h3>
+                        <input
+                            autoFocus
+                            type="text"
+                            placeholder="Supplier Name"
+                            value={newSupplierData.name}
+                            onChange={e => setNewSupplierData(prev => ({ ...prev, name: e.target.value }))}
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none mb-3 font-medium"
+                        />
+                        <input
+                            type="text"
+                            placeholder="Contact Info (Optional)"
+                            value={newSupplierData.contact}
+                            onChange={e => setNewSupplierData(prev => ({ ...prev, contact: e.target.value }))}
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none mb-4 font-medium"
+                        />
+                        <div className="flex justify-end gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setIsSupplierModalOpen(false)}
+                                className="px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 font-bold text-sm"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={!newSupplierData.name}
+                                className="px-6 py-2 rounded-lg bg-[#3498DB] text-white font-bold text-sm hover:bg-blue-600 disabled:opacity-50"
+                            >
+                                Add Supplier
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
 
         </div>
     );

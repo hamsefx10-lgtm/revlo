@@ -3,11 +3,14 @@
 import React from 'react';
 import { Bell, Search, User, Menu, ChevronDown, Globe } from 'lucide-react';
 
-export default function ShopHeader() {
+export default function ShopHeader({ onMenuClick }: { onMenuClick?: () => void }) {
     return (
         <header className="h-20 bg-white/70 dark:bg-[#111827]/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50 sticky top-0 z-40 px-6 flex items-center justify-between transition-all duration-300">
             {/* Mobile Menu Toggle */}
-            <button className="lg:hidden p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors">
+            <button
+                onClick={onMenuClick}
+                className="lg:hidden p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+            >
                 <Menu size={24} />
             </button>
 

@@ -3,6 +3,11 @@
 @tailwind utilities;
 
 /* Base styles for the entire app */
+html {
+  /* scroll-snap-type removed for advanced sticky scroll control */
+  scroll-behavior: smooth;
+}
+
 body {
   @apply bg-lightGray text-darkGray selection:bg-primary/30 selection:text-primary;
   font-family: 'Inter', sans-serif;

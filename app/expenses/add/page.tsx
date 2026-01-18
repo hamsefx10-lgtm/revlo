@@ -5,8 +5,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Layout from '@/components/layouts/Layout';
-import { 
-  X, DollarSign, Tag, Calendar, MessageSquare, FileUp, Camera, Upload, 
+import {
+  X, DollarSign, Tag, Calendar, MessageSquare, FileUp, Camera, Upload,
   Info, ReceiptText, Briefcase, Users, HardHat, Truck, Home, CreditCard, Clock, Plus, Loader2, CheckCircle, XCircle, ChevronRight, ArrowLeft,
   Package, MinusCircle, Building, User, Coins // Added new icons for Company Expense types
 } from 'lucide-react';
@@ -14,10 +14,10 @@ import Toast from '@/components/common/Toast'; // Reuse Toast component
 import { calculateEmployeeSalary } from '@/lib/utils';
 
 
-export default function AddExpensePage() {
+function AddExpenseContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // Expense type: 'project' or 'company'
   // Description field for company material expense
   const [description, setDescription] = useState('');
@@ -31,18 +31,18 @@ export default function AddExpensePage() {
 
   // Common fields for all expense types
   const [amount, setAmount] = useState<number | ''>(''); // This will be conditionally rendered/calculated
-  const [paidFrom, setPaidFrom] = useState('Cash'); 
-  const [expenseDate, setExpenseDate] = useState(new Date().toISOString().split('T')[0]); 
+  const [paidFrom, setPaidFrom] = useState('Cash');
+  const [expenseDate, setExpenseDate] = useState(new Date().toISOString().split('T')[0]);
   const [note, setNote] = useState('');
-  const [selectedProject, setSelectedProject] = useState(''); 
+  const [selectedProject, setSelectedProject] = useState('');
 
   // Specific fields for different categories
-  const [materials, setMaterials] = useState([{ id: 1, name: '', qty: '', price: '', unit: '' }]); 
+  const [materials, setMaterials] = useState([{ id: 1, name: '', qty: '', price: '', unit: '' }]);
   // Material date tracking
   const [materialDate, setMaterialDate] = useState(new Date().toISOString().split('T')[0]);
   // REMOVED: employeeName, use selectedEmployeeForSalary for project labor
   const [workDescription, setWorkDescription] = useState('');
-  
+
   // NEW: Vendor payment tracking fields
   const [selectedVendor, setSelectedVendor] = useState('');
   const [paymentStatus, setPaymentStatus] = useState('UNPAID'); // PAID, UNPAID
@@ -51,14 +51,14 @@ export default function AddExpensePage() {
   const [laborPaidAmount, setLaborPaidAmount] = useState<number | ''>('');
   const [transportType, setTransportType] = useState('');
   const [taxiXamaalType, setTaxiXamaalType] = useState(''); // 'Taxi' or 'Xamaal' 
-  
+
   // Company Expense specific fields (now includes Debt/Repayment)
-  const [companyExpenseType, setCompanyExpenseType] = useState(''); 
+  const [companyExpenseType, setCompanyExpenseType] = useState('');
   // Salary specific fields
   const [selectedEmployeeForSalary, setSelectedEmployeeForSalary] = useState('');
   const [salaryPaymentAmount, setSalaryPaymentAmount] = useState<number | ''>('');
   const [salaryPaymentDate, setSalaryPaymentDate] = useState(new Date().toISOString().split('T')[0]);
-  
+
   // Project labor wage tracking
   const [previousWageInfo, setPreviousWageInfo] = useState<{
     agreedWage: number;
@@ -72,9 +72,9 @@ export default function AddExpensePage() {
   // Marketing specific fields
   const [marketingCampaignName, setMarketingCampaignName] = useState('');
   // Debt specific fields (now under Company Expense)
-  const [lenderName, setLenderName] = useState(''); 
+  const [lenderName, setLenderName] = useState('');
   const [loanDate, setLoanDate] = useState('');
-  
+
 
   // Maintenance & Repairs fields
   const [assetName, setAssetName] = useState('');
@@ -121,7 +121,7 @@ export default function AddExpensePage() {
   const [odometerReading, setOdometerReading] = useState<number | ''>('');
   const [fuelPurpose, setFuelPurpose] = useState('');
 
-  const [receiptImage, setReceiptImage] = useState<File | null>(null); 
+  const [receiptImage, setReceiptImage] = useState<File | null>(null);
 
   // Dynamic data from API
   const [projects, setProjects] = useState<any[]>([]);
@@ -132,7 +132,7 @@ export default function AddExpensePage() {
   const [projectLabors, setProjectLabors] = useState<any[]>([]);
   const [companyLabors, setCompanyLabors] = useState<any[]>([]);
   const paidFromOptions = ['Cash', 'CBE', 'Ebirr'];
-  
+
   // Fetch project labor records for wage tracking
   const fetchProjectLabors = async () => {
     try {
@@ -160,26 +160,26 @@ export default function AddExpensePage() {
   };
   // Project expense categories: used when expenseType === 'project'
   const projectExpenseCategories = [
-  { value: '', label: '-- Dooro Nooca Kharashka Mashruuca --' },
-  { value: 'Material', label: 'Alaab (Mashruuc)' },
-  { value: 'Labor', label: 'Shaqaale (Mashruuc)' },
-  { value: 'Transport', label: 'Transport (Mashruuc)' },
-  { value: 'Taxi/Xamaal', label: 'Taxi/Xamaal (Mashruuc)' },
-  { value: 'Consultancy', label: 'La-talin (Mashruuc)' },
-  { value: 'Equipment Rental', label: 'Kirada Qalabka (Mashruuc)' },
-  { value: 'Utilities', label: 'Adeegyada Guud (Mashruuc)' },
-];
-// Equipment Rental fields
-const [equipmentName, setEquipmentName] = useState('');
-const [rentalPeriod, setRentalPeriod] = useState('');
-const [rentalFee, setRentalFee] = useState('');
-const [supplierName, setSupplierName] = useState('');
-const [selectedBankAccount, setSelectedBankAccount] = useState('');
+    { value: '', label: '-- Dooro Nooca Kharashka Mashruuca --' },
+    { value: 'Material', label: 'Alaab (Mashruuc)' },
+    { value: 'Labor', label: 'Shaqaale (Mashruuc)' },
+    { value: 'Transport', label: 'Transport (Mashruuc)' },
+    { value: 'Taxi/Xamaal', label: 'Taxi/Xamaal (Mashruuc)' },
+    { value: 'Consultancy', label: 'La-talin (Mashruuc)' },
+    { value: 'Equipment Rental', label: 'Kirada Qalabka (Mashruuc)' },
+    { value: 'Utilities', label: 'Adeegyada Guud (Mashruuc)' },
+  ];
+  // Equipment Rental fields
+  const [equipmentName, setEquipmentName] = useState('');
+  const [rentalPeriod, setRentalPeriod] = useState('');
+  const [rentalFee, setRentalFee] = useState('');
+  const [supplierName, setSupplierName] = useState('');
+  const [selectedBankAccount, setSelectedBankAccount] = useState('');
 
-// Consultancy fields
-const [consultantName, setConsultantName] = useState('');
-const [consultancyType, setConsultancyType] = useState('');
-const [consultancyFee, setConsultancyFee] = useState('');
+  // Consultancy fields
+  const [consultantName, setConsultantName] = useState('');
+  const [consultancyType, setConsultancyType] = useState('');
+  const [consultancyFee, setConsultancyFee] = useState('');
   // Company expense categories: used when expenseType === 'company'
   const companyExpenseCategories = [
     { value: '', label: '-- Dooro Nooca Kharashka Shirkadda --' },
@@ -189,14 +189,14 @@ const [consultancyFee, setConsultancyFee] = useState('');
     { value: 'Electricity', label: 'Koronto' },
     { value: 'Utilities', label: 'Adeegyada Guud' },
     { value: 'Marketing', label: 'Suuqgeyn' },
-    { value: 'Material', label: 'Alaab (Kharashka Shirkadda)' }, 
+    { value: 'Material', label: 'Alaab (Kharashka Shirkadda)' },
     { value: 'Taxi/Xamaal', label: 'Taxi/Xamaal (Shirkad)' },
     { value: 'Maintenance & Repairs', label: 'Dayactirka iyo Hagaajinta' },
     { value: 'Travel & Accommodation', label: 'Socodka iyo Hoyga' },
-    { value: 'Debt', label: 'Deyn (Macmiilka La Siiyay)' }, 
+    { value: 'Debt', label: 'Deyn (Macmiilka La Siiyay)' },
     { value: 'Other', label: 'Kale' },
   ];
-  const materialUnits = ['pcs', 'sq ft', 'sq m', 'Liter', 'kg', 'box', 'm']; 
+  const materialUnits = ['pcs', 'sq ft', 'sq m', 'Liter', 'kg', 'box', 'm'];
   const officeRentPeriods = ['Monthly', 'Quarterly', 'Annually'];
 
   // Dropdown options for new subcategories
@@ -274,16 +274,16 @@ const [consultancyFee, setConsultancyFee] = useState('');
     const projectId = searchParams.get('projectId');
     const categoryParam = searchParams.get('category');
     const employeeId = searchParams.get('employeeId');
-    
+
     if (projectId) {
       setSelectedProject(projectId);
       setExpenseType('project');
     }
-    
+
     if (categoryParam) {
       setCategory(categoryParam);
     }
-    
+
     if (employeeId && categoryParam === 'Labor') {
       setSelectedEmployeeForSalary(employeeId);
     }
@@ -311,7 +311,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
       .catch(error => {
         console.error('Error fetching customers:', error);
       });
-    
+
     // Fetch vendors for Material expenses
     fetch('/api/vendors')
       .then(res => res.json())
@@ -338,23 +338,23 @@ const [consultancyFee, setConsultancyFee] = useState('');
   useEffect(() => {
     if (selectedEmployeeForSalary && selectedProject && category === 'Labor') {
       // Find previous labor records for this employee and project
-      const previousRecords = projectLabors.filter(labor => 
-        labor.employeeId === selectedEmployeeForSalary && 
+      const previousRecords = projectLabors.filter(labor =>
+        labor.employeeId === selectedEmployeeForSalary &&
         labor.projectId === selectedProject
       );
-      
+
       if (previousRecords.length > 0) {
         // Calculate total agreed wage and total paid
         const totalAgreedWage = previousRecords.reduce((sum, record) => sum + (record.agreedWage || 0), 0);
         const totalPaid = previousRecords.reduce((sum, record) => sum + (record.paidAmount || 0), 0);
         const remaining = totalAgreedWage - totalPaid;
-        
+
         setPreviousWageInfo({
           agreedWage: totalAgreedWage,
           totalPaid: totalPaid,
           remaining: remaining
         });
-        
+
         // Auto-fill the wage field with remaining amount
         if (remaining > 0) {
           setWage(remaining);
@@ -375,22 +375,22 @@ const [consultancyFee, setConsultancyFee] = useState('');
   useEffect(() => {
     if (selectedEmployeeForSalary && expenseType === 'company' && companyExpenseType === 'Company Labor') {
       // Find previous labor records for this employee
-      const previousRecords = companyLabors.filter(labor => 
+      const previousRecords = companyLabors.filter(labor =>
         labor.employeeId === selectedEmployeeForSalary
       );
-      
+
       if (previousRecords.length > 0) {
         // Calculate total agreed wage and total paid
         const totalAgreedWage = previousRecords.reduce((sum, record) => sum + (record.agreedWage || 0), 0);
         const totalPaid = previousRecords.reduce((sum, record) => sum + (record.paidAmount || 0), 0);
         const remaining = totalAgreedWage - totalPaid;
-        
+
         setPreviousWageInfo({
           agreedWage: totalAgreedWage,
           totalPaid: totalPaid,
           remaining: remaining
         });
-        
+
         // Auto-fill the wage field with remaining amount
         if (remaining > 0) {
           setWage(remaining);
@@ -410,16 +410,16 @@ const [consultancyFee, setConsultancyFee] = useState('');
   const laborRemainingAmount = (typeof wage === 'number' ? wage : 0) - (typeof laborPaidAmount === 'number' ? laborPaidAmount : 0);
 
   const selectedEmployeeData = employees.find(emp => emp.id === selectedEmployeeForSalary);
-  
+
   // Calculate total salary owed based on months worked up to the payment date
-  const salaryCalculation = selectedEmployeeData && selectedEmployeeData.monthlySalary ? 
+  const salaryCalculation = selectedEmployeeData && selectedEmployeeData.monthlySalary ?
     calculateEmployeeSalary(
       Number(selectedEmployeeData.monthlySalary),
       selectedEmployeeData.startDate,
       salaryPaymentDate, // Use the salary payment date as the calculation date
       Number(selectedEmployeeData.salaryPaidThisMonth || 0)
     ) : null;
-  
+
   const currentSalaryRemaining = salaryCalculation ? salaryCalculation.remainingSalary : 0;
   const newSalaryRemaining = currentSalaryRemaining - (typeof salaryPaymentAmount === 'number' ? salaryPaymentAmount : 0);
 
@@ -434,10 +434,10 @@ const [consultancyFee, setConsultancyFee] = useState('');
 
   const totalLegalCost = (typeof hoursBilled === 'number' ? hoursBilled : 0) * (typeof legalHourlyRate === 'number' ? legalHourlyRate : 0) + (typeof additionalCosts === 'number' ? additionalCosts : 0);
 
-  const totalTravelCost = (typeof transportationCost === 'number' ? transportationCost : 0) + 
-                         (typeof accommodationCost === 'number' ? accommodationCost : 0) + 
-                         (typeof mealsCost === 'number' ? mealsCost : 0) + 
-                         (typeof otherTravelCosts === 'number' ? otherTravelCosts : 0);
+  const totalTravelCost = (typeof transportationCost === 'number' ? transportationCost : 0) +
+    (typeof accommodationCost === 'number' ? accommodationCost : 0) +
+    (typeof mealsCost === 'number' ? mealsCost : 0) +
+    (typeof otherTravelCosts === 'number' ? otherTravelCosts : 0);
 
   // Fuel cost calculation
   const totalFuelCost = (typeof fuelQuantity === 'number' ? fuelQuantity : 0) * (typeof fuelPricePerLiter === 'number' ? fuelPricePerLiter : 0);
@@ -454,32 +454,32 @@ const [consultancyFee, setConsultancyFee] = useState('');
 
     if (!paidFrom) errors.paidFrom = 'Akoonka lacagta laga bixiyay waa waajib.';
     if (!expenseDate) errors.expenseDate = 'Taariikhda kharashka waa waajib.';
-      // Project expenseType: projectId is required
-      if (expenseType === 'project' && (!selectedProject || selectedProject === '')) {
-        errors.selectedProject = 'Fadlan dooro mashruuca.';
-      }
+    // Project expenseType: projectId is required
+    if (expenseType === 'project' && (!selectedProject || selectedProject === '')) {
+      errors.selectedProject = 'Fadlan dooro mashruuca.';
+    }
 
     // Amount validation: only for categories that require it directly
-      if (category === 'Consultancy') {
-        if (typeof consultancyFee !== 'string' || isNaN(Number(consultancyFee)) || Number(consultancyFee) <= 0) {
-          errors.consultancyFee = 'Qiimaha la-talin waa inuu noqdaa nambar wanaagsan.';
-        }
-      } else if (category === 'Equipment Rental') {
-        if (!equipmentName.trim()) errors.equipmentName = 'Magaca qalabka waa waajib.';
-        if (!rentalPeriod.trim()) errors.rentalPeriod = 'Muddada kirada waa waajib.';
-        if (typeof rentalFee !== 'string' || isNaN(Number(rentalFee)) || Number(rentalFee) <= 0) errors.rentalFee = 'Lacagta kirada waa inuu noqdaa nambar wanaagsan.';
-        if (!supplierName.trim()) errors.supplierName = 'Magaca kiriyaha waa waajib.';
-        if (!selectedProject) errors.selectedProject = 'Mashruuca waa waajib.';
-        if (!selectedBankAccount) errors.selectedBankAccount = 'Bank account waa waajib.';
-      } else if (category === 'Utilities' && expenseType === 'project') {
-        if (typeof amount !== 'number' || amount <= 0) errors.amount = 'Qiimaha waa waajib.';
-        if (!description.trim()) errors.description = 'Faahfaahinta adeegga waa waajib.';
-      } else {
-        const requiresCommonAmount = !['Material', 'Labor', 'Company Expense', 'Company Labor', 'Taxi/Xamaal'].includes(category); 
-        if (requiresCommonAmount && (typeof amount !== 'number' || amount <= 0)) {
-          errors.amount = 'Qiimaha waa inuu noqdaa nambar wanaagsan.';
-        }
+    if (category === 'Consultancy') {
+      if (typeof consultancyFee !== 'string' || isNaN(Number(consultancyFee)) || Number(consultancyFee) <= 0) {
+        errors.consultancyFee = 'Qiimaha la-talin waa inuu noqdaa nambar wanaagsan.';
       }
+    } else if (category === 'Equipment Rental') {
+      if (!equipmentName.trim()) errors.equipmentName = 'Magaca qalabka waa waajib.';
+      if (!rentalPeriod.trim()) errors.rentalPeriod = 'Muddada kirada waa waajib.';
+      if (typeof rentalFee !== 'string' || isNaN(Number(rentalFee)) || Number(rentalFee) <= 0) errors.rentalFee = 'Lacagta kirada waa inuu noqdaa nambar wanaagsan.';
+      if (!supplierName.trim()) errors.supplierName = 'Magaca kiriyaha waa waajib.';
+      if (!selectedProject) errors.selectedProject = 'Mashruuca waa waajib.';
+      if (!selectedBankAccount) errors.selectedBankAccount = 'Bank account waa waajib.';
+    } else if (category === 'Utilities' && expenseType === 'project') {
+      if (typeof amount !== 'number' || amount <= 0) errors.amount = 'Qiimaha waa waajib.';
+      if (!description.trim()) errors.description = 'Faahfaahinta adeegga waa waajib.';
+    } else {
+      const requiresCommonAmount = !['Material', 'Labor', 'Company Expense', 'Company Labor', 'Taxi/Xamaal'].includes(category);
+      if (requiresCommonAmount && (typeof amount !== 'number' || amount <= 0)) {
+        errors.amount = 'Qiimaha waa inuu noqdaa nambar wanaagsan.';
+      }
+    }
 
     switch (category) {
       case 'Material':
@@ -488,7 +488,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
           if (!mat.name.trim()) errors[`materialName_${index}`] = 'Magaca alaabta waa waajib.';
           if (typeof parseFloat(mat.qty as string) !== 'number' || parseFloat(mat.qty as string) <= 0) errors[`materialQty_${index}`] = 'Quantity waa inuu noqdaa nambar wanaagsan.';
           if (typeof parseFloat(mat.price as string) !== 'number' || parseFloat(mat.price as string) <= 0) errors[`materialPrice_${index}`] = 'Qiimaha waa inuu noqdaa nambar wanaagsan.';
-          if (!mat.unit) errors[`materialUnit_${index}`] = 'Unit waa waajib.'; 
+          if (!mat.unit) errors[`materialUnit_${index}`] = 'Unit waa waajib.';
         });
         // Material date validation
         if (!materialDate) errors.materialDate = 'Taariikhda alaabta waa waajib.';
@@ -520,103 +520,103 @@ const [consultancyFee, setConsultancyFee] = useState('');
         break;
       case 'Company Expense':
         if (!companyExpenseType) errors.companyExpenseType = 'Nooca kharashka shirkadda waa waajib.';
-        switch (companyExpenseType) { 
-            case 'Salary':
-                if (!selectedEmployeeForSalary) errors.selectedEmployeeForSalary = 'Fadlan dooro shaqaale.';
-                if (typeof salaryPaymentAmount !== 'number' || salaryPaymentAmount <= 0) errors.salaryPaymentAmount = 'Qiimaha mushaharka waa waajib.';
-                // Removed validation: Allow overpayment - system will calculate negative remaining balance
-                if (!salaryPaymentDate) errors.salaryPaymentDate = 'Taariikhda bixinta mushaharka waa waajib.';
-                break;
-            case 'Company Labor':
-                if (!selectedEmployeeForSalary) errors.selectedEmployeeForSalary = 'Shaqaale waa waajib.';
-                if (!workDescription.trim()) errors.workDescription = 'Sharaxaadda shaqada waa waajib.';
-                // Wage validation: allow readonly wage from previous contract
-                const selectedEmpCompany = employees.find(emp => emp.id === selectedEmployeeForSalary);
-                const lastCompanyContract = selectedEmpCompany?.companyLaborRecords?.length ? selectedEmpCompany.companyLaborRecords[selectedEmpCompany.companyLaborRecords.length - 1] : null;
-                if (lastCompanyContract && lastCompanyContract.agreedWage != null) {
-                  // Wage is readonly and valid
-                } else {
-                  if (typeof wage !== 'number' || wage <= 0) errors.wage = 'Mushaharku waa inuu noqdaa nambar wanaagsan.';
-                }
-                if (typeof laborPaidAmount !== 'number' || laborPaidAmount < 0) errors.laborPaidAmount = 'Lacagta la bixiyay waa inuu noqdaa nambar wanaagsan.';
-                if (typeof laborPaidAmount === 'number' && typeof wage === 'number' && laborPaidAmount > wage) errors.laborPaidAmount = 'Lacagta la bixiyay ma dhaafi karto mushaharka.';
-                break;
-            case 'Office Rent':
-                if (typeof amount !== 'number' || amount <= 0) errors.amount = 'Qiimaha waa waajib.';
-                if (!officeRentPeriod) errors.officeRentPeriod = 'Muddada kirada waa waajib.';
-                break;
-            case 'Electricity':
-                if (typeof amount !== 'number' || amount <= 0) errors.amount = 'Qiimaha waa waajib.';
-                if (!electricityMeterReading.trim()) errors.electricityMeterReading = 'Akhriska mitirka waa waajib.';
-                break;
-            case 'Marketing':
-                if (typeof amount !== 'number' || amount <= 0) errors.amount = 'Qiimaha waa waajib.';
-                if (!marketingCampaignName.trim()) errors.marketingCampaignName = 'Magaca ololaha waa waajib.';
-                break;
-            case 'Material': 
-                if (materials.length === 0) { errors.materials = 'Fadlan ku dar ugu yaraan hal alaab.'; }
-                materials.forEach((mat, index) => {
-                    if (!mat.name.trim()) errors[`materialName_${index}`] = 'Magaca alaabta waa waajib.';
-                    if (typeof parseFloat(mat.qty as string) !== 'number' || parseFloat(mat.qty as string) <= 0) errors[`materialQty_${index}`] = 'Quantity waa inuu noqdaa nambar wanaagsan.';
-                    if (typeof parseFloat(mat.price as string) !== 'number' || parseFloat(mat.price as string) <= 0) errors[`materialPrice_${index}`] = 'Qiimaha waa inuu noqdaa nambar wanaagsan.';
-                    if (!mat.unit) errors[`materialUnit_${index}`] = 'Unit waa waajib.';
-                });
-                break;
-            case 'Debt': 
-                if (typeof amount !== 'number' || amount <= 0) errors.amount = 'Qiimaha waa waajib.';
-                if (!lenderName) errors.lenderName = 'Fadlan dooro macmiilka.';
-                if (!loanDate) errors.loanDate = 'Taariikhda deynta waa waajib.';
-                break;
-            case 'Maintenance & Repairs':
-                if (!assetName.trim()) errors.assetName = 'Magaca hantida waa waajib.';
-                if (!repairType) errors.repairType = 'Nooca dayactirka waa waajib.';
-                if (!serviceProvider.trim()) errors.serviceProvider = 'Magaca adeeg bixiyaha waa waajib.';
-                if (partsUsed.length === 0) errors.partsUsed = 'Fadlan ku dar ugu yaraan hal qayb.';
-                partsUsed.forEach((part, index) => {
-                    if (!part.name.trim()) errors[`partName_${index}`] = 'Magaca qaybta waa waajib.';
-                    if (typeof parseFloat(part.cost as string) !== 'number' || parseFloat(part.cost as string) <= 0) errors[`partCost_${index}`] = 'Qiimaha qaybta waa inuu noqdaa nambar wanaagsan.';
-                });
-                if (typeof laborHours !== 'number' || laborHours <= 0) errors.laborHours = 'Saacadaha shaqada waa waajib.';
-                if (typeof hourlyRate !== 'number' || hourlyRate <= 0) errors.hourlyRate = 'Qiimaha saacadda waa waajib.';
-                if (!paidFrom) errors.paidFrom = 'Akoonka lacagta laga bixiyay waa waajib.';
-                break;
-            case 'Insurance Premiums':
-                if (!insuranceType) errors.insuranceType = 'Nooca kafsan waa waajib.';
-                if (!policyNumber.trim()) errors.policyNumber = 'Lambarka siyaasadka waa waajib.';
-                if (!coverageStartDate) errors.coverageStartDate = 'Taariikhda bilowga waa waajib.';
-                if (!coverageEndDate) errors.coverageEndDate = 'Taariikhda dhammaadka waa waajib.';
-                if (typeof premiumAmount !== 'number' || premiumAmount <= 0) errors.premiumAmount = 'Qiimaha kafsan waa waajib.';
-                if (!insuranceCompany.trim()) errors.insuranceCompany = 'Magaca shirkadda kafsan waa waajib.';
-                break;
-            case 'Legal & Compliance':
-                if (!legalServiceType) errors.legalServiceType = 'Nooca adeegga sharciga waa waajib.';
-                if (!lawyerName.trim()) errors.lawyerName = 'Magaca qareenka waa waajib.';
-                if (!caseReference.trim()) errors.caseReference = 'Tixraaca dacwadda waa waajib.';
-                if (typeof hoursBilled !== 'number' || hoursBilled <= 0) errors.hoursBilled = 'Saacadaha la qoray waa waajib.';
-                if (typeof legalHourlyRate !== 'number' || legalHourlyRate <= 0) errors.legalHourlyRate = 'Qiimaha saacadda waa waajib.';
-                break;
-            case 'Travel & Accommodation':
-                if (!travelPurpose) errors.travelPurpose = 'Ujeedka socodka waa waajib.';
-                if (!destination.trim()) errors.destination = 'Goobta socodka waa waajib.';
-                if (!departureDate) errors.departureDate = 'Taariikhda ka baxista waa waajib.';
-                if (!returnDate) errors.returnDate = 'Taariikhda soo noqoshada waa waajib.';
-                if (typeof transportationCost !== 'number' || transportationCost <= 0) errors.transportationCost = 'Lacagta gaadiidka waa waajib.';
-                if (typeof accommodationCost !== 'number' || accommodationCost <= 0) errors.accommodationCost = 'Lacagta hoyga waa waajib.';
-                break;
-            case 'Fuel':
-                if (!selectedVehicle) errors.selectedVehicle = 'Gaadhiga waa waajib.';
-                if (selectedVehicle === 'other' && !vehicleName.trim()) errors.vehicleName = 'Magaca gaadhiga waa waajib.';
-                if (!fuelType) errors.fuelType = 'Nooca shidaalka waa waajib.';
-                if (typeof fuelQuantity !== 'number' || fuelQuantity <= 0) errors.fuelQuantity = 'Miisaanka shidaalka waa waajib.';
-                if (typeof fuelPricePerLiter !== 'number' || fuelPricePerLiter <= 0) errors.fuelPricePerLiter = 'Qiimaha litirka waa waajib.';
-                if (!fuelStation.trim()) errors.fuelStation = 'Magaca saldhiga shidaalka waa waajib.';
-                if (!fuelPurpose) errors.fuelPurpose = 'Ujeedka shidaalka waa waajib.';
-                break;
-            case 'Other':
-                if (typeof amount !== 'number' || amount <= 0) errors.amount = 'Qiimaha waa waajib.';
-                break;
+        switch (companyExpenseType) {
+          case 'Salary':
+            if (!selectedEmployeeForSalary) errors.selectedEmployeeForSalary = 'Fadlan dooro shaqaale.';
+            if (typeof salaryPaymentAmount !== 'number' || salaryPaymentAmount <= 0) errors.salaryPaymentAmount = 'Qiimaha mushaharka waa waajib.';
+            // Removed validation: Allow overpayment - system will calculate negative remaining balance
+            if (!salaryPaymentDate) errors.salaryPaymentDate = 'Taariikhda bixinta mushaharka waa waajib.';
+            break;
+          case 'Company Labor':
+            if (!selectedEmployeeForSalary) errors.selectedEmployeeForSalary = 'Shaqaale waa waajib.';
+            if (!workDescription.trim()) errors.workDescription = 'Sharaxaadda shaqada waa waajib.';
+            // Wage validation: allow readonly wage from previous contract
+            const selectedEmpCompany = employees.find(emp => emp.id === selectedEmployeeForSalary);
+            const lastCompanyContract = selectedEmpCompany?.companyLaborRecords?.length ? selectedEmpCompany.companyLaborRecords[selectedEmpCompany.companyLaborRecords.length - 1] : null;
+            if (lastCompanyContract && lastCompanyContract.agreedWage != null) {
+              // Wage is readonly and valid
+            } else {
+              if (typeof wage !== 'number' || wage <= 0) errors.wage = 'Mushaharku waa inuu noqdaa nambar wanaagsan.';
+            }
+            if (typeof laborPaidAmount !== 'number' || laborPaidAmount < 0) errors.laborPaidAmount = 'Lacagta la bixiyay waa inuu noqdaa nambar wanaagsan.';
+            if (typeof laborPaidAmount === 'number' && typeof wage === 'number' && laborPaidAmount > wage) errors.laborPaidAmount = 'Lacagta la bixiyay ma dhaafi karto mushaharka.';
+            break;
+          case 'Office Rent':
+            if (typeof amount !== 'number' || amount <= 0) errors.amount = 'Qiimaha waa waajib.';
+            if (!officeRentPeriod) errors.officeRentPeriod = 'Muddada kirada waa waajib.';
+            break;
+          case 'Electricity':
+            if (typeof amount !== 'number' || amount <= 0) errors.amount = 'Qiimaha waa waajib.';
+            if (!electricityMeterReading.trim()) errors.electricityMeterReading = 'Akhriska mitirka waa waajib.';
+            break;
+          case 'Marketing':
+            if (typeof amount !== 'number' || amount <= 0) errors.amount = 'Qiimaha waa waajib.';
+            if (!marketingCampaignName.trim()) errors.marketingCampaignName = 'Magaca ololaha waa waajib.';
+            break;
+          case 'Material':
+            if (materials.length === 0) { errors.materials = 'Fadlan ku dar ugu yaraan hal alaab.'; }
+            materials.forEach((mat, index) => {
+              if (!mat.name.trim()) errors[`materialName_${index}`] = 'Magaca alaabta waa waajib.';
+              if (typeof parseFloat(mat.qty as string) !== 'number' || parseFloat(mat.qty as string) <= 0) errors[`materialQty_${index}`] = 'Quantity waa inuu noqdaa nambar wanaagsan.';
+              if (typeof parseFloat(mat.price as string) !== 'number' || parseFloat(mat.price as string) <= 0) errors[`materialPrice_${index}`] = 'Qiimaha waa inuu noqdaa nambar wanaagsan.';
+              if (!mat.unit) errors[`materialUnit_${index}`] = 'Unit waa waajib.';
+            });
+            break;
+          case 'Debt':
+            if (typeof amount !== 'number' || amount <= 0) errors.amount = 'Qiimaha waa waajib.';
+            if (!lenderName) errors.lenderName = 'Fadlan dooro macmiilka.';
+            if (!loanDate) errors.loanDate = 'Taariikhda deynta waa waajib.';
+            break;
+          case 'Maintenance & Repairs':
+            if (!assetName.trim()) errors.assetName = 'Magaca hantida waa waajib.';
+            if (!repairType) errors.repairType = 'Nooca dayactirka waa waajib.';
+            if (!serviceProvider.trim()) errors.serviceProvider = 'Magaca adeeg bixiyaha waa waajib.';
+            if (partsUsed.length === 0) errors.partsUsed = 'Fadlan ku dar ugu yaraan hal qayb.';
+            partsUsed.forEach((part, index) => {
+              if (!part.name.trim()) errors[`partName_${index}`] = 'Magaca qaybta waa waajib.';
+              if (typeof parseFloat(part.cost as string) !== 'number' || parseFloat(part.cost as string) <= 0) errors[`partCost_${index}`] = 'Qiimaha qaybta waa inuu noqdaa nambar wanaagsan.';
+            });
+            if (typeof laborHours !== 'number' || laborHours <= 0) errors.laborHours = 'Saacadaha shaqada waa waajib.';
+            if (typeof hourlyRate !== 'number' || hourlyRate <= 0) errors.hourlyRate = 'Qiimaha saacadda waa waajib.';
+            if (!paidFrom) errors.paidFrom = 'Akoonka lacagta laga bixiyay waa waajib.';
+            break;
+          case 'Insurance Premiums':
+            if (!insuranceType) errors.insuranceType = 'Nooca kafsan waa waajib.';
+            if (!policyNumber.trim()) errors.policyNumber = 'Lambarka siyaasadka waa waajib.';
+            if (!coverageStartDate) errors.coverageStartDate = 'Taariikhda bilowga waa waajib.';
+            if (!coverageEndDate) errors.coverageEndDate = 'Taariikhda dhammaadka waa waajib.';
+            if (typeof premiumAmount !== 'number' || premiumAmount <= 0) errors.premiumAmount = 'Qiimaha kafsan waa waajib.';
+            if (!insuranceCompany.trim()) errors.insuranceCompany = 'Magaca shirkadda kafsan waa waajib.';
+            break;
+          case 'Legal & Compliance':
+            if (!legalServiceType) errors.legalServiceType = 'Nooca adeegga sharciga waa waajib.';
+            if (!lawyerName.trim()) errors.lawyerName = 'Magaca qareenka waa waajib.';
+            if (!caseReference.trim()) errors.caseReference = 'Tixraaca dacwadda waa waajib.';
+            if (typeof hoursBilled !== 'number' || hoursBilled <= 0) errors.hoursBilled = 'Saacadaha la qoray waa waajib.';
+            if (typeof legalHourlyRate !== 'number' || legalHourlyRate <= 0) errors.legalHourlyRate = 'Qiimaha saacadda waa waajib.';
+            break;
+          case 'Travel & Accommodation':
+            if (!travelPurpose) errors.travelPurpose = 'Ujeedka socodka waa waajib.';
+            if (!destination.trim()) errors.destination = 'Goobta socodka waa waajib.';
+            if (!departureDate) errors.departureDate = 'Taariikhda ka baxista waa waajib.';
+            if (!returnDate) errors.returnDate = 'Taariikhda soo noqoshada waa waajib.';
+            if (typeof transportationCost !== 'number' || transportationCost <= 0) errors.transportationCost = 'Lacagta gaadiidka waa waajib.';
+            if (typeof accommodationCost !== 'number' || accommodationCost <= 0) errors.accommodationCost = 'Lacagta hoyga waa waajib.';
+            break;
+          case 'Fuel':
+            if (!selectedVehicle) errors.selectedVehicle = 'Gaadhiga waa waajib.';
+            if (selectedVehicle === 'other' && !vehicleName.trim()) errors.vehicleName = 'Magaca gaadhiga waa waajib.';
+            if (!fuelType) errors.fuelType = 'Nooca shidaalka waa waajib.';
+            if (typeof fuelQuantity !== 'number' || fuelQuantity <= 0) errors.fuelQuantity = 'Miisaanka shidaalka waa waajib.';
+            if (typeof fuelPricePerLiter !== 'number' || fuelPricePerLiter <= 0) errors.fuelPricePerLiter = 'Qiimaha litirka waa waajib.';
+            if (!fuelStation.trim()) errors.fuelStation = 'Magaca saldhiga shidaalka waa waajib.';
+            if (!fuelPurpose) errors.fuelPurpose = 'Ujeedka shidaalka waa waajib.';
+            break;
+          case 'Other':
+            if (typeof amount !== 'number' || amount <= 0) errors.amount = 'Qiimaha waa waajib.';
+            break;
         }
-        break; 
+        break;
       case 'Other':
         if (typeof amount !== 'number' || amount <= 0) errors.amount = 'Qiimaha waa waajib.';
         break;
@@ -636,7 +636,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
   };
 
   const updatePart = (id: number, field: 'name' | 'cost', value: string) => {
-    setPartsUsed(partsUsed.map(part => 
+    setPartsUsed(partsUsed.map(part =>
       part.id === id ? { ...part, [field]: value } : part
     ));
   };
@@ -648,11 +648,11 @@ const [consultancyFee, setConsultancyFee] = useState('');
       setReceiptImage(file);
       setToastMessage({ message: 'Rasiidka waxaanu u baaraynaa si aanu u buuxino foomka...', type: 'info' });
       setTimeout(() => {
-        setAmount(Math.floor(Math.random() * 500) + 50); 
+        setAmount(Math.floor(Math.random() * 500) + 50);
         setNote('Alaabta xafiiska');
         setExpenseDate('2025-07-24');
         setCategory('Company Expense');
-        setCompanyExpenseType('Office Rent'); 
+        setCompanyExpenseType('Office Rent');
         setToastMessage({ message: 'Rasiidka waa la baaray foomkuna waa la buuxiyay!', type: 'success' });
       }, 1500);
     }
@@ -667,7 +667,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
   };
 
   const handleMaterialChange = (id: number, field: string, value: string | number) => {
-    setMaterials(materials.map(mat => 
+    setMaterials(materials.map(mat =>
       mat.id === id ? { ...mat, [field]: value } : mat
     ));
   };
@@ -802,17 +802,17 @@ const [consultancyFee, setConsultancyFee] = useState('');
         // Ensure paidFrom is preserved
         expenseData.paidFrom = paidFrom;
         break;
-        case 'Equipment Rental':
-          expenseData.amount = rentalFee ? Number(rentalFee) : 0;
-          expenseData.equipmentName = equipmentName;
-          expenseData.rentalPeriod = rentalPeriod;
-          expenseData.rentalFee = rentalFee ? Number(rentalFee) : 0;
-          expenseData.supplierName = supplierName;
-          expenseData.projectId = selectedProject;
-          expenseData.bankAccountId = selectedBankAccount;
-          // Equipment Rental uses bankAccountId, but also preserve paidFrom for fallback
-          expenseData.paidFrom = selectedBankAccount || paidFrom;
-          break;
+      case 'Equipment Rental':
+        expenseData.amount = rentalFee ? Number(rentalFee) : 0;
+        expenseData.equipmentName = equipmentName;
+        expenseData.rentalPeriod = rentalPeriod;
+        expenseData.rentalFee = rentalFee ? Number(rentalFee) : 0;
+        expenseData.supplierName = supplierName;
+        expenseData.projectId = selectedProject;
+        expenseData.bankAccountId = selectedBankAccount;
+        // Equipment Rental uses bankAccountId, but also preserve paidFrom for fallback
+        expenseData.paidFrom = selectedBankAccount || paidFrom;
+        break;
       case 'Utilities':
         expenseData.amount = amount;
         expenseData.description = description.trim();
@@ -1037,7 +1037,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
         // Clear form
         setCategory(''); setAmount(''); setPaidFrom('Cash'); setExpenseDate(new Date().toISOString().split('T')[0]); setNote(''); setSelectedProject('');
         setMaterials([{ id: 1, name: '', qty: '', price: '', unit: '' }]);
-  setSelectedEmployeeForSalary(''); setWorkDescription(''); setWage(''); setLaborPaidAmount(''); setTransportType(''); setTaxiXamaalType('');
+        setSelectedEmployeeForSalary(''); setWorkDescription(''); setWage(''); setLaborPaidAmount(''); setTransportType(''); setTaxiXamaalType('');
         setCompanyExpenseType(''); setLenderName(''); setLoanDate(''); setReceiptImage(null);
         setSelectedEmployeeForSalary(''); setSalaryPaymentAmount('');
         setOfficeRentPeriod(''); setElectricityMeterReading(''); setMarketingCampaignName('');
@@ -1050,7 +1050,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
         if (projectId) {
           router.push(`/projects/${projectId}`);
         } else {
-        router.push('/expenses');
+          router.push('/expenses');
         }
         return;
       }
@@ -1099,19 +1099,19 @@ const [consultancyFee, setConsultancyFee] = useState('');
         if (projectId) {
           router.push(`/projects/${projectId}`);
         } else {
-        router.push('/expenses');
+          router.push('/expenses');
         }
         return;
       }
       // Otherwise, submit as normal
       const endpoint = expenseType === 'project' ? '/api/expenses/project' : '/api/expenses/company';
-      
+
       // Add receipt URL to expense data
       const finalExpenseData = {
         ...expenseData,
         receiptUrl: receiptUrl,
       };
-      
+
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1126,11 +1126,11 @@ const [consultancyFee, setConsultancyFee] = useState('');
         return;
       }
       setToastMessage({ message: data.message || 'Kharashka si guul leh ayaa loo diiwaan geliyay!', type: 'success' });
-      
+
       // Notify customer pages about expense creation for real-time updates
       if (expenseData.customerId) {
         const transactionType = (expenseData.category === 'Company Expense' && expenseData.subCategory === 'Debt') ? 'DEBT_TAKEN' : 'EXPENSE';
-        
+
         localStorage.setItem('transactionCreated', JSON.stringify({
           customerId: expenseData.customerId,
           type: transactionType,
@@ -1161,17 +1161,17 @@ const [consultancyFee, setConsultancyFee] = useState('');
             newValue: JSON.stringify({
               customerId: expenseData.customerId,
               type: 'DEBT_TAKEN',
-            amount: expenseData.amount,
-            timestamp: Date.now()
-          })
-        }));
+              amount: expenseData.amount,
+              timestamp: Date.now()
+            })
+          }));
         }
       }
-      
+
       // Clear form
       setCategory(''); setAmount(''); setPaidFrom('Cash'); setExpenseDate(new Date().toISOString().split('T')[0]); setNote(''); setSelectedProject('');
       setMaterials([{ id: 1, name: '', qty: '', price: '', unit: '' }]);
-  setSelectedEmployeeForSalary(''); setWorkDescription(''); setWage(''); setLaborPaidAmount(''); setTransportType('');
+      setSelectedEmployeeForSalary(''); setWorkDescription(''); setWage(''); setLaborPaidAmount(''); setTransportType('');
       setCompanyExpenseType(''); setLenderName(''); setLoanDate(''); setReceiptImage(null);
       setSelectedEmployeeForSalary(''); setSalaryPaymentAmount('');
       setOfficeRentPeriod(''); setElectricityMeterReading(''); setMarketingCampaignName('');
@@ -1184,7 +1184,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
       if (projectId) {
         router.push(`/projects/${projectId}`);
       } else {
-      router.push('/expenses');
+        router.push('/expenses');
       }
     } catch (error: any) {
       console.error('Expense submission error:', error);
@@ -1210,12 +1210,12 @@ const [consultancyFee, setConsultancyFee] = useState('');
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Receipt Upload & OCR Placeholder */}
           <div className="border border-dashed border-mediumGray dark:border-gray-600 rounded-lg p-6 text-center bg-lightGray dark:bg-gray-700 animate-fade-in">
-            <input 
-              type="file" 
-              id="receiptUpload" 
-              accept="image/*" 
-              onChange={handleImageUpload} 
-              className="hidden" 
+            <input
+              type="file"
+              id="receiptUpload"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
             />
             <label htmlFor="receiptUpload" className="cursor-pointer text-primary hover:text-blue-700 font-semibold flex flex-col items-center justify-center space-y-2">
               <FileUp size={48} />
@@ -1364,37 +1364,37 @@ const [consultancyFee, setConsultancyFee] = useState('');
                   {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </div>
-              
+
               {/* Material Date Section */}
               <div className="mb-4 p-3 border border-green-200 rounded-lg bg-green-50 dark:bg-green-900/20">
                 <h4 className="text-md font-semibold text-green-700 dark:text-green-300 mb-3">Taariikhda Alaabta</h4>
-                
+
                 <div className="mb-3">
                   <label className="block text-sm font-medium mb-1">Taariikhda Alaabta La Qatay <span className="text-red-500">*</span></label>
-                  <input 
-                    type="date" 
-                    value={materialDate} 
-                    onChange={e => setMaterialDate(e.target.value)} 
+                  <input
+                    type="date"
+                    value={materialDate}
+                    onChange={e => setMaterialDate(e.target.value)}
                     className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.materialDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                    required 
+                    required
                     title="Taariikhda Alaabta La Qatay"
                   />
-                  {validationErrors.materialDate && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1"/>{validationErrors.materialDate}</p>}
+                  {validationErrors.materialDate && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1" />{validationErrors.materialDate}</p>}
                 </div>
               </div>
 
               {/* NEW: Vendor Payment Tracking Section */}
               <div className="mb-4 p-3 border border-blue-200 rounded-lg bg-blue-50 dark:bg-blue-900/20">
                 <h4 className="text-md font-semibold text-blue-700 dark:text-blue-300 mb-3">Faahfaahinta Iibiyaha & Lacag Bixinta</h4>
-                
+
                 {/* Vendor Selection */}
                 <div className="mb-3">
                   <label className="block text-sm font-medium mb-1">Iibiyaha Alaabta <span className="text-red-500">*</span></label>
-                  <select 
-                    value={selectedVendor} 
-                    onChange={e => setSelectedVendor(e.target.value)} 
+                  <select
+                    value={selectedVendor}
+                    onChange={e => setSelectedVendor(e.target.value)}
                     className={`input input-bordered w-full ${validationErrors.selectedVendor ? 'border-red-500' : ''}`}
-                    required 
+                    required
                     title="Dooro Iibiyaha"
                   >
                     <option value="">-- Dooro Iibiyaha --</option>
@@ -1402,25 +1402,25 @@ const [consultancyFee, setConsultancyFee] = useState('');
                   </select>
                   {validationErrors.selectedVendor && <p className="text-red-500 text-xs mt-1">{validationErrors.selectedVendor}</p>}
                 </div>
-                
+
                 {/* Invoice Number */}
                 <div className="mb-3">
                   <label className="block text-sm font-medium mb-1">Lambarka Invoice</label>
-                  <input 
-                    type="text" 
-                    value={invoiceNumber} 
-                    onChange={e => setInvoiceNumber(e.target.value)} 
+                  <input
+                    type="text"
+                    value={invoiceNumber}
+                    onChange={e => setInvoiceNumber(e.target.value)}
                     placeholder="Tusaale: INV-2024-001"
                     className="input input-bordered w-full"
                   />
                 </div>
-                
+
                 {/* Payment Status */}
                 <div className="mb-3">
                   <label className="block text-sm font-medium mb-1">Xaaladda Lacag Bixinta <span className="text-red-500">*</span></label>
-                  <select 
-                    value={paymentStatus} 
-                    onChange={e => setPaymentStatus(e.target.value)} 
+                  <select
+                    value={paymentStatus}
+                    onChange={e => setPaymentStatus(e.target.value)}
                     className={`input input-bordered w-full ${validationErrors.paymentStatus ? 'border-red-500' : ''}`}
                     required
                     title="Dooro Xaaladda Lacag Bixinta"
@@ -1430,16 +1430,16 @@ const [consultancyFee, setConsultancyFee] = useState('');
                   </select>
                   {validationErrors.paymentStatus && <p className="text-red-500 text-xs mt-1">{validationErrors.paymentStatus}</p>}
                 </div>
-                
+
                 {/* Account select - Only show if PAID */}
                 {paymentStatus === 'PAID' && (
                   <div className="mb-3">
                     <label className="block text-sm font-medium mb-1">Akoonka Lacagta Laga Jarayo <span className="text-red-500">*</span></label>
-                    <select 
-                      value={paidFrom} 
-                      onChange={e => setPaidFrom(e.target.value)} 
+                    <select
+                      value={paidFrom}
+                      onChange={e => setPaidFrom(e.target.value)}
                       className={`input input-bordered w-full ${validationErrors.paidFrom ? 'border-red-500' : ''}`}
-                      required 
+                      required
                       title="Dooro Akoonka"
                     >
                       <option value="">-- Dooro Akoonka --</option>
@@ -1465,18 +1465,18 @@ const [consultancyFee, setConsultancyFee] = useState('');
                   )}
                   <div>
                     <label htmlFor={`materialName_${material.id}`} className="sr-only">Magaca Alaabta</label>
-                    <input type="text" id={`materialName_${material.id}`} value={material.name} onChange={(e) => handleMaterialChange(material.id, 'name', e.target.value)} placeholder="Oak Wood" className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors[`materialName_${index}`] ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}/>
-                    {validationErrors[`materialName_${index}`] && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1"/>{validationErrors[`materialName_${index}`]}</p>}
+                    <input type="text" id={`materialName_${material.id}`} value={material.name} onChange={(e) => handleMaterialChange(material.id, 'name', e.target.value)} placeholder="Oak Wood" className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors[`materialName_${index}`] ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} />
+                    {validationErrors[`materialName_${index}`] && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1" />{validationErrors[`materialName_${index}`]}</p>}
                   </div>
                   <div>
                     <label htmlFor={`materialQty_${material.id}`} className="sr-only">Quantity</label>
-                    <input type="number" id={`materialQty_${material.id}`} value={material.qty} onChange={(e) => handleMaterialChange(material.id, 'qty', e.target.value)} placeholder="20" className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors[`materialQty_${index}`] ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}/>
-                    {validationErrors[`materialQty_${index}`] && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1"/>{validationErrors[`materialQty_${index}`]}</p>}
+                    <input type="number" id={`materialQty_${material.id}`} value={material.qty} onChange={(e) => handleMaterialChange(material.id, 'qty', e.target.value)} placeholder="20" className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors[`materialQty_${index}`] ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} />
+                    {validationErrors[`materialQty_${index}`] && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1" />{validationErrors[`materialQty_${index}`]}</p>}
                   </div>
                   <div>
                     <label htmlFor={`materialPrice_${material.id}`} className="sr-only">Qiimaha Unit</label>
-                    <input type="number" id={`materialPrice_${material.id}`} value={material.price} onChange={(e) => handleMaterialChange(material.id, 'price', e.target.value)} placeholder="15.00" className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors[`materialPrice_${index}`] ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}/>
-                    {validationErrors[`materialPrice_${index}`] && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1"/>{validationErrors[`materialPrice_${index}`]}</p>}
+                    <input type="number" id={`materialPrice_${material.id}`} value={material.price} onChange={(e) => handleMaterialChange(material.id, 'price', e.target.value)} placeholder="15.00" className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors[`materialPrice_${index}`] ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} />
+                    {validationErrors[`materialPrice_${index}`] && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1" />{validationErrors[`materialPrice_${index}`]}</p>}
                   </div>
                   <div>
                     <label htmlFor={`materialUnit_${material.id}`} className="sr-only">Unit</label>
@@ -1484,7 +1484,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       <option value="">Unit</option>
                       {materialUnits.map(unit => <option key={unit} value={unit}>{unit}</option>)}
                     </select>
-                    {validationErrors[`materialUnit_${index}`] && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1"/>{validationErrors[`materialUnit_${index}`]}</p>}
+                    {validationErrors[`materialUnit_${index}`] && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1" />{validationErrors[`materialUnit_${index}`]}</p>}
                   </div>
                   <div className="col-span-full flex items-center justify-between mt-auto pt-2 border-t border-lightGray dark:border-gray-600">
                     <span className="text-sm font-semibold text-mediumGray dark:text-gray-400">Total for this item:</span>
@@ -1493,12 +1493,12 @@ const [consultancyFee, setConsultancyFee] = useState('');
                 </div>
               ))}
               <button type="button" onClick={handleAddMaterial} className="bg-primary/10 text-primary py-2 px-4 rounded-lg font-semibold flex items-center hover:bg-primary hover:text-white transition-colors duration-200">
-                <Plus size={18} className="mr-2"/> Ku Dar Alaab Kale
+                <Plus size={18} className="mr-2" /> Ku Dar Alaab Kale
               </button>
-              {validationErrors.materials && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.materials}</p>}
+              {validationErrors.materials && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.materials}</p>}
               <div className="p-3 bg-primary/10 dark:bg-primary/20 rounded-lg flex justify-between items-center mt-4">
-                  <span className="text-lg font-semibold text-primary dark:text-blue-300">Wadarta Qiimaha Alaabta:</span>
-                  <span className="text-2xl font-extrabold text-primary dark:text-blue-300">${totalMaterialCost.toLocaleString()}</span>
+                <span className="text-lg font-semibold text-primary dark:text-blue-300">Wadarta Qiimaha Alaabta:</span>
+                <span className="text-2xl font-extrabold text-primary dark:text-blue-300">${totalMaterialCost.toLocaleString()}</span>
               </div>
             </div>
           )}
@@ -1606,7 +1606,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
               <h3 className="text-lg font-bold text-primary dark:text-blue-300 mb-2">
                 {(expenseType as 'project' | 'company') === 'project' ? 'Faahfaahinta Taxi/Xamaal Mashruuca' : 'Faahfaahinta Taxi/Xamaal Shirkadda'}
               </h3>
-              
+
               <div className="mb-4">
                 <label htmlFor="taxiXamaalType" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Nooca *</label>
                 <select
@@ -1796,7 +1796,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       <option value="">-- Dooro Mashruuca --</option>
                       {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                     </select>
-                    {validationErrors.selectedProject && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.selectedProject}</p>}
+                    {validationErrors.selectedProject && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.selectedProject}</p>}
                   </div>
                   <div>
                     <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Shaqaale <span className="text-redError">*</span></label>
@@ -1804,7 +1804,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       <option value="">-- Dooro Shaqaale --</option>
                       {employees.map(emp => <option key={emp.id} value={emp.id}>{emp.fullName}</option>)}
                     </select>
-                    {validationErrors.selectedEmployeeForSalary && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.selectedEmployeeForSalary}</p>}
+                    {validationErrors.selectedEmployeeForSalary && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.selectedEmployeeForSalary}</p>}
                   </div>
                   <div>
                     <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Mushaharka La Ogolaaday (Agreed)</label>
@@ -1877,7 +1877,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       </>
                     ) : (
                       <>
-                        <input 
+                        <input
                           type="number"
                           value={wage}
                           onChange={e => setWage(parseFloat(e.target.value) || '')}
@@ -1890,7 +1890,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                         <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">Tani waxay abuurtaa heshiis cusub haddii uusan jirin mid hore.</p>
                       </>
                     )}
-                    {validationErrors.wage && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.wage}</p>}
+                    {validationErrors.wage && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.wage}</p>}
                   </div>
                   <div>
                     <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Lacagta Hadda La Bixiyay ($) <span className="text-redError">*</span></label>
@@ -1910,7 +1910,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                         Ka dib bixintan: <span className="font-semibold">{Math.max(0, previousWageInfo.remaining - (laborPaidAmount || 0)).toLocaleString()} ETB</span> ayaa hadhay.
                       </p>
                     )}
-                    {validationErrors.laborPaidAmount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.laborPaidAmount}</p>}
+                    {validationErrors.laborPaidAmount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.laborPaidAmount}</p>}
                   </div>
                   <div>
                     <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Sharaxaadda Shaqada</label>
@@ -1926,7 +1926,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       <option value="">-- Dooro Akoonka --</option>
                       {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
                     </select>
-                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paidFrom}</p>}
+                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.paidFrom}</p>}
                   </div>
                 </div>
               )}
@@ -1991,7 +1991,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                   </select>
                   <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
                 </div>
-                {validationErrors.selectedProject && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.selectedProject}</p>}
+                {validationErrors.selectedProject && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.selectedProject}</p>}
               </div>
               <div className="md:col-span-2">
                 <label htmlFor="paidFrom_utilities_project" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
@@ -2011,7 +2011,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                   </select>
                   <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
                 </div>
-                {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paidFrom}</p>}
+                {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.paidFrom}</p>}
               </div>
               <div>
                 <label htmlFor="utilitiesAmount_project" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Qiimaha Adeegga ($) <span className="text-redError">*</span></label>
@@ -2024,7 +2024,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                   placeholder="Tusaale: 100"
                   className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.amount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 />
-                {validationErrors.amount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.amount}</p>}
+                {validationErrors.amount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.amount}</p>}
               </div>
               <div className="md:col-span-2">
                 <label htmlFor="utilitiesDescription_project" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Faahfaahinta Adeegga <span className="text-redError">*</span></label>
@@ -2037,7 +2037,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                   placeholder="Tusaale: Internet, Biyaha, Telefoon, iwm"
                   className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.description ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 />
-                {validationErrors.description && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.description}</p>}
+                {validationErrors.description && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.description}</p>}
               </div>
               <div>
                 <label htmlFor="utilitiesDate_project" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Taariikhda Kharashka <span className="text-redError">*</span></label>
@@ -2049,7 +2049,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                   onChange={e => setExpenseDate(e.target.value)}
                   className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.expenseDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 />
-                {validationErrors.expenseDate && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.expenseDate}</p>}
+                {validationErrors.expenseDate && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.expenseDate}</p>}
               </div>
               <div className="md:col-span-2">
                 <label htmlFor="utilitiesNote_project" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Fiiro Gaar Ah (Optional)</label>
@@ -2082,144 +2082,144 @@ const [consultancyFee, setConsultancyFee] = useState('');
                   <option value="">-- Dooro Nooca Kharashka Shirkadda --</option>
                   {companyExpenseCategories.map(cat => <option key={cat.value} value={cat.value}>{cat.label}</option>)}
                 </select>
-                {validationErrors.companyExpenseType && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.companyExpenseType}</p>}
+                {validationErrors.companyExpenseType && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.companyExpenseType}</p>}
               </div>
 
               {/* NEW: Salary Specific Fields */}
               {companyExpenseType === 'Salary' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 p-3 border border-dashed border-primary/30 rounded-lg bg-primary/5 animate-fade-in">
-                    <h4 className="col-span-full text-base font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Mushaharka</h4>
-                    {/* PaidFrom field inside Salary */}
-                    <div className="md:col-span-2">
-                      <label htmlFor="paidFrom_salary" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
-                      <div className="relative">
-                        <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
-                        <select
-                          id="paidFrom_salary"
-                          required
-                          value={paidFrom}
-                          onChange={(e) => setPaidFrom(e.target.value)}
-                          className={`w-full p-2 pl-8 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.paidFrom ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                        >
-                          <option value="">-- Dooro Akoonka --</option>
-                          {accounts.map(acc => (
-                            <option key={acc.id} value={acc.id}>{acc.name} {acc.balance !== undefined ? `($${Number(acc.balance).toLocaleString()})` : ''}</option>
-                          ))}
-                        </select>
-                        <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
+                  <h4 className="col-span-full text-base font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Mushaharka</h4>
+                  {/* PaidFrom field inside Salary */}
+                  <div className="md:col-span-2">
+                    <label htmlFor="paidFrom_salary" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
+                    <div className="relative">
+                      <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
+                      <select
+                        id="paidFrom_salary"
+                        required
+                        value={paidFrom}
+                        onChange={(e) => setPaidFrom(e.target.value)}
+                        className={`w-full p-2 pl-8 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.paidFrom ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                      >
+                        <option value="">-- Dooro Akoonka --</option>
+                        {accounts.map(acc => (
+                          <option key={acc.id} value={acc.id}>{acc.name} {acc.balance !== undefined ? `($${Number(acc.balance).toLocaleString()})` : ''}</option>
+                        ))}
+                      </select>
+                      <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
+                    </div>
+                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.paidFrom}</p>}
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label htmlFor="selectedEmployeeForSalary" className="block text-sm font-medium text-darkGray dark:text-gray-300">Dooro Shaqaale <span className="text-redError">*</span></label>
+                      <Link
+                        href="/employees/add"
+                        className="text-primary hover:text-blue-700 text-sm font-medium flex items-center gap-1 transition"
+                      >
+                        <Plus size={16} />
+                        Add New
+                      </Link>
+                    </div>
+                    <select
+                      id="selectedEmployeeForSalary"
+                      required
+                      value={selectedEmployeeForSalary}
+                      onChange={(e) => setSelectedEmployeeForSalary(e.target.value)}
+                      className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary appearance-none ${validationErrors.selectedEmployeeForSalary ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    >
+                      <option value="">-- Dooro Shaqaale --</option>
+                      {employees.map(emp => (
+                        <option key={emp.id} value={emp.id}>{emp.fullName || emp.name}</option>
+                      ))}
+                    </select>
+                    {validationErrors.selectedEmployeeForSalary && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.selectedEmployeeForSalary}</p>}
+                  </div>
+                  <div>
+                    <label htmlFor="salaryPaymentAmount" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Lacagta La Bixinayo (ETB) <span className="text-redError">*</span></label>
+                    <input
+                      type="number"
+                      id="salaryPaymentAmount"
+                      required
+                      value={salaryPaymentAmount}
+                      onChange={(e) => setSalaryPaymentAmount(parseFloat(e.target.value) || '')}
+                      placeholder="Tusaale: 500"
+                      className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.salaryPaymentAmount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    />
+                    {validationErrors.salaryPaymentAmount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.salaryPaymentAmount}</p>}
+                  </div>
+                  <div>
+                    <label htmlFor="salaryPaymentDate" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Taariikhda La Bixiyay <span className="text-redError">*</span></label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
+                      <input
+                        type="date"
+                        id="salaryPaymentDate"
+                        required
+                        value={salaryPaymentDate}
+                        onChange={(e) => setSalaryPaymentDate(e.target.value)}
+                        className={`w-full p-2 pl-10 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.salaryPaymentDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                      />
+                    </div>
+                    {validationErrors.salaryPaymentDate && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.salaryPaymentDate}</p>}
+                  </div>
+                  {selectedEmployeeData && salaryCalculation && (
+                    <div className="col-span-full space-y-3">
+                      {/* Salary Summary */}
+                      <div className="p-3 bg-primary/10 dark:bg-primary/20 rounded-lg">
+                        <h5 className="text-sm font-bold text-primary dark:text-blue-300 mb-2">Xisaabinta Mushahaarka</h5>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                          <div className="text-center">
+                            <div className="text-mediumGray dark:text-gray-400">Bilaha La Shaqeeyay</div>
+                            <div className="font-bold text-primary dark:text-blue-300">{salaryCalculation.totalMonths}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-mediumGray dark:text-gray-400">Mushahaar/Bil</div>
+                            <div className="font-bold text-primary dark:text-blue-300">{salaryCalculation.monthlySalary.toLocaleString()} ETB</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-mediumGray dark:text-gray-400">Wadarta Mushahaarka</div>
+                            <div className="font-bold text-primary dark:text-blue-300">{salaryCalculation.totalSalaryOwed.toLocaleString()} ETB</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-mediumGray dark:text-gray-400">Hore La Bixiyay</div>
+                            <div className="font-bold text-primary dark:text-blue-300">{salaryCalculation.salaryPaidThisMonth.toLocaleString()} ETB</div>
+                          </div>
+                        </div>
                       </div>
-                      {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paidFrom}</p>}
-                    </div>
-                    <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <label htmlFor="selectedEmployeeForSalary" className="block text-sm font-medium text-darkGray dark:text-gray-300">Dooro Shaqaale <span className="text-redError">*</span></label>
-                          <Link 
-                            href="/employees/add" 
-                            className="text-primary hover:text-blue-700 text-sm font-medium flex items-center gap-1 transition"
-                          >
-                            <Plus size={16} />
-                            Add New
-                          </Link>
-                        </div>
-                        <select
-                            id="selectedEmployeeForSalary"
-                            required
-                            value={selectedEmployeeForSalary}
-                            onChange={(e) => setSelectedEmployeeForSalary(e.target.value)}
-                            className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary appearance-none ${validationErrors.selectedEmployeeForSalary ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                        >
-                            <option value="">-- Dooro Shaqaale --</option>
-                            {employees.map(emp => (
-                              <option key={emp.id} value={emp.id}>{emp.fullName || emp.name}</option>
-                            ))}
-                        </select>
-                        {validationErrors.selectedEmployeeForSalary && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.selectedEmployeeForSalary}</p>}
-                    </div>
-                    <div>
-                        <label htmlFor="salaryPaymentAmount" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Lacagta La Bixinayo (ETB) <span className="text-redError">*</span></label>
-                        <input
-                            type="number"
-                            id="salaryPaymentAmount"
-                            required
-                            value={salaryPaymentAmount}
-                            onChange={(e) => setSalaryPaymentAmount(parseFloat(e.target.value) || '')}
-                            placeholder="Tusaale: 500"
-                            className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.salaryPaymentAmount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                        />
-                        {validationErrors.salaryPaymentAmount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.salaryPaymentAmount}</p>}
-                    </div>
-                    <div>
-                        <label htmlFor="salaryPaymentDate" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Taariikhda La Bixiyay <span className="text-redError">*</span></label>
-                        <div className="relative">
-                            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
-                            <input
-                                type="date"
-                                id="salaryPaymentDate"
-                                required
-                                value={salaryPaymentDate}
-                                onChange={(e) => setSalaryPaymentDate(e.target.value)}
-                                className={`w-full p-2 pl-10 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.salaryPaymentDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                            />
-                        </div>
-                        {validationErrors.salaryPaymentDate && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.salaryPaymentDate}</p>}
-                    </div>
-                    {selectedEmployeeData && salaryCalculation && (
-                        <div className="col-span-full space-y-3">
-                            {/* Salary Summary */}
-                            <div className="p-3 bg-primary/10 dark:bg-primary/20 rounded-lg">
-                                <h5 className="text-sm font-bold text-primary dark:text-blue-300 mb-2">Xisaabinta Mushahaarka</h5>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                                    <div className="text-center">
-                                        <div className="text-mediumGray dark:text-gray-400">Bilaha La Shaqeeyay</div>
-                                        <div className="font-bold text-primary dark:text-blue-300">{salaryCalculation.totalMonths}</div>
-                                    </div>
-                                    <div className="text-center">
-                                        <div className="text-mediumGray dark:text-gray-400">Mushahaar/Bil</div>
-                                        <div className="font-bold text-primary dark:text-blue-300">{salaryCalculation.monthlySalary.toLocaleString()} ETB</div>
-                                    </div>
-                                    <div className="text-center">
-                                        <div className="text-mediumGray dark:text-gray-400">Wadarta Mushahaarka</div>
-                                        <div className="font-bold text-primary dark:text-blue-300">{salaryCalculation.totalSalaryOwed.toLocaleString()} ETB</div>
-                                    </div>
-                                    <div className="text-center">
-                                        <div className="text-mediumGray dark:text-gray-400">Hore La Bixiyay</div>
-                                        <div className="font-bold text-primary dark:text-blue-300">{salaryCalculation.salaryPaidThisMonth.toLocaleString()} ETB</div>
-                                    </div>
-                                </div>
+
+                      {/* Remaining Amount */}
+                      {(() => {
+                        const isOverpayment = newSalaryRemaining < 0;
+                        const bgColor = isOverpayment ? 'bg-orange-50 dark:bg-orange-900/20' : 'bg-green-50 dark:bg-green-900/20';
+                        const borderColor = isOverpayment ? 'border-orange-200 dark:border-orange-700' : 'border-green-200 dark:border-green-700';
+                        const textColor = isOverpayment ? 'text-orange-800 dark:text-orange-300' : 'text-green-800 dark:text-green-300';
+                        const amountColor = isOverpayment ? 'text-orange-900 dark:text-orange-200' : 'text-green-900 dark:text-green-200';
+
+                        return (
+                          <div className={`p-3 ${bgColor} rounded-lg border ${borderColor}`}>
+                            <div className="flex justify-between items-center">
+                              <span className={`text-sm font-medium ${textColor}`}>Lacagta Hadhay:</span>
+                              <span className={`text-lg font-bold ${amountColor}`}>{currentSalaryRemaining.toLocaleString()} ETB</span>
                             </div>
-                            
-                            {/* Remaining Amount */}
-                            {(() => {
-                                const isOverpayment = newSalaryRemaining < 0;
-                                const bgColor = isOverpayment ? 'bg-orange-50 dark:bg-orange-900/20' : 'bg-green-50 dark:bg-green-900/20';
-                                const borderColor = isOverpayment ? 'border-orange-200 dark:border-orange-700' : 'border-green-200 dark:border-green-700';
-                                const textColor = isOverpayment ? 'text-orange-800 dark:text-orange-300' : 'text-green-800 dark:text-green-300';
-                                const amountColor = isOverpayment ? 'text-orange-900 dark:text-orange-200' : 'text-green-900 dark:text-green-200';
-                                
-                                return (
-                                    <div className={`p-3 ${bgColor} rounded-lg border ${borderColor}`}>
-                                        <div className="flex justify-between items-center">
-                                            <span className={`text-sm font-medium ${textColor}`}>Lacagta Hadhay:</span>
-                                            <span className={`text-lg font-bold ${amountColor}`}>{currentSalaryRemaining.toLocaleString()} ETB</span>
-                                        </div>
-                                        {typeof salaryPaymentAmount === 'number' && salaryPaymentAmount > 0 && (
-                                            <div className={`flex justify-between items-center mt-2 pt-2 border-t ${borderColor}`}>
-                                                <span className={`text-sm font-medium ${textColor}`}>
-                                                    {isOverpayment ? 'Kadib Bixinta (Overpayment):' : 'Kadib Bixinta:'}
-                                                </span>
-                                                <span className={`text-lg font-bold ${amountColor}`}>
-                                                    {newSalaryRemaining.toLocaleString()} ETB
-                                                    {isOverpayment && (
-                                                        <span className="text-xs ml-1 text-orange-600 dark:text-orange-400">(Waa ka badan)</span>
-                                                    )}
-                                                </span>
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })()}
-                        </div>
-                    )}
+                            {typeof salaryPaymentAmount === 'number' && salaryPaymentAmount > 0 && (
+                              <div className={`flex justify-between items-center mt-2 pt-2 border-t ${borderColor}`}>
+                                <span className={`text-sm font-medium ${textColor}`}>
+                                  {isOverpayment ? 'Kadib Bixinta (Overpayment):' : 'Kadib Bixinta:'}
+                                </span>
+                                <span className={`text-lg font-bold ${amountColor}`}>
+                                  {newSalaryRemaining.toLocaleString()} ETB
+                                  {isOverpayment && (
+                                    <span className="text-xs ml-1 text-orange-600 dark:text-orange-400">(Waa ka badan)</span>
+                                  )}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -2230,8 +2230,8 @@ const [consultancyFee, setConsultancyFee] = useState('');
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <label className="block text-md font-medium text-darkGray dark:text-gray-300">Shaqaale <span className="text-redError">*</span></label>
-                      <Link 
-                        href="/employees/add" 
+                      <Link
+                        href="/employees/add"
                         className="text-primary hover:text-blue-700 text-sm font-medium flex items-center gap-1 transition"
                       >
                         <Plus size={16} />
@@ -2242,7 +2242,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       <option value="">-- Dooro Shaqaale --</option>
                       {employees.map(emp => <option key={emp.id} value={emp.id}>{emp.fullName}</option>)}
                     </select>
-                    {validationErrors.selectedEmployeeForSalary && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.selectedEmployeeForSalary}</p>}
+                    {validationErrors.selectedEmployeeForSalary && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.selectedEmployeeForSalary}</p>}
                   </div>
                   <div>
                     <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Mushaharka La Ogolaaday (Agreed)</label>
@@ -2312,7 +2312,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       </>
                     ) : (
                       <>
-                        <input 
+                        <input
                           type="number"
                           value={wage}
                           onChange={e => setWage(parseFloat(e.target.value) || '')}
@@ -2325,7 +2325,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                         <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">Tani waxay abuurtaa heshiis cusub haddii uusan jirin mid hore.</p>
                       </>
                     )}
-                    {validationErrors.wage && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.wage}</p>}
+                    {validationErrors.wage && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.wage}</p>}
                   </div>
                   <div>
                     <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Lacagta Hadda La Bixiyay ($) <span className="text-redError">*</span></label>
@@ -2345,12 +2345,12 @@ const [consultancyFee, setConsultancyFee] = useState('');
                         Ka dib bixintan: <span className="font-semibold">{Math.max(0, previousWageInfo.remaining - (laborPaidAmount || 0)).toLocaleString()} ETB</span> ayaa hadhay.
                       </p>
                     )}
-                    {validationErrors.laborPaidAmount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.laborPaidAmount}</p>}
+                    {validationErrors.laborPaidAmount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.laborPaidAmount}</p>}
                   </div>
                   <div>
                     <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Sharaxaadda Shaqada</label>
                     <input type="text" value={workDescription} onChange={e => setWorkDescription(e.target.value)} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100" placeholder="Sharaxaadda Shaqada" title="Sharaxaadda Shaqada" />
-                    {validationErrors.workDescription && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.workDescription}</p>}
+                    {validationErrors.workDescription && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.workDescription}</p>}
                   </div>
                   <div>
                     <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Shaqada</label>
@@ -2362,7 +2362,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       <option value="">-- Dooro Akoonka --</option>
                       {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
                     </select>
-                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paidFrom}</p>}
+                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.paidFrom}</p>}
                   </div>
                 </div>
               )}
@@ -2370,55 +2370,55 @@ const [consultancyFee, setConsultancyFee] = useState('');
               {/* NEW: Office Rent Specific Fields */}
               {companyExpenseType === 'Office Rent' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 p-3 border border-dashed border-primary/30 rounded-lg bg-primary/5 animate-fade-in">
-                    <h4 className="col-span-full text-base font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Kirada Xafiiska</h4>
-                    {/* PaidFrom field inside Office Rent */}
-                    <div className="md:col-span-2">
-                      <label htmlFor="paidFrom_officerent" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
-                      <div className="relative">
-                        <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
-                        <select
-                          id="paidFrom_officerent"
-                          required
-                          value={paidFrom}
-                          onChange={(e) => setPaidFrom(e.target.value)}
-                          className={`w-full p-2 pl-8 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.paidFrom ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                        >
-                          <option value="">-- Dooro Akoonka --</option>
-                          {accounts.map(acc => (
-                            <option key={acc.id} value={acc.id}>{acc.name} {acc.balance !== undefined ? `($${Number(acc.balance).toLocaleString()})` : ''}</option>
-                          ))}
-                        </select>
-                        <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
-                      </div>
-                      {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paidFrom}</p>}
+                  <h4 className="col-span-full text-base font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Kirada Xafiiska</h4>
+                  {/* PaidFrom field inside Office Rent */}
+                  <div className="md:col-span-2">
+                    <label htmlFor="paidFrom_officerent" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
+                    <div className="relative">
+                      <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
+                      <select
+                        id="paidFrom_officerent"
+                        required
+                        value={paidFrom}
+                        onChange={(e) => setPaidFrom(e.target.value)}
+                        className={`w-full p-2 pl-8 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.paidFrom ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                      >
+                        <option value="">-- Dooro Akoonka --</option>
+                        {accounts.map(acc => (
+                          <option key={acc.id} value={acc.id}>{acc.name} {acc.balance !== undefined ? `($${Number(acc.balance).toLocaleString()})` : ''}</option>
+                        ))}
+                      </select>
+                      <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
                     </div>
-                    <div>
-                        <label htmlFor="officeRentAmount" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Qiimaha Kirada ($) <span className="text-redError">*</span></label>
-                        <input
-                            type="number"
-                            id="officeRentAmount"
-                            required
-                            value={amount} // Re-use common amount
-                            onChange={(e) => setAmount(parseFloat(e.target.value) || '')}
-                            placeholder="Tusaale: 1500"
-                            className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.amount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                        />
-                        {validationErrors.amount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.amount}</p>}
-                    </div>
-                    <div>
-                        <label htmlFor="officeRentPeriod" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Muddada Kirada <span className="text-redError">*</span></label>
-                        <select
-                            id="officeRentPeriod"
-                            required
-                            value={officeRentPeriod}
-                            onChange={(e) => setOfficeRentPeriod(e.target.value)}
-                            className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary appearance-none ${validationErrors.officeRentPeriod ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                        >
-                            <option value="">-- Dooro Muddada --</option>
-                            {officeRentPeriods.map(period => <option key={period} value={period}>{period}</option>)}
-                        </select>
-                        {validationErrors.officeRentPeriod && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.officeRentPeriod}</p>}
-                    </div>
+                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.paidFrom}</p>}
+                  </div>
+                  <div>
+                    <label htmlFor="officeRentAmount" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Qiimaha Kirada ($) <span className="text-redError">*</span></label>
+                    <input
+                      type="number"
+                      id="officeRentAmount"
+                      required
+                      value={amount} // Re-use common amount
+                      onChange={(e) => setAmount(parseFloat(e.target.value) || '')}
+                      placeholder="Tusaale: 1500"
+                      className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.amount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    />
+                    {validationErrors.amount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.amount}</p>}
+                  </div>
+                  <div>
+                    <label htmlFor="officeRentPeriod" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Muddada Kirada <span className="text-redError">*</span></label>
+                    <select
+                      id="officeRentPeriod"
+                      required
+                      value={officeRentPeriod}
+                      onChange={(e) => setOfficeRentPeriod(e.target.value)}
+                      className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary appearance-none ${validationErrors.officeRentPeriod ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    >
+                      <option value="">-- Dooro Muddada --</option>
+                      {officeRentPeriods.map(period => <option key={period} value={period}>{period}</option>)}
+                    </select>
+                    {validationErrors.officeRentPeriod && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.officeRentPeriod}</p>}
+                  </div>
                 </div>
               )}
 
@@ -2444,7 +2444,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       </select>
                       <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
                     </div>
-                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paidFrom}</p>}
+                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.paidFrom}</p>}
                   </div>
                   <div>
                     <label htmlFor="utilitiesAmount" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Qiimaha Adeegga ($) <span className="text-redError">*</span></label>
@@ -2457,7 +2457,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       placeholder="Tusaale: 100"
                       className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.amount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                     />
-                    {validationErrors.amount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.amount}</p>}
+                    {validationErrors.amount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.amount}</p>}
                   </div>
                   <div className="md:col-span-2">
                     <label htmlFor="utilitiesDescription" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Faahfaahinta Adeegga <span className="text-redError">*</span></label>
@@ -2470,7 +2470,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       placeholder="Tusaale: Internet, Biyaha, Telefoon, iwm"
                       className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.description ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                     />
-                    {validationErrors.description && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.description}</p>}
+                    {validationErrors.description && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.description}</p>}
                   </div>
                   <div>
                     <label htmlFor="utilitiesDate" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Taariikhda Kharashka <span className="text-redError">*</span></label>
@@ -2482,7 +2482,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       onChange={e => setExpenseDate(e.target.value)}
                       className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.expenseDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                     />
-                    {validationErrors.expenseDate && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.expenseDate}</p>}
+                    {validationErrors.expenseDate && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.expenseDate}</p>}
                   </div>
                   <div className="md:col-span-2">
                     <label htmlFor="utilitiesNote" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Fiiro Gaar Ah (Optional)</label>
@@ -2502,54 +2502,54 @@ const [consultancyFee, setConsultancyFee] = useState('');
               {/* NEW: Marketing Specific Fields */}
               {companyExpenseType === 'Marketing' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 p-3 border border-dashed border-primary/30 rounded-lg bg-primary/5 animate-fade-in">
-                    <h4 className="col-span-full text-base font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Suuqgeynta</h4>
-                    {/* PaidFrom field inside Marketing */}
-                    <div className="md:col-span-2">
-                      <label htmlFor="paidFrom_marketing" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
-                      <div className="relative">
-                        <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
-                        <select
-                          id="paidFrom_marketing"
-                          required
-                          value={paidFrom}
-                          onChange={(e) => setPaidFrom(e.target.value)}
-                          className={`w-full p-2 pl-8 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.paidFrom ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                        >
-                          <option value="">-- Dooro Akoonka --</option>
-                          {accounts.map(acc => (
-                            <option key={acc.id} value={acc.id}>{acc.name} {acc.balance !== undefined ? `($${Number(acc.balance).toLocaleString()})` : ''}</option>
-                          ))}
-                        </select>
-                        <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
-                      </div>
-                      {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paidFrom}</p>}
+                  <h4 className="col-span-full text-base font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Suuqgeynta</h4>
+                  {/* PaidFrom field inside Marketing */}
+                  <div className="md:col-span-2">
+                    <label htmlFor="paidFrom_marketing" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
+                    <div className="relative">
+                      <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
+                      <select
+                        id="paidFrom_marketing"
+                        required
+                        value={paidFrom}
+                        onChange={(e) => setPaidFrom(e.target.value)}
+                        className={`w-full p-2 pl-8 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.paidFrom ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                      >
+                        <option value="">-- Dooro Akoonka --</option>
+                        {accounts.map(acc => (
+                          <option key={acc.id} value={acc.id}>{acc.name} {acc.balance !== undefined ? `($${Number(acc.balance).toLocaleString()})` : ''}</option>
+                        ))}
+                      </select>
+                      <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
                     </div>
-                    <div>
-                        <label htmlFor="marketingCampaignName" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Magaca Ololaha <span className="text-redError">*</span></label>
-                        <input
-                            type="text"
-                            id="marketingCampaignName"
-                            required
-                            value={marketingCampaignName}
-                            onChange={(e) => setMarketingCampaignName(e.target.value)}
-                            placeholder="Tusaale: Summer Sale Campaign"
-                            className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.marketingCampaignName ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                        />
-                        {validationErrors.marketingCampaignName && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.marketingCampaignName}</p>}
-                    </div>
-                    <div>
-                        <label htmlFor="marketingAmount" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Qiimaha Ololaha ($) <span className="text-redError">*</span></label>
-                        <input
-                            type="number"
-                            id="marketingAmount"
-                            required
-                            value={amount} // Re-use common amount
-                            onChange={(e) => setAmount(parseFloat(e.target.value) || '')}
-                            placeholder="Tusaale: 1000"
-                            className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.amount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                        />
-                        {validationErrors.amount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.amount}</p>}
-                    </div>
+                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.paidFrom}</p>}
+                  </div>
+                  <div>
+                    <label htmlFor="marketingCampaignName" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Magaca Ololaha <span className="text-redError">*</span></label>
+                    <input
+                      type="text"
+                      id="marketingCampaignName"
+                      required
+                      value={marketingCampaignName}
+                      onChange={(e) => setMarketingCampaignName(e.target.value)}
+                      placeholder="Tusaale: Summer Sale Campaign"
+                      className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.marketingCampaignName ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    />
+                    {validationErrors.marketingCampaignName && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.marketingCampaignName}</p>}
+                  </div>
+                  <div>
+                    <label htmlFor="marketingAmount" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Qiimaha Ololaha ($) <span className="text-redError">*</span></label>
+                    <input
+                      type="number"
+                      id="marketingAmount"
+                      required
+                      value={amount} // Re-use common amount
+                      onChange={(e) => setAmount(parseFloat(e.target.value) || '')}
+                      placeholder="Tusaale: 1000"
+                      className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.amount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    />
+                    {validationErrors.amount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.amount}</p>}
+                  </div>
                 </div>
               )}
 
@@ -2560,18 +2560,18 @@ const [consultancyFee, setConsultancyFee] = useState('');
                   {/* Material Date Section */}
                   <div className="mb-4 p-3 border border-green-200 rounded-lg bg-green-50 dark:bg-green-900/20">
                     <h4 className="text-md font-semibold text-green-700 dark:text-green-300 mb-3">Taariikhda Alaabta</h4>
-                    
+
                     <div className="mb-3">
                       <label className="block text-sm font-medium mb-1">Taariikhda Alaabta La Qatay <span className="text-red-500">*</span></label>
-                      <input 
-                        type="date" 
-                        value={materialDate} 
-                        onChange={e => setMaterialDate(e.target.value)} 
+                      <input
+                        type="date"
+                        value={materialDate}
+                        onChange={e => setMaterialDate(e.target.value)}
                         className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.materialDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                        required 
+                        required
                         title="Taariikhda Alaabta La Qatay"
                       />
-                      {validationErrors.materialDate && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1"/>{validationErrors.materialDate}</p>}
+                      {validationErrors.materialDate && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1" />{validationErrors.materialDate}</p>}
                     </div>
                   </div>
 
@@ -2587,7 +2587,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.description ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                       required
                     />
-                    {validationErrors.description && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.description}</p>}
+                    {validationErrors.description && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.description}</p>}
                   </div>
                   {/* Vendor Selection */}
                   <div className="mb-4">
@@ -2608,7 +2608,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       </select>
                       <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
                     </div>
-                    {validationErrors.selectedVendor && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.selectedVendor}</p>}
+                    {validationErrors.selectedVendor && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.selectedVendor}</p>}
                   </div>
 
                   {/* Invoice Number */}
@@ -2622,7 +2622,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       placeholder="Tusaale: INV-2024-001"
                       className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.invoiceNumber ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                     />
-                    {validationErrors.invoiceNumber && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.invoiceNumber}</p>}
+                    {validationErrors.invoiceNumber && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.invoiceNumber}</p>}
                   </div>
 
                   {/* Payment Status */}
@@ -2639,31 +2639,31 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       <option value="UNPAID">Lacag La'aan (Debt)</option>
                       <option value="PAID">Lacag Bixiyay (Paid)</option>
                     </select>
-                    {validationErrors.paymentStatus && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paymentStatus}</p>}
+                    {validationErrors.paymentStatus && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.paymentStatus}</p>}
                   </div>
 
                   {/* PaidFrom field - Only show if PAID */}
                   {paymentStatus === 'PAID' && (
-                  <div className="mb-4">
-                    <label htmlFor="paidFrom_material" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
-                    <div className="relative">
-                      <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
-                      <select
-                        id="paidFrom_material"
-                        required
-                        value={paidFrom}
-                        onChange={(e) => setPaidFrom(e.target.value)}
-                        className={`w-full p-2 pl-8 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.paidFrom ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                      >
-                        <option value="">-- Dooro Akoonka --</option>
-                        {accounts.map(acc => (
-                          <option key={acc.id} value={acc.id}>{acc.name} {acc.balance !== undefined ? `($${Number(acc.balance).toLocaleString()})` : ''}</option>
-                        ))}
-                      </select>
-                      <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
+                    <div className="mb-4">
+                      <label htmlFor="paidFrom_material" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
+                      <div className="relative">
+                        <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
+                        <select
+                          id="paidFrom_material"
+                          required
+                          value={paidFrom}
+                          onChange={(e) => setPaidFrom(e.target.value)}
+                          className={`w-full p-2 pl-8 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.paidFrom ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                        >
+                          <option value="">-- Dooro Akoonka --</option>
+                          {accounts.map(acc => (
+                            <option key={acc.id} value={acc.id}>{acc.name} {acc.balance !== undefined ? `($${Number(acc.balance).toLocaleString()})` : ''}</option>
+                          ))}
+                        </select>
+                        <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
+                      </div>
+                      {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.paidFrom}</p>}
                     </div>
-                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paidFrom}</p>}
-                  </div>
                   )}
                   {/* Material Item Headers */}
                   <div className="grid grid-cols-4 gap-4 mb-2 text-sm font-semibold text-mediumGray dark:text-gray-400">
@@ -2683,20 +2683,20 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       {/* Material Name */}
                       <div>
                         <label htmlFor={`materialName_comp_${material.id}`} className="sr-only">Magaca Alaabta</label>
-                        <input type="text" id={`materialName_comp_${material.id}`} value={material.name} onChange={(e) => handleMaterialChange(material.id, 'name', e.target.value)} placeholder="Oak Wood" className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors[`materialName_${index}`] ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}/>
-                        {validationErrors[`materialName_${index}`] && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1"/>{validationErrors[`materialName_${index}`]}</p>}
+                        <input type="text" id={`materialName_comp_${material.id}`} value={material.name} onChange={(e) => handleMaterialChange(material.id, 'name', e.target.value)} placeholder="Oak Wood" className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors[`materialName_${index}`] ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} />
+                        {validationErrors[`materialName_${index}`] && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1" />{validationErrors[`materialName_${index}`]}</p>}
                       </div>
                       {/* Quantity */}
                       <div>
                         <label htmlFor={`materialQty_comp_${material.id}`} className="sr-only">Quantity</label>
-                        <input type="number" id={`materialQty_comp_${material.id}`} value={material.qty} onChange={(e) => handleMaterialChange(material.id, 'qty', e.target.value)} placeholder="20" className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors[`materialQty_${index}`] ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}/>
-                        {validationErrors[`materialQty_${index}`] && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1"/>{validationErrors[`materialQty_${index}`]}</p>}
+                        <input type="number" id={`materialQty_comp_${material.id}`} value={material.qty} onChange={(e) => handleMaterialChange(material.id, 'qty', e.target.value)} placeholder="20" className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors[`materialQty_${index}`] ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} />
+                        {validationErrors[`materialQty_${index}`] && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1" />{validationErrors[`materialQty_${index}`]}</p>}
                       </div>
                       {/* Price per Unit */}
                       <div>
                         <label htmlFor={`materialPrice_comp_${material.id}`} className="sr-only">Qiimaha Unit</label>
-                        <input type="number" id={`materialPrice_comp_${material.id}`} value={material.price} onChange={(e) => handleMaterialChange(material.id, 'price', e.target.value)} placeholder="15.00" className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors[`materialPrice_${index}`] ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}/>
-                        {validationErrors[`materialPrice_${index}`] && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1"/>{validationErrors[`materialPrice_${index}`]}</p>}
+                        <input type="number" id={`materialPrice_comp_${material.id}`} value={material.price} onChange={(e) => handleMaterialChange(material.id, 'price', e.target.value)} placeholder="15.00" className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors[`materialPrice_${index}`] ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} />
+                        {validationErrors[`materialPrice_${index}`] && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1" />{validationErrors[`materialPrice_${index}`]}</p>}
                       </div>
                       {/* Unit Selection */}
                       <div>
@@ -2705,7 +2705,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                           <option value="">Unit</option>
                           {materialUnits.map(unit => <option key={unit} value={unit}>{unit}</option>)}
                         </select>
-                        {validationErrors[`materialUnit_${index}`] && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1"/>{validationErrors[`materialUnit_${index}`]}</p>}
+                        {validationErrors[`materialUnit_${index}`] && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1" />{validationErrors[`materialUnit_${index}`]}</p>}
                       </div>
                       {/* Total for this item */}
                       <div className="col-span-full flex items-center justify-between mt-auto pt-2 border-t border-lightGray dark:border-gray-600">
@@ -2715,12 +2715,12 @@ const [consultancyFee, setConsultancyFee] = useState('');
                     </div>
                   ))}
                   <button type="button" onClick={handleAddMaterial} className="bg-primary/10 text-primary py-2 px-4 rounded-lg font-semibold flex items-center hover:bg-primary hover:text-white transition-colors duration-200">
-                    <Plus size={18} className="mr-2"/> Ku Dar Alaab Kale
+                    <Plus size={18} className="mr-2" /> Ku Dar Alaab Kale
                   </button>
-                  {validationErrors.materials && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.materials}</p>}
+                  {validationErrors.materials && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.materials}</p>}
                   <div className="p-3 bg-primary/10 dark:bg-primary/20 rounded-lg flex justify-between items-center mt-4">
-                      <span className="text-lg font-semibold text-primary dark:text-blue-300">Wadarta Qiimaha Alaabta:</span>
-                      <span className="text-2xl font-extrabold text-primary dark:text-blue-300">${totalMaterialCost.toLocaleString()}</span>
+                    <span className="text-lg font-semibold text-primary dark:text-blue-300">Wadarta Qiimaha Alaabta:</span>
+                    <span className="text-2xl font-extrabold text-primary dark:text-blue-300">${totalMaterialCost.toLocaleString()}</span>
                   </div>
                 </div>
               )}
@@ -2728,93 +2728,93 @@ const [consultancyFee, setConsultancyFee] = useState('');
               {/* NEW: Debt Specific Fields (Moved from Top-Level) */}
               {companyExpenseType === 'Debt' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 p-3 border border-dashed border-primary/30 rounded-lg bg-primary/5 animate-fade-in">
-                    <h4 className="col-span-full text-base font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Deynta (Macmiil dayn u qatay )</h4>
-                    {/* PaidFrom field inside Debt */}
-                    <div className="md:col-span-2">
-                      <label htmlFor="paidFrom_debt" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
-                      <div className="relative">
-                        <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
-                        <select
-                          id="paidFrom_debt"
-                          required
-                          value={paidFrom}
-                          onChange={(e) => setPaidFrom(e.target.value)}
-                          className={`w-full p-2 pl-8 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.paidFrom ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                        >
-                          <option value="">-- Dooro Akoonka --</option>
-                          {accounts.map(acc => (
-                            <option key={acc.id} value={acc.id}>{acc.name} {acc.balance !== undefined ? `($${Number(acc.balance).toLocaleString()})` : ''}</option>
-                          ))}
-                        </select>
-                        <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
-                      </div>
-                      {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paidFrom}</p>}
+                  <h4 className="col-span-full text-base font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Deynta (Macmiil dayn u qatay )</h4>
+                  {/* PaidFrom field inside Debt */}
+                  <div className="md:col-span-2">
+                    <label htmlFor="paidFrom_debt" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
+                    <div className="relative">
+                      <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
+                      <select
+                        id="paidFrom_debt"
+                        required
+                        value={paidFrom}
+                        onChange={(e) => setPaidFrom(e.target.value)}
+                        className={`w-full p-2 pl-8 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.paidFrom ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                      >
+                        <option value="">-- Dooro Akoonka --</option>
+                        {accounts.map(acc => (
+                          <option key={acc.id} value={acc.id}>{acc.name} {acc.balance !== undefined ? `($${Number(acc.balance).toLocaleString()})` : ''}</option>
+                        ))}
+                      </select>
+                      <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
                     </div>
-                    <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <label htmlFor="selectedCustomerDebt" className="block text-sm font-medium text-darkGray dark:text-gray-300">Dooro Macmiilka (Dayn La Siinay) <span className="text-redError">*</span></label>
-                          <Link 
-                            href="/customers/add" 
-                            className="text-primary hover:text-blue-700 text-sm font-medium flex items-center gap-1 transition"
-                          >
-                            <Plus size={16} />
-                            Add New
-                          </Link>
+                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.paidFrom}</p>}
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label htmlFor="selectedCustomerDebt" className="block text-sm font-medium text-darkGray dark:text-gray-300">Dooro Macmiilka (Dayn La Siinay) <span className="text-redError">*</span></label>
+                      <Link
+                        href="/customers/add"
+                        className="text-primary hover:text-blue-700 text-sm font-medium flex items-center gap-1 transition"
+                      >
+                        <Plus size={16} />
+                        Add New
+                      </Link>
+                    </div>
+                    <select
+                      id="selectedCustomerDebt"
+                      required
+                      value={lenderName}
+                      onChange={(e) => setLenderName(e.target.value)}
+                      className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary appearance-none ${validationErrors.lenderName ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    >
+                      <option value="">-- Dooro Macmiilka (Dayn La Siinay) --</option>
+                      {allCustomers && allCustomers.length > 0 ? allCustomers.map(customer => (
+                        <option key={customer.id} value={customer.id}>
+                          {customer.name} - Dayn dhan: ${customer.outstandingDebt?.toLocaleString() || 0}
+                        </option>
+                      )) : (
+                        <option value="" disabled>Lagu heli karo customers-ka</option>
+                      )}
+                    </select>
+                    {(lenderName && allCustomers && allCustomers.length > 0) && (() => {
+                      const cust = allCustomers.find(c => c.id === lenderName);
+                      if (!cust) return null;
+                      return (
+                        <div className="mt-2 text-xs text-blue-700 dark:text-blue-300">
+                          <Link href={`/customers/${cust.id}`} className="underline text-primary hover:text-blue-700" target="_blank">Eeg Macmiilkan</Link>
+                          <span className="ml-2 text-orange-600 dark:text-orange-400 font-semibold">
+                            Dayn dhan (La Siinay): ${cust.outstandingDebt?.toLocaleString() || 0}
+                          </span>
                         </div>
-                        <select
-                            id="selectedCustomerDebt"
-                            required
-                            value={lenderName}
-                            onChange={(e) => setLenderName(e.target.value)}
-                            className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary appearance-none ${validationErrors.lenderName ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                        >
-                            <option value="">-- Dooro Macmiilka (Dayn La Siinay) --</option>
-                            {allCustomers && allCustomers.length > 0 ? allCustomers.map(customer => (
-                              <option key={customer.id} value={customer.id}>
-                                {customer.name} - Dayn dhan: ${customer.outstandingDebt?.toLocaleString() || 0}
-                              </option>
-                            )) : (
-                              <option value="" disabled>Lagu heli karo customers-ka</option>
-                            )}
-                        </select>
-                        {(lenderName && allCustomers && allCustomers.length > 0) && (() => {
-                          const cust = allCustomers.find(c => c.id === lenderName);
-                          if (!cust) return null;
-                          return (
-                            <div className="mt-2 text-xs text-blue-700 dark:text-blue-300">
-                              <Link href={`/customers/${cust.id}`} className="underline text-primary hover:text-blue-700" target="_blank">Eeg Macmiilkan</Link>
-                              <span className="ml-2 text-orange-600 dark:text-orange-400 font-semibold">
-                                Dayn dhan (La Siinay): ${cust.outstandingDebt?.toLocaleString() || 0}
-                              </span>
-                            </div>
-                          );
-                        })()}
-                        {validationErrors.lenderName && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.lenderName}</p>}
-                        {(!allCustomers || allCustomers.length === 0) && (
-                          <p className="text-orange-600 text-xs mt-1 flex items-center">
-                            <Info size={14} className="inline mr-1"/>
-                            Ma jiraan customers-ka. <Link href="/customers/add" className="underline text-primary hover:text-blue-700">Ku dar customer cusub</Link>
-                          </p>
-                        )}
-                    </div>
-                    <div>
-                        <label htmlFor="loanDate" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Taariikhda Deynta (La Siinay) <span className="text-redError">*</span></label>
-                        <input type="date" id="loanDate" required value={loanDate} onChange={(e) => setLoanDate(e.target.value)} className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.loanDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}/>
-                        {validationErrors.loanDate && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.loanDate}</p>}
-                    </div>
-                    <div>
-                        <label htmlFor="debtAmount" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Qiimaha Deynta (Macmiilka La Siinay) ($) <span className="text-redError">*</span></label>
-                        <input
-                            type="number"
-                            id="debtAmount"
-                            required
-                            value={amount} // Re-use common amount
-                            onChange={(e) => setAmount(parseFloat(e.target.value) || '')}
-                            placeholder="Tusaale: 5000"
-                            className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.amount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                        />
-                        {validationErrors.amount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.amount}</p>}
-                    </div>
+                      );
+                    })()}
+                    {validationErrors.lenderName && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.lenderName}</p>}
+                    {(!allCustomers || allCustomers.length === 0) && (
+                      <p className="text-orange-600 text-xs mt-1 flex items-center">
+                        <Info size={14} className="inline mr-1" />
+                        Ma jiraan customers-ka. <Link href="/customers/add" className="underline text-primary hover:text-blue-700">Ku dar customer cusub</Link>
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label htmlFor="loanDate" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Taariikhda Deynta (La Siinay) <span className="text-redError">*</span></label>
+                    <input type="date" id="loanDate" required value={loanDate} onChange={(e) => setLoanDate(e.target.value)} className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.loanDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} />
+                    {validationErrors.loanDate && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.loanDate}</p>}
+                  </div>
+                  <div>
+                    <label htmlFor="debtAmount" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Qiimaha Deynta (Macmiilka La Siinay) ($) <span className="text-redError">*</span></label>
+                    <input
+                      type="number"
+                      id="debtAmount"
+                      required
+                      value={amount} // Re-use common amount
+                      onChange={(e) => setAmount(parseFloat(e.target.value) || '')}
+                      placeholder="Tusaale: 5000"
+                      className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.amount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    />
+                    {validationErrors.amount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.amount}</p>}
+                  </div>
                 </div>
               )}
 
@@ -2823,41 +2823,41 @@ const [consultancyFee, setConsultancyFee] = useState('');
               {/* NEW: Other Company Expense (General) */}
               {companyExpenseType === 'Other' && (
                 <div className="p-4 border border-primary/20 rounded-lg bg-primary/5 animate-fade-in">
-                    <h4 className="text-base font-bold text-primary dark:text-blue-300 mb-2">Faahfaahin Kale</h4>
-                    {/* PaidFrom field inside Other */}
-                    <div className="mb-4">
-                      <label htmlFor="paidFrom_other" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
-                      <div className="relative">
-                        <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
-                        <select
-                          id="paidFrom_other"
-                          required
-                          value={paidFrom}
-                          onChange={(e) => setPaidFrom(e.target.value)}
-                          className={`w-full p-2 pl-8 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.paidFrom ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                        >
-                          <option value="">-- Dooro Akoonka --</option>
-                          {accounts.map(acc => (
-                            <option key={acc.id} value={acc.id}>{acc.name} {acc.balance !== undefined ? `($${Number(acc.balance).toLocaleString()})` : ''}</option>
-                          ))}
-                        </select>
-                        <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
-                      </div>
-                      {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paidFrom}</p>}
+                  <h4 className="text-base font-bold text-primary dark:text-blue-300 mb-2">Faahfaahin Kale</h4>
+                  {/* PaidFrom field inside Other */}
+                  <div className="mb-4">
+                    <label htmlFor="paidFrom_other" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
+                    <div className="relative">
+                      <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
+                      <select
+                        id="paidFrom_other"
+                        required
+                        value={paidFrom}
+                        onChange={(e) => setPaidFrom(e.target.value)}
+                        className={`w-full p-2 pl-8 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.paidFrom ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                      >
+                        <option value="">-- Dooro Akoonka --</option>
+                        {accounts.map(acc => (
+                          <option key={acc.id} value={acc.id}>{acc.name} {acc.balance !== undefined ? `($${Number(acc.balance).toLocaleString()})` : ''}</option>
+                        ))}
+                      </select>
+                      <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
                     </div>
-                    <div>
-                        <label htmlFor="otherCompanyExpenseAmount" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Qiimaha ($) <span className="text-redError">*</span></label>
-                        <input
-                            type="number"
-                            id="otherCompanyExpenseAmount"
-                            required
-                            value={amount} // Re-use common amount
-                            onChange={(e) => setAmount(parseFloat(e.target.value) || '')}
-                            placeholder="Tusaale: 100"
-                            className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.amount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                        />
-                        {validationErrors.amount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.amount}</p>}
-                    </div>
+                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.paidFrom}</p>}
+                  </div>
+                  <div>
+                    <label htmlFor="otherCompanyExpenseAmount" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Qiimaha ($) <span className="text-redError">*</span></label>
+                    <input
+                      type="number"
+                      id="otherCompanyExpenseAmount"
+                      required
+                      value={amount} // Re-use common amount
+                      onChange={(e) => setAmount(parseFloat(e.target.value) || '')}
+                      placeholder="Tusaale: 100"
+                      className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.amount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    />
+                    {validationErrors.amount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.amount}</p>}
+                  </div>
                 </div>
               )}
 
@@ -2865,7 +2865,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
               {companyExpenseType === 'Maintenance & Repairs' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 p-3 border border-dashed border-primary/30 rounded-lg bg-primary/5 animate-fade-in">
                   <h4 className="col-span-full text-base font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Dayactirka iyo Hagaajinta</h4>
-                  
+
                   <div>
                     <label htmlFor="assetName" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Magaca Hantida <span className="text-redError">*</span></label>
                     <input
@@ -2877,7 +2877,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       placeholder="Tusaale: Computer, Printer, iwm"
                       className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.assetName ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                     />
-                    {validationErrors.assetName && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.assetName}</p>}
+                    {validationErrors.assetName && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.assetName}</p>}
                   </div>
 
                   <div>
@@ -2893,7 +2893,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                         <option key={type.value} value={type.value}>{type.label}</option>
                       ))}
                     </select>
-                    {validationErrors.repairType && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.repairType}</p>}
+                    {validationErrors.repairType && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.repairType}</p>}
                   </div>
 
                   <div>
@@ -2907,7 +2907,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       placeholder="Tusaale: Tech Solutions, iwm"
                       className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.serviceProvider ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                     />
-                    {validationErrors.serviceProvider && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.serviceProvider}</p>}
+                    {validationErrors.serviceProvider && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.serviceProvider}</p>}
                   </div>
 
                   <div>
@@ -2921,7 +2921,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       placeholder="Tusaale: 2.5"
                       className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.laborHours ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                     />
-                    {validationErrors.laborHours && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.laborHours}</p>}
+                    {validationErrors.laborHours && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.laborHours}</p>}
                   </div>
 
                   <div>
@@ -2935,7 +2935,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       placeholder="Tusaale: 25.00"
                       className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.hourlyRate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                     />
-                    {validationErrors.hourlyRate && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.hourlyRate}</p>}
+                    {validationErrors.hourlyRate && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.hourlyRate}</p>}
                   </div>
 
                   <div className="col-span-full">
@@ -2956,7 +2956,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                       </select>
                       <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
                     </div>
-                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paidFrom}</p>}
+                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.paidFrom}</p>}
                   </div>
 
                   <div className="col-span-full">
@@ -2974,7 +2974,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                               placeholder="Magaca qaybta"
                               className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors[`partName_${index}`] ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                             />
-                            {validationErrors[`partName_${index}`] && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1"/>{validationErrors[`partName_${index}`]}</p>}
+                            {validationErrors[`partName_${index}`] && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1" />{validationErrors[`partName_${index}`]}</p>}
                           </div>
                           <div>
                             <label htmlFor={`partCost_${part.id}`} className="sr-only">Qiimaha Qaybta</label>
@@ -2986,7 +2986,7 @@ const [consultancyFee, setConsultancyFee] = useState('');
                               placeholder="Qiimaha"
                               className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors[`partCost_${index}`] ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                             />
-                            {validationErrors[`partCost_${index}`] && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1"/>{validationErrors[`partCost_${index}`]}</p>}
+                            {validationErrors[`partCost_${index}`] && <p className="text-redError text-xs mt-1"><Info size={14} className="inline mr-1" />{validationErrors[`partCost_${index}`]}</p>}
                           </div>
                           <div className="flex items-center space-x-2">
                             <span className="text-sm font-semibold text-darkGray dark:text-gray-100">
@@ -3010,10 +3010,10 @@ const [consultancyFee, setConsultancyFee] = useState('');
                         onClick={addPart}
                         className="bg-primary/10 text-primary py-2 px-4 rounded-lg font-semibold flex items-center hover:bg-primary hover:text-white transition-colors duration-200"
                       >
-                        <Plus size={18} className="mr-2"/> Ku Dar Qayb Kale
+                        <Plus size={18} className="mr-2" /> Ku Dar Qayb Kale
                       </button>
                     </div>
-                    {validationErrors.partsUsed && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.partsUsed}</p>}
+                    {validationErrors.partsUsed && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.partsUsed}</p>}
                   </div>
 
                   <div className="col-span-full">
@@ -3075,6 +3075,18 @@ const [consultancyFee, setConsultancyFee] = useState('');
         <Toast message={toastMessage.message} type={toastMessage.type} onClose={() => setToastMessage(null)} />
       )}
     </Layout>
+  );
+}
+
+export default function AddExpensePage() {
+  return (
+    <React.Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="animate-spin text-primary" size={40} />
+      </div>
+    }>
+      <AddExpenseContent />
+    </React.Suspense>
   );
 }
 

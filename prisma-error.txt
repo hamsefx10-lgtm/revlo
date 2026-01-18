@@ -1,0 +1,53 @@
+﻿node.exe : Environment 
+variables loaded from .env
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+    + CategoryInfo          
+    : NotSpecified: (Envir  
+  onment variables loaded   
+  from .env:String) [],     
+RemoteException
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 
+Prisma schema loaded from prisma\schema.prisma
+
+Error: Prisma schema 
+validation - (validate wasm)
+Error code: P1012
+[1;91merror[0m: [1mError 
+validating field `vendors` 
+in model `User`: The 
+relation field `vendors` on 
+model `User` is missing an 
+opposite relation field on 
+the model `ShopVendor`. 
+Either run `prisma format` 
+or add it manually.[0m
+  [1;94m-->[0m  [4mprisma
+\schema.prisma:50[0m
+[1;94m   | [0m
+[1;94m49 | [0m  
+shopClients    ShopClient[] 
+   
+@relation("UserShopClients")
+[1;94m50 | [0m  
+[1;91mvendors        
+ShopVendor[]    
+@relation("UserShopVendors")
+[0m
+[1;94m51 | [0m  sales     
+     Sale[]          
+@relation("UserSales")
+[1;94m   | [0m
+
+Validation Error Count: 1
+[Context: validate]
+
+Prisma CLI Version : 6.16.2
