@@ -1,13 +1,27 @@
 'use client';
 
 import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import Lenis from 'lenis';
 
 export default function SmoothScroll() {
+    const pathname = usePathname();
+
     useEffect(() => {
+        // Only enable smooth scroll on public marketing pages
+        const isPublicPage = pathname === '/' ||
+            pathname.startsWith('/solutions') ||
+            pathname === '/download' ||
+            pathname === '/pricing' ||
+            pathname === '/features' ||
+            pathname === '/contact' ||
+            pathname === '/about';
+
+        if (!isPublicPage) return;
+
         const lenis = new Lenis({
-            duration: 1.5, // 1.5s scroll duration for smoother feel
-            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // standard exponential easing
+            duration: 1.5,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
             orientation: 'vertical',
             gestureOrientation: 'vertical',
             smoothWheel: true,
@@ -25,7 +39,7 @@ export default function SmoothScroll() {
         return () => {
             lenis.destroy();
         };
-    }, []);
+    }, [pathname]);
 
     return null;
 }

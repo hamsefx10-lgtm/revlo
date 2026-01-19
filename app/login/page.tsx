@@ -35,7 +35,7 @@ export default function LoginPage() {
 
       addNotification({
         type: 'success',
-        message: 'Si guul leh ayaad ku gashay! Waad soo dhowaal.'
+        message: 'Si guul leh ayaad u soo gashay! Soo dhawoow.'
       });
       // Redirect based on planType
       setTimeout(() => {

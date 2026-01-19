@@ -217,7 +217,7 @@ export default function ExpensesPage() {
         </div>
 
         {/* SEARCH & FILTERS CONTROLS */}
-        <div className="mx-4 md:mx-0 sticky top-4 z-20 backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 p-2 rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 flex flex-col md:flex-row gap-2 transition-all duration-300 hover:shadow-xl">
+        <div className="mx-4 md:mx-0 relative z-0 bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 flex flex-col md:flex-row gap-2 transition-all duration-300 hover:shadow-xl">
           <div className="relative flex-1 group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-primary transition-colors" size={20} />
             <input

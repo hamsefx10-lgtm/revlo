@@ -5,9 +5,6 @@ const BASE_URL = 'https://revlo.me'; // Your actual domain
 export default function sitemap(): MetadataRoute.Sitemap {
     const routes = [
         '',
-        '/features',
-        '/solutions',
-        '/pricing',
         '/download',
         '/login',
         '/signup',

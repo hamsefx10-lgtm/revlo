@@ -46,7 +46,7 @@ const Topbar: React.FC<TopbarProps> = ({
     const timer = setTimeout(() => {
       initializeGoogleTranslate();
     }, 500);
-    
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -54,7 +54,7 @@ const Topbar: React.FC<TopbarProps> = ({
   const handleLanguageChange = (newLanguage: 'so' | 'en') => {
     setLanguage(newLanguage);
     setShowLanguageDropdown(false);
-    
+
     // Trigger Google Translate
     if (newLanguage === 'so') {
       // When switching to Somali, use Google Translate
@@ -96,9 +96,9 @@ const Topbar: React.FC<TopbarProps> = ({
             className="hidden md:inline h-8 w-auto rounded-md object-contain bg-lightGray/40 dark:bg-gray-700/60 px-2 py-1"
           />
         ) : (
-        <span className="text-2xl font-extrabold text-primary hidden md:inline select-none">
-          Revl<span className="text-secondary">o</span>.
-        </span>
+          <span className="text-2xl font-extrabold text-primary hidden md:inline select-none">
+            Revl<span className="text-secondary">o</span>.
+          </span>
         )}
         <span className="hidden md:inline text-mediumGray dark:text-gray-400 font-semibold ml-4">{currentCompany.name}</span>
       </div>
@@ -107,7 +107,7 @@ const Topbar: React.FC<TopbarProps> = ({
       <div className="flex items-center space-x-4">
         {/* Language Toggle */}
         <div className="relative">
-          <button 
+          <button
             onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
             className="p-2 rounded-full bg-lightGray dark:bg-gray-700 shadow-sm text-darkGray dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200 relative group"
             title={t.navigation.settings}
@@ -126,24 +126,22 @@ const Topbar: React.FC<TopbarProps> = ({
           {showLanguageDropdown && (
             <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-lightGray dark:border-gray-700 z-50">
               <div className="p-2">
-                <button 
+                <button
                   onClick={() => handleLanguageChange('so')}
-                  className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 flex items-center space-x-2 ${
-                    language === 'so' 
-                      ? 'bg-primary text-white' 
+                  className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 flex items-center space-x-2 ${language === 'so'
+                      ? 'bg-primary text-white'
                       : 'text-darkGray dark:text-gray-100 hover:bg-lightGray dark:hover:bg-gray-700'
-                  }`}
+                    }`}
                 >
                   <span className="text-lg">🇸🇴</span>
                   <span>Soomaali</span>
                 </button>
-                <button 
+                <button
                   onClick={() => handleLanguageChange('en')}
-                  className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 flex items-center space-x-2 ${
-                    language === 'en' 
-                      ? 'bg-primary text-white' 
+                  className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 flex items-center space-x-2 ${language === 'en'
+                      ? 'bg-primary text-white'
                       : 'text-darkGray dark:text-gray-100 hover:bg-lightGray dark:hover:bg-gray-700'
-                  }`}
+                    }`}
                 >
                   <span className="text-lg">🇺🇸</span>
                   <span>English</span>
@@ -154,7 +152,7 @@ const Topbar: React.FC<TopbarProps> = ({
         </div>
         {/* Enhanced Notifications Button */}
         <div className="relative">
-          <button 
+          <button
             onClick={() => setShowNotificationDropdown(!showNotificationDropdown)}
             title="View notifications"
             className="p-2 rounded-full bg-lightGray dark:bg-gray-700 shadow-sm text-darkGray dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200 relative group"
@@ -180,14 +178,14 @@ const Topbar: React.FC<TopbarProps> = ({
                   <h3 className="font-semibold text-darkGray dark:text-gray-100">{t.notifications.title}</h3>
                   <div className="flex items-center space-x-2">
                     {notifications.length > 0 && (
-                      <button 
+                      <button
                         onClick={clearAllNotifications}
                         className="text-sm text-red-500 hover:text-red-600 transition-colors duration-200"
                       >
                         {t.notifications.clearAll}
                       </button>
                     )}
-                    <button 
+                    <button
                       onClick={() => setShowNotificationDropdown(false)}
                       title="Close notifications"
                       className="text-mediumGray hover:text-darkGray dark:hover:text-gray-100 transition-colors duration-200"
@@ -202,26 +200,24 @@ const Topbar: React.FC<TopbarProps> = ({
               <div className="max-h-64 overflow-y-auto">
                 {notifications.length > 0 ? (
                   notifications.slice(0, 10).map((notification) => (
-                    <div 
-                      key={notification.id} 
-                      className={`p-4 border-b border-lightGray dark:border-gray-700 hover:bg-lightGray dark:hover:bg-gray-700 transition-colors duration-200 ${
-                        !notification.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
-                      }`}
+                    <div
+                      key={notification.id}
+                      className={`p-4 border-b border-lightGray dark:border-gray-700 hover:bg-lightGray dark:hover:bg-gray-700 transition-colors duration-200 ${!notification.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                        }`}
                     >
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-1">
                             <span className="text-lg">
-                              {notification.type === 'error' ? '⚠️' : 
-                               notification.type === 'warning' ? '⚠️' : 
-                               notification.type === 'success' ? '✅' : 'ℹ️'}
+                              {notification.type === 'error' ? '⚠️' :
+                                notification.type === 'warning' ? '⚠️' :
+                                  notification.type === 'success' ? '✅' : 'ℹ️'}
                             </span>
-                            <span className={`text-sm font-medium capitalize ${
-                              notification.type === 'success' ? 'text-green-600' :
-                              notification.type === 'error' ? 'text-red-600' :
-                              notification.type === 'warning' ? 'text-yellow-600' :
-                              'text-blue-600'
-                            }`}>
+                            <span className={`text-sm font-medium capitalize ${notification.type === 'success' ? 'text-green-600' :
+                                notification.type === 'error' ? 'text-red-600' :
+                                  notification.type === 'warning' ? 'text-yellow-600' :
+                                    'text-blue-600'
+                              }`}>
                               {t.notifications.notificationTypes[notification.type]}
                             </span>
                             {notification.source && (
@@ -234,10 +230,24 @@ const Topbar: React.FC<TopbarProps> = ({
                           <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">
                             {notification.timestamp.toLocaleTimeString()}
                           </p>
+
+                          {/* Action Button */}
+                          {notification.action && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent card click if any
+                                notification.action?.onClick();
+                                setShowNotificationDropdown(false);
+                              }}
+                              className="mt-2 text-xs bg-primary text-white px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors flex items-center gap-1 font-medium w-fit"
+                            >
+                              {notification.action.label}
+                            </button>
+                          )}
                         </div>
                         <div className="flex items-center space-x-1 ml-2">
                           {!notification.read && (
-                            <button 
+                            <button
                               onClick={() => markAsRead(notification.id)}
                               className="p-1 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200"
                               title={t.notifications.markAsRead}
@@ -245,7 +255,7 @@ const Topbar: React.FC<TopbarProps> = ({
                               <CheckCircle size={14} />
                             </button>
                           )}
-                          <button 
+                          <button
                             onClick={() => removeNotification(notification.id)}
                             className="p-1 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-colors duration-200"
                             title="Remove"
@@ -272,7 +282,7 @@ const Topbar: React.FC<TopbarProps> = ({
               {/* Footer */}
               {notifications.length > 0 && (
                 <div className="p-3 border-t border-lightGray dark:border-gray-700 bg-lightGray dark:bg-gray-700">
-                  <Link 
+                  <Link
                     href="/settings/notifications"
                     className="block text-center text-sm text-primary hover:text-blue-600 transition-colors duration-200"
                     onClick={() => setShowNotificationDropdown(false)}

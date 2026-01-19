@@ -11,13 +11,16 @@ export const metadata: Metadata = {
   title: 'Revlo - The Ultimate ERP & Business Management Solution',
   description: 'Revlo is a powerful, all-in-one ERP and POS system designed to streamline business operations globally. From inventory management to financial reporting, Revlo empowers businesses of all sizes with cutting-edge technology. Founded by Hamse Moalin Amiin. | Revlo waa nidaamka maamulka ganacsiga ee ugu casrisan, kaas oo isugu keenaya maamulka kaydka, xisaabaadka, iyo iibka hal meel. Ku habboon ganacsi kasta, meel kasta.',
   keywords: [
-    'ERP System', 'Business Management Software', 'POS System', 'Accounting Software', 'Inventory Management',
-    'Hamse Moalin Amiin', 'Revlo', 'Cloud ERP', 'Ganacsi Maamul', 'Nidaamka Xisaabaadka', 'Software', 'Technology'
+    'Revlo', 'Revlo ERP', 'Revlo App', 'ERP System', 'Business Management Software', 'POS System',
+    'Accounting Software', 'Inventory Management', 'Hamse Moalin Amiin', 'Cloud ERP',
+    'Ganacsi Maamul', 'Nidaamka Xisaabaadka', 'Software', 'Technology', 'Somali ERP',
+    'Best ERP 2026', 'East Africa ERP', 'Global ERP Solution', 'Smart Business Tools',
+    'Manufacturing ERP', 'Construction Management Software', 'Retail POS'
   ],
   authors: [{ name: 'Hamse Moalin Amiin', url: 'https://revlo.me' }],
   creator: 'Hamse Moalin Amiin',
   publisher: 'Revlo Inc.',
-  metadataBase: new URL('https://revlo.me'), // Replace with actual domain when live
+  metadataBase: new URL('https://revlo.me'),
   openGraph: {
     title: 'Revlo - Transform Your Business with Smart Management',
     description: 'Empowering businesses with seamless ERP & POS solutions. Built for efficiency, designed for growth. Founded by Hamse Moalin Amiin.',
@@ -25,7 +28,7 @@ export const metadata: Metadata = {
     siteName: 'Revlo',
     images: [
       {
-        url: '/about-hero.png', // Ensure this image is high quality and representative
+        url: 'https://revlo.me/about-hero.png', // Absolute URL for better social sharing
         width: 1200,
         height: 630,
         alt: 'Revlo Dashboard Preview',
@@ -38,7 +41,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Revlo - Global ERP & Business Solution',
     description: 'The future of business management is here. Discover Revlo, founded by Hamse Moalin Amiin. Contact: hamsemoalin@gmail.com | +251 929 475 332',
-    images: ['/about-hero.png'],
+    images: ['https://revlo.me/about-hero.png'],
   },
   icons: {
     icon: '/revlo-logo.png',
@@ -49,11 +52,18 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
   alternates: {
     languages: {
-      'en-US': '/en',
-      'so-SO': '/so',
+      'en-US': 'https://revlo.me/en',
+      'so-SO': 'https://revlo.me/so',
     },
   },
   verification: {
@@ -87,13 +97,23 @@ const jsonLd = {
   "author": {
     "@type": "Person",
     "name": "Hamse Moalin Amiin",
-    "url": "https://revlo.io",
-    "jobTitle": "Founder & CEO"
+    "url": "https://revlo.me",
+    "jobTitle": "Founder & CEO",
+    "sameAs": [
+      "https://twitter.com/hamsemoalin",
+      "https://linkedin.com/in/hamsemoalin"
+    ]
   },
   "publisher": {
     "@type": "Organization",
     "name": "Revlo Inc.",
-    "logo": "https://revlo.io/revlo-logo.png"
+    "logo": "https://revlo.me/revlo-logo.png",
+    "sameAs": [
+      "https://twitter.com/revlo_erp",
+      "https://facebook.com/revlo_erp",
+      "https://linkedin.com/company/revlo",
+      "https://instagram.com/revlo_erp"
+    ]
   },
   "sameAs": [
     "https://twitter.com/revlo_erp",

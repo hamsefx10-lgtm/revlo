@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { useLanguage } from './LanguageContext';
 import Toast, { ToastType } from '@/components/common/Toast';
 import { AnimatePresence } from 'framer-motion';
+import { useSession } from 'next-auth/react';
 
 // Notification Types
 export interface Notification {
@@ -28,6 +29,7 @@ interface NotificationContextType {
   markAllAsRead: () => void;
   removeNotification: (id: string) => void;
   clearAllNotifications: () => void;
+  refreshNotifications: () => void;
 }
 
 // Create Context
@@ -38,6 +40,48 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [toasts, setToasts] = useState<{ id: string; message: string; type: ToastType }[]>([]);
   const { t } = useLanguage();
+  const { data: session } = useSession();
+
+  // Fetch notifications from API
+  const fetchNotifications = useCallback(async () => {
+    if (!session) return;
+    try {
+      // First, trigger a check for system events (Low Stock, etc)
+      // In a real production app, this would be a separate worker, but here we trigger it on client refresh for immediate feedback
+      await fetch('/api/notifications/check', { method: 'POST' });
+
+      const response = await fetch('/api/notifications?limit=20');
+      if (response.ok) {
+        const data = await response.json();
+        const mappedNotifications: Notification[] = data.notifications.map((n: any) => ({
+          id: n.id,
+          type: (n.type.toLowerCase() as ToastType) || 'info',
+          message: n.message,
+          timestamp: new Date(n.createdAt),
+          read: n.read,
+          source: n.details?.includes('ProjectID') ? 'Finance' : 'System',
+          action: n.details?.includes('ProjectID') ? {
+            label: 'View Invoice',
+            onClick: () => {
+              const pid = n.details.split('ProjectID:')[1];
+              if (pid) window.location.href = `/projects/${pid}/invoice`;
+            }
+          } : undefined
+        }));
+        setNotifications(mappedNotifications);
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  }, [session]);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchNotifications();
+    // Poll every 60 seconds for new notifications
+    const interval = setInterval(fetchNotifications, 60000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
 
   // Calculate unread count
   const unreadCount = notifications.filter(notification => !notification.read).length;
@@ -58,7 +102,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
         'error': 400
       };
 
-      oscillator.frequency.setValueAtTime(frequencies[type], audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(frequencies[type] || 800, audioContext.currentTime);
       oscillator.type = 'sine';
 
       gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
@@ -67,11 +111,12 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.5);
     } catch (error) {
-      // console.log('Audio not supported', error);
+      // Silent fail
     }
   };
 
-  const addNotification = useCallback((notificationData: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
+  const addNotification = useCallback(async (notificationData: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
+    // Optimistic UI update
     const id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
     const notification: Notification = {
       ...notificationData,
@@ -80,12 +125,24 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
       read: false,
     };
 
-    setNotifications(prev => [notification, ...prev.slice(0, 49)]); // Keep last 50
-
-    // Add to Toasts queue for visual display
+    setNotifications(prev => [notification, ...prev.slice(0, 49)]);
     setToasts(prev => [...prev, { id, message: notification.message, type: notification.type }]);
-
     playNotificationSound(notification.type);
+
+    // Persist to DB
+    try {
+      await fetch('/api/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: notificationData.message,
+          type: notificationData.type,
+          details: notificationData.source
+        })
+      });
+      // Silently refresh to get real ID if needed, or just leave it
+    } catch (e) { console.error("Failed to persist notification", e) }
+
   }, []);
 
   const removeToast = useCallback((id?: string) => {
@@ -96,26 +153,42 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     }
   }, []);
 
-  const markAsRead = (id: string) => {
+  const markAsRead = async (id: string) => {
+    // Optimistic update
     setNotifications(prev =>
       prev.map(notification =>
         notification.id === id ? { ...notification, read: true } : notification
       )
     );
+    // API call would go here if we had a specific mark-read endpoint
+    // For now we assume we can build one or just leave it local for session
+    try {
+      await fetch(`/api/notifications/${id}`, { method: 'PATCH', body: JSON.stringify({ read: true }) });
+    } catch (e) { }
   };
 
-  const markAllAsRead = () => {
+  const markAllAsRead = async () => {
     setNotifications(prev =>
       prev.map(notification => ({ ...notification, read: true }))
     );
+    // API Call
+    try {
+      await fetch(`/api/notifications/mark-all-read`, { method: 'POST' });
+    } catch (e) { }
   };
 
-  const removeNotification = (id: string) => {
+  const removeNotification = async (id: string) => {
     setNotifications(prev => prev.filter(notification => notification.id !== id));
+    try {
+      await fetch(`/api/notifications/${id}`, { method: 'DELETE' });
+    } catch (e) { }
   };
 
-  const clearAllNotifications = () => {
+  const clearAllNotifications = async () => {
     setNotifications([]);
+    try {
+      await fetch(`/api/notifications`, { method: 'DELETE' });
+    } catch (e) { }
   };
 
   const value: NotificationContextType = {
@@ -126,13 +199,12 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     markAllAsRead,
     removeNotification,
     clearAllNotifications,
+    refreshNotifications: fetchNotifications
   };
 
   return (
     <NotificationContext.Provider value={value}>
       {children}
-
-      {/* Toast Container */}
       <div className="fixed bottom-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none">
         <AnimatePresence>
           {toasts.map(toast => (

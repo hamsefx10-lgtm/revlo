@@ -91,12 +91,24 @@ export async function GET(request: Request) {
         displayCategory = exp.subCategory;
       }
 
+      // Clean description: Remove "Category - " prefix if present to avoid redundancy
+      let cleanDescription = exp.description || '';
+      const prefix = `${displayCategory} - `;
+      if (cleanDescription.startsWith(prefix)) {
+        cleanDescription = cleanDescription.substring(prefix.length);
+      }
+      // Also check against raw category just in case
+      const rawCategoryPrefix = `${exp.category} - `;
+      if (exp.category && cleanDescription.startsWith(rawCategoryPrefix)) {
+        cleanDescription = cleanDescription.substring(rawCategoryPrefix.length);
+      }
+
       const baseExpense = {
         id: exp.id, // Add expense ID for editing
         date: exp.expenseDate?.toISOString().slice(0, 10) || '',
         project: exp.project?.name || String(exp.projectId) || 'Internal',
         category: displayCategory,
-        description: exp.description || '',
+        description: cleanDescription,
         amount: Number(exp.amount),
         subCategory: exp.subCategory || null,
         note: exp.note || null,

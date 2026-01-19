@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import Layout from '@/components/layouts/Layout';
-import { Send, Paperclip, Image, Smile, Users, Phone, Video, MoreVertical, Search, Settings } from 'lucide-react';
+import { Send, Paperclip, Image, Users, Phone, Video, MoreVertical, Search, ArrowLeft, Mic } from 'lucide-react';
 
+// --- Interfaces ---
 interface User {
   id: string;
   fullName: string;
@@ -27,11 +28,6 @@ interface Message {
   isEdited?: boolean;
   isPinned?: boolean;
   reactions?: Record<string, string[]>;
-  replyTo?: {
-    id: string;
-    content: string;
-    senderName: string;
-  };
 }
 
 interface ChatRoom {
@@ -48,814 +44,280 @@ interface ChatRoom {
 
 export default function ChatPage() {
   const { data: session } = useSession();
+
+  // Data States
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [activeRoom, setActiveRoom] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
+
+  // UI States
   const [newMessage, setNewMessage] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
-  const [editingOriginalContent, setEditingOriginalContent] = useState<string | null>(null);
-  
+
+  // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch chat rooms and company users
+  // --- Initial Data Fetching ---
   useEffect(() => {
     const fetchChatData = async () => {
       try {
         setIsLoading(true);
-        setError(null);
-
-        // Debug session data
-        console.log('Session data:', session);
-        console.log('User data:', session?.user);
-        console.log('Company ID:', (session?.user as any)?.companyId);
-
-        // Fetch or create company chat room
         const roomsResponse = await fetch('/api/chat/rooms');
-        if (!roomsResponse.ok) {
-          const errorData = await roomsResponse.json();
-          console.error('Rooms API error:', errorData);
-          throw new Error(`Failed to fetch chat rooms: ${errorData.error || 'Unknown error'}`);
-        }
-
         const roomsData = await roomsResponse.json();
-        console.log('Rooms data:', roomsData);
-        
-        if (roomsData.success && roomsData.rooms && roomsData.rooms.length > 0) {
+        if (roomsData.success && roomsData.rooms) {
           setChatRooms(roomsData.rooms);
-          setActiveRoom(roomsData.rooms[0].id);
-        } else {
-          throw new Error('No chat rooms available');
+          if (roomsData.rooms.length > 0) setActiveRoom(roomsData.rooms[0].id);
         }
-      } catch (error) {
-        console.error('Error fetching chat data:', error);
-        setError(`Failed to load chat: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      } finally {
-        setIsLoading(false);
-      }
+      } catch (e: any) { console.error('Error fetching chat:', e); }
+      finally { setIsLoading(false); }
     };
-
-    if (session?.user) {
-      fetchChatData();
-    }
+    if (session?.user) fetchChatData();
   }, [session]);
 
-  // Fetch messages for active room
+  // --- Fetch Messages ---
   useEffect(() => {
     if (!activeRoom) return;
-
     const fetchMessages = async () => {
       try {
         const response = await fetch(`/api/chat/messages?roomId=${activeRoom}`);
         if (response.ok) {
           const data = await response.json();
-          if (data.success && data.messages) {
-            setMessages(data.messages);
-          }
+          if (data.success && data.messages) setMessages(data.messages);
         }
-      } catch (error) {
-        console.error('Error fetching messages:', error);
-      }
+      } catch (error) { console.error(error); }
     };
-
     fetchMessages();
   }, [activeRoom]);
 
-  // Auto-scroll to bottom when new messages arrive
+  // --- Auto Scroll ---
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // --- Handlers ---
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || isSending) return;
-    const messageContent = newMessage.trim();
+    if (!newMessage.trim() || isSending || !activeRoom) return;
+    const content = newMessage.trim();
     setIsSending(true);
 
     try {
       if (editingMessageId) {
-        // Edit existing message
         const response = await fetch('/api/chat/messages', {
           method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            messageId: editingMessageId,
-            content: messageContent,
-          }),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messageId: editingMessageId, content }),
         });
-
         if (response.ok) {
           const data = await response.json();
-          if (data.success && data.message) {
-            setMessages(prev =>
-              prev.map(m => (m.id === editingMessageId ? data.message : m)),
-            );
+          if (data.success) {
+            setMessages(prev => prev.map(m => m.id === editingMessageId ? data.message : m));
+            setEditingMessageId(null);
+            setNewMessage('');
           }
-          setEditingMessageId(null);
-          setEditingOriginalContent(null);
-          setNewMessage('');
-        } else {
-          const errorData = await response.json();
-          setError(errorData.error || 'Failed to edit message');
         }
       } else {
-        // New message
-        if (!activeRoom) return;
         const response = await fetch('/api/chat/messages', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            roomId: activeRoom,
-            content: messageContent,
-            type: 'text',
-          }),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ roomId: activeRoom, content, type: 'text' }),
         });
-
         if (response.ok) {
           const data = await response.json();
-          if (data.success && data.message) {
+          if (data.success) {
             setMessages(prev => [...prev, data.message]);
+            setNewMessage('');
           }
-          setNewMessage('');
-        } else {
-          const errorData = await response.json();
-          setError(errorData.error || 'Failed to send message');
         }
       }
-    } catch (error) {
-      console.error('Error sending/editing message:', error);
-      setError('Failed to send message. Please try again.');
-    } finally {
-      setIsSending(false);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
+    } catch (error) { console.error('Send error:', error); }
+    finally { setIsSending(false); }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !activeRoom) return;
-
     const formData = new FormData();
     formData.append('file', file);
     formData.append('roomId', activeRoom);
-
     try {
-      const response = await fetch('/api/chat/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.message) {
-          setMessages(prev => [...prev, data.message]);
-        }
+      const res = await fetch('/api/chat/upload', { method: 'POST', body: formData });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) setMessages(prev => [...prev, data.message]);
       }
-    } catch (error) {
-      console.error('Error uploading file:', error);
-    }
+    } catch (e) { console.error(e); }
   };
 
-  const handleDeleteMessage = async (messageId: string) => {
-    if (!messageId) return;
-
+  const handleDeleteMessage = async (id: string) => {
     try {
-      const response = await fetch(`/api/chat/messages?messageId=${messageId}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          setMessages(prev => prev.filter(msg => msg.id !== messageId));
-        }
-      } else {
-        const errorData = await response.json();
-        setError(errorData.error || 'Failed to delete message');
-      }
-    } catch (error) {
-      console.error('Error deleting message:', error);
-      setError('Failed to delete message. Please try again.');
-    }
+      const res = await fetch(`/api/chat/messages?messageId=${id}`, { method: 'DELETE' });
+      if (res.ok) setMessages(prev => prev.filter(m => m.id !== id));
+    } catch (e) { console.error(e); }
   };
 
-  const startEditingMessage = (message: Message) => {
-    setEditingMessageId(message.id);
-    setEditingOriginalContent(message.content);
-    setNewMessage(message.content);
-  };
+  const formatTime = (d: Date) => new Date(d).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const formatDate = (d: Date) => new Date(d).toLocaleDateString([], { month: 'short', day: 'numeric' });
 
-  const cancelEditing = () => {
-    setEditingMessageId(null);
-    setEditingOriginalContent(null);
-    setNewMessage('');
-  };
+  const filteredRooms = chatRooms.filter(r => r.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const activeRoomData = chatRooms.find(r => r.id === activeRoom);
 
-  const formatTime = (date: Date) => {
-    return new Date(date).toLocaleTimeString('en-US', {
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true
-    });
-  };
-
-  const formatDate = (date: Date) => {
-    const today = new Date();
-    const messageDate = new Date(date);
-    
-    if (messageDate.toDateString() === today.toDateString()) {
-      return 'Today';
-    }
-    
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    
-    if (messageDate.toDateString() === yesterday.toDateString()) {
-      return 'Yesterday';
-    }
-    
-    return messageDate.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
-  const filteredRooms = chatRooms.filter(room =>
-    room.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const activeRoomData = chatRooms.find(room => room.id === activeRoom);
-
-  if (isLoading) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-mediumGray">Loading chat...</p>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
-
-  if (error) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <div className="text-redError text-6xl mb-4">⚠️</div>
-            <p className="text-mediumGray mb-4">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              Try Again
-            </button>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
+  if (isLoading) return <Layout><div className="flex bg-lightGray items-center justify-center p-20"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div></Layout>;
 
   return (
     <Layout>
-      <div className="flex h-full bg-lightGray">
-        {/* Mobile Layout - Stack vertically on mobile */}
-        <div className="flex flex-col lg:hidden w-full">
-          {/* Mobile Sidebar */}
-          <div className="w-full bg-white border-b border-gray-200 flex flex-col">
-            {/* Mobile Header */}
-            <div className="p-4 border-b border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <h1 className="text-xl font-semibold text-darkGray">Messages</h1>
-                <button 
-                  className="p-2 hover:bg-lightGray rounded-lg transition-colors"
-                  title="Chat Settings"
-                  aria-label="Open chat settings"
-                >
-                  <Settings className="w-5 h-5 text-mediumGray" />
-                </button>
-              </div>
-              
-              {/* Mobile Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-mediumGray" />
-                <input
-                  type="text"
-                  placeholder="Search conversations..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
-              </div>
-            </div>
+      {/* 
+        Changes Made for Seamless Integration:
+        1. Removed outer margins/padding that constrained it.
+        2. Set height to use available viewport height, accounting for main Topbar.
+        3. Removed outer shadows and borders to blend with page background.
+        4. Structured as a split view that naturally sits on the background.
+      */}
+      <div className="flex h-[calc(100vh-120px)] w-full gap-0 md:gap-4 overflow-hidden">
 
-            {/* Mobile Chat Rooms List */}
-            <div className="flex-1 overflow-y-auto max-h-64">
-              {filteredRooms.map((room) => (
-                <div
-                  key={room.id}
-                  onClick={() => setActiveRoom(room.id)}
-                  className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-lightGray transition-colors ${
-                    activeRoom === room.id ? 'bg-primary/10 border-l-4 border-l-primary' : ''
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="relative">
-                      <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-                        <Users className="w-6 h-6 text-white" />
-                      </div>
-                      {room.isOnline && (
-                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-secondary rounded-full border-2 border-white"></div>
-                      )}
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-medium text-darkGray truncate">{room.name}</h3>
-                        {room.lastMessage && (
-                          <span className="text-xs text-mediumGray">
-                            {formatTime(room.lastMessage.timestamp)}
-                          </span>
-                        )}
-                      </div>
-                      
-                      <div className="flex items-center justify-between mt-1">
-                        <p className="text-sm text-mediumGray truncate">
-                          {room.lastMessage ? room.lastMessage.content : 'No messages yet'}
-                        </p>
-                        {room.unreadCount > 0 && (
-                          <span className="bg-primary text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
-                            {room.unreadCount}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Mobile Main Chat Area */}
-          <div className="flex-1 flex flex-col">
-            {activeRoomData ? (
-              <>
-                {/* Mobile Chat Header */}
-                <div className="bg-white border-b border-gray-200 p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="relative">
-                        <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                          <Users className="w-5 h-5 text-white" />
-                        </div>
-                        {activeRoomData.isOnline && (
-                          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-secondary rounded-full border-2 border-white"></div>
-                        )}
-                      </div>
-                      
-                      <div>
-                        <h2 className="font-semibold text-darkGray">{activeRoomData.name}</h2>
-                        <p className="text-sm text-mediumGray">
-                          {activeRoomData.members.length} members
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <button 
-                        className="p-2 hover:bg-lightGray rounded-lg transition-colors"
-                        title="Voice Call"
-                        aria-label="Start voice call"
-                      >
-                        <Phone className="w-5 h-5 text-mediumGray" />
-                      </button>
-                      <button 
-                        className="p-2 hover:bg-lightGray rounded-lg transition-colors"
-                        title="Video Call"
-                        aria-label="Start video call"
-                      >
-                        <Video className="w-5 h-5 text-mediumGray" />
-                      </button>
-                      <button 
-                        className="p-2 hover:bg-lightGray rounded-lg transition-colors"
-                        title="More Options"
-                        aria-label="Open more options"
-                      >
-                        <MoreVertical className="w-5 h-5 text-mediumGray" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Mobile Messages Area */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {messages.map((message, index) => {
-                    const isCurrentUser = message.senderId === (session?.user as any)?.id;
-                    const showDate = index === 0 || 
-                      formatDate(message.timestamp) !== formatDate(messages[index - 1].timestamp);
-                    
-                    return (
-                      <div key={message.id}>
-                        {showDate && (
-                          <div className="text-center my-4">
-                            <span className="bg-lightGray text-mediumGray text-sm px-3 py-1 rounded-full">
-                              {formatDate(message.timestamp)}
-                            </span>
-                          </div>
-                        )}
-                        
-                        <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`flex space-x-2 max-w-xs ${isCurrentUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                            {!isCurrentUser && (
-                              <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center flex-shrink-0">
-                                <span className="text-white text-sm font-medium">
-                                  {message.senderName.charAt(0).toUpperCase()}
-                                </span>
-                              </div>
-                            )}
-                            
-                              <div className={`rounded-lg px-4 py-2 relative ${
-                              isCurrentUser 
-                                ? 'bg-primary text-white' 
-                                : 'bg-white border border-gray-200 text-darkGray'
-                            }`}>
-                              {!isCurrentUser && (
-                                <p className="text-xs font-medium mb-1 opacity-70">
-                                  {message.senderName}
-                                </p>
-                              )}
-                              
-                              {message.type === 'image' && message.fileUrl ? (
-                                <div className="space-y-2">
-                                  <img
-                                    src={message.fileUrl}
-                                    alt={message.fileName || 'Image'} 
-                                    className="max-w-xs max-h-64 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                                    onClick={() => window.open(message.fileUrl, '_blank')}
-                                  />
-                                  <p className="text-sm text-gray-600">{message.fileName}</p>
-                                </div>
-                              ) : message.type === 'file' && message.fileUrl ? (
-                                <div className="flex items-center space-x-2 p-2 bg-gray-100 rounded-lg">
-                                  <Paperclip className="w-4 h-4 text-gray-500" />
-                                  <a 
-                                    href={message.fileUrl} 
-                                    download={message.fileName}
-                                    className="text-sm text-blue-600 hover:underline"
-                                  >
-                                    {message.fileName}
-                                  </a>
-                                </div>
-                              ) : (
-                                <p className="text-sm">{message.content}</p>
-                              )}
-                              
-                              <div className="flex items-center justify-between mt-1 space-x-2">
-                                <p className={`text-xs ${
-                                  isCurrentUser ? 'text-white/70' : 'text-mediumGray'
-                                }`}>
-                                  {formatTime(message.timestamp)}
-                                  {message.isEdited && ' · edited'}
-                                </p>
-                                {isCurrentUser && (
-                                  <div className="flex items-center space-x-1 text-xs">
-                                    {editingMessageId === message.id ? (
-                                      <button
-                                        onClick={cancelEditing}
-                                        className="underline text-red-200"
-                                      >
-                                        Cancel
-                                      </button>
-                                    ) : (
-                                      <>
-                                        <button
-                                          onClick={() => startEditingMessage(message)}
-                                          className="underline"
-                                        >
-                                          Edit
-                                        </button>
-                                        <button
-                                          onClick={() => handleDeleteMessage(message.id)}
-                                          className="underline text-red-200"
-                                        >
-                                          Delete
-                                        </button>
-                                      </>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div ref={messagesEndRef} />
-                </div>
-
-                {/* Mobile Message Input */}
-                <div className="bg-white border-t border-gray-200 p-4">
-                  <div className="flex items-center space-x-2">
-                    <button 
-                      onClick={() => fileInputRef.current?.click()}
-                      className="p-2 hover:bg-lightGray rounded-lg transition-colors"
-                      title="Attach File"
-                      aria-label="Attach file to message"
-                    >
-                      <Paperclip className="w-5 h-5 text-mediumGray" />
-                    </button>
-                  
-                    <button
-                      onClick={() => imageInputRef.current?.click()}
-                      className="p-2 hover:bg-lightGray rounded-lg transition-colors"
-                      title="Attach Image"
-                      aria-label="Attach image to message"
-                    >
-                      <Image className="w-5 h-5 text-mediumGray" />
-                    </button>
-                  
-                    <div className="flex-1 relative">
-                      <input
-                        type="text"
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                        placeholder="Type a message..."
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                      />
-                    </div>
-                    
-                    <button
-                      onClick={handleSendMessage}
-                      disabled={!newMessage.trim() || isSending}
-                      className="p-2 bg-primary text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      title="Send Message"
-                      aria-label="Send message"
-                    >
-                      <Send className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="flex-1 flex items-center justify-center">
-                <div className="text-center p-4">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Users className="w-8 h-8 text-primary" />
-                  </div>
-                  <h3 className="text-lg font-medium text-darkGray mb-2">No chat selected</h3>
-                  <p className="text-mediumGray text-sm">Select a conversation to start messaging</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Desktop Layout - Side by side */}
-        <div className="hidden lg:flex h-full bg-lightGray w-full">
-          {/* Desktop Sidebar */}
-        <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-            {/* Desktop Header */}
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center justify-between mb-4">
-              <h1 className="text-xl font-semibold text-darkGray">Messages</h1>
-              <button 
-                className="p-2 hover:bg-lightGray rounded-lg transition-colors"
-                title="Chat Settings"
-                aria-label="Open chat settings"
-              >
-                <Settings className="w-5 h-5 text-mediumGray" />
-              </button>
-            </div>
-            
-              {/* Desktop Search */}
+        {/* --- LEFT SIDEBAR (List) --- */}
+        <div className={`
+            flex-col bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700
+            w-full md:w-80 flex-shrink-0
+            ${activeRoom ? 'hidden md:flex' : 'flex'}
+        `}>
+          {/* Header */}
+          <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <h2 className="text-lg font-bold text-darkGray dark:text-white mb-3">Messages</h2>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-mediumGray" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search conversations..."
+                placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full pl-9 pr-4 py-2.5 bg-gray-100 dark:bg-gray-700 border-none rounded-lg text-sm focus:ring-1 focus:ring-primary outline-none transition-all placeholder-gray-400"
               />
             </div>
           </div>
 
-            {/* Desktop Chat Rooms List */}
-          <div className="flex-1 overflow-y-auto">
-                {filteredRooms.map((room) => (
-                  <div
-                    key={room.id}
-                onClick={() => setActiveRoom(room.id)}
-                className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-lightGray transition-colors ${
-                  activeRoom === room.id ? 'bg-primary/10 border-l-4 border-l-primary' : ''
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="relative">
-                    <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-                      <Users className="w-6 h-6 text-white" />
+          {/* Rooms List */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
+            {filteredRooms.length === 0 ? (
+              <div className="p-8 text-center text-gray-400 text-sm">No chats found.</div>
+            ) : (
+              filteredRooms.map(room => (
+                <div
+                  key={room.id}
+                  onClick={() => setActiveRoom(room.id)}
+                  className={`
+                            px-4 py-4 cursor-pointer transition-colors border-b border-gray-50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50
+                            ${activeRoom === room.id ? 'bg-blue-50/60 dark:bg-gray-700/60' : ''}
+                        `}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex-shrink-0">
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${activeRoom === room.id ? 'bg-primary text-white' : 'bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-300'}`}>
+                        {room.avatar ? <img src={room.avatar} alt={room.name} className="w-full h-full rounded-full object-cover" /> : <Users size={20} />}
+                      </div>
+                      {room.isOnline && <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>}
                     </div>
-                    {room.isOnline && (
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-secondary rounded-full border-2 border-white"></div>
-                    )}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-medium text-darkGray truncate">{room.name}</h3>
-                      {room.lastMessage && (
-                        <span className="text-xs text-mediumGray">
-                          {formatTime(room.lastMessage.timestamp)}
-                        </span>
-                      )}
-                    </div>
-                    
-                    <div className="flex items-center justify-between mt-1">
-                      <p className="text-sm text-mediumGray truncate">
-                        {room.lastMessage ? room.lastMessage.content : 'No messages yet'}
-                      </p>
-                      {room.unreadCount > 0 && (
-                        <span className="bg-primary text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
-                          {room.unreadCount}
-                        </span>
-                      )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-baseline mb-1">
+                        <h3 className={`font-semibold truncate ${activeRoom === room.id ? 'text-primary' : 'text-gray-900 dark:text-white'}`}>
+                          {room.name}
+                        </h3>
+                        {room.lastMessage && <span className="text-[11px] text-gray-400 font-medium">{formatTime(room.lastMessage.timestamp)}</span>}
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <p className={`text-xs truncate max-w-[140px] ${room.unreadCount > 0 ? 'text-gray-800 dark:text-gray-200 font-medium' : 'text-gray-500'}`}>
+                          {room.lastMessage?.content || <span className="italic">No messages yet</span>}
+                        </p>
+                        {room.unreadCount > 0 && <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{room.unreadCount}</span>}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
-          {/* Desktop Main Chat Area */}
-        <div className="flex-1 flex flex-col">
+        {/* --- RIGHT AREA (Chat) --- */}
+        <div className={`
+            flex-1 flex-col bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700 relative
+            ${!activeRoom ? 'hidden md:flex' : 'flex'}
+        `}>
           {activeRoomData ? (
             <>
-                {/* Desktop Chat Header */}
-              <div className="bg-white border-b border-gray-200 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="relative">
-                      <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                        <Users className="w-5 h-5 text-white" />
-                      </div>
-                      {activeRoomData.isOnline && (
-                        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-secondary rounded-full border-2 border-white"></div>
-                      )}
-                  </div>
-                    
-                  <div>
-                      <h2 className="font-semibold text-darkGray">{activeRoomData.name}</h2>
-                      <p className="text-sm text-mediumGray">
-                        {activeRoomData.members.length} members
+              {/* Chat Topbar - Seamlessly Integrated */}
+              <div className="h-16 px-6 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between flex-shrink-0">
+                <div className="flex items-center gap-4">
+                  <button onClick={() => setActiveRoom('')} className="md:hidden text-gray-500 hover:text-darkGray">
+                    <ArrowLeft size={24} />
+                  </button>
+
+                  <div className="flex flex-col">
+                    <h3 className="font-bold text-gray-900 dark:text-white text-base">{activeRoomData.name}</h3>
+                    <p className="text-xs text-green-500 flex items-center gap-1.5 font-medium">
+                      <span className="w-2 h-2 rounded-full bg-green-500"></span> Online
                     </p>
                   </div>
                 </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <button 
-                      className="p-2 hover:bg-lightGray rounded-lg transition-colors"
-                      title="Voice Call"
-                      aria-label="Start voice call"
-                    >
-                      <Phone className="w-5 h-5 text-mediumGray" />
-                    </button>
-                    <button 
-                      className="p-2 hover:bg-lightGray rounded-lg transition-colors"
-                      title="Video Call"
-                      aria-label="Start video call"
-                    >
-                      <Video className="w-5 h-5 text-mediumGray" />
-                    </button>
-                    <button 
-                      className="p-2 hover:bg-lightGray rounded-lg transition-colors"
-                      title="More Options"
-                      aria-label="Open more options"
-                    >
-                      <MoreVertical className="w-5 h-5 text-mediumGray" />
-                    </button>
-                  </div>
+                <div className="flex items-center gap-1 text-gray-400">
+                  <button className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"><Phone size={20} /></button>
+                  <button className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"><Video size={20} /></button>
+                  <button className="p-2.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"><MoreVertical size={20} /></button>
                 </div>
               </div>
 
-                {/* Desktop Messages Area */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.map((message, index) => {
-                  const isCurrentUser = message.senderId === (session?.user as any)?.id;
-                  const showDate = index === 0 || 
-                    formatDate(message.timestamp) !== formatDate(messages[index - 1].timestamp);
-                  
+              {/* Messages Area */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-white dark:bg-gray-800">
+                {messages.map((msg, i) => {
+                  const isMe = msg.senderId === (session?.user as any)?.id;
+                  const showDate = i === 0 || formatDate(msg.timestamp) !== formatDate(messages[i - 1].timestamp);
+
                   return (
-                    <div key={message.id}>
+                    <div key={msg.id}>
                       {showDate && (
-                        <div className="text-center my-4">
-                          <span className="bg-lightGray text-mediumGray text-sm px-3 py-1 rounded-full">
-                            {formatDate(message.timestamp)}
+                        <div className="flex justify-center my-6">
+                          <span className="text-[11px] font-bold text-gray-400 px-3 py-1 bg-gray-50 dark:bg-gray-700 rounded-full uppercase tracking-wide">
+                            {formatDate(msg.timestamp)}
                           </span>
                         </div>
                       )}
-                      
-                      <div className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`flex space-x-2 max-w-md ${isCurrentUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                          {!isCurrentUser && (
-                            <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center flex-shrink-0">
-                              <span className="text-white text-sm font-medium">
-                                {message.senderName.charAt(0).toUpperCase()}
-                              </span>
-                  </div>
-                        )}
-                        
-                          <div className={`rounded-lg px-4 py-2 ${
-                            isCurrentUser 
-                              ? 'bg-primary text-white' 
-                              : 'bg-white border border-gray-200 text-darkGray'
-                          }`}>
-                            {!isCurrentUser && (
-                              <p className="text-xs font-medium mb-1 opacity-70">
-                                {message.senderName}
-                              </p>
-                            )}
-                            
-                            {message.type === 'image' && message.fileUrl ? (
-                              <div className="space-y-2">
-                            <img
-                              src={message.fileUrl}
-                                  alt={message.fileName || 'Image'} 
-                                  className="max-w-xs max-h-64 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                                  onClick={() => window.open(message.fileUrl, '_blank')}
-                            />
-                                <p className="text-sm text-gray-600">{message.fileName}</p>
-                                  </div>
-                            ) : message.type === 'file' && message.fileUrl ? (
-                              <div className="flex items-center space-x-2 p-2 bg-gray-100 rounded-lg">
-                                <Paperclip className="w-4 h-4 text-gray-500" />
-                                <a 
-                                  href={message.fileUrl} 
-                                  download={message.fileName}
-                                  className="text-sm text-blue-600 hover:underline"
-                                >
-                                  {message.fileName}
-                                </a>
-                          </div>
-                            ) : (
-                              <p className="text-sm">{message.content}</p>
-                        )}
-                      
-                              <div className="flex items-center justify-between mt-1 space-x-2">
-                                <p className={`text-xs ${
-                                  isCurrentUser ? 'text-white/70' : 'text-mediumGray'
-                                }`}>
-                                  {formatTime(message.timestamp)}
-                                  {message.isEdited && ' · edited'}
-                                </p>
-                                {isCurrentUser && (
-                                  <div className="flex items-center space-x-1 text-xs">
-                                    {editingMessageId === message.id ? (
-                                      <button
-                                        onClick={cancelEditing}
-                                        className="underline text-red-200"
-                                      >
-                                        Cancel
-                                      </button>
-                                    ) : (
-                                      <>
-                                        <button
-                                          onClick={() => startEditingMessage(message)}
-                                          className="underline"
-                                        >
-                                          Edit
-                                        </button>
-                                        <button
-                                          onClick={() => handleDeleteMessage(message.id)}
-                                          className="underline text-red-200"
-                                        >
-                                          Delete
-                                        </button>
-                                      </>
-                                    )}
-                                  </div>
-                                )}
+
+                      <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`flex max-w-[80%] md:max-w-[60%] gap-3 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
+                          {!isMe && (
+                            <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 flex-shrink-0 flex items-center justify-center text-xs font-bold border border-indigo-200 dark:border-indigo-800/50">
+                              {msg.senderName.charAt(0)}
+                            </div>
+                          )}
+
+                          <div className={`
+                                            p-4 rounded-2xl text-sm leading-relaxed relative group shadow-sm
+                                            ${isMe
+                              ? 'bg-primary text-white rounded-tr-sm'
+                              : 'bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-100 dark:border-gray-600 rounded-tl-sm'
+                            }
+                                        `}>
+                            {/* File/Image */}
+                            {msg.type === 'image' && msg.fileUrl ? (
+                              <img src={msg.fileUrl} alt="attachment" className="rounded-lg max-w-full mb-2 cursor-pointer hover:opacity-95" onClick={() => window.open(msg.fileUrl!, '_blank')} />
+                            ) : msg.type === 'file' ? (
+                              <div className={`flex items-center gap-2 p-3 rounded-lg mb-1 ${isMe ? 'bg-white/20' : 'bg-white border border-gray-200'}`}>
+                                <Paperclip size={16} /> <a href={msg.fileUrl} download={msg.fileName} className="underline decoration-dotted font-medium truncate">{msg.fileName}</a>
                               </div>
+                            ) : (
+                              msg.content
+                            )}
+
+                            <div className={`flex items-center justify-end gap-1 mt-1 text-[10px] ${isMe ? 'opacity-70 text-white' : 'text-gray-400'}`}>
+                              {formatTime(msg.timestamp)}
+                              {msg.isEdited && <span>(edited)</span>}
+                            </div>
                           </div>
-                      </div>
+                        </div>
                       </div>
                     </div>
                   );
@@ -863,84 +325,54 @@ export default function ChatPage() {
                 <div ref={messagesEndRef} />
               </div>
 
-                {/* Desktop Message Input */}
-              <div className="bg-white border-t border-gray-200 p-4">
-                <div className="flex items-center space-x-2">
-                    <button 
-                      onClick={() => fileInputRef.current?.click()}
-                      className="p-2 hover:bg-lightGray rounded-lg transition-colors"
-                      title="Attach File"
-                      aria-label="Attach file to message"
-                    >
-                      <Paperclip className="w-5 h-5 text-mediumGray" />
-                    </button>
-                  
-                    <button
-                      onClick={() => imageInputRef.current?.click()}
-                      className="p-2 hover:bg-lightGray rounded-lg transition-colors"
-                      title="Attach Image"
-                      aria-label="Attach image to message"
-                    >
-                      <Image className="w-5 h-5 text-mediumGray" />
-                    </button>
-                  
-                  <div className="flex-1 relative">
-                  <input
-                    type="text"
+              {/* Input Area */}
+              <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 sticky bottom-0 z-20">
+                <div className="flex items-end gap-3 max-w-5xl mx-auto bg-gray-50 dark:bg-gray-700/30 p-2 pl-4 rounded-[26px] border border-gray-200 dark:border-gray-700 focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
+                  <textarea
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="Type a message..."
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                    />
-                  </div>
-                  
+                    onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
+                    placeholder="Type a message..."
+                    rows={1}
+                    className="flex-1 bg-transparent border-none outline-none resize-none py-3 text-sm text-darkGray dark:text-white placeholder-gray-400 max-h-32"
+                    style={{ minHeight: '44px' }}
+                  />
+                  <div className="flex items-center gap-1 pr-2 pb-2">
+                    <input ref={fileInputRef} type="file" onChange={handleFileUpload} className="hidden" />
+                    <input ref={imageInputRef} type="file" onChange={handleFileUpload} className="hidden" accept="image/*" />
+
+                    <button onClick={() => fileInputRef.current?.click()} className="p-2 text-gray-400 hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-colors"><Paperclip size={20} /></button>
+                    <button onClick={() => imageInputRef.current?.click()} className="p-2 text-gray-400 hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-colors"><Image size={20} /></button>
+
                     <button
                       onClick={handleSendMessage}
                       disabled={!newMessage.trim() || isSending}
-                      className="p-2 bg-primary text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      title={editingMessageId ? 'Update message' : 'Send message'}
-                      aria-label={editingMessageId ? 'Update message' : 'Send message'}
+                      className={`p-2.5 rounded-full ml-1 transition-all flex item-center justify-center ${newMessage.trim() ? 'bg-primary text-white shadow-lg shadow-blue-500/30 hover:scale-105' : 'bg-gray-200 text-gray-400 dark:bg-gray-600'}`}
                     >
-                      <Send className="w-5 h-5" />
+                      <Send size={18} className={isSending ? 'animate-pulse' : ''} />
                     </button>
+                  </div>
                 </div>
               </div>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center">
-                  <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Users className="w-10 h-10 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-medium text-darkGray mb-2">No chat selected</h3>
-                <p className="text-mediumGray">Select a conversation to start messaging</p>
+            <div className="flex-1 flex flex-col items-center justify-center p-8 bg-white dark:bg-gray-800">
+              <div className="w-24 h-24 bg-gray-50 dark:bg-gray-700 rounded-full flex items-center justify-center mb-6">
+                <Users size={40} className="text-gray-300 dark:text-gray-500" />
               </div>
+              <h3 className="text-lg font-bold text-darkGray dark:text-white mb-2">Select a Conversation</h3>
+              <p className="text-gray-400 text-center max-w-xs text-sm">Choose from your contacts to start messaging.</p>
             </div>
           )}
-          </div>
         </div>
       </div>
 
-      {/* Hidden file inputs */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        onChange={handleFileUpload}
-        className="hidden"
-        accept=".pdf,.doc,.docx,.txt,.zip,.rar"
-        title="Select file to upload"
-        aria-label="Select file to upload"
-      />
-      <input
-        ref={imageInputRef}
-        type="file"
-        onChange={handleFileUpload}
-        className="hidden"
-        accept="image/*"
-        title="Select image to upload"
-        aria-label="Select image to upload"
-      />
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
+      `}</style>
     </Layout>
   );
 }

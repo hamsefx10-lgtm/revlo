@@ -1,18 +1,44 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Layout from '../../components/layouts/Layout';
 import {
   ShoppingCart, Plus, Search, Filter,
-  FileText, CheckCircle, Clock, ArrowUpRight
+  FileText, CheckCircle, Clock, ArrowUpRight, Loader2, AlertCircle
 } from 'lucide-react';
+import Toast from '../../components/common/Toast';
 
 export default function SalesPage() {
-  const [sales, setSales] = useState<any[]>([
-    { id: '1', invoice: 'INV-1001', customer: 'Ahmed Ali', date: '2024-01-14', total: 15000, paid: 10000, status: 'PARTIAL' },
-    { id: '2', invoice: 'INV-1002', customer: 'Hotel Subeer', date: '2024-01-15', total: 5000, paid: 5000, status: 'PAID' },
-  ]);
+  const [sales, setSales] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const fetchSales = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/sales');
+      if (!response.ok) throw new Error('Failed to fetch sales');
+      const data = await response.json();
+      setSales(data.sales || []);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Error fetching sales');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSales();
+  }, []);
+
+  // Filter sales based on search term
+  const filteredSales = sales.filter(sale =>
+    (sale.description && sale.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (sale.customer && sale.customer.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   return (
     <Layout>
@@ -29,7 +55,7 @@ export default function SalesPage() {
             </h1>
             <p className="text-gray-500 font-medium text-sm mt-1 ml-14">Track sales, payments, and customer balances.</p>
           </div>
-          <Link href="/sales/new" className="bg-primary hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg hover:translate-y-[-2px] transition-all">
+          <Link href="/sales/add" className="bg-primary hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg hover:translate-y-[-2px] transition-all">
             <Plus size={20} strokeWidth={3} /> New Sale
           </Link>
         </div>
@@ -40,52 +66,64 @@ export default function SalesPage() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input
               type="text"
-              placeholder="Search invoice #, customer name..."
-              className="w-full pl-12 pr-4 py-3 bg-transparent text-sm font-medium focus:outline-none"
+              placeholder="Search description, customer name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 bg-transparent text-sm font-medium focus:outline-none text-gray-900 dark:text-white"
             />
           </div>
         </div>
 
+        {/* ERROR STATE */}
+        {error && (
+          <div className="mx-4 md:mx-0 bg-red-50 text-red-600 p-4 rounded-xl flex items-center gap-2">
+            <AlertCircle size={20} />
+            <p>{error}</p>
+          </div>
+        )}
+
         {/* SALES TABLE */}
         <div className="mx-4 md:mx-0 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-800">
-              <tr>
-                <th className="px-6 py-4 font-bold text-gray-400 uppercase tracking-wider text-xs">Invoice</th>
-                <th className="px-6 py-4 font-bold text-gray-400 uppercase tracking-wider text-xs">Date</th>
-                <th className="px-6 py-4 font-bold text-gray-400 uppercase tracking-wider text-xs">Customer</th>
-                <th className="px-6 py-4 font-bold text-gray-400 uppercase tracking-wider text-xs text-right">Total</th>
-                <th className="px-6 py-4 font-bold text-gray-400 uppercase tracking-wider text-xs text-right">Paid</th>
-                <th className="px-6 py-4 font-bold text-gray-400 uppercase tracking-wider text-xs text-right">Balance</th>
-                <th className="px-6 py-4 font-bold text-gray-400 uppercase tracking-wider text-xs text-center">Status</th>
-                <th className="px-6 py-4 font-bold text-gray-400 uppercase tracking-wider text-xs text-center">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {sales.map(sale => (
-                <tr key={sale.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
-                  <td className="px-6 py-4 font-bold font-mono text-gray-900 dark:text-white">{sale.invoice}</td>
-                  <td className="px-6 py-4 text-gray-500">{sale.date}</td>
-                  <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{sale.customer}</td>
-                  <td className="px-6 py-4 text-right font-bold text-gray-900 dark:text-white">{sale.total.toLocaleString()}</td>
-                  <td className="px-6 py-4 text-right font-medium text-green-600">{sale.paid.toLocaleString()}</td>
-                  <td className="px-6 py-4 text-right font-medium text-red-500">{(sale.total - sale.paid).toLocaleString()}</td>
-                  <td className="px-6 py-4 text-center">
-                    <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase ${sale.status === 'PAID' ? 'bg-green-100 text-green-700' :
-                        sale.status === 'PARTIAL' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
-                      }`}>
-                      {sale.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <Link href={`/sales/${sale.id}`} className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
-                      View <ArrowUpRight size={12} />
-                    </Link>
-                  </td>
+          {loading ? (
+            <div className="flex justify-center items-center py-20">
+              <Loader2 className="animate-spin text-primary" size={32} />
+            </div>
+          ) : filteredSales.length === 0 ? (
+            <div className="text-center py-20 text-gray-500">
+              <ShoppingCart size={48} className="mx-auto mb-4 opacity-20" />
+              <p className="text-lg font-medium">No sales found</p>
+              <p className="text-sm">Create a new sale to get started</p>
+            </div>
+          ) : (
+            <table className="w-full text-left text-sm">
+              <thead className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-800">
+                <tr>
+                  <th className="px-6 py-4 font-bold text-gray-400 uppercase tracking-wider text-xs">Description</th>
+                  <th className="px-6 py-4 font-bold text-gray-400 uppercase tracking-wider text-xs">Date</th>
+                  <th className="px-6 py-4 font-bold text-gray-400 uppercase tracking-wider text-xs">Customer</th>
+                  <th className="px-6 py-4 font-bold text-gray-400 uppercase tracking-wider text-xs text-right">Amount</th>
+                  <th className="px-6 py-4 font-bold text-gray-400 uppercase tracking-wider text-xs text-center">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                {filteredSales.map(sale => (
+                  <tr key={sale.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{sale.description || 'Sale'}</td>
+                    <td className="px-6 py-4 text-gray-500">
+                      {new Date(sale.transactionDate).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{sale.customer ? sale.customer.name : 'Walk-in Customer'}</td>
+                    <td className="px-6 py-4 text-right font-bold text-gray-900 dark:text-white">{Number(sale.amount).toLocaleString()}</td>
+                    <td className="px-6 py-4 text-center">
+                      <Link href={`/sales/${sale.id}`} className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
+                        View <ArrowUpRight size={12} />
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
       </div>
