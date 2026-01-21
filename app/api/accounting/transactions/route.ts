@@ -178,13 +178,22 @@ export async function POST(request: Request) {
       },
     });
 
-    // Cusboonaysii balance-ka account-ka
-    if (type === 'INCOME' || type === 'DEBT_REPAID') {
+    // Cusboonaysii balance-ka account-ka (Update account balance based on transaction type)
+    // 
+    // Accounting Logic:
+    // - INCOME: Money coming IN from customer → Balance INCREASES
+    // - DEBT_REPAID: Customer paying back their debt → Balance INCREASES
+    // - DEBT_TAKEN: Company taking a loan (money received) → Balance INCREASES
+    // - EXPENSE: Money going OUT for expenses → Balance DECREASES
+    //
+    if (type === 'INCOME' || type === 'DEBT_REPAID' || type === 'DEBT_TAKEN') {
+      // Money flowing INTO the account (INCREASES balance)
       await prisma.account.update({
         where: { id: primaryAccount.id },
         data: { balance: primaryAccount.balance + Math.abs(amount) },
       });
-    } else if (type === 'EXPENSE' || type === 'DEBT_TAKEN') {
+    } else if (type === 'EXPENSE') {
+      // Money flowing OUT of the account (DECREASES balance)
       await prisma.account.update({
         where: { id: primaryAccount.id },
         data: { balance: primaryAccount.balance - Math.abs(amount) },

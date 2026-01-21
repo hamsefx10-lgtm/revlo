@@ -630,14 +630,16 @@ export default function DailyReportPage() {
 
           {/* 3. INCOME SECTION (Full Width) */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-            <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-green-50/30">
-              <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                <TrendingUp size={18} className="text-green-600" /> Income Breakdown
-              </h3>
-              <span className="text-sm font-bold text-green-700 bg-green-100 px-2 py-1 rounded-lg">
-                +{report.income.toLocaleString()} ETB
-              </span>
-            </div>
+            <Link href="/shop/accounting" className="block">
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-green-50/30 hover:bg-green-100/50 transition-colors cursor-pointer group">
+                <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2 group-hover:text-green-700 transition-colors">
+                  <TrendingUp size={18} className="text-green-600" /> Income Breakdown
+                </h3>
+                <span className="text-sm font-bold text-green-700 bg-green-100 px-2 py-1 rounded-lg group-hover:bg-green-200 transition-colors">
+                  +{report.income.toLocaleString()} ETB
+                </span>
+              </div>
+            </Link>
             {report.incomeTransactions.length === 0 ? (
               <div className="p-8 text-center text-gray-400 italic">No income recorded for this day.</div>
             ) : (
@@ -667,14 +669,16 @@ export default function DailyReportPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* 4. PROJECT EXPENSES */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 h-full flex flex-col">
-              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-purple-50/30">
-                <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                  <HardDrive size={18} className="text-purple-600" /> Project Expenses
-                </h3>
-                <span className="text-xs font-semibold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">
-                  {report.projectExpenses.length} Items
-                </span>
-              </div>
+              <Link href="/shop/accounting">
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-purple-50/30 hover:bg-purple-100/50 transition-colors cursor-pointer group">
+                  <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2 group-hover:text-purple-700 transition-colors">
+                    <HardDrive size={18} className="text-purple-600" /> Project Expenses
+                  </h3>
+                  <span className="text-xs font-semibold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full group-hover:bg-purple-200 transition-colors">
+                    {report.projectExpenses.length} Items
+                  </span>
+                </div>
+              </Link>
               {report.projectExpenses.length === 0 ? (
                 <div className="p-8 text-center text-gray-400 italic flex-1 flex items-center justify-center">No project expenses.</div>
               ) : (
@@ -706,14 +710,16 @@ export default function DailyReportPage() {
 
             {/* 5. COMPANY EXPENSES */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 h-full flex flex-col">
-              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-blue-50/30">
-                <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                  <Receipt size={18} className="text-blue-600" /> Company Expenses
-                </h3>
-                <span className="text-xs font-semibold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">
-                  {report.companyExpenses.length} Items
-                </span>
-              </div>
+              <Link href="/shop/accounting">
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-blue-50/30 hover:bg-blue-100/50 transition-colors cursor-pointer group">
+                  <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2 group-hover:text-blue-700 transition-colors">
+                    <Receipt size={18} className="text-blue-600" /> Company Expenses
+                  </h3>
+                  <span className="text-xs font-semibold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full group-hover:bg-blue-200 transition-colors">
+                    {report.companyExpenses.length} Items
+                  </span>
+                </div>
+              </Link>
               {report.companyExpenses.length === 0 ? (
                 <div className="p-8 text-center text-gray-400 italic flex-1 flex items-center justify-center">No company expenses.</div>
               ) : (

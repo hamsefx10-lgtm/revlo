@@ -45,6 +45,12 @@ model User {
   PendingExpense PendingExpense[]
   telegramLinks  TelegramUserLink[]
   
+  // Security / Trusted Devices
+  trustedDevices TrustedDevice[]
+  twoFASecret    String?          // For TOTP if we implement later, or just general secret
+  otpCode        String?          // Current email OTP
+  otpExpires     DateTime?        // When OTP expires
+
   // Shop Management Relations
   products       Product[]       @relation("UserProducts")
   shopClients    ShopClient[]    @relation("UserShopClients")
@@ -57,6 +63,18 @@ model User {
   inventoryItems InventoryItem[]
 
   @@map("users")
+}
+
+model TrustedDevice {
+  id        String   @id @default(uuid()) @map("_id")
+  userId    String
+  token     String   @unique // The cookie value
+  userAgent String?
+  lastUsed  DateTime @default(now())
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("trusted_devices")
 }
 
 model VerificationToken {

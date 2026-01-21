@@ -321,7 +321,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             {/* Top: Logo, Close Button */}
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-800/50">
               <span className="text-2xl font-black tracking-tight select-none text-gray-900 dark:text-white">
-                Revl<span className="text-blue-600 dark:text-blue-500">o</span>.
+                Revl<span className="text-blue-600 dark:text-green-500">o</span>
               </span>
               <button
                 onClick={() => setMobileOpen(false)}

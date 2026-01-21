@@ -1,7 +1,7 @@
-// app/expenses/[id]/page.tsx - Modern Minimalist Expense Details (Payment Voucher Style) V13
+// app/expenses/[id]/page.tsx - Modern Minimalist Expense Details (Payment Voucher Style) V14
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import Layout from '@/components/layouts/Layout';
@@ -10,8 +10,10 @@ import { emitExpenseChange } from '@/lib/client-events';
 import {
   ArrowLeft, Edit, Trash2, Printer, Download,
   User, CheckCircle, AlertCircle, Building2, Briefcase, Store,
-  Package, LayoutGrid
+  Package, LayoutGrid, FileDown
 } from 'lucide-react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import Toast from '@/components/common/Toast';
 
 interface Expense {
@@ -42,6 +44,8 @@ export default function ExpenseDetailsPage() {
   const [expense, setExpense] = useState<Expense | null>(null);
   const [loading, setLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [generatingPDF, setGeneratingPDF] = useState(false);
+  const voucherRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (id) {
@@ -79,6 +83,39 @@ export default function ExpenseDetailsPage() {
     }
   };
 
+  const handleDownloadPDF = async () => {
+    if (!voucherRef.current || !expense) return;
+    setGeneratingPDF(true);
+    try {
+      const element = voucherRef.current;
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 10;
+
+      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      pdf.save(`expense-voucher-${expense.id.split('-')[0]}.pdf`);
+      setToastMessage({ message: 'PDF downloaded successfully!', type: 'success' });
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      setToastMessage({ message: 'Failed to generate PDF', type: 'error' });
+    } finally {
+      setGeneratingPDF(false);
+    }
+  };
+
   if (loading) return <Layout><div className="flex h-[80vh] items-center justify-center text-gray-400">Loading details...</div></Layout>;
 
   if (!expense) return (
@@ -103,17 +140,50 @@ export default function ExpenseDetailsPage() {
           <Link href="/expenses" className="flex items-center gap-2 text-gray-500 hover:text-gray-900 dark:hover:text-gray-200 transition-colors">
             <ArrowLeft size={18} /> <span className="text-sm font-medium">Back to Expenses</span>
           </Link>
-          <div className="flex gap-2">
-            <button onClick={() => window.print()} className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-700 rounded-lg"><Printer size={18} /></button>
-            <button onClick={() => router.push(`/expenses/edit/${expense.id}`)} className="p-2 text-gray-400 hover:text-blue-600 transition-colors border border-transparent hover:border-blue-100 rounded-lg"><Edit size={18} /></button>
-            <button onClick={handleDelete} className="p-2 text-gray-400 hover:text-red-600 transition-colors border border-transparent hover:border-red-100 rounded-lg"><Trash2 size={18} /></button>
+          <div className="flex gap-2 print:hidden">
+            <button onClick={handleDownloadPDF} disabled={generatingPDF} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center gap-2 text-sm font-bold disabled:opacity-50">
+              {generatingPDF ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Generating...</> : <><FileDown size={16} /> Download PDF</>}
+            </button>
+            <button onClick={() => window.print()} className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-700 rounded-lg" title="Print Voucher"><Printer size={18} /></button>
+            <button onClick={() => router.push(`/expenses/edit/${expense.id}`)} className="p-2 text-gray-400 hover:text-blue-600 transition-colors border border-transparent hover:border-blue-100 rounded-lg" title="Edit Expense"><Edit size={18} /></button>
+            <button onClick={handleDelete} className="p-2 text-gray-400 hover:text-red-600 transition-colors border border-transparent hover:border-red-100 rounded-lg" title="Delete Expense"><Trash2 size={18} /></button>
           </div>
         </div>
 
         {/* VOUCHER CARD */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden relative print:shadow-none print:border min-h-[600px] flex flex-col">
+        <div ref={voucherRef} className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden relative print:shadow-none print:border min-h-[600px] flex flex-col">
           {/* Status Banner */}
           <div className={`h-2 w-full ${expense.approved ? 'bg-green-500' : 'bg-amber-400'}`}></div>
+
+          {/* PDF-ONLY: Company Header */}
+          <div className="hidden print:block px-14 pt-8 pb-6 border-b-2 border-gray-200">
+            <div className="flex justify-between items-start">
+              <div>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-black text-xl">RV</span>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-black text-gray-900">Revlo Business</h2>
+                    <p className="text-xs text-gray-500 font-medium">Financial Management System</p>
+                  </div>
+                </div>
+                <div className="text-sm text-gray-600 space-y-1">
+                  <p className="font-medium">📍 Addis Ababa, Ethiopia</p>
+                  <p>📞 +251 11 123 4567 | ✉️ info@revlo.business</p>
+                  <p className="text-xs text-gray-500">TIN: 0012345678 | Trade License: BW/AA/2024/001</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="bg-gray-900 text-white px-4 py-2 rounded-lg mb-2">
+                  <p className="text-xs font-bold uppercase tracking-wider">Payment Voucher</p>
+                  <p className="text-lg font-black">#{expense.id.split('-')[0].toUpperCase()}</p>
+                </div>
+                <p className="text-xs text-gray-500">Issue Date: {new Date().toLocaleDateString()}</p>
+                <p className="text-xs text-gray-500">Print Time: {new Date().toLocaleTimeString()}</p>
+              </div>
+            </div>
+          </div>
 
           {/* Watermark for Approved */}
           {expense.approved && (
@@ -252,6 +322,14 @@ export default function ExpenseDetailsPage() {
                         </tr>
                       ))}
                     </tbody>
+                    <tfoot className="bg-gray-100 dark:bg-gray-900">
+                      <tr>
+                        <td colSpan={3} className="px-5 py-4 text-right font-bold text-gray-700 dark:text-gray-300 uppercase text-sm">Grand Total</td>
+                        <td className="px-5 py-4 text-right font-black text-xl text-gray-900 dark:text-white bg-gray-200 dark:bg-gray-800 font-mono">
+                          {expense.materials.reduce((sum: number, m: any) => sum + (Number(m.qty) * Number(m.price)), 0).toLocaleString()} ETB
+                        </td>
+                      </tr>
+                    </tfoot>
                   </table>
                 </div>
               </div>
@@ -282,6 +360,67 @@ export default function ExpenseDetailsPage() {
               </div>
             )}
 
+            {/* PDF-ONLY: Signature Section */}
+            <div className="hidden print:block mt-12 pt-8 border-t-2 border-dashed border-gray-200">
+              <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-6">Authorization & Acknowledgment</h3>
+              <div className="grid grid-cols-3 gap-8">
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-8">Prepared By</p>
+                  <div className="border-t-2 border-gray-900 pt-2">
+                    <p className="text-sm font-bold text-gray-900">{expense.user?.fullName || 'System User'}</p>
+                    <p className="text-xs text-gray-500">Finance Department</p>
+                    <p className="text-xs text-gray-400 mt-1">Date: {new Date(expense.date).toLocaleDateString()}</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-8">Approved By</p>
+                  <div className="border-t-2 border-gray-900 pt-2">
+                    <p className="text-sm font-bold text-gray-900">_____________________</p>
+                    <p className="text-xs text-gray-500">Manager / Supervisor</p>
+                    <p className="text-xs text-gray-400 mt-1">Date: _______________</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-8">Received By</p>
+                  <div className="border-t-2 border-gray-900 pt-2">
+                    <p className="text-sm font-bold text-gray-900">_____________________</p>
+                    <p className="text-xs text-gray-500">Payee Signature</p>
+                    <p className="text-xs text-gray-400 mt-1">Date: _______________</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* PDF-ONLY: Terms & Bank Details Footer */}
+            <div className="hidden print:block mt-12 pt-8 border-t-2 border-gray-200 bg-gray-50 -mx-14 px-14 py-8">
+              <div className="grid grid-cols-2 gap-8 mb-6">
+                <div>
+                  <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Payment Information</h4>
+                  <div className="text-xs text-gray-600 space-y-1">
+                    <p><span className="font-semibold">Bank:</span> Commercial Bank of Ethiopia</p>
+                    <p><span className="font-semibold">Account Name:</span> Revlo Business Solutions</p>
+                    <p><span className="font-semibold">Account Number:</span> 1000123456789</p>
+                    <p><span className="font-semibold">Branch:</span> Bole Branch, Addis Ababa</p>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Terms & Conditions</h4>
+                  <div className="text-xs text-gray-600 space-y-1">
+                    <p>• This voucher is valid for 30 days from the issue date</p>
+                    <p>• Payment must be verified before processing</p>
+                    <p>• All disputes must be raised within 7 business days</p>
+                    <p>• This is a computer-generated document</p>
+                  </div>
+                </div>
+              </div>
+              <div className="text-center pt-4 border-t border-gray-300">
+                <p className="text-xs text-gray-500">
+                  For inquiries, contact us at <span className="font-semibold">+251 11 123 4567</span> or <span className="font-semibold">support@revlo.business</span>
+                </p>
+                <p className="text-xs text-gray-400 mt-1">© {new Date().getFullYear()} Revlo Business. All rights reserved.</p>
+              </div>
+            </div>
+
             {/* Meta Footer */}
             <div className="mt-auto pt-10 flex justify-between items-end">
               <div className="text-[10px] text-gray-400 font-mono uppercase tracking-widest">
@@ -298,6 +437,92 @@ export default function ExpenseDetailsPage() {
           </div>
         </div>
       </div>
+
+      {/* PRINT STYLES */}
+      <style jsx global>{`
+        @media print {
+          body {
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+          }
+          
+          .print\\:hidden {
+            display: none !important;
+          }
+          
+          .print\\:block {
+            display: block !important;
+          }
+          
+          @page {
+            size: A4;
+            margin: 10mm;
+          }
+          
+          /* Hide scrollbars and unnecessary elements */
+          ::-webkit-scrollbar {
+            display: none;
+          }
+          
+          /* Optimize voucher for print */
+          .max-w-6xl {
+            max-width: 100% !important;
+          }
+          
+          /* Remove rounded corners for print */
+          .rounded-2xl, .rounded-xl, .rounded-lg {
+            border-radius: 0 !important;
+          }
+          
+          /* Ensure proper page breaks */
+          .bg-white {
+            page-break-inside: avoid;
+          }
+          
+          /* Material table print optimization */
+          table {
+            page-break-inside: auto;
+          }
+          
+          tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+          }
+          
+          thead {
+            display: table-header-group;
+          }
+          
+          tfoot {
+            display: table-footer-group;
+          }
+          
+          /* Ensure borders and backgrounds print */
+          * {
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+          }
+          
+          /* Optimize spacing for print */
+          .p-10, .p-14 {
+            padding: 1.5rem !important;
+          }
+          
+          /* Ensure gradients print */
+          .bg-gradient-to-br {
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+          }
+          
+          /* Hide dark mode specific elements */
+          .dark\\:bg-gray-800,
+          .dark\\:bg-gray-900,
+          .dark\\:text-white {
+            background-color: white !important;
+            color: black !important;
+          }
+        }
+      `}</style>
     </Layout>
   );
 }

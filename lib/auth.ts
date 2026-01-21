@@ -70,6 +70,22 @@ export const authOptions = {
           throw new Error("Akoonkaagu waa la damiyay. Fadlan la xiriir maamulaha.");
         }
 
+        if (passwordMatch) {
+          // Check if device is trusted (Optional logging)
+          // Note: Full enforcement happens in Middleware/Layouts
+          // const { isCurrentDeviceTrusted } = await import('./security');
+
+          try {
+            const isTrusted = true; // Disabled for fix
+
+            if (!isTrusted) {
+              console.log("New Device Detected for user (TOTP Required for Sensitive Areas):", user.email);
+            }
+          } catch (error) {
+            console.error("Error in Trusted Device Check:", error);
+          }
+        }
+
         return {
           id: user.id,
           email: user.email,

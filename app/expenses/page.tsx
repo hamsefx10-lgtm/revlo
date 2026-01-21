@@ -235,12 +235,54 @@ export default function ExpensesPage() {
 
         {/* EXPANDED FILTERS PANEL */}
         {showFilters && (
-          <div className="mx-4 md:mx-0 bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm animate-in slide-in-from-top-2 shadow-lg z-10 relative">
-            <select value={approvalFilter} onChange={(e: any) => setApprovalFilter(e.target.value)} className="p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none focus:ring-2 ring-primary/20"><option value="all">Every Status</option><option value="approved">Approved</option><option value="pending">Pending</option></select>
-            <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none focus:ring-2 ring-primary/20"><option value="all">Every Category</option>{categories.map(c => <option key={c} value={c}>{c}</option>)}</select>
-            <div className="md:col-span-2 grid grid-cols-2 gap-2">
-              <input type="date" value={dateRange.start} onChange={(e) => setDateRange(p => ({ ...p, start: e.target.value }))} className="p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none" />
-              <input type="date" value={dateRange.end} onChange={(e) => setDateRange(p => ({ ...p, end: e.target.value }))} className="p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none" />
+          <div className="mx-4 md:mx-0 bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-xl z-10 relative animate-in slide-in-from-top-2">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider flex items-center gap-2">
+                <Filter size={16} className="text-primary" />
+                Advanced Filters
+              </h3>
+              <button onClick={() => setShowFilters(false)} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                <X size={16} className="text-gray-400" />
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+              <div>
+                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">Status</label>
+                <select value={approvalFilter} onChange={(e: any) => setApprovalFilter(e.target.value)} className="w-full p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 ring-primary/30 focus:border-primary transition-all">
+                  <option value="all">All Status</option>
+                  <option value="approved">✓ Approved</option>
+                  <option value="pending">⏳ Pending</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">Category</label>
+                <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="w-full p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 ring-primary/30 focus:border-primary transition-all">
+                  <option value="all">All Categories</option>
+                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">Date Range</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <input type="date" value={dateRange.start} onChange={(e) => setDateRange(p => ({ ...p, start: e.target.value }))} className="p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 ring-primary/30 focus:border-primary transition-all" placeholder="Start Date" />
+                  <input type="date" value={dateRange.end} onChange={(e) => setDateRange(p => ({ ...p, end: e.target.value }))} className="p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 outline-none focus:ring-2 ring-primary/30 focus:border-primary transition-all" placeholder="End Date" />
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Showing <span className="font-bold text-primary">{filteredExpenses.length}</span> of <span className="font-bold">{expenses.length}</span> expenses
+              </p>
+              <button
+                onClick={() => {
+                  setApprovalFilter('all');
+                  setCategoryFilter('all');
+                  setDateRange({ start: '', end: '' });
+                }}
+                className="text-xs font-bold text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors"
+              >
+                Clear All Filters
+              </button>
             </div>
           </div>
         )}
@@ -266,11 +308,11 @@ export default function ExpensesPage() {
             // Helper for dynamic colors
             const getCategoryStyle = (cat: string) => {
               const c = cat.toLowerCase();
-              if (c.includes('labor') || c.includes('salary')) return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200';
-              if (c.includes('material')) return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200';
-              if (c.includes('food')) return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200';
-              if (c.includes('taxi') || c.includes('transport')) return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200';
-              return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 border-gray-200';
+              if (c.includes('labor') || c.includes('salary')) return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-700';
+              if (c.includes('material')) return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 border-purple-200 dark:border-purple-700';
+              if (c.includes('food')) return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200 dark:border-orange-700';
+              if (c.includes('taxi') || c.includes('transport')) return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700';
+              return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600';
             };
 
             const initials = exp.employee?.name
@@ -280,7 +322,7 @@ export default function ExpensesPage() {
                 : '?';
 
             return (
-              <div key={exp.id} className={`relative grid grid-cols-12 gap-4 px-6 py-4 items-center transition-all duration-200 hover:bg-white hover:shadow-lg hover:z-10 hover:scale-[1.005] group rounded-xl border border-transparent hover:border-gray-100 dark:hover:border-gray-700 ${idx !== paginatedExpenses.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''}`}>
+              <div key={exp.id} className={`relative grid grid-cols-12 gap-4 px-6 py-4 items-center transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:shadow-lg hover:z-10 hover:scale-[1.005] group rounded-xl border border-transparent hover:border-gray-100 dark:hover:border-gray-600 ${idx !== paginatedExpenses.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''}`}>
 
                 {/* Hover Indicator Line */}
                 <div className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -334,9 +376,16 @@ export default function ExpensesPage() {
                   <span className="text-[10px] text-gray-400 block">ETB</span>
                 </div>
 
-                <div className="col-span-1 flex justify-center items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Link href={`/expenses/${exp.id}/edit`} className="p-2 text-gray-400 hover:text-primary hover:bg-blue-50 rounded-full transition-colors"><Pencil size={14} /></Link>
-                  <button onClick={() => deleteExpense(exp)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"><Trash2 size={14} /></button>
+                <div className="col-span-1 flex justify-center items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Link href={`/expenses/${exp.id}`} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all" title="View Details">
+                    <Eye size={16} strokeWidth={2} />
+                  </Link>
+                  <Link href={`/expenses/edit/${exp.id}`} className="p-2 text-gray-400 hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all" title="Edit Expense">
+                    <Pencil size={16} strokeWidth={2} />
+                  </Link>
+                  <button onClick={() => deleteExpense(exp)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all" title="Delete Expense">
+                    <Trash2 size={16} strokeWidth={2} />
+                  </button>
                 </div>
               </div>
             )
@@ -368,11 +417,11 @@ export default function ExpensesPage() {
 
               <div className="flex flex-wrap gap-2 mb-4 pl-2">
                 {exp.project && (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold bg-orange-50 text-orange-700 border border-orange-100">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold bg-orange-50 text-orange-700 border border-orange-100 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-700">
                     <Briefcase size={10} /> {exp.project.name}
                   </span>
                 )}
-                <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium bg-gray-100 text-gray-600">
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600">
                   <Calendar size={10} /> {new Date(exp.date).toLocaleDateString()}
                 </span>
               </div>
@@ -381,9 +430,16 @@ export default function ExpensesPage() {
                 <div className="text-xs text-gray-500 flex items-center gap-1">
                   {exp.employee ? <><User size={12} /> {exp.employee.name}</> : exp.vendor ? <><Store size={12} /> {exp.vendor.name}</> : null}
                 </div>
-                <div className="flex gap-3">
-                  <Link href={`/expenses/${exp.id}/edit`} className="text-xs font-bold text-primary flex items-center gap-1">EDIT</Link>
-                  <button onClick={() => deleteExpense(exp)} className="text-xs font-bold text-red-500 flex items-center gap-1">DELETE</button>
+                <div className="flex gap-2">
+                  <Link href={`/expenses/${exp.id}`} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all">
+                    <Eye size={16} strokeWidth={2} />
+                  </Link>
+                  <Link href={`/expenses/edit/${exp.id}`} className="p-2 text-gray-400 hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all">
+                    <Pencil size={16} strokeWidth={2} />
+                  </Link>
+                  <button onClick={() => deleteExpense(exp)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all">
+                    <Trash2 size={16} strokeWidth={2} />
+                  </button>
                 </div>
               </div>
             </div>
