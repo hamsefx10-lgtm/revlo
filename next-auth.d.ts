@@ -10,6 +10,8 @@ declare module 'next-auth' {
       companyId?: string;
       companyName?: string;
       avatar?: string;
+      companyLogoUrl?: string;
+      planType?: string;
     } & DefaultSession['user'];
   }
 }

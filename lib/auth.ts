@@ -17,20 +17,7 @@ if (!process.env.NEXTAUTH_URL) {
 }
 
 
-declare module 'next-auth' {
-  interface Session {
-    user: {
-      id: string;
-      role: string;
-      name: string;
-      email: string;
-      companyName?: string;
-      companyId?: string;
-      companyLogoUrl?: string;
-      planType?: string;
-    };
-  }
-}
+// Module declaration moved to next-auth.d.ts
 
 export const authOptions = {
   adapter: PrismaAdapter(prisma),

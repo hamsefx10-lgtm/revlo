@@ -15,7 +15,7 @@ export default function VerifyDevicePage() {
     const handleVerify = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!session?.user?.id) {
+        if (!(session?.user as any)?.id) {
             toast.error('User not found. Please log in again.');
             return;
         }
@@ -32,7 +32,7 @@ export default function VerifyDevicePage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    userId: session.user.id,
+                    userId: (session?.user as any)?.id,
                     code, // This is now the TOTP code
                 }),
             });

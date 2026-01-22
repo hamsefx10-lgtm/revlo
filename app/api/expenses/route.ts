@@ -311,6 +311,11 @@ export async function POST(request: Request) {
         // When taking debt, if paidFrom is selected, deduct from that account
         transactionAccountId = paidFrom || undefined;
       }
+
+      // Safety check: ensure customerId is set for Debt transactions if passed in payload
+      if (customerId && !transactionCustomerId) {
+        transactionCustomerId = customerId;
+      }
       console.log('Creating debt transaction:', {
         category,
         subCategory,
