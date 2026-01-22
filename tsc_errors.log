@@ -1,0 +1,6 @@
+app/api/auth/2fa/setup/route.ts(2,10): error TS2305: Module '"next-auth"' has no exported member 'getServerSession'.
+app/api/auth/2fa/verify/route.ts(2,10): error TS2305: Module '"next-auth"' has no exported member 'getServerSession'.
+app/api/auth/2fa/verify/route.ts(5,10): error TS2305: Module '"otplib"' has no exported member 'authenticator'.
+app/projects/layout.tsx(2,10): error TS2305: Module '"next-auth"' has no exported member 'getServerSession'.
+app/verify-device/page.tsx(18,29): error TS2339: Property 'id' does not exist on type '{ name?: string | null | undefined; email?: string | null | undefined; image?: string | null | undefined; }'.
+app/verify-device/page.tsx(35,42): error TS2339: Property 'id' does not exist on type '{ name?: string | null | undefined; email?: string | null | undefined; image?: string | null | undefined; }'.

@@ -685,23 +685,20 @@ function AddExpenseContent() {
       return;
     }
 
-    // Build description based on category/subtype, matching backend requirements
-    let description = '';
+    // Build description based on category/subtype
+    // Use a unique name to avoid shadowing the state variable "description"
+    let submissionDescription = description.trim();
+
     if (category === 'Labor' || (expenseType === 'company' && companyExpenseType === 'Company Labor')) {
-      description = workDescription.trim();
+      submissionDescription = workDescription.trim();
     } else if (category === 'Material') {
-      description = `Material expense - ${expenseDate}`;
+      // Allow user override if provided, otherwise default
+      submissionDescription = description && description.trim() !== '' ? description.trim() : `Material expense - ${expenseDate}`;
     } else if (category === 'Company Expense' && companyExpenseType === 'Salary') {
       const emp = employees.find(emp => emp.id === selectedEmployeeForSalary);
-      description = `Salary payment${emp ? ' for ' + emp.fullName : ''} - ${expenseDate}`;
-    } else if (category === 'Company Expense') {
-      // Always use user-entered description for all Company Expense types except Salary
-      description = (typeof description === 'string' ? description.trim() : '');
+      submissionDescription = `Salary payment${emp ? ' for ' + emp.fullName : ''} - ${expenseDate}`;
     } else if (category === 'Taxi/Xamaal') {
-      // Use user-entered description or default
-      description = description || `Taxi/Xamaal - ${taxiXamaalType}`;
-    } else {
-      description = '';
+      submissionDescription = description.trim() || `Taxi/Xamaal - ${taxiXamaalType}`;
     }
 
     const expenseData: any = {
@@ -710,7 +707,8 @@ function AddExpenseContent() {
       note: note.trim() === '' ? undefined : note,
       projectId: expenseType === 'project' ? selectedProject : undefined,
       category: category,
-      description: description || undefined,
+      description: submissionDescription || undefined,
+      amount: amount // Default assignment, overridden in switch if needed
     };
 
     // Normalize category for company Material so it follows the same flow as project Material
@@ -721,8 +719,6 @@ function AddExpenseContent() {
       case 'Material':
         expenseData.amount = totalMaterialCost;
         expenseData.materials = materials.map(m => ({ name: m.name, qty: parseFloat(m.qty as string), price: parseFloat(m.price as string), unit: m.unit }));
-        // Use user-entered description if provided, otherwise fallback to default
-        expenseData.description = description && description.trim() !== '' ? description.trim() : `Material expense - ${materialDate}`;
         // NEW: Add vendor payment tracking fields
         expenseData.vendorId = selectedVendor;
         expenseData.paymentStatus = paymentStatus;
@@ -741,13 +737,6 @@ function AddExpenseContent() {
           expenseData.expenseDate = materialDate; // Use materialDate instead of expenseDate for Material expenses
           expenseData.paidFrom = paymentStatus === 'PAID' ? paidFrom : null; // Only set if paid
           expenseData.note = note.trim() === '' ? undefined : note;
-          // PATCH: Always set description for company material expense
-          expenseData.description = description && description.trim() !== '' ? description.trim() : `Material expense - ${materialDate}`;
-          // Add vendor payment tracking fields for company material expenses
-          expenseData.vendorId = selectedVendor;
-          expenseData.paymentStatus = paymentStatus;
-          expenseData.invoiceNumber = invoiceNumber || null;
-          expenseData.paymentDate = paymentStatus === 'PAID' ? new Date().toISOString() : null;
         }
         break;
       case 'Labor':
@@ -790,7 +779,6 @@ function AddExpenseContent() {
       case 'Taxi/Xamaal':
         expenseData.amount = amount;
         expenseData.transportType = taxiXamaalType; // Reuse transportType field in backend
-        expenseData.description = description || `Taxi/Xamaal - ${taxiXamaalType}`;
         // Ensure paidFrom is preserved
         expenseData.paidFrom = paidFrom;
         break;
@@ -815,7 +803,6 @@ function AddExpenseContent() {
         break;
       case 'Utilities':
         expenseData.amount = amount;
-        expenseData.description = description.trim();
         expenseData.category = 'Utilities';
         expenseData.projectId = expenseType === 'project' ? selectedProject : undefined;
         expenseData.companyExpenseType = expenseType === 'company' ? 'Utilities' : undefined;
@@ -868,7 +855,6 @@ function AddExpenseContent() {
             break;
           case 'Utilities':
             expenseData.amount = amount;
-            expenseData.description = description;
             // Ensure paidFrom is preserved
             expenseData.paidFrom = paidFrom;
             break;
@@ -879,8 +865,6 @@ function AddExpenseContent() {
             expenseData.category = 'Material';
             expenseData.projectId = null;
             expenseData.expenseDate = materialDate; // Use materialDate instead of expenseDate for Material expenses
-            // PATCH: Always set description for company material expense
-            expenseData.description = description;
             // Material date tracking
             expenseData.materialDate = materialDate;
             break;

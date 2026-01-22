@@ -43,13 +43,13 @@ const NavItem: React.FC<NavItemProps> = ({ name, href, icon, isCollapsed, onClic
         className={`
           flex items-center py-2.5 px-3 mx-2 rounded-xl transition-all duration-300 group relative
           ${isActive
-            ? 'bg-primary text-white shadow-lg shadow-primary/30'
-            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-darkGray dark:hover:text-white'
+            ? 'bg-green-500 text-white shadow-lg shadow-green-500/30'
+            : 'text-gray-600 dark:text-gray-400 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400'
           }
           ${isCollapsed ? 'justify-center' : 'justify-start space-x-3'}
         `}
       >
-        <span className={`text-xl transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
+        <span className={`text-xl transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110 group-hover:-rotate-6'}`}>
           {icon}
         </span>
 
@@ -61,7 +61,7 @@ const NavItem: React.FC<NavItemProps> = ({ name, href, icon, isCollapsed, onClic
 
         {/* Badge */}
         {badge && !isCollapsed && (
-          <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+          <span className={`${isActive ? 'bg-white text-green-600' : 'bg-red-500 text-white'} text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm`}>
             {badge}
           </span>
         )}
@@ -320,8 +320,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           >
             {/* Top: Logo, Close Button */}
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-800/50">
-              <span className="text-2xl font-black tracking-tight select-none text-gray-900 dark:text-white">
-                Revl<span className="text-blue-600 dark:text-green-500">o</span>
+              <span className="text-2xl font-black tracking-tight select-none text-gray-900 dark:text-white font-sans">
+                Revl<span className="text-green-500">o</span>
               </span>
               <button
                 onClick={() => setMobileOpen(false)}
@@ -386,12 +386,12 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* Top: Branding / Logo */}
       <div className={`flex items-center ${collapsed ? 'justify-center' : 'pl-8'} py-8 mb-2 transition-all duration-300`}>
         {collapsed ? (
-          <div className="h-10 w-10 bg-green-500 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-green-500/30">
-            R<span className="text-green-100"></span>
+          <div className="h-10 w-10 bg-green-500 rounded-lg flex items-center justify-center text-white font-black text-xl shadow-lg shadow-green-500/30">
+            R
           </div>
         ) : (
-          <span className="text-3xl font-black tracking-tighter select-none text-gray-900 dark:text-white flex items-center gap-1">
-            Revl<span className="text-green-500 text-4xl leading-none mt-1">o</span>
+          <span className="text-3xl font-black tracking-tight select-none text-gray-900 dark:text-white flex items-center font-sans">
+            Revl<span className="text-green-500">o</span>
           </span>
         )}
       </div>
