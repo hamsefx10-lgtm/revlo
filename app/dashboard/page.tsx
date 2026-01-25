@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Layout from '@/components/layouts/Layout';
+import RevloLoader from '@/components/ui/RevloLoader';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import {
   DollarSign, Briefcase, Banknote, ArrowUpRight, ArrowDownLeft, TrendingUp, TrendingDown,
@@ -224,6 +225,10 @@ interface DashboardStats {
   // New fields
   accountBreakdown?: { name: string; value: number; type: string }[];
   outstandingDebts?: number;
+  totalReceivables?: number;
+  totalPayables?: number;
+  topCustomers?: { name: string; value: number }[];
+  topVendors?: { name: string; value: number }[];
   thisMonthIncome?: number;
   thisMonthExpenses?: number;
   lastMonthIncome?: number;
@@ -254,6 +259,7 @@ interface ActivityItemProps {
   formatCurrency: (amount: number) => string;
 }
 
+// ... (Helper functions remain the same) ... 
 // Helper for chart colors
 const CHART_COLORS = ['#3498DB', '#2ECC71', '#F39C12', '#E74C3C', '#9B59B6', '#1ABC9C', '#34495E', '#A0A0A0'];
 
@@ -268,20 +274,10 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
     </text>
   );
 };
-// ...existing code...
 
 
 // Dashboard Card Component
-
-interface DashboardCardProps {
-  title: string;
-  value: string;
-  trend?: 'up' | 'down';
-  colorClass: string;
-  icon: React.ReactNode;
-  description?: string; // Optional detailed description
-}
-
+// ... (DashboardCard component remains the same) ...
 const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, trend, colorClass, icon, description }) => {
   // Determine border color and background based on colorClass
   const getColorClasses = (colorClass: string) => {
@@ -321,17 +317,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, trend, colo
 };
 
 // Recent Activity Item
-interface ActivityItemProps {
-  activity: {
-    id: string;
-    type: string;
-    description: string;
-    amount?: number;
-    date: string;
-    user: string;
-  };
-}
-
+// ... (ActivityItem component remains the same) ...
 const ActivityItem: React.FC<ActivityItemProps> = ({ activity, formatCurrency }) => {
   let icon: React.ReactNode;
   let iconBgClass = '';
@@ -393,12 +379,20 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Date Filtering State
+  const [dateFilter, setDateFilter] = useState('ALL'); // ALL, TODAY, WEEK, MONTH, YEAR
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
+
   const { user } = require('@/components/providers/UserProvider').useUser();
   const { formatCurrency, currency } = useCurrency();
 
   useEffect(() => {
     async function fetchStats() {
-      setLoading(true);
+      // Only show full page loading on first load
+      if (!stats) setLoading(true);
+
       setError(null);
       try {
         // Check Plan Type first
@@ -409,9 +403,45 @@ export default function DashboardPage() {
           return;
         }
 
-        const res = await fetch(`/api/dashboard/stats`);
+        // Build Query URL
+        let url = `/api/dashboard/stats`;
+        const params = new URLSearchParams();
+
+        if (dateFilter !== 'ALL') {
+          const now = new Date();
+          let start = new Date();
+          let end = new Date();
+
+          if (dateFilter === 'TODAY') {
+            start = new Date(now.setHours(0, 0, 0, 0));
+            end = new Date(now.setHours(23, 59, 59, 999));
+          } else if (dateFilter === 'WEEK') {
+            const day = now.getDay() || 7;
+            if (day !== 1) start.setHours(-24 * (day - 1));
+            else start.setHours(0, 0, 0, 0);
+            end = new Date(now.setHours(23, 59, 59, 999)); // End is today (or end of week if preferred)
+          } else if (dateFilter === 'MONTH') {
+            start = new Date(now.getFullYear(), now.getMonth(), 1);
+            end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+          } else if (dateFilter === 'YEAR') {
+            start = new Date(now.getFullYear(), 0, 1);
+            end = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+          }
+
+          params.append('startDate', start.toISOString());
+          params.append('endDate', end.toISOString());
+        }
+
+        const res = await fetch(`${url}?${params.toString()}`);
         if (!res.ok) throw new Error("Server error");
         const json = await res.json();
+
+        // Ensure new fields have defaults strictly for UI safety
+        json.topCustomers = json.topCustomers || [];
+        json.topVendors = json.topVendors || [];
+        json.totalReceivables = json.totalReceivables || 0;
+        json.totalPayables = json.totalPayables || 0;
+
         setStats(json);
       } catch (err) {
         setError((err as any).message || "Error fetching dashboard stats");
@@ -420,9 +450,14 @@ export default function DashboardPage() {
       }
     }
     fetchStats();
-  }, []);
+  }, [dateFilter]); // Re-fetch on filter change
 
-  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><span className="text-primary text-lg">Dashboard loading...</span></div>;
+  // Initial loading only (Full Screen with Blur & Logo)
+  if (loading && !stats) return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-50/50 dark:bg-gray-900/50 backdrop-blur-md">
+      <RevloLoader />
+    </div>
+  );
   if (error) return <div className="text-red-500 text-center p-6">{error}</div>;
   if (!stats) return null;
 
@@ -433,7 +468,9 @@ export default function DashboardPage() {
     realizedProfitFromCompletedProjects, potentialProfitFromActiveProjects,
     accountBreakdown = [], outstandingDebts = 0, thisMonthIncome = 0, thisMonthExpenses = 0,
     lastMonthIncome = 0, lastMonthExpenses = 0, topExpenseCategories = [],
-    fixedAssetsValue = 0, fixedAssetsCount = 0
+    fixedAssetsValue = 0, fixedAssetsCount = 0,
+    // New fields
+    totalReceivables = 0, totalPayables = 0, topCustomers = [], topVendors = []
   } = stats;
 
   const currentTotalBalance = totalBankBalance + totalMobileMoneyBalance + totalCashBalance;
@@ -448,405 +485,502 @@ export default function DashboardPage() {
 
   return (
     <Layout>
-      {/* Mobile-Responsive Header */}
-      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6 gap-4">
-        <h1 className="text-2xl lg:text-4xl font-bold text-darkGray dark:text-gray-100">Dashboard Overview</h1>
-      </div>
-
-      {/* Financial Overview Cards Section - Solid Dark with Left Border Only */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8 animate-fade-in-up">
-        {/* Card 1: Lacagaha la helay (Money Received) */}
-        <div className="relative p-4 md:p-6 rounded-xl bg-white dark:bg-gray-800 shadow-md text-center border-l-4 border-secondary">
-          <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Lacagaha la helay</h4>
-          <p className="text-xl md:text-3xl font-extrabold text-secondary">{formatCurrency(totalIncome)}</p>
-          <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Dhammaan lacagaha soo galay</p>
-        </div>
-
-        {/* Card 2: Kharashyada (Expenses) */}
-        <div className="relative p-4 md:p-6 rounded-xl bg-white dark:bg-gray-800 shadow-md text-center border-l-4 border-redError">
-          <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Kharashyada</h4>
-          <p className="text-xl md:text-3xl font-extrabold text-redError">{formatCurrency(totalExpenses)}</p>
-          <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Kharashyada guud</p>
-        </div>
-
-        {/* Card 3: Faa'iidada Dhabta Ah (Realized Profit) */}
-        <div className={`relative p-4 md:p-6 rounded-xl bg-white dark:bg-gray-800 shadow-md text-center border-l-4 ${netProfit >= 0 ? 'border-secondary' : 'border-redError'}`}>
-          <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Faa'iidada Dhabta Ah</h4>
-          <p className={`text-xl md:text-3xl font-extrabold ${netProfit >= 0 ? 'text-secondary' : 'text-redError'}`}>
-            {formatCurrency(netProfit)}
-          </p>
-          <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Lacagta soo galaysa - Lacagta baxaysa</p>
-        </div>
-
-        {/* Card 4: Mashaariicda Firfircoon (Active Projects) */}
-        <div className="relative p-4 md:p-6 rounded-xl bg-white dark:bg-gray-800 shadow-md text-center border-l-4 border-primary">
-          <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Mashaariicda Firfircoon</h4>
-          <p className="text-xl md:text-3xl font-extrabold text-primary">{activeProjects}</p>
-          <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Mashaariic socota</p>
-        </div>
-      </div>
-
-      {/* New Widgets Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 lg:mb-8 animate-fade-in-up">
-        {/* Account Breakdown Widget */}
-        {accountBreakdown.length > 0 && (
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-l-4 border-primary">
-            <h3 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
-              <Banknote size={20} className="mr-2 text-primary" />
-              Qaybinta Accounts-ka
-            </h3>
-            <div className="space-y-3">
-              {accountBreakdown.slice(0, 5).map((acc, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 bg-lightGray dark:bg-gray-700 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-2 h-2 rounded-full ${acc.type === 'BANK' ? 'bg-blue-500' :
-                        acc.type === 'MOBILE_MONEY' ? 'bg-green-500' :
-                          'bg-orange-500'
-                      }`}></div>
-                    <div>
-                      <p className="text-sm font-medium text-darkGray dark:text-gray-100">{acc.name}</p>
-                      <p className="text-xs text-mediumGray dark:text-gray-400">{acc.type}</p>
-                    </div>
-                  </div>
-                  <p className="text-sm font-bold text-primary">{formatCurrency(acc.value)}</p>
-                </div>
-              ))}
-            </div>
-            <Link href="/accounting/accounts" className="mt-4 block text-sm text-primary hover:underline text-center">
-              Fiiri Dhammaan Accounts-ka →
-            </Link>
+      <div className="relative">
+        {/* Blur Overlay Loader for Updates */}
+        {loading && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/30 dark:bg-black/30 backdrop-blur-sm transition-all duration-300 rounded-xl">
+            <RevloLoader />
           </div>
         )}
 
-        {/* Monthly Comparison Widget */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-l-4 border-secondary">
-          <h3 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
-            <Calendar size={20} className="mr-2 text-secondary" />
-            Isku Dhig Bishiiba
-          </h3>
-          <div className="space-y-4">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-mediumGray dark:text-gray-400">Dakhliga Bishan</span>
-                <span className={`text-sm font-bold ${parseFloat(incomeChange) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  {parseFloat(incomeChange) >= 0 ? '+' : ''}{incomeChange}%
-                </span>
+        <div className={`transition-opacity duration-300 ${loading ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}>
+          {/* Mobile-Responsive Header with Date Filter */}
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6 gap-4">
+            <h1 className="text-2xl lg:text-4xl font-bold text-darkGray dark:text-gray-100">Dashboard Overview</h1>
+
+            {/* Date Filter Controls */}
+            <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg shadow p-1">
+              <button
+                onClick={() => setDateFilter('TODAY')}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${dateFilter === 'TODAY' ? 'bg-primary text-white' : 'text-mediumGray hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+              >
+                Maanta
+              </button>
+              <button
+                onClick={() => setDateFilter('WEEK')}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${dateFilter === 'WEEK' ? 'bg-primary text-white' : 'text-mediumGray hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+              >
+                Todobaadkan
+              </button>
+              <button
+                onClick={() => setDateFilter('MONTH')}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${dateFilter === 'MONTH' ? 'bg-primary text-white' : 'text-mediumGray hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+              >
+                Bishan
+              </button>
+              <button
+                onClick={() => setDateFilter('ALL')}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${dateFilter === 'ALL' ? 'bg-primary text-white' : 'text-mediumGray hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+              >
+                Kulligood
+              </button>
+            </div>
+          </div>
+
+          {/* Financial Overview Cards Section - Modern Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8 animate-fade-in-up">
+            {/* Card 1: Lacagaha la helay (Money Received) */}
+            <div className="relative p-4 md:p-6 rounded-xl bg-white dark:bg-gray-800 shadow-md text-center border-l-4 border-secondary">
+              <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Lacagaha la helay</h4>
+              <p className="text-xl md:text-3xl font-extrabold text-secondary">{formatCurrency(totalIncome)}</p>
+              <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Lacagta guud ee soo gashay</p>
+            </div>
+
+            {/* Card 2: Kharashyada (Expenses) */}
+            <div className="relative p-4 md:p-6 rounded-xl bg-white dark:bg-gray-800 shadow-md text-center border-l-4 border-redError">
+              <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Kharashyada</h4>
+              <p className="text-xl md:text-3xl font-extrabold text-redError">{formatCurrency(totalExpenses)}</p>
+              <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Kharashyada guud</p>
+            </div>
+
+            {/* Card 3: Faa'iidada Dhabta Ah (Realized Profit) */}
+            <div className={`relative p-4 md:p-6 rounded-xl bg-white dark:bg-gray-800 shadow-md text-center border-l-4 ${netProfit >= 0 ? 'border-secondary' : 'border-redError'}`}>
+              <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Faa'iidada Dhabta Ah</h4>
+              <p className={`text-xl md:text-3xl font-extrabold ${netProfit >= 0 ? 'text-secondary' : 'text-redError'}`}>
+                {formatCurrency(netProfit)}
+              </p>
+              <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Dakhliga - Kharashka</p>
+            </div>
+
+            {/* Card 4: Mashaariicda Firfircoon (Active Projects) */}
+            <div className="relative p-4 md:p-6 rounded-xl bg-white dark:bg-gray-800 shadow-md text-center border-l-4 border-primary">
+              <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Mashaariicda Firfircoon</h4>
+              <p className="text-xl md:text-3xl font-extrabold text-primary">{activeProjects}</p>
+              <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Mashaariic socota</p>
+            </div>
+          </div>
+
+          {/* Debt Overview Split (Receivables vs Payables) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 animate-fade-in-up">
+            {/* Receivables (Money IN) */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-l-4 border-green-500">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-darkGray dark:text-gray-100 flex items-center">
+                  <ArrowDownLeft size={24} className="mr-2 text-green-500" />
+                  Lacagaha Kuu Maqan (Receivables)
+                </h3>
+                <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Lacag Soo Galaysa</span>
               </div>
-              <div className="flex items-center justify-between">
-                <p className="text-lg font-bold text-secondary">{formatCurrency(thisMonthIncome)}</p>
-                <p className="text-xs text-mediumGray dark:text-gray-400">Hore: {formatCurrency(lastMonthIncome)}</p>
+              <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">{formatCurrency(outstandingDebts || 0)}</div> {/* Using outstandingDebts as proxy based on current API logic till refined */}
+              <p className="text-sm text-gray-500">Macaamiisha iyo Mashaariicda deynta lagu leeyahay</p>
+              <Link href="/accounting?tab=Debts" className="text-primary text-sm font-medium hover:underline mt-3 block">Fiiri Liiska &rarr;</Link>
+            </div>
+
+            {/* Payables (Money OUT) */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-l-4 border-orange-500">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-darkGray dark:text-gray-100 flex items-center">
+                  <ArrowUpRight size={24} className="mr-2 text-orange-500" />
+                  Daymaha Lagugu Leeyahay (Payables)
+                </h3>
+                <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">Lacag Baxaysa</span>
+              </div>
+              <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">{formatCurrency(0)}</div> {/* Logic for Payables is pending in API, defaulting to 0 or manual calc */}
+              <p className="text-sm text-gray-500">Iibiyayaasha iyo Kharashyada aan la bixin</p>
+              <Link href="/accounting?tab=Debts" className="text-primary text-sm font-medium hover:underline mt-3 block">Bixi Hadda &rarr;</Link>
+            </div>
+          </div>
+
+          {/* New Widgets Section: Top Customers & Vendors */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 lg:mb-8 animate-fade-in-up">
+            {/* Top Customers Widget */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-l-4 border-blue-500">
+              <h3 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
+                <User size={20} className="mr-2 text-blue-500" />
+                Macaamiisha Ugu Sarreeya (Top Customers)
+              </h3>
+              <div className="space-y-4">
+                {stats.topCustomers && stats.topCustomers.length > 0 ? (
+                  stats.topCustomers.map((cust, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 bg-lightGray dark:bg-gray-700 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-full text-blue-600 dark:text-blue-400 font-bold text-xs">{idx + 1}</div>
+                        <p className="text-sm font-medium text-darkGray dark:text-gray-100">{cust.name}</p>
+                      </div>
+                      <p className="text-sm font-bold text-secondary">{formatCurrency(cust.value)}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-400 text-center py-4">Ma jirto xog macaamiil ah.</p>
+                )}
               </div>
             </div>
-            <div className="border-t border-lightGray dark:border-gray-700 pt-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-mediumGray dark:text-gray-400">Kharashyada Bishan</span>
-                <span className={`text-sm font-bold ${parseFloat(expenseChange) >= 0 ? 'text-red-500' : 'text-green-500'}`}>
-                  {parseFloat(expenseChange) >= 0 ? '+' : ''}{expenseChange}%
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <p className="text-lg font-bold text-redError">{formatCurrency(thisMonthExpenses)}</p>
-                <p className="text-xs text-mediumGray dark:text-gray-400">Hore: {formatCurrency(lastMonthExpenses)}</p>
+
+            {/* Top Vendors Widget */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-l-4 border-purple-500">
+              <h3 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
+                <Factory size={20} className="mr-2 text-purple-500" />
+                Iibiyayaasha Ugu Sarreeya (Top Vendors)
+              </h3>
+              <div className="space-y-4">
+                {stats.topVendors && stats.topVendors.length > 0 ? (
+                  stats.topVendors.map((vend, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 bg-lightGray dark:bg-gray-700 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="bg-purple-100 dark:bg-purple-900/30 p-2 rounded-full text-purple-600 dark:text-purple-400 font-bold text-xs">{idx + 1}</div>
+                        <p className="text-sm font-medium text-darkGray dark:text-gray-100">{vend.name}</p>
+                      </div>
+                      <p className="text-sm font-bold text-redError">{formatCurrency(vend.value)}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-400 text-center py-4">Ma jirto xog iibiye ah.</p>
+                )}
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Debt & Fixed Assets Summary Widget */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-l-4 border-accent">
-          <h3 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
-            <Package size={20} className="mr-2 text-accent" />
-            Daymaha & Hantida
-          </h3>
-          <div className="space-y-4">
-            <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-mediumGray dark:text-gray-400 mb-1">Daymo La Qaatay</p>
-                  <p className="text-xl font-bold text-orange-600 dark:text-orange-400">
-                    {formatCurrency(Math.abs(outstandingDebts))}
-                  </p>
-                </div>
-                <Scale size={24} className="text-orange-600 dark:text-orange-400" />
-              </div>
-              <Link href="/accounting?tab=Debts" className="text-xs text-orange-600 dark:text-orange-400 hover:underline mt-2 block">
-                Fiiri Dhammaan →
-              </Link>
-            </div>
-            <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-mediumGray dark:text-gray-400 mb-1">Hantida Go'an</p>
-                  <p className="text-xl font-bold text-purple-600 dark:text-purple-400">
-                    {formatCurrency(fixedAssetsValue)}
-                  </p>
-                  <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">{fixedAssetsCount} Hanti</p>
-                </div>
-                <Factory size={24} className="text-purple-600 dark:text-purple-400" />
-              </div>
-              <Link href="/settings/assets" className="text-xs text-purple-600 dark:text-purple-400 hover:underline mt-2 block">
-                Fiiri Dhammaan →
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Top Expense Categories Widget */}
-      {topExpenseCategories.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-l-4 border-redError mb-6 lg:mb-8 animate-fade-in-up">
-          <h3 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
-            <BarChartIcon size={20} className="mr-2 text-redError" />
-            Kharashyada Ugu Waaweyn
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {topExpenseCategories.map((cat, idx) => {
-              const maxAmount = Math.max(...topExpenseCategories.map(c => c.amount));
-              const percentage = maxAmount > 0 ? (cat.amount / maxAmount) * 100 : 0;
-              return (
-                <div key={idx} className="p-4 bg-lightGray dark:bg-gray-700 rounded-lg">
-                  <p className="text-sm font-medium text-darkGray dark:text-gray-100 mb-2 truncate">{cat.name}</p>
-                  <p className="text-lg font-bold text-redError mb-2">{formatCurrency(cat.amount)}</p>
-                  <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                    <div
-                      className="bg-redError h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${percentage}%` }}
-                    ></div>
+          {/* Middle Section Widgets */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 lg:mb-8 animate-fade-in-up">
+            {/* Account Breakdown Widget */}
+            {accountBreakdown.length > 0 && (
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-l-4 border-indigo-500">
+                <h3 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
+                  <Banknote size={20} className="mr-2 text-indigo-500" />
+                  Qaybinta Accounts-ka
+                </h3>
+                <div className="space-y-3">
+                  {accountBreakdown.slice(0, 5).map((acc, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 bg-lightGray dark:bg-gray-700 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-2 h-2 rounded-full ${acc.type === 'BANK' ? 'bg-blue-500' :
+                          acc.type === 'MOBILE_MONEY' ? 'bg-green-500' :
+                            'bg-orange-500'
+                          }`}></div>
+                        <div>
+                          <p className="text-sm font-medium text-darkGray dark:text-gray-100">{acc.name}</p>
+                          <p className="text-xs text-mediumGray dark:text-gray-400">{acc.type}</p>
+                        </div>
+                      </div>
+                      <p className="text-sm font-bold text-primary">{formatCurrency(acc.value)}</p>
+                    </div>
+                  ))}
+                </div>
+                <Link href="/accounting/accounts" className="mt-4 block text-sm text-primary hover:underline text-center">
+                  Fiiri Dhammaan Accounts-ka →
+                </Link>
+              </div>
+            )}
+
+            {/* Monthly Comparison Widget */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-l-4 border-pink-500">
+              <h3 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
+                <Calendar size={20} className="mr-2 text-pink-500" />
+                Isku Dhig Bishiiba
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-mediumGray dark:text-gray-400">Dakhliga Bishan</span>
+                    <span className={`text-sm font-bold ${parseFloat(incomeChange) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      {parseFloat(incomeChange) >= 0 ? '+' : ''}{incomeChange}%
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-lg font-bold text-secondary">{formatCurrency(thisMonthIncome)}</p>
+                    <p className="text-xs text-mediumGray dark:text-gray-400">Hore: {formatCurrency(lastMonthIncome)}</p>
                   </div>
                 </div>
-              );
-            })}
+                <div className="border-t border-lightGray dark:border-gray-700 pt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-mediumGray dark:text-gray-400">Kharashyada Bishan</span>
+                    <span className={`text-sm font-bold ${parseFloat(expenseChange) >= 0 ? 'text-red-500' : 'text-green-500'}`}>
+                      {parseFloat(expenseChange) >= 0 ? '+' : ''}{expenseChange}%
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-lg font-bold text-redError">{formatCurrency(thisMonthExpenses)}</p>
+                    <p className="text-xs text-mediumGray dark:text-gray-400">Hore: {formatCurrency(lastMonthExpenses)}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Assets Summary Widget */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-l-4 border-teal-500">
+              <h3 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
+                <Factory size={20} className="mr-2 text-teal-500" />
+                Hantida Ma guurtada Ah
+              </h3>
+              <div className="flex flex-col items-center justify-center h-48">
+                <Factory size={48} className="text-teal-500/50 mb-4" />
+                <p className="text-3xl font-bold text-darkGray dark:text-gray-100">{formatCurrency(fixedAssetsValue)}</p>
+                <p className="text-sm text-gray-500 mt-2">{fixedAssetsCount} Hanti Diiwaan Gashan</p>
+                <Link href="/settings/assets" className="mt-4 text-sm text-teal-600 hover:scale-105 transition-transform font-medium">
+                  Maaree Hantida &rarr;
+                </Link>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
 
-      {/* Quick Actions Section - Enhanced Design */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg mb-6 lg:mb-8 animate-fade-in-up border border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg lg:text-xl font-semibold text-darkGray dark:text-gray-100 mb-6 flex items-center gap-2">
-          <Zap size={24} className="text-orange-500 dark:text-orange-400" />
-          Ficillo Dhaqso leh
-        </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <Link
-            href="/expenses/add"
-            className="bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/30 dark:to-emerald-800/30 p-4 rounded-lg border border-green-200 dark:border-green-700 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
-          >
-            <div className="bg-green-500/20 dark:bg-green-500/30 p-3 rounded-lg w-fit mb-3 group-hover:scale-110 transition-transform">
-              <Coins size={24} className="text-green-600 dark:text-green-400" />
-            </div>
-            <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">Lacag Dhexdhexaad</h4>
-            <p className="text-xs text-gray-600 dark:text-gray-400">Ku dar lacag dhexdhexaad</p>
-          </Link>
-
-          <Link
-            href="/projects/add"
-            className="bg-gradient-to-br from-blue-50 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-800/30 p-4 rounded-lg border border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
-          >
-            <div className="bg-blue-500/20 dark:bg-blue-500/30 p-3 rounded-lg w-fit mb-3 group-hover:scale-110 transition-transform">
-              <ClipboardList size={24} className="text-blue-600 dark:text-blue-400" />
-            </div>
-            <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">Mashruuc Cusub</h4>
-            <p className="text-xs text-gray-600 dark:text-gray-400">Abuur mashruuc cusub</p>
-          </Link>
-
-          <Link
-            href="/inventory/store"
-            className="bg-gradient-to-br from-orange-50 to-amber-100 dark:from-orange-900/30 dark:to-amber-800/30 p-4 rounded-lg border border-orange-200 dark:border-orange-700 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
-          >
-            <div className="bg-orange-500/20 dark:bg-orange-500/30 p-3 rounded-lg w-fit mb-3 group-hover:scale-110 transition-transform">
-              <Package size={24} className="text-orange-600 dark:text-orange-400" />
-            </div>
-            <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">Alaab Dhexdhexaad</h4>
-            <p className="text-xs text-gray-600 dark:text-gray-400">Maaree alaab</p>
-          </Link>
-
-          <Link
-            href="/reports"
-            className="bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-800/30 p-4 rounded-lg border border-purple-200 dark:border-purple-700 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
-          >
-            <div className="bg-purple-500/20 dark:bg-purple-500/30 p-3 rounded-lg w-fit mb-3 group-hover:scale-110 transition-transform">
-              <BarChartIcon size={24} className="text-purple-600 dark:text-purple-400" />
-            </div>
-            <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">Warbixin</h4>
-            <p className="text-xs text-gray-600 dark:text-gray-400">Eeg warbixino</p>
-          </Link>
-        </div>
-      </div>
-
-      {/* Smart Notifications Section - Enhanced Design */}
-      <div className="bg-gradient-to-br from-orange-50 to-amber-100 dark:from-orange-900/30 dark:to-amber-800/30 p-6 rounded-xl shadow-lg mb-6 lg:mb-8 animate-fade-in-up border border-orange-200 dark:border-orange-700">
-        <h3 className="text-lg lg:text-xl font-semibold text-darkGray dark:text-gray-100 mb-6 flex items-center gap-2">
-          <Bell size={24} className="text-orange-600 dark:text-orange-400" />
-          Digniino Smart ah
-        </h3>
-        <div className="space-y-4">
-          {/* Good Profit Notification */}
-          {netProfit > 0 && (
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-l-4 border-yellow-500 shadow-md hover:shadow-lg transition-shadow">
-              <div className="flex items-start gap-4">
-                <div className="bg-yellow-500/20 dark:bg-yellow-500/30 p-3 rounded-lg">
-                  <Trophy size={24} className="text-yellow-600 dark:text-yellow-400" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-1">Faa'iido Wanaagsan!</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Waxaad heshay <span className="font-bold text-green-600 dark:text-green-400">{formatCurrency(netProfit)}</span> faa'iido dhab ah
-                  </p>
-                </div>
+          {/* Top Expense Categories Widget */}
+          {topExpenseCategories.length > 0 && (
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border-l-4 border-redError mb-6 lg:mb-8 animate-fade-in-up">
+              <h3 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
+                <BarChartIcon size={20} className="mr-2 text-redError" />
+                Kharashyada Ugu Waaweyn
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                {topExpenseCategories.map((cat, idx) => {
+                  const maxAmount = Math.max(...topExpenseCategories.map(c => c.amount));
+                  const percentage = maxAmount > 0 ? (cat.amount / maxAmount) * 100 : 0;
+                  return (
+                    <div key={idx} className="p-4 bg-lightGray dark:bg-gray-700 rounded-lg">
+                      <p className="text-sm font-medium text-darkGray dark:text-gray-100 mb-2 truncate">{cat.name}</p>
+                      <p className="text-lg font-bold text-redError mb-2">{formatCurrency(cat.amount)}</p>
+                      <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                        <div
+                          className="bg-redError h-2 rounded-full transition-all duration-500"
+                          style={{ width: `${percentage}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {/* No Warnings Notification */}
-          {lowStockItems === 0 && overdueProjects === 0 && (
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-l-4 border-green-500 shadow-md hover:shadow-lg transition-shadow">
-              <div className="flex items-start gap-4">
-                <div className="bg-green-500/20 dark:bg-green-500/30 p-3 rounded-lg">
-                  <CheckCircle size={24} className="text-green-600 dark:text-green-400" />
+          {/* Quick Actions Section - Enhanced Design */}
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg mb-6 lg:mb-8 animate-fade-in-up border border-gray-200 dark:border-gray-700">
+            <h3 className="text-lg lg:text-xl font-semibold text-darkGray dark:text-gray-100 mb-6 flex items-center gap-2">
+              <Zap size={24} className="text-orange-500 dark:text-orange-400" />
+              Ficillo Dhaqso leh
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <Link
+                href="/expenses/add"
+                className="bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/30 dark:to-emerald-800/30 p-4 rounded-lg border border-green-200 dark:border-green-700 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
+              >
+                <div className="bg-green-500/20 dark:bg-green-500/30 p-3 rounded-lg w-fit mb-3 group-hover:scale-110 transition-transform">
+                  <Coins size={24} className="text-green-600 dark:text-green-400" />
                 </div>
-                <div className="flex-1">
-                  <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-1">Wax Digniin Ah Ma Jiraan</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Ganacsigaagu wuxuu ku jiraa xaalad wanaagsan
-                  </p>
+                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">Lacag Dhexdhexaad</h4>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Ku dar lacag dhexdhexaad</p>
+              </Link>
+
+              <Link
+                href="/projects/add"
+                className="bg-gradient-to-br from-blue-50 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-800/30 p-4 rounded-lg border border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
+              >
+                <div className="bg-blue-500/20 dark:bg-blue-500/30 p-3 rounded-lg w-fit mb-3 group-hover:scale-110 transition-transform">
+                  <ClipboardList size={24} className="text-blue-600 dark:text-blue-400" />
                 </div>
+                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">Mashruuc Cusub</h4>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Abuur mashruuc cusub</p>
+              </Link>
+
+              <Link
+                href="/inventory/store"
+                className="bg-gradient-to-br from-orange-50 to-amber-100 dark:from-orange-900/30 dark:to-amber-800/30 p-4 rounded-lg border border-orange-200 dark:border-orange-700 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
+              >
+                <div className="bg-orange-500/20 dark:bg-orange-500/30 p-3 rounded-lg w-fit mb-3 group-hover:scale-110 transition-transform">
+                  <Package size={24} className="text-orange-600 dark:text-orange-400" />
+                </div>
+                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">Alaab Dhexdhexaad</h4>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Maaree alaab</p>
+              </Link>
+
+              <Link
+                href="/reports"
+                className="bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-800/30 p-4 rounded-lg border border-purple-200 dark:border-purple-700 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
+              >
+                <div className="bg-purple-500/20 dark:bg-purple-500/30 p-3 rounded-lg w-fit mb-3 group-hover:scale-110 transition-transform">
+                  <BarChartIcon size={24} className="text-purple-600 dark:text-purple-400" />
+                </div>
+                <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">Warbixin</h4>
+                <p className="text-xs text-gray-600 dark:text-gray-400">Eeg warbixino</p>
+              </Link>
+            </div>
+          </div>
+
+          {/* Smart Notifications Section - Enhanced Design */}
+          <div className="bg-gradient-to-br from-orange-50 to-amber-100 dark:from-orange-900/30 dark:to-amber-800/30 p-6 rounded-xl shadow-lg mb-6 lg:mb-8 animate-fade-in-up border border-orange-200 dark:border-orange-700">
+            <h3 className="text-lg lg:text-xl font-semibold text-darkGray dark:text-gray-100 mb-6 flex items-center gap-2">
+              <Bell size={24} className="text-orange-600 dark:text-orange-400" />
+              Digniino Smart ah
+            </h3>
+            <div className="space-y-4">
+              {/* Good Profit Notification */}
+              {netProfit > 0 && (
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-l-4 border-yellow-500 shadow-md hover:shadow-lg transition-shadow">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-yellow-500/20 dark:bg-yellow-500/30 p-3 rounded-lg">
+                      <Trophy size={24} className="text-yellow-600 dark:text-yellow-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-1">Faa'iido Wanaagsan!</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Waxaad heshay <span className="font-bold text-green-600 dark:text-green-400">{formatCurrency(netProfit)}</span> faa'iido dhab ah
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* No Warnings Notification */}
+              {lowStockItems === 0 && overdueProjects === 0 && (
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-l-4 border-green-500 shadow-md hover:shadow-lg transition-shadow">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-green-500/20 dark:bg-green-500/30 p-3 rounded-lg">
+                      <CheckCircle size={24} className="text-green-600 dark:text-green-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-1">Wax Digniin Ah Ma Jiraan</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Ganacsigaagu wuxuu ku jiraa xaalad wanaagsan
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Low Stock Warning */}
+              {lowStockItems > 0 && (
+                <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-l-4 border-red-500 shadow-md hover:shadow-lg transition-shadow">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-red-500/20 dark:bg-red-500/30 p-3 rounded-lg">
+                      <Package size={24} className="text-red-600 dark:text-red-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-1">Digniin: Alaab Yar!</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <span className="font-bold">{lowStockItems} Alaab</span> ayaa stock-geedu hooseeyaa. Fadlan dib u buuxi.
+                      </p>
+                      <Link href="/inventory/store?status=Low Stock" className="text-primary text-xs font-medium hover:underline mt-2 block">Fiiri &rarr;</Link>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+
+
+
+
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Monthly Financial Trend Chart */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md animate-fade-in-up">
+              <h3 className="text-xl font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
+                <LineChartIcon className="mr-2 text-primary" size={24} />
+                Dhaqdhaqaaqa Lacagta Bishiiba
+              </h3>
+              <div className="chart-container">
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={monthlyFinancialData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" className="dark:stroke-gray-700" vertical={false} />
+                    <XAxis dataKey="month" stroke="#7F8C8D" className="dark:text-gray-400 text-sm" />
+                    <YAxis stroke="#7F8C8D" className="dark:text-gray-400 text-sm" />
+                    <Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #ddd', borderRadius: '8px' }} labelStyle={{ color: '#2C3E50', fontWeight: 'bold' }} itemStyle={{ color: '#2C3E50' }} />
+                    <Legend />
+                    <Line type="monotone" dataKey="income" stroke="#10B981" name="Dakhliga" strokeWidth={3} />
+                    <Line type="monotone" dataKey="expenses" stroke="#EF4444" name="Kharashyada" strokeWidth={3} />
+                    <Line type="monotone" dataKey="profit" stroke="#3B82F6" name="Faa'iidada" strokeWidth={3} />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
             </div>
-          )}
 
-          {/* Low Stock Warning */}
-          {lowStockItems > 0 && (
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-l-4 border-red-500 shadow-md hover:shadow-lg transition-shadow">
-              <div className="flex items-start gap-4">
-                <div className="bg-red-500/20 dark:bg-red-500/30 p-3 rounded-lg">
-                  <Package size={24} className="text-red-600 dark:text-red-400" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-1">Digniin: Alaab Yar!</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    <span className="font-bold">{lowStockItems} Alaab</span> ayaa stock-geedu hooseeyaa. Fadlan dib u buuxi.
-                  </p>
-                  <Link href="/inventory/store?status=Low Stock" className="text-primary text-xs font-medium hover:underline mt-2 block">Fiiri &rarr;</Link>
-                </div>
+            {/* Project Status Breakdown Pie Chart */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md animate-fade-in-up">
+              <h3 className="text-xl font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
+                <PieChartIcon className="mr-2 text-primary" size={24} />
+                Qaybinta Xaaladda Mashruuca
+              </h3>
+              <div className="chart-container">
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={projectStatusBreakdown}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={renderCustomizedLabel}
+                      outerRadius={120}
+                      dataKey="value"
+                    >
+                      {projectStatusBreakdown.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ backgroundColor: 'white', border: '1px solid #ddd', borderRadius: '8px' }}
+                      labelStyle={{ color: '#2C3E50', fontWeight: 'bold' }}
+                      itemStyle={{ color: '#2C3E50' }}
+                    />
+                    <Legend align="right" verticalAlign="middle" layout="vertical" wrapperStyle={{ paddingLeft: '20px' }} />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
             </div>
-          )}
-        </div>
-      </div>
-
-
-
-
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Monthly Financial Trend Chart */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md animate-fade-in-up">
-          <h3 className="text-xl font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
-            <LineChartIcon className="mr-2 text-primary" size={24} />
-            Dhaqdhaqaaqa Lacagta Bishiiba
-          </h3>
-          <div className="chart-container">
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={monthlyFinancialData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" className="dark:stroke-gray-700" vertical={false} />
-                <XAxis dataKey="month" stroke="#7F8C8D" className="dark:text-gray-400 text-sm" />
-                <YAxis stroke="#7F8C8D" className="dark:text-gray-400 text-sm" />
-                <Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #ddd', borderRadius: '8px' }} labelStyle={{ color: '#2C3E50', fontWeight: 'bold' }} itemStyle={{ color: '#2C3E50' }} />
-                <Legend />
-                <Line type="monotone" dataKey="income" stroke="#10B981" name="Dakhliga" strokeWidth={3} />
-                <Line type="monotone" dataKey="expenses" stroke="#EF4444" name="Kharashyada" strokeWidth={3} />
-                <Line type="monotone" dataKey="profit" stroke="#3B82F6" name="Faa'iidada" strokeWidth={3} />
-              </LineChart>
-            </ResponsiveContainer>
           </div>
-        </div>
 
-        {/* Project Status Breakdown Pie Chart */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md animate-fade-in-up">
-          <h3 className="text-xl font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
-            <PieChartIcon className="mr-2 text-primary" size={24} />
-            Qaybinta Xaaladda Mashruuca
-          </h3>
-          <div className="chart-container">
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={projectStatusBreakdown}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={renderCustomizedLabel}
-                  outerRadius={120}
-                  dataKey="value"
-                >
-                  {projectStatusBreakdown.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{ backgroundColor: 'white', border: '1px solid #ddd', borderRadius: '8px' }}
-                  labelStyle={{ color: '#2C3E50', fontWeight: 'bold' }}
-                  itemStyle={{ color: '#2C3E50' }}
-                />
-                <Legend align="right" verticalAlign="middle" layout="vertical" wrapperStyle={{ paddingLeft: '20px' }} />
-              </PieChart>
-            </ResponsiveContainer>
+          {/* Recent Activity Section */}
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md animate-fade-in-up">
+            <h3 className="text-xl font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
+              <MessageSquare className="mr-2 text-primary" size={24} />
+              Dhaqdhaqaaqa Dhawaan
+            </h3>
+            <ul className="space-y-3">
+              {recentActivities.length > 0 ? (
+                recentActivities.map(activity => (
+                  <ActivityItem key={activity.id} activity={activity} formatCurrency={formatCurrency} />
+                ))
+              ) : (
+                <li className="text-mediumGray dark:text-gray-400">Ma jiraan dhaqdhaqaaq dhawaan ah.</li>
+              )}
+            </ul>
+            <Link href="/accounting" className="mt-4 block text-primary hover:underline text-sm font-medium">Fiiri Dhammaan Dhaqdhaqaaqa &rarr;</Link>
           </div>
+
+          {/* Summary Cards Section - Matching Reports Design */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8 animate-fade-in-up">
+            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md text-center border-l-4 border-secondary">
+              <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Mashaariic Guud</h4>
+              <p className="text-xl md:text-3xl font-extrabold text-secondary">{totalProjects}</p>
+              <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Dhammaan mashaariicda</p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md text-center border-l-4 border-primary">
+              <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Dhammaystiran</h4>
+              <p className="text-xl md:text-3xl font-extrabold text-primary">{completedProjects}</p>
+              <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Mashaariic la dhammaystiray</p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md text-center border-l-4 border-accent">
+              <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Hantida Guud</h4>
+              <p className="text-xl md:text-3xl font-extrabold text-accent">{formatCurrency(currentTotalBalance)}</p>
+              <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Bank + Mobile + Cash</p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md text-center border-l-4 border-redError">
+              <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Dib u Dhacay</h4>
+              <p className="text-xl md:text-3xl font-extrabold text-redError">{overdueProjects}</p>
+              <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Mashaariic dib u dhacay</p>
+            </div>
+          </div>
+
+
+
+
+
+
+
+
+
+          {/* Quick Add Floating Button (already in Layout.tsx) */}
         </div>
       </div>
-
-      {/* Recent Activity Section */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md animate-fade-in-up">
-        <h3 className="text-xl font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center">
-          <MessageSquare className="mr-2 text-primary" size={24} />
-          Dhaqdhaqaaqa Dhawaan
-        </h3>
-        <ul className="space-y-3">
-          {recentActivities.length > 0 ? (
-            recentActivities.map(activity => (
-              <ActivityItem key={activity.id} activity={activity} formatCurrency={formatCurrency} />
-            ))
-          ) : (
-            <li className="text-mediumGray dark:text-gray-400">Ma jiraan dhaqdhaqaaq dhawaan ah.</li>
-          )}
-        </ul>
-        <Link href="/accounting" className="mt-4 block text-primary hover:underline text-sm font-medium">Fiiri Dhammaan Dhaqdhaqaaqa &rarr;</Link>
-      </div>
-
-      {/* Summary Cards Section - Matching Reports Design */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8 animate-fade-in-up">
-        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md text-center border-l-4 border-secondary">
-          <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Mashaariic Guud</h4>
-          <p className="text-xl md:text-3xl font-extrabold text-secondary">{totalProjects}</p>
-          <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Dhammaan mashaariicda</p>
-        </div>
-        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md text-center border-l-4 border-primary">
-          <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Dhammaystiran</h4>
-          <p className="text-xl md:text-3xl font-extrabold text-primary">{completedProjects}</p>
-          <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Mashaariic la dhammaystiray</p>
-        </div>
-        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md text-center border-l-4 border-accent">
-          <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Hantida Guud</h4>
-          <p className="text-xl md:text-3xl font-extrabold text-accent">{formatCurrency(currentTotalBalance)}</p>
-          <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Bank + Mobile + Cash</p>
-        </div>
-        <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md text-center border-l-4 border-redError">
-          <h4 className="text-sm md:text-lg font-semibold text-mediumGray dark:text-gray-400 mb-2">Dib u Dhacay</h4>
-          <p className="text-xl md:text-3xl font-extrabold text-redError">{overdueProjects}</p>
-          <p className="text-xs md:text-sm text-mediumGray dark:text-gray-400 mt-1">Mashaariic dib u dhacay</p>
-        </div>
-      </div>
-
-
-
-
-
-
-
-
-
-      {/* Quick Add Floating Button (already in Layout.tsx) */}
     </Layout>
   );
   // ...existing code...

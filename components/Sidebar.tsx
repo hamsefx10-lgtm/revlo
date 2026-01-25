@@ -3,7 +3,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { LayoutDashboard, Briefcase, DollarSign, Warehouse, Users, Truck, LineChart, Settings, X, ChevronLast, ChevronFirst } from 'lucide-react'; // Icons: X (close) and new ChevronLast/First
+import { LayoutDashboard, Briefcase, DollarSign, Warehouse, Users, Truck, LineChart, Settings, X, ChevronLast, ChevronFirst, Trash2 } from 'lucide-react'; // Icons: X (close) and new ChevronLast/First
 
 interface NavItemProps {
   name: string;
@@ -15,9 +15,9 @@ interface NavItemProps {
 
 const NavItem: React.FC<NavItemProps> = ({ name, href, icon, isCollapsed, onClick }) => (
   <li>
-    <Link 
-      href={href} 
-      onClick={onClick} 
+    <Link
+      href={href}
+      onClick={onClick}
       className="flex items-center space-x-3 text-lg py-2 px-3 rounded-lg text-white hover:bg-primary transition-all duration-200 group relative"
     >
       <div className={`text-2xl group-hover:scale-110 transition-transform duration-200 ${isCollapsed ? 'mx-auto' : ''}`}>{icon}</div>
@@ -59,8 +59,8 @@ const Sidebar: React.FC<SidebarProps> = ({ setIsSidebarOpen, isCollapsed }) => {
             </h2>
           )}
           {/* Close button for mobile sidebar */}
-          <button 
-            onClick={() => setIsSidebarOpen(false)} 
+          <button
+            onClick={() => setIsSidebarOpen(false)}
             className="md:hidden text-white hover:text-primary transition-colors duration-200"
           >
             <X size={28} />
@@ -71,25 +71,34 @@ const Sidebar: React.FC<SidebarProps> = ({ setIsSidebarOpen, isCollapsed }) => {
         <nav className="space-y-2">
           <ul className="space-y-2">
             {navItems.map((item) => (
-              <NavItem 
-                key={item.name} 
-                {...item} 
-                isCollapsed={isCollapsed} 
+              <NavItem
+                key={item.name}
+                {...item}
+                isCollapsed={isCollapsed}
                 onClick={() => setIsSidebarOpen(false)} // Close mobile sidebar on click
               />
             ))}
+
+            {/* Recycle Bin Link - Added to main nav for visibility or bottom section */}
           </ul>
         </nav>
       </div>
 
       {/* Settings Link at the bottom */}
-      <div className="mt-8 pt-4 border-t border-gray-700">
-        <NavItem 
-          name="Settings" 
-          href="/settings" 
-          icon={<Settings />} 
-          isCollapsed={isCollapsed} 
-          onClick={() => setIsSidebarOpen(false)} 
+      <div className="mt-8 pt-4 border-t border-gray-700 space-y-2">
+        <NavItem
+          name="Recycle Bin"
+          href="/recycle-bin"
+          icon={<Trash2 />}
+          isCollapsed={isCollapsed}
+          onClick={() => setIsSidebarOpen(false)}
+        />
+        <NavItem
+          name="Settings"
+          href="/settings"
+          icon={<Settings />}
+          isCollapsed={isCollapsed}
+          onClick={() => setIsSidebarOpen(false)}
         />
       </div>
     </aside>

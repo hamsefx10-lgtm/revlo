@@ -5,12 +5,13 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import Layout from '../../../../components/layouts/Layout';
-import { 
-  X, DollarSign, Tag, Calendar, MessageSquare, FileUp, Camera, Upload, 
+import {
+  X, DollarSign, Tag, Calendar, MessageSquare, FileUp, Camera, Upload,
   Info, ReceiptText, Briefcase, Users, HardHat, Truck, Home, CreditCard, Clock, Plus, Loader2, CheckCircle, XCircle, ChevronRight, ArrowLeft,
   Package, MinusCircle, Building, User, Coins, Save
 } from 'lucide-react';
 import Toast from '../../../../components/common/Toast';
+import { MaterialExpenseForm } from '@/components/expenses/MaterialExpenseForm';
 import { calculateEmployeeSalary } from '@/lib/utils';
 
 export default function EditExpensePage() {
@@ -30,13 +31,14 @@ export default function EditExpensePage() {
 
   // Common fields for all expense types
   const [amount, setAmount] = useState<number | ''>('');
-  const [paidFrom, setPaidFrom] = useState('Cash'); 
-  const [expenseDate, setExpenseDate] = useState(new Date().toISOString().split('T')[0]); 
+  const [paidFrom, setPaidFrom] = useState('Cash');
+  const [expenseDate, setExpenseDate] = useState(new Date().toISOString().split('T')[0]);
   const [note, setNote] = useState('');
   const [selectedProject, setSelectedProject] = useState('');
+  const [receiptImage, setReceiptImage] = useState<File | null>(null);
 
   // Specific fields for different categories
-  const [materials, setMaterials] = useState([{ id: 1, name: '', qty: '', price: '', unit: '' }]); 
+  const [materials, setMaterials] = useState([{ id: 1, name: '', qty: '', price: '', unit: '' }]);
   // Material date tracking
   const [materialDate, setMaterialDate] = useState(new Date().toISOString().split('T')[0]);
   const [workDescription, setWorkDescription] = useState('');
@@ -44,18 +46,18 @@ export default function EditExpensePage() {
   const [laborPaidAmount, setLaborPaidAmount] = useState<number | ''>('');
   const [transportType, setTransportType] = useState('');
   const [taxiXamaalType, setTaxiXamaalType] = useState(''); // 'Taxi' or 'Xamaal'
-  
+
   // Vendor payment tracking fields
   const [selectedVendor, setSelectedVendor] = useState('');
   const [paymentStatus, setPaymentStatus] = useState('UNPAID'); // PAID, UNPAID
   const [invoiceNumber, setInvoiceNumber] = useState('');
-  
+
   // Company Labor wage tracking
   const [previousWageInfo, setPreviousWageInfo] = useState<{
     agreedWage: number;
     totalPaid: number;
     remaining: number;
-  } | null>(null); 
+  } | null>(null);
 
   // Company Expense specific fields
   const [companyExpenseType, setCompanyExpenseType] = useState('');
@@ -63,7 +65,7 @@ export default function EditExpensePage() {
   const [salaryPaymentAmount, setSalaryPaymentAmount] = useState<number | ''>('');
   const [salaryPaymentDate, setSalaryPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [officeRentPeriod, setOfficeRentPeriod] = useState('');
-  
+
   // Additional Company Expense fields
   const [electricityMeterReading, setElectricityMeterReading] = useState('');
   const [marketingCampaignName, setMarketingCampaignName] = useState('');
@@ -71,7 +73,7 @@ export default function EditExpensePage() {
   const [loanDate, setLoanDate] = useState('');
   const [debtRepaymentAmount, setDebtRepaymentAmount] = useState<number | ''>('');
   const [selectedDebt, setSelectedDebt] = useState('');
-  
+
   // Maintenance & Repairs fields
   const [assetName, setAssetName] = useState('');
   const [repairType, setRepairType] = useState('');
@@ -79,7 +81,7 @@ export default function EditExpensePage() {
   const [partsUsed, setPartsUsed] = useState([{ id: 1, name: '', cost: '' }]);
   const [laborHours, setLaborHours] = useState<number | ''>('');
   const [hourlyRate, setHourlyRate] = useState<number | ''>('');
-  
+
   // Insurance Premiums fields
   const [insuranceType, setInsuranceType] = useState('');
   const [policyNumber, setPolicyNumber] = useState('');
@@ -88,7 +90,7 @@ export default function EditExpensePage() {
   const [premiumAmount, setPremiumAmount] = useState<number | ''>('');
   const [deductible, setDeductible] = useState<number | ''>('');
   const [insuranceCompany, setInsuranceCompany] = useState('');
-  
+
   // Legal & Compliance fields
   const [legalServiceType, setLegalServiceType] = useState('');
   const [lawyerName, setLawyerName] = useState('');
@@ -96,7 +98,7 @@ export default function EditExpensePage() {
   const [hoursBilled, setHoursBilled] = useState<number | ''>('');
   const [legalHourlyRate, setLegalHourlyRate] = useState<number | ''>('');
   const [additionalCosts, setAdditionalCosts] = useState<number | ''>('');
-  
+
   // Travel & Accommodation fields
   const [travelPurpose, setTravelPurpose] = useState('');
   const [destination, setDestination] = useState('');
@@ -106,7 +108,7 @@ export default function EditExpensePage() {
   const [accommodationCost, setAccommodationCost] = useState<number | ''>('');
   const [mealsCost, setMealsCost] = useState<number | ''>('');
   const [otherTravelCosts, setOtherTravelCosts] = useState<number | ''>('');
-  
+
   // Fuel (Shidaal) fields
   const [selectedVehicle, setSelectedVehicle] = useState('');
   const [vehicleName, setVehicleName] = useState('');
@@ -156,8 +158,8 @@ export default function EditExpensePage() {
           setNote(expense.note || '');
           setDescription(expense.description || '');
           setSelectedProject(expense.project?.id || '');
-                  setAmount(expense.amount);
-          
+          setAmount(expense.amount);
+
           // Populate material date if available
           if (expense.materialDate) {
             setMaterialDate(new Date(expense.materialDate).toISOString().split('T')[0]);
@@ -167,7 +169,7 @@ export default function EditExpensePage() {
           if (!expense.project?.id) {
             // Company expense (no project)
             setExpenseType('company');
-            
+
             // Check if category is a direct company category (not "Company Expense")
             const directCompanyCategories = ['Taxi/Xamaal', 'Company Labor', 'Material', 'Salary'];
             if (directCompanyCategories.includes(expense.category)) {
@@ -315,7 +317,24 @@ export default function EditExpensePage() {
           if (expense.rentalPeriod) setRentalPeriod(expense.rentalPeriod);
           if (expense.rentalFee) setRentalFee(expense.rentalFee);
           if (expense.supplierName) setSupplierName(expense.supplierName);
+          if (expense.transportType) setTransportType(expense.transportType);
+          if (expense.consultantName) setConsultantName(expense.consultantName);
+          if (expense.consultancyType) setConsultancyType(expense.consultancyType);
+          if (expense.consultancyFee) setConsultancyFee(expense.consultancyFee);
+          if (expense.equipmentName) setEquipmentName(expense.equipmentName);
+          if (expense.rentalPeriod) setRentalPeriod(expense.rentalPeriod);
+          if (expense.rentalFee) setRentalFee(expense.rentalFee);
+          if (expense.supplierName) setSupplierName(expense.supplierName);
           if (expense.bankAccountId) setBankAccountId(expense.bankAccountId);
+
+          // Populate Vendor & Payment info for Material/Company Material
+          if (expense.vendor?.id) setSelectedVendor(expense.vendor.id);
+          if (expense.paymentStatus) setPaymentStatus(expense.paymentStatus);
+          if (expense.invoiceNumber) setInvoiceNumber(expense.invoiceNumber);
+          // Map backend paidAmount to local laborPaidAmount state (shared state for paid amount)
+          if (expense.paidAmount !== undefined && expense.paidAmount !== null) {
+            setLaborPaidAmount(expense.paidAmount);
+          }
 
         } catch (error: any) {
           setToastMessage({ message: error.message, type: 'error' });
@@ -326,7 +345,7 @@ export default function EditExpensePage() {
       fetchExpense();
     }
   }, [id]);
-  
+
   // Fetch options from API
   useEffect(() => {
     const fetchRelatedData = async () => {
@@ -364,16 +383,16 @@ export default function EditExpensePage() {
   useEffect(() => {
     if (selectedEmployeeForSalary && expenseType === 'company' && (companyExpenseType === 'Company Labor' || category === 'Company Labor')) {
       // Find previous labor records for this employee
-      const previousRecords = companyLabors.filter(labor => 
+      const previousRecords = companyLabors.filter(labor =>
         labor.employeeId === selectedEmployeeForSalary
       );
-      
+
       if (previousRecords.length > 0) {
         // Calculate total agreed wage and total paid
         const totalAgreedWage = previousRecords.reduce((sum, record) => sum + (record.agreedWage || 0), 0);
         const totalPaid = previousRecords.reduce((sum, record) => sum + (record.paidAmount || 0), 0);
         const remaining = totalAgreedWage - totalPaid;
-        
+
         setPreviousWageInfo({
           agreedWage: totalAgreedWage,
           totalPaid: totalPaid,
@@ -402,13 +421,41 @@ export default function EditExpensePage() {
   };
 
   const validateForm = () => {
-      const errors: { [key: string]: string } = {};
-      if (!category) errors.category = "Category is required.";
-    if (!amount || amount <= 0) errors.amount = "Amount is required and must be greater than 0.";
-      setValidationErrors(errors);
-      return Object.keys(errors).length === 0;
+    const errors: { [key: string]: string } = {};
+
+    // Common validation
+    if (!category) errors.category = "Category is required.";
+
+    // Material & Vendor Validation
+    if (category === 'Material' || (category === 'Company Expense' && companyExpenseType === 'Material')) {
+      if (materials.length === 0) errors.materials = "Fadlan ku dar ugu yaraan hal alaab.";
+      materials.forEach((mat, index) => {
+        if (!mat.name.trim()) errors[`materialName_${index}`] = 'Magaca alaabta waa waajib.';
+        if (typeof parseFloat(mat.qty as string) !== 'number' || parseFloat(mat.qty as string) <= 0) errors[`materialQty_${index}`] = 'Quantity waa inuu noqdaa nambar wanaagsan.';
+        if (typeof parseFloat(mat.price as string) !== 'number' || parseFloat(mat.price as string) <= 0) errors[`materialPrice_${index}`] = 'Qiimaha waa inuu noqdaa nambar wanaagsan.';
+      });
+
+      // Vendor & Payment Validation
+      if (expenseType === 'company' || category === 'Material') { // Valid for both Project & Company Material
+        if (!selectedVendor) errors.selectedVendor = 'Iibiyaha waa waajib.';
+        if (!paymentStatus) errors.paymentStatus = 'Xaaladda lacag bixinta waa waajib.';
+
+        if (paymentStatus === 'PAID' && !paidFrom) errors.paidFrom = 'Akoonka lacagta laga jarayo waa waajib.';
+        if (paymentStatus === 'PARTIAL') {
+          if (!paidFrom) errors.paidFrom = 'Akoonka lacagta laga jarayo waa waajib.';
+          if (!laborPaidAmount || laborPaidAmount <= 0) errors.paidAmount = 'Fadlan geli lacagta la bixiyay.';
+        }
+      }
+    }
+
+    if (!['Material', 'Company Expense'].includes(category)) {
+      if (!amount || amount <= 0) errors.amount = "Amount is required and must be greater than 0.";
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -451,7 +498,7 @@ export default function EditExpensePage() {
       projectId: expenseType === 'project' ? (selectedProject || undefined) : undefined,
       description: finalDescription || undefined,
       amount: category === 'Material' ? totalMaterialCost : (category === 'Company Labor' || companyExpenseType === 'Company Labor' ? laborPaidAmount : amount),
-      materials: category === 'Material' ? materials.map(({id, ...rest}) => rest) : undefined,
+      materials: category === 'Material' ? materials.map(({ id, ...rest }) => rest) : undefined,
       materialDate: category === 'Material' ? materialDate : undefined,
       transportType: (category === 'Taxi/Xamaal' || companyExpenseType === 'Taxi/Xamaal') ? taxiXamaalType : (transportType || undefined),
       consultantName: consultantName || undefined,
@@ -477,8 +524,12 @@ export default function EditExpensePage() {
       marketingCampaignName: companyExpenseType === 'Marketing' ? marketingCampaignName : undefined,
       // Material fields
       selectedVendor: (companyExpenseType === 'Material' || category === 'Material') && expenseType === 'company' ? selectedVendor : undefined,
-      paymentStatus: (companyExpenseType === 'Material' || category === 'Material') && expenseType === 'company' ? paymentStatus : undefined,
-      invoiceNumber: (companyExpenseType === 'Material' || category === 'Material') && expenseType === 'company' ? invoiceNumber : undefined,
+      paymentStatus: (companyExpenseType === 'Material' || category === 'Material') ? paymentStatus : undefined,
+      invoiceNumber: (companyExpenseType === 'Material' || category === 'Material') ? invoiceNumber : undefined,
+      vendorId: (companyExpenseType === 'Material' || category === 'Material') ? selectedVendor : undefined,
+      paidAmount: (companyExpenseType === 'Material' || category === 'Material') ?
+        (paymentStatus === 'PAID' ? totalMaterialCost : (paymentStatus === 'PARTIAL' ? laborPaidAmount : 0))
+        : undefined,
     };
 
     try {
@@ -490,7 +541,7 @@ export default function EditExpensePage() {
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Cusboonaysiinta kharashka way fashilantay');
-      
+
       setToastMessage({ message: 'Kharashka si guul leh ayaa loo cusboonaysiiyay!', type: 'success' });
       router.push(`/expenses/${id}`);
 
@@ -511,7 +562,7 @@ export default function EditExpensePage() {
       </Layout>
     );
   }
-  
+
   const materialUnits = ['pcs', 'sq ft', 'sq m', 'Liter', 'kg', 'box', 'm'];
   const companyExpenseCategories = [
     { value: 'Salary', label: 'Mushahar', icon: Users },
@@ -527,13 +578,13 @@ export default function EditExpensePage() {
     { value: 'Debt', label: 'Deyn (Macmiilka La Siiyay)', icon: Coins },
     { value: 'Other', label: 'Kale', icon: Info },
   ];
-  
+
   // Helper to check if Company Labor form should be shown
   const showCompanyLaborForm = category === 'Company Labor' || (category === 'Company Expense' && companyExpenseType === 'Company Labor');
-  
+
   // Helper to check if Taxi/Xamaal form should be shown
   const showTaxiXamaalForm = category === 'Taxi/Xamaal' || (category === 'Company Expense' && companyExpenseType === 'Taxi/Xamaal');
-  
+
   return (
     <Layout>
       <div className="flex justify-between items-center mb-8">
@@ -547,17 +598,17 @@ export default function EditExpensePage() {
 
       <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 md:p-8 rounded-xl shadow-md animate-fade-in-up">
         <form onSubmit={handleSubmit} className="space-y-6">
-        
+
           {/* Expense Type Display (Read-only) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-              <div>
+            <div>
               <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Nooca Kharashka</label>
               <div className="w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-gray-900 dark:text-gray-100 flex items-center">
                 <Tag className="absolute left-3 text-mediumGray" size={20} />
                 <span>{expenseType === 'company' ? 'Kharashka Shirkadda' : 'Kharashka Mashruuca'}</span>
               </div>
-                </div>
-            
+            </div>
+
             <div>
               <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Qaybta Kharashka</label>
               <div className="w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-gray-900 dark:text-gray-100 flex items-center">
@@ -569,57 +620,48 @@ export default function EditExpensePage() {
 
           {/* Date and Amount */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-              <div>
-                <label htmlFor="expenseDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda <span className="text-redError">*</span></label>
-                 <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray" size={20} />
-                <input type="date" id="expenseDate" required value={expenseDate} onChange={(e) => setExpenseDate(e.target.value)} className="w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-gray-900 dark:text-gray-100"/>
+            <div>
+              <label htmlFor="expenseDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda <span className="text-redError">*</span></label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray" size={20} />
+                <input type="date" id="expenseDate" required value={expenseDate} onChange={(e) => setExpenseDate(e.target.value)} className="w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
               </div>
             </div>
-            
+
             <div>
               <label htmlFor="amount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Qiimaha (ETB) <span className="text-redError">*</span></label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray" size={20} />
-                <input type="number" id="amount" required value={amount} onChange={(e) => setAmount(parseFloat(e.target.value) || '')} className="w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-gray-900 dark:text-gray-100"/>
-                 </div>
+                <input type="number" id="amount" required value={amount} onChange={(e) => setAmount(parseFloat(e.target.value) || '')} className="w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
               </div>
+            </div>
           </div>
-          
-          <hr className="dark:border-gray-600"/>
+
+          <hr className="dark:border-gray-600" />
 
           {/* Material Form */}
           {category === 'Material' && (
-             <div className="p-4 border border-primary/20 rounded-lg bg-primary/5 space-y-4">
+            <div className="p-4 border border-primary/20 rounded-lg bg-primary/5 space-y-4">
               <h3 className="text-lg font-bold text-primary dark:text-blue-300">Faahfaahinta Alaabta</h3>
-              
-              {/* Material Date Section */}
-              <div className="mb-4 p-3 border border-green-200 rounded-lg bg-green-50 dark:bg-green-900/20">
-                <h4 className="text-md font-semibold text-green-700 dark:text-green-300 mb-3">Taariikhda Alaabta</h4>
-                
-                <div className="mb-3">
-                  <label className="block text-sm font-medium mb-1">Taariikhda Alaabta La Qatay <span className="text-red-500">*</span></label>
-                  <input 
-                    type="date" 
-                    value={materialDate} 
-                    onChange={e => setMaterialDate(e.target.value)} 
-                    className="w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary"
-                    required 
-                    title="Taariikhda Alaabta La Qatay"
-                  />
-                </div>
-              </div>
-              {materials.map((material, index) => (
-                <div key={material.id} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-10 gap-3 items-end relative">
-                  <div className="md:col-span-3"><label className="text-xs text-gray-700 dark:text-gray-300">Alaabta</label><input type="text" value={material.name} onChange={(e) => handleMaterialChange(material.id, 'name', e.target.value)} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" title="Magaca Alaabta"/></div>
-                  <div className="md:col-span-2"><label className="text-xs text-gray-700 dark:text-gray-300">Tirada</label><input type="number" value={material.qty} onChange={(e) => handleMaterialChange(material.id, 'qty', e.target.value)} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" title="Tirada Alaabta"/></div>
-                  <div className="md:col-span-2"><label className="text-xs text-gray-700 dark:text-gray-300">Qiimaha</label><input type="number" value={material.price} onChange={(e) => handleMaterialChange(material.id, 'price', e.target.value)} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" title="Qiimaha Alaabta"/></div>
-                  <div className="md:col-span-2"><label className="text-xs text-gray-700 dark:text-gray-300">Cutubka</label><select value={material.unit} onChange={(e) => handleMaterialChange(material.id, 'unit', e.target.value)} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none" title="Cutubka Alaabta"><option>Unit</option>{materialUnits.map(u=><option key={u} value={u}>{u}</option>)}</select></div>
-                  <div className="md:col-span-1"><button type="button" onClick={() => handleRemoveMaterial(material.id)} className="text-redError p-2" title="Tirtir Alaab"><MinusCircle size={20} /></button></div>
-                </div>
-              ))}
-              <button type="button" onClick={handleAddMaterial} className="bg-primary/10 text-primary py-2 px-4 rounded-lg"><Plus size={18} className="mr-2 inline"/>Ku Dar</button>
-              <div className="p-3 bg-primary/10 rounded-lg flex justify-between items-center"><span className="font-semibold">Wadarta:</span><span className="font-extrabold">{totalMaterialCost.toLocaleString()} ETB</span></div>
+
+              <MaterialExpenseForm
+                materials={materials}
+                setMaterials={setMaterials}
+                selectedVendor={selectedVendor}
+                setSelectedVendor={setSelectedVendor}
+                paymentStatus={paymentStatus}
+                setPaymentStatus={setPaymentStatus}
+                paidAmount={typeof laborPaidAmount === 'number' ? laborPaidAmount : ''}
+                setPaidAmount={(val) => setLaborPaidAmount(val)}
+                expenseDate={materialDate}
+                setExpenseDate={setMaterialDate}
+                invoiceNumber={invoiceNumber}
+                setInvoiceNumber={setInvoiceNumber}
+                totalAmount={totalMaterialCost}
+                setTotalAmount={(val) => setAmount(val)}
+                setReceiptImage={setReceiptImage}
+                errors={validationErrors}
+              />
             </div>
           )}
 
@@ -630,11 +672,11 @@ export default function EditExpensePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="transportType" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nooca Gaadiidka</label>
-                  <input type="text" id="transportType" value={transportType} onChange={(e) => setTransportType(e.target.value)} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" placeholder="e.g., Toyota Hilux" title="Nooca Gaadiidka"/>
+                  <input type="text" id="transportType" value={transportType} onChange={(e) => setTransportType(e.target.value)} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" placeholder="e.g., Toyota Hilux" title="Nooca Gaadiidka" />
                 </div>
                 <div>
                   <label htmlFor="transportAmount" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Qiimaha (ETB)</label>
-                  <input type="number" id="transportAmount" value={amount} onChange={(e) => setAmount(parseFloat(e.target.value) || '')} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" title="Qiimaha Gaadiidka"/>
+                  <input type="number" id="transportAmount" value={amount} onChange={(e) => setAmount(parseFloat(e.target.value) || '')} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" title="Qiimaha Gaadiidka" />
                 </div>
               </div>
             </div>
@@ -647,15 +689,15 @@ export default function EditExpensePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="consultantName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Magaca La-taliye</label>
-                  <input type="text" id="consultantName" value={consultantName} onChange={(e) => setConsultantName(e.target.value)} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" title="Magaca La-taliye"/>
+                  <input type="text" id="consultantName" value={consultantName} onChange={(e) => setConsultantName(e.target.value)} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" title="Magaca La-taliye" />
                 </div>
                 <div>
                   <label htmlFor="consultancyType" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nooca La-taliinta</label>
-                  <input type="text" id="consultancyType" value={consultancyType} onChange={(e) => setConsultancyType(e.target.value)} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" title="Nooca La-taliinta"/>
+                  <input type="text" id="consultancyType" value={consultancyType} onChange={(e) => setConsultancyType(e.target.value)} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" title="Nooca La-taliinta" />
                 </div>
                 <div>
                   <label htmlFor="consultancyFee" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Qiimaha (ETB)</label>
-                  <input type="number" id="consultancyFee" value={consultancyFee} onChange={(e) => setConsultancyFee(parseFloat(e.target.value) || '')} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" title="Qiimaha La-taliinta"/>
+                  <input type="number" id="consultancyFee" value={consultancyFee} onChange={(e) => setConsultancyFee(parseFloat(e.target.value) || '')} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" title="Qiimaha La-taliinta" />
                 </div>
               </div>
             </div>
@@ -668,19 +710,19 @@ export default function EditExpensePage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="equipmentName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Magaca Qalabka</label>
-                  <input type="text" id="equipmentName" value={equipmentName} onChange={(e) => setEquipmentName(e.target.value)} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" title="Magaca Qalabka"/>
+                  <input type="text" id="equipmentName" value={equipmentName} onChange={(e) => setEquipmentName(e.target.value)} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" title="Magaca Qalabka" />
                 </div>
                 <div>
                   <label htmlFor="rentalPeriod" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Muddada Kirada</label>
-                  <input type="text" id="rentalPeriod" value={rentalPeriod} onChange={(e) => setRentalPeriod(e.target.value)} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" title="Muddada Kirada"/>
+                  <input type="text" id="rentalPeriod" value={rentalPeriod} onChange={(e) => setRentalPeriod(e.target.value)} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" title="Muddada Kirada" />
                 </div>
                 <div>
                   <label htmlFor="rentalFee" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Qiimaha Kirada (ETB)</label>
-                  <input type="number" id="rentalFee" value={rentalFee} onChange={(e) => setRentalFee(parseFloat(e.target.value) || '')} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" title="Qiimaha Kirada"/>
+                  <input type="number" id="rentalFee" value={rentalFee} onChange={(e) => setRentalFee(parseFloat(e.target.value) || '')} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" title="Qiimaha Kirada" />
                 </div>
                 <div>
                   <label htmlFor="supplierName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Magaca Bixiyaha</label>
-                  <input type="text" id="supplierName" value={supplierName} onChange={(e) => setSupplierName(e.target.value)} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" title="Magaca Bixiyaha"/>
+                  <input type="text" id="supplierName" value={supplierName} onChange={(e) => setSupplierName(e.target.value)} className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" title="Magaca Bixiyaha" />
                 </div>
               </div>
             </div>
@@ -705,14 +747,14 @@ export default function EditExpensePage() {
                   <option value="">-- Dooro Nooca Kharashka Shirkadda --</option>
                   {companyExpenseCategories.map(cat => <option key={cat.value} value={cat.value}>{cat.label}</option>)}
                 </select>
-                {validationErrors.companyExpenseType && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.companyExpenseType}</p>}
+                {validationErrors.companyExpenseType && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.companyExpenseType}</p>}
               </div>
 
               {/* Salary Specific Fields */}
               {companyExpenseType === 'Salary' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-3 border border-dashed border-primary/30 rounded-lg bg-primary/5 animate-fade-in">
                   <h4 className="col-span-full text-base font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Mushaharka</h4>
-                  
+
                   <div className="sm:col-span-2">
                     <label htmlFor="paidFrom_salary" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akoonka Laga Jarayo <span className="text-redError">*</span></label>
                     <div className="relative">
@@ -732,7 +774,7 @@ export default function EditExpensePage() {
                       <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
                     </div>
                   </div>
-                  
+
                   <div>
                     <label htmlFor="selectedEmployeeForSalary" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Dooro Shaqaale <span className="text-redError">*</span></label>
                     <select
@@ -748,7 +790,7 @@ export default function EditExpensePage() {
                       ))}
                     </select>
                   </div>
-                  
+
                   <div>
                     <label htmlFor="salaryPaymentAmount" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Lacagta La Bixinayo (ETB) <span className="text-redError">*</span></label>
                     <input
@@ -761,7 +803,7 @@ export default function EditExpensePage() {
                       className="w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-primary"
                     />
                   </div>
-                  
+
                   <div>
                     <label htmlFor="salaryPaymentDate" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Taariikhda La Bixiyay <span className="text-redError">*</span></label>
                     <div className="relative">
@@ -789,7 +831,7 @@ export default function EditExpensePage() {
                       <option value="">-- Dooro Shaqaale --</option>
                       {employees.map(emp => <option key={emp.id} value={emp.id}>{emp.fullName || emp.name}</option>)}
                     </select>
-                    {validationErrors.selectedEmployeeForSalary && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.selectedEmployeeForSalary}</p>}
+                    {validationErrors.selectedEmployeeForSalary && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.selectedEmployeeForSalary}</p>}
                   </div>
                   <div>
                     <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Mushaharka La Ogolaaday (Agreed)</label>
@@ -859,7 +901,7 @@ export default function EditExpensePage() {
                       </>
                     ) : (
                       <>
-                        <input 
+                        <input
                           type="number"
                           value={wage}
                           onChange={e => setWage(parseFloat(e.target.value) || '')}
@@ -872,7 +914,7 @@ export default function EditExpensePage() {
                         <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">Tani waxay abuurtaa heshiis cusub haddii uusan jirin mid hore.</p>
                       </>
                     )}
-                    {validationErrors.wage && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.wage}</p>}
+                    {validationErrors.wage && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.wage}</p>}
                   </div>
                   <div>
                     <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Lacagta Hadda La Bixiyay ($) <span className="text-redError">*</span></label>
@@ -892,12 +934,12 @@ export default function EditExpensePage() {
                         Ka dib bixintan: <span className="font-semibold">{Math.max(0, previousWageInfo.remaining - (laborPaidAmount || 0)).toLocaleString()} ETB</span> ayaa hadhay.
                       </p>
                     )}
-                    {validationErrors.laborPaidAmount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.laborPaidAmount}</p>}
+                    {validationErrors.laborPaidAmount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.laborPaidAmount}</p>}
                   </div>
                   <div>
                     <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Sharaxaadda Shaqada</label>
                     <input type="text" value={workDescription} onChange={e => setWorkDescription(e.target.value)} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100" placeholder="Sharaxaadda Shaqada" title="Sharaxaadda Shaqada" />
-                    {validationErrors.workDescription && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.workDescription}</p>}
+                    {validationErrors.workDescription && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.workDescription}</p>}
                   </div>
                   <div>
                     <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Shaqada</label>
@@ -909,7 +951,7 @@ export default function EditExpensePage() {
                       <option value="">-- Dooro Akoonka --</option>
                       {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
                     </select>
-                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paidFrom}</p>}
+                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.paidFrom}</p>}
                   </div>
                 </div>
               )}
@@ -920,7 +962,7 @@ export default function EditExpensePage() {
                   <h3 className="text-lg font-bold text-primary dark:text-blue-300 mb-2">
                     {(expenseType as 'project' | 'company') === 'project' ? 'Faahfaahinta Taxi/Xamaal Mashruuca' : 'Faahfaahinta Taxi/Xamaal Shirkadda'}
                   </h3>
-                  
+
                   <div className="mb-4">
                     <label htmlFor="taxiXamaalType" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Nooca *</label>
                     <select
@@ -1057,7 +1099,7 @@ export default function EditExpensePage() {
                       </select>
                       <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
                     </div>
-                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paidFrom}</p>}
+                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.paidFrom}</p>}
                   </div>
                   <div>
                     <label htmlFor="officeRentAmount" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Qiimaha Kirada ($) <span className="text-redError">*</span></label>
@@ -1070,7 +1112,7 @@ export default function EditExpensePage() {
                       placeholder="Tusaale: 1500"
                       className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.amount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                     />
-                    {validationErrors.amount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.amount}</p>}
+                    {validationErrors.amount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.amount}</p>}
                   </div>
                   <div>
                     <label htmlFor="officeRentPeriod" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Muddada Kirada <span className="text-redError">*</span></label>
@@ -1086,7 +1128,7 @@ export default function EditExpensePage() {
                       <option value="Quarterly">Quarterly</option>
                       <option value="Annually">Annually</option>
                     </select>
-                    {validationErrors.officeRentPeriod && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.officeRentPeriod}</p>}
+                    {validationErrors.officeRentPeriod && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.officeRentPeriod}</p>}
                   </div>
                 </div>
               )}
@@ -1114,7 +1156,7 @@ export default function EditExpensePage() {
                       </select>
                       <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
                     </div>
-                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paidFrom}</p>}
+                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.paidFrom}</p>}
                   </div>
                   <div>
                     <label htmlFor="electricityAmount" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Qiimaha Korontada ($) <span className="text-redError">*</span></label>
@@ -1127,7 +1169,7 @@ export default function EditExpensePage() {
                       placeholder="Tusaale: 500"
                       className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.amount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                     />
-                    {validationErrors.amount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.amount}</p>}
+                    {validationErrors.amount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.amount}</p>}
                   </div>
                   <div>
                     <label htmlFor="electricityMeterReading" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Akhriska Mitirka <span className="text-redError">*</span></label>
@@ -1140,7 +1182,7 @@ export default function EditExpensePage() {
                       placeholder="Tusaale: 12345"
                       className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.electricityMeterReading ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                     />
-                    {validationErrors.electricityMeterReading && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.electricityMeterReading}</p>}
+                    {validationErrors.electricityMeterReading && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.electricityMeterReading}</p>}
                   </div>
                 </div>
               )}
@@ -1168,7 +1210,7 @@ export default function EditExpensePage() {
                       </select>
                       <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
                     </div>
-                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paidFrom}</p>}
+                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.paidFrom}</p>}
                   </div>
                   <div>
                     <label htmlFor="marketingCampaignName" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Magaca Ololaha <span className="text-redError">*</span></label>
@@ -1181,7 +1223,7 @@ export default function EditExpensePage() {
                       placeholder="Tusaale: Summer Sale Campaign"
                       className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.marketingCampaignName ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                     />
-                    {validationErrors.marketingCampaignName && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.marketingCampaignName}</p>}
+                    {validationErrors.marketingCampaignName && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.marketingCampaignName}</p>}
                   </div>
                   <div>
                     <label htmlFor="marketingAmount" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Qiimaha Ololaha ($) <span className="text-redError">*</span></label>
@@ -1194,7 +1236,7 @@ export default function EditExpensePage() {
                       placeholder="Tusaale: 1000"
                       className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.amount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                     />
-                    {validationErrors.amount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.amount}</p>}
+                    {validationErrors.amount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.amount}</p>}
                   </div>
                 </div>
               )}
@@ -1221,7 +1263,7 @@ export default function EditExpensePage() {
                       </select>
                       <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={18} />
                     </div>
-                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.paidFrom}</p>}
+                    {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.paidFrom}</p>}
                   </div>
                   <div>
                     <label htmlFor="utilitiesAmount" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Qiimaha Adeegga ($) <span className="text-redError">*</span></label>
@@ -1234,7 +1276,7 @@ export default function EditExpensePage() {
                       placeholder="Tusaale: 100"
                       className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.amount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                     />
-                    {validationErrors.amount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.amount}</p>}
+                    {validationErrors.amount && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.amount}</p>}
                   </div>
                   <div className="md:col-span-2">
                     <label htmlFor="utilitiesDescription" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Faahfaahinta Adeegga <span className="text-redError">*</span></label>
@@ -1247,7 +1289,7 @@ export default function EditExpensePage() {
                       placeholder="Tusaale: Internet, Biyaha, Telefoon, iwm"
                       className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.description ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                     />
-                    {validationErrors.description && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.description}</p>}
+                    {validationErrors.description && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.description}</p>}
                   </div>
                   <div>
                     <label htmlFor="utilitiesDate" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Taariikhda Kharashka <span className="text-redError">*</span></label>
@@ -1259,7 +1301,7 @@ export default function EditExpensePage() {
                       onChange={e => setExpenseDate(e.target.value)}
                       className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary ${validationErrors.expenseDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                     />
-                    {validationErrors.expenseDate && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1"/>{validationErrors.expenseDate}</p>}
+                    {validationErrors.expenseDate && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.expenseDate}</p>}
                   </div>
                   <div className="md:col-span-2">
                     <label htmlFor="utilitiesNote" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Fiiro Gaar Ah (Optional)</label>
@@ -1276,45 +1318,45 @@ export default function EditExpensePage() {
               )}
             </div>
           )}
-          
+
           {/* Other Categories */}
           {category !== 'Material' && category !== 'Transport' && category !== 'Consultancy' && category !== 'Equipment Rental' && category !== 'Company Expense' && category !== 'Company Labor' && category !== 'Taxi/Xamaal' && (
-             <div>
+            <div>
               <label htmlFor="amount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Qiimaha (ETB)</label>
-              <input type="number" id="amount" value={amount} onChange={e => setAmount(parseFloat(e.target.value) || '')} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-gray-900 dark:text-gray-100"/>
+              <input type="number" id="amount" value={amount} onChange={e => setAmount(parseFloat(e.target.value) || '')} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
             </div>
-           )}
+          )}
 
-          <hr className="dark:border-gray-600"/>
-          
+          <hr className="dark:border-gray-600" />
+
           {/* Common Fields at the bottom */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-              <div>
-                <label htmlFor="paidFrom" className="block text-md font-medium text-darkGray dark:text-gray-300">Akoonka Laga Jarayo</label>
-                <select id="paidFrom" required value={paidFrom} onChange={e => setPaidFrom(e.target.value)} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-gray-900 dark:text-gray-100">
-                  <option value="">-- Dooro Akoonka --</option>
-                  {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="selectedProject" className="block text-md font-medium text-darkGray dark:text-gray-300">Mashruuc La Xiriira (Ikhtiyaari)</label>
-                <select id="selectedProject" value={selectedProject} onChange={e => setSelectedProject(e.target.value)} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-gray-900 dark:text-gray-100">
-                  <option value="">-- No Project --</option>
-                  {projects.map(proj => <option key={proj.id} value={proj.id}>{proj.name}</option>)}
-                </select>
-              </div>
+            <div>
+              <label htmlFor="paidFrom" className="block text-md font-medium text-darkGray dark:text-gray-300">Akoonka Laga Jarayo</label>
+              <select id="paidFrom" required value={paidFrom} onChange={e => setPaidFrom(e.target.value)} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                <option value="">-- Dooro Akoonka --</option>
+                {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="selectedProject" className="block text-md font-medium text-darkGray dark:text-gray-300">Mashruuc La Xiriira (Ikhtiyaari)</label>
+              <select id="selectedProject" value={selectedProject} onChange={e => setSelectedProject(e.target.value)} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                <option value="">-- No Project --</option>
+                {projects.map(proj => <option key={proj.id} value={proj.id}>{proj.name}</option>)}
+              </select>
+            </div>
           </div>
-          
+
           <div>
             <label htmlFor="description" className="block text-md font-medium text-darkGray dark:text-gray-300">Sharaxaad</label>
             <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-gray-900 dark:text-gray-100"></textarea>
           </div>
-          
+
           <div>
             <label htmlFor="note" className="block text-md font-medium text-darkGray dark:text-gray-300">Fiiro Gaar Ah (Ikhtiyaari)</label>
             <textarea id="note" value={note} onChange={(e) => setNote(e.target.value)} rows={3} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-gray-900 dark:text-gray-100"></textarea>
           </div>
-          
+
           <button type="submit" className="w-full bg-secondary text-white py-3 rounded-lg font-bold text-lg hover:bg-green-600 flex items-center justify-center" disabled={loading}>
             {loading ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2" />}
             {loading ? 'Cusboonaysiinaya...' : 'Kaydi Isbedelada'}

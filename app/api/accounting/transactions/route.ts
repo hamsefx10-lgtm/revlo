@@ -109,8 +109,11 @@ export async function POST(request: Request) {
     const {
       description, amount, type, transactionDate, note,
       accountId, // Account ID
-      projectId, expenseId, customerId, employeeId // Related entity IDs (vendorId removed temporarily)
+      projectId, expenseId, customerId, itemVendorId, employeeId // itemVendorId renamed from vendorId to avoid conflict if any, but let's stick to schema
     } = await request.json();
+
+    // Use vendorId from request but ensure we map it correctly
+    const vendorId = (await request.json()).vendorId;
 
     if (!description || typeof amount !== 'number' || !type || !transactionDate) {
       return NextResponse.json(
@@ -150,10 +153,10 @@ export async function POST(request: Request) {
       const customer = await prisma.customer.findFirst({ where: { id: customerId, companyId } });
       if (!customer) return NextResponse.json({ message: 'Macmiilka la xiriira lama helin.' }, { status: 400 });
     }
-    /* if (vendorId) {
-      const vendor = await prisma.vendor.findFirst({ where: { id: vendorId, companyId } });
+    if (vendorId) {
+      const vendor = await prisma.shopVendor.findFirst({ where: { id: vendorId, companyId } });
       if (!vendor) return NextResponse.json({ message: 'Iibiyaha la xiriira lama helin.' }, { status: 400 });
-    } */
+    }
     if (employeeId) {
       const employee = await prisma.employee.findFirst({ where: { id: employeeId, companyId } });
       if (!employee) return NextResponse.json({ message: 'Shaqaalaha la xiriira lama helin.' }, { status: 400 });
@@ -171,7 +174,7 @@ export async function POST(request: Request) {
         projectId: projectId || null,
         expenseId: expenseId || null,
         customerId: customerId || null,
-        // vendorId: vendorId || null,
+        vendorId: vendorId || null,
         employeeId: employeeId || null,
         userId,
         companyId,
@@ -186,18 +189,56 @@ export async function POST(request: Request) {
     // - DEBT_TAKEN: Company taking a loan (money received) → Balance INCREASES
     // - EXPENSE: Money going OUT for expenses → Balance DECREASES
     //
-    if (type === 'INCOME' || type === 'DEBT_REPAID' || type === 'DEBT_TAKEN') {
-      // Money flowing INTO the account (INCREASES balance)
+    // Accounting Logic Refined:
+
+    // 1. INCOME: Money IN from Sales/Deposits -> INCREASES Balance
+    if (type === 'INCOME') {
       await prisma.account.update({
         where: { id: primaryAccount.id },
         data: { balance: primaryAccount.balance + Math.abs(amount) },
       });
-    } else if (type === 'EXPENSE') {
-      // Money flowing OUT of the account (DECREASES balance)
+    }
+
+    // 2. EXPENSE: Money OUT for Costs -> DECREASES Balance
+    else if (type === 'EXPENSE') {
       await prisma.account.update({
         where: { id: primaryAccount.id },
         data: { balance: primaryAccount.balance - Math.abs(amount) },
       });
+    }
+
+    // 3. DEBT_TAKEN: Money Received (Loan) -> INCREASES Balance
+    else if (type === 'DEBT_TAKEN') {
+      await prisma.account.update({
+        where: { id: primaryAccount.id },
+        data: { balance: primaryAccount.balance + Math.abs(amount) },
+      });
+    }
+
+    // 4. DEBT_REPAID: Complexity here (Money IN or OUT?)
+    else if (type === 'DEBT_REPAID') {
+      // If we are paying back a Vendor (Liability) -> Money OUT
+      if (vendorId) {
+        await prisma.account.update({
+          where: { id: primaryAccount.id },
+          data: { balance: primaryAccount.balance - Math.abs(amount) },
+        });
+      }
+      // If we are collecting debt from a Customer/Project (Receivable) -> Money IN
+      else if (customerId || projectId) {
+        await prisma.account.update({
+          where: { id: primaryAccount.id },
+          data: { balance: primaryAccount.balance + Math.abs(amount) },
+        });
+      }
+      // Fallback: If unknown, assume Money IN (legacy behavior) or handle as error? 
+      // Let's assume Money IN for safety if it matches old "Customer Repayment" logic, but ideally we should be strict.
+      else {
+        await prisma.account.update({
+          where: { id: primaryAccount.id },
+          data: { balance: primaryAccount.balance + Math.abs(amount) },
+        });
+      }
     }
 
     // Notify about transaction creation for real-time updates

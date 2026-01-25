@@ -221,8 +221,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ message: 'Kharashka lama helin.' }, { status: 404 });
     }
 
-    // 1. Refund old account balance (add back the amount that was deducted)
-    // For Company Labor, we need to get the paid amount from CompanyLabor record
+    // 1. Refund old account balance
     let oldAmount = Number(existingExpense.amount);
     if (existingExpense.category === 'Company Labor' && existingExpense.employeeId) {
       const oldCompanyLabor = await prisma.companyLabor.findFirst({
@@ -240,11 +239,26 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       }
     }
 
-    if (existingExpense.paidFrom && oldAmount) {
+    // Resolve Account ID for refund
+    let accountIdToRefund = existingExpense.accountId;
+    if (!accountIdToRefund && existingExpense.paidFrom) {
+      // specific check: if paidFrom looks like an ID, check it first
+      const byId = await prisma.account.findUnique({ where: { id: existingExpense.paidFrom } });
+      if (byId) accountIdToRefund = byId.id;
+      else {
+        const byName = await prisma.account.findUnique({ where: { name_companyId: { name: existingExpense.paidFrom, companyId } } });
+        // Note: account has @@unique([name, companyId]) so findUnique works if we use composite
+        // But easier to use findFirst to be safe with partial matches or if defined differently
+        const byNameSafe = await prisma.account.findFirst({ where: { name: existingExpense.paidFrom, companyId } });
+        accountIdToRefund = byNameSafe?.id || null;
+      }
+    }
+
+    if (accountIdToRefund && oldAmount) {
       await prisma.account.update({
-        where: { id: existingExpense.paidFrom },
+        where: { id: accountIdToRefund },
         data: {
-          balance: { increment: oldAmount }, // Soo celi lacagta hore
+          balance: { increment: oldAmount },
         },
       });
     }
@@ -452,7 +466,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-// DELETE /api/expenses/[id] - Tirtir kharash gaar ah
+// DELETE /api/expenses/[id] - Tirtir kharash gaar ah (With Recycle Bin)
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
@@ -472,23 +486,41 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       ? new Date(existingExpense.expenseDate)
       : null;
 
+    // Resolve Account ID for refund
+    let accountIdToRefund = existingExpense.accountId;
+    if (!accountIdToRefund && existingExpense.paidFrom) {
+      const byId = await prisma.account.findUnique({ where: { id: existingExpense.paidFrom } });
+      if (byId) accountIdToRefund = byId.id;
+      else {
+        const byNameSafe = await prisma.account.findFirst({ where: { name: existingExpense.paidFrom, companyId } });
+        accountIdToRefund = byNameSafe?.id || null;
+      }
+    }
+
     // Use interactive transaction to ensure atomicity
     await prisma.$transaction(async (tx) => {
-      // 1. Refund account balance (add back the amount that was deducted)
-      // Only do this if paidFrom exists AND amount exists
-      if (existingExpense.paidFrom && existingExpense.amount) {
-        // Double check this isn't a "Debt" that shouldn't have been deducted
-        // But since we are deleting, we revert whatever happened. 
-        // If it was deducted, we add it back.
+      // 0. Archive to Recycle Bin
+      await tx.deletedItem.create({
+        data: {
+          modelName: 'Expense',
+          originalId: id,
+          data: JSON.parse(JSON.stringify(existingExpense)),
+          companyId,
+          deletedBy: existingExpense.userId,
+        }
+      });
+
+      // 1. Refund account balance
+      if (accountIdToRefund && existingExpense.amount) {
         await tx.account.update({
-          where: { id: existingExpense.paidFrom },
+          where: { id: accountIdToRefund },
           data: {
-            balance: { increment: Number(existingExpense.amount) }, // Soo celi lacagta
+            balance: { increment: Number(existingExpense.amount) },
           },
         });
       }
 
-      // 2. If this was a salary payment, decrement salaryPaidThisMonth for the employee
+      // 2. If this was a salary payment
       if (existingExpense.category === 'Company Expense' && existingExpense.subCategory === 'Salary' && existingExpense.employeeId && existingExpense.amount) {
         await tx.employee.update({
           where: { id: existingExpense.employeeId },
@@ -498,16 +530,19 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
         });
       }
 
-      // 3. Delete related transactions (Customer Debt, Vendor Debt, etc.)
-      // This handles the user's request: "customerkina transactionkiisi... waa inuu iska saara"
+      // 3. Delete related transactions
       await tx.transaction.deleteMany({
         where: { expenseId: id }
       });
 
-      // 3b. Labor cleanup is specific and handled via helper below to avoid complex transaction logic
+      // 4. Finally Delete the expense
+      await tx.expense.delete({
+        where: { id }
+      });
     });
 
-    // Run Labor cleanup separately (safe mode)
+    // Run Labor cleanup separately (safe mode) - This logic remains outside transaction as it was before
+    // Although ideally it should be inside, keeping it as is to minimize regression risk on labor helper logic
     if (
       existingExpense.category &&
       (existingExpense.category === 'Labor' || existingExpense.category.toLowerCase() === 'labor') &&
@@ -526,13 +561,8 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       }
     }
 
-    // 4. Finally Delete the expense matching ID and Company
-    await prisma.expense.delete({
-      where: { id }
-    });
-
     return NextResponse.json(
-      { message: 'Kharashka si guul leh ayaa loo tirtiray!' },
+      { message: 'Kharashka si guul leh ayaa loo tirtiray oo Recycle Bin la geeyay!' },
       { status: 200 }
     );
   } catch (error) {

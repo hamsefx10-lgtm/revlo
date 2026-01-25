@@ -5,8 +5,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Layout from '../../../../components/layouts/Layout';
-import { 
-  ArrowLeft, Plus, Search, Filter, Calendar, List, LayoutGrid, 
+import {
+  ArrowLeft, Plus, Search, Filter, Calendar, List, LayoutGrid,
   DollarSign, CreditCard, Banknote, RefreshCw, Eye, Edit, Trash2,
   TrendingUp, TrendingDown, Info as InfoIcon, CheckCircle, XCircle, Clock as ClockIcon,
   User as UserIcon, Briefcase as BriefcaseIcon, Tag as TagIcon,
@@ -21,7 +21,7 @@ export default function AddTransactionPage() {
   const [amount, setAmount] = useState<number | ''>('');
   const [transactionDate, setTransactionDate] = useState(new Date().toISOString().split('T')[0]);
   const [note, setNote] = useState('');
-  
+
   // Account fields
   const [selectedAccount, setSelectedAccount] = useState(''); // Primary account
 
@@ -83,8 +83,12 @@ export default function AddTransactionPage() {
         setCustomers(customersData.customers || []);
         setVendors(vendorsData.vendors || []);
         setEmployees(employeesData.employees || []);
-        // Only set debts for DEBT_REPAID from the debts API
-        setDebts(debtsData.debts || []);
+        // Combine debts (vendors/projects) and receivables (customers) for the dropdown
+        const allDebts = [
+          ...(debtsData.debts || []),
+          ...(debtsData.receivables || [])
+        ];
+        setDebts(allDebts);
       } catch (error: any) {
         setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka xogta la soo gelinayay.', type: 'error' });
       } finally {
@@ -107,7 +111,7 @@ export default function AddTransactionPage() {
       if (!lenderName.trim()) newErrors.lenderName = 'Magaca deyn bixiyaha waa waajib.';
       if (!loanDate) newErrors.loanDate = 'Taariikhda deynta waa waajib.';
     }
-    if (transactionType === 'DEBT_REPAID') {
+    if (transactionType === 'DEBT_REPAID' || transactionType === 'PAY_VENDOR_DEBT' || transactionType === 'COLLECT_CUSTOMER_DEBT') {
       if (!selectedDebtToRepay) newErrors.selectedDebtToRepay = 'Deynta la bixinayo waa waajib.';
     }
 
@@ -128,19 +132,60 @@ export default function AddTransactionPage() {
       return;
     }
 
+    // Determine the actual API transaction type
+    let apiTransactionType = transactionType;
+    if (transactionType === 'PAY_VENDOR_DEBT' || transactionType === 'COLLECT_CUSTOMER_DEBT') {
+      apiTransactionType = 'DEBT_REPAID';
+    }
+
     const transactionData: any = {
       description,
       amount: Math.abs(amount as number), // Always positive, API handles the logic
-      type: transactionType,
+      type: apiTransactionType,
       transactionDate,
       note: note || null,
       accountId: selectedAccount,
       projectId: relatedProject || null,
       expenseId: relatedExpense || null,
-      customerId: relatedCustomer || (transactionType === 'DEBT_REPAID' ? selectedDebtToRepay : null),
+      customerId: relatedCustomer || null,
       vendorId: relatedVendor || null,
       employeeId: relatedEmployee || null,
     };
+
+    // Specific logic for DEBT_REPAID (and its split versions)
+    if (apiTransactionType === 'DEBT_REPAID' && selectedDebtToRepay) {
+      const debt = debts.find(d => d.id === selectedDebtToRepay);
+      if (debt) {
+        // Clear default related entities
+        transactionData.customerId = null;
+        transactionData.vendorId = null;
+        transactionData.projectId = debt.projectId || null;
+
+        // Logic based on the specific split types
+        if (transactionType === 'PAY_VENDOR_DEBT') {
+          // Explicitly Paying a Vendor
+          if (debt.lenderId) {
+            transactionData.vendorId = debt.lenderId;
+          } else {
+            transactionData.vendorId = debt.id; // Fallback
+          }
+        }
+        else if (transactionType === 'COLLECT_CUSTOMER_DEBT') {
+          // Explicitly Collecting from Customer
+          if (debt.clientId || debt.customerId) {
+            transactionData.customerId = debt.clientId || debt.customerId;
+          }
+        }
+        else {
+          if (debt.customerId || debt.clientId) {
+            transactionData.customerId = debt.customerId || debt.clientId;
+          }
+          else if (debt.lenderId) {
+            transactionData.vendorId = debt.lenderId;
+          }
+        }
+      }
+    }
 
     try {
       const response = await fetch('/api/accounting/transactions', {
@@ -255,12 +300,13 @@ export default function AddTransactionPage() {
                 <option value="INCOME">Dakhli (Soo Gal)</option>
                 <option value="EXPENSE">Kharash (Baxay)</option>
                 <option value="DEBT_TAKEN">Deyn (La Qaatay)</option>
-                <option value="DEBT_REPAID">Deyn (La Bixiyay)</option>
+                <option value="PAY_VENDOR_DEBT">Bixi Deyn (Vendor/Iibiye)</option>
+                <option value="COLLECT_CUSTOMER_DEBT">Soo Xaree Deyn (Macmiil)</option>
                 <option value="OTHER">Kale</option>
               </select>
               <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
             </div>
-            {validationErrors.transactionType && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1"/>{validationErrors.transactionType}</p>}
+            {validationErrors.transactionType && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.transactionType}</p>}
           </div>
 
           {/* Description & Amount (Common for most) */}
@@ -279,7 +325,7 @@ export default function AddTransactionPage() {
                     className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.description ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                   />
                 </div>
-                {validationErrors.description && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1"/>{validationErrors.description}</p>}
+                {validationErrors.description && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.description}</p>}
               </div>
               <div>
                 <label htmlFor="amount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Qiimaha ($) <span className="text-redError">*</span></label>
@@ -294,7 +340,7 @@ export default function AddTransactionPage() {
                     className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.amount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                   />
                 </div>
-                {validationErrors.amount && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1"/>{validationErrors.amount}</p>}
+                {validationErrors.amount && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.amount}</p>}
               </div>
             </div>
           )}
@@ -312,11 +358,11 @@ export default function AddTransactionPage() {
                   className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.selectedAccount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 >
                   <option value="">-- Dooro Account --</option>
-          {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name} (${acc.balance?.toLocaleString?.() ?? acc.balance})</option>)}
+                  {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name} (${acc.balance?.toLocaleString?.() ?? acc.balance})</option>)}
                 </select>
                 <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
               </div>
-              {validationErrors.selectedAccount && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1"/>{validationErrors.selectedAccount}</p>}
+              {validationErrors.selectedAccount && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.selectedAccount}</p>}
             </div>
           )}
 
@@ -338,7 +384,7 @@ export default function AddTransactionPage() {
                     className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.lenderName ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                   />
                 </div>
-                {validationErrors.lenderName && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1"/>{validationErrors.lenderName}</p>}
+                {validationErrors.lenderName && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.lenderName}</p>}
               </div>
               <div>
                 <label htmlFor="loanDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Deynta <span className="text-redError">*</span></label>
@@ -352,14 +398,73 @@ export default function AddTransactionPage() {
                     className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.loanDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                   />
                 </div>
-                {validationErrors.loanDate && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1"/>{validationErrors.loanDate}</p>}
+                {validationErrors.loanDate && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.loanDate}</p>}
               </div>
             </div>
           )}
 
-          {/* Debt Repaid Specific Fields */}
+          {/* Pay Vendor Debt (Accounts Payable) */}
+          {transactionType === 'PAY_VENDOR_DEBT' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border border-orange-500/20 rounded-lg bg-orange-500/5 animate-fade-in">
+              <h3 className="col-span-full text-lg font-bold text-orange-600 dark:text-orange-400 mb-2">Bixi Deyn (Vendor/Iibiye)</h3>
+              <div className="col-span-2">
+                <label htmlFor="selectedDebtToRepay" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Dooro Deynta La Bixinayo (Vendor) <span className="text-redError">*</span></label>
+                <div className="relative">
+                  <Scale className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
+                  <select
+                    id="selectedDebtToRepay"
+                    value={selectedDebtToRepay}
+                    onChange={(e) => setSelectedDebtToRepay(e.target.value)}
+                    className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.selectedDebtToRepay ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                  >
+                    <option value="">-- Dooro Iibiye la siinayo --</option>
+                    {debts && debts.filter(d => d.lenderId && !d.clientId).length > 0 ? debts.filter(d => d.lenderId && !d.clientId).map(debt => (
+                      <option key={debt.id} value={debt.id}>
+                        {debt.lender || 'N/A'} - Waa la rabaa: ${debt.remaining?.toLocaleString() || debt.amount?.toLocaleString() || 0}
+                      </option>
+                    )) : (
+                      <option value="" disabled>Ma jiraan daymo laguugu leeyahay (Vendors)</option>
+                    )}
+                  </select>
+                  <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Collect Customer Debt (Accounts Receivable) */}
+          {transactionType === 'COLLECT_CUSTOMER_DEBT' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border border-green-500/20 rounded-lg bg-green-500/5 animate-fade-in">
+              <h3 className="col-span-full text-lg font-bold text-green-600 dark:text-green-400 mb-2">Soo Xaree Deyn (Macmiil/Mashruuc)</h3>
+              <div className="col-span-2">
+                <label htmlFor="selectedDebtToRepay" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Dooro Deynta La Soo Xareynayo <span className="text-redError">*</span></label>
+                <div className="relative">
+                  <Scale className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
+                  <select
+                    id="selectedDebtToRepay"
+                    value={selectedDebtToRepay}
+                    onChange={(e) => setSelectedDebtToRepay(e.target.value)}
+                    className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.selectedDebtToRepay ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                  >
+                    <option value="">-- Dooro Macmiil/Mashruuc --</option>
+                    {debts && debts.filter(d => d.clientId || d.customerId).length > 0 ? debts.filter(d => d.clientId || d.customerId).map(debt => (
+                      <option key={debt.id} value={debt.id}>
+                        {debt.client || debt.customer || debt.project || 'N/A'} - Waa laga rabaa: ${debt.remaining?.toLocaleString() || debt.amount?.toLocaleString() || 0}
+                      </option>
+                    )) : (
+                      <option value="" disabled>Ma jiraan daymo aad leedahay (Receivables)</option>
+                    )}
+                  </select>
+                  <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Legacy DEBT_REPAID Specific Fields (Fallback if needed, or we can just hide it if we strictly use the two above) */}
           {transactionType === 'DEBT_REPAID' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border border-green-500/20 rounded-lg bg-green-500/5 animate-fade-in">
+
               <h3 className="col-span-full text-lg font-bold text-green-500 dark:text-green-300 mb-2">Faahfaahinta Dib U Bixinta Deynta</h3>
               <div>
                 <label htmlFor="selectedDebtToRepay" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Dooro Deynta La Bixinayo <span className="text-redError">*</span></label>
@@ -382,7 +487,7 @@ export default function AddTransactionPage() {
                   </select>
                   <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
                 </div>
-                {validationErrors.selectedDebtToRepay && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1"/>{validationErrors.selectedDebtToRepay}</p>}
+                {validationErrors.selectedDebtToRepay && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.selectedDebtToRepay}</p>}
                 {(selectedDebtToRepay && debts && debts.length > 0) && (() => {
                   const debt = debts.find(d => d.id === selectedDebtToRepay);
                   if (!debt) return null;
@@ -402,7 +507,7 @@ export default function AddTransactionPage() {
                 })()}
                 {(!debts || debts.length === 0) && (
                   <p className="text-orange-600 text-xs mt-1 flex items-center">
-                    <InfoIcon size={14} className="inline mr-1"/>
+                    <InfoIcon size={14} className="inline mr-1" />
                     Ma jiraan customers-ka. <Link href="/customers/add" className="underline text-primary hover:text-blue-700">Ku dar customer cusub</Link>
                   </p>
                 )}
@@ -424,7 +529,7 @@ export default function AddTransactionPage() {
                   className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.transactionDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 />
               </div>
-              {validationErrors.transactionDate && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1"/>{validationErrors.transactionDate}</p>}
+              {validationErrors.transactionDate && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.transactionDate}</p>}
             </div>
             <div>
               <label htmlFor="note" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Fiiro Gaar Ah (Optional)</label>
