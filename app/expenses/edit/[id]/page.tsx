@@ -38,7 +38,7 @@ export default function EditExpensePage() {
   const [receiptImage, setReceiptImage] = useState<File | null>(null);
 
   // Specific fields for different categories
-  const [materials, setMaterials] = useState([{ id: 1, name: '', qty: '', price: '', unit: '' }]);
+  const [materials, setMaterials] = useState<{ id: number; name: string; qty: number | ''; price: number | ''; unit: string; }[]>([{ id: 1, name: '', qty: '', price: '', unit: '' }]);
   // Material date tracking
   const [materialDate, setMaterialDate] = useState(new Date().toISOString().split('T')[0]);
   const [workDescription, setWorkDescription] = useState('');
@@ -409,16 +409,10 @@ export default function EditExpensePage() {
 
   // Calculations & Handlers
   const totalMaterialCost = materials.reduce((sum, item) => {
-    const qty = parseFloat(item.qty as string) || 0;
-    const price = parseFloat(item.price as string) || 0;
+    const qty = typeof item.qty === 'number' ? item.qty : 0;
+    const price = typeof item.price === 'number' ? item.price : 0;
     return sum + (qty * price);
   }, 0);
-
-  const handleAddMaterial = () => setMaterials([...materials, { id: Date.now(), name: '', qty: '', price: '', unit: '' }]);
-  const handleRemoveMaterial = (id: number) => setMaterials(materials.filter(mat => mat.id !== id));
-  const handleMaterialChange = (id: number, field: string, value: string | number) => {
-    setMaterials(materials.map(mat => mat.id === id ? { ...mat, [field]: value } : mat));
-  };
 
   const validateForm = () => {
     const errors: { [key: string]: string } = {};
