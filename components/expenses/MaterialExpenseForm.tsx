@@ -20,8 +20,8 @@ interface MaterialExpenseFormProps {
     setSelectedVendor: (vendor: string) => void;
     paymentStatus: string;
     setPaymentStatus: (status: string) => void;
-    paidAmount: number | '';
-    setPaidAmount: (amount: number | '') => void;
+    paidAmount: number | string;
+    setPaidAmount: (amount: number | string) => void;
     expenseDate: string;
     setExpenseDate: (date: string) => void;
     invoiceNumber: string;
@@ -64,9 +64,13 @@ export function MaterialExpenseForm({
             }, 0);
             if (total !== totalAmount) {
                 setTotalAmount(total);
+                // If status is PAID, auto-update paid amount to match new total
+                if (paymentStatus === 'PAID') {
+                    setPaidAmount(total);
+                }
             }
         }
-    }, [materials, setTotalAmount, isAnalyzing, totalAmount]);
+    }, [materials, setTotalAmount, isAnalyzing, totalAmount, paymentStatus, setPaidAmount]);
 
     // Handle adding a new material row
     const addMaterial = () => {
@@ -361,8 +365,8 @@ export function MaterialExpenseForm({
                                 <span className="absolute left-3 top-2.5 text-gray-400 text-sm">$</span>
                                 <input
                                     type="number"
-                                    value={paidAmount === '' ? '' : paidAmount}
-                                    onChange={(e) => setPaidAmount(parseFloat(e.target.value))}
+                                    value={paidAmount}
+                                    onChange={(e) => setPaidAmount(e.target.value)}
                                     max={totalAmount}
                                     className="w-full pl-7 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                 />

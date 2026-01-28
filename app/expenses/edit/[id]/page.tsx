@@ -64,6 +64,7 @@ export default function EditExpensePage() {
   const [selectedEmployeeForSalary, setSelectedEmployeeForSalary] = useState('');
   const [salaryPaymentAmount, setSalaryPaymentAmount] = useState<number | ''>('');
   const [salaryPaymentDate, setSalaryPaymentDate] = useState(new Date().toISOString().split('T')[0]);
+  const [partialPaidAmount, setPartialPaidAmount] = useState<number | string>(''); // Support string for decimal typing
   const [officeRentPeriod, setOfficeRentPeriod] = useState('');
 
   // Additional Company Expense fields
@@ -334,6 +335,7 @@ export default function EditExpensePage() {
           // Map backend paidAmount to local laborPaidAmount state (shared state for paid amount)
           if (expense.paidAmount !== undefined && expense.paidAmount !== null) {
             setLaborPaidAmount(expense.paidAmount);
+            setPartialPaidAmount(expense.paidAmount);
           }
 
         } catch (error: any) {
@@ -409,10 +411,17 @@ export default function EditExpensePage() {
 
   // Calculations & Handlers
   const totalMaterialCost = materials.reduce((sum, item) => {
-    const qty = typeof item.qty === 'number' ? item.qty : 0;
-    const price = typeof item.price === 'number' ? item.price : 0;
+    const qty = Number(item.qty) || 0;
+    const price = Number(item.price) || 0;
     return sum + (qty * price);
   }, 0);
+
+  // Sync amount with total material cost
+  useEffect(() => {
+    if (category === 'Material' || (category === 'Company Expense' && companyExpenseType === 'Material')) {
+      setAmount(totalMaterialCost);
+    }
+  }, [totalMaterialCost, category, companyExpenseType]);
 
   const validateForm = () => {
     const errors: { [key: string]: string } = {};
@@ -437,7 +446,10 @@ export default function EditExpensePage() {
         if (paymentStatus === 'PAID' && !paidFrom) errors.paidFrom = 'Akoonka lacagta laga jarayo waa waajib.';
         if (paymentStatus === 'PARTIAL') {
           if (!paidFrom) errors.paidFrom = 'Akoonka lacagta laga jarayo waa waajib.';
-          if (!laborPaidAmount || laborPaidAmount <= 0) errors.paidAmount = 'Fadlan geli lacagta la bixiyay.';
+          if (paymentStatus === 'PARTIAL') {
+            if (!paidFrom) errors.paidFrom = 'Akoonka lacagta laga jarayo waa waajib.';
+            if (!partialPaidAmount || parseFloat(partialPaidAmount.toString()) <= 0) errors.paidAmount = 'Fadlan geli lacagta la bixiyay.';
+          }
         }
       }
     }
@@ -522,7 +534,7 @@ export default function EditExpensePage() {
       invoiceNumber: (companyExpenseType === 'Material' || category === 'Material') ? invoiceNumber : undefined,
       vendorId: (companyExpenseType === 'Material' || category === 'Material') ? selectedVendor : undefined,
       paidAmount: (companyExpenseType === 'Material' || category === 'Material') ?
-        (paymentStatus === 'PAID' ? totalMaterialCost : (paymentStatus === 'PARTIAL' ? laborPaidAmount : 0))
+        (paymentStatus === 'PAID' ? totalMaterialCost : (paymentStatus === 'PARTIAL' ? (partialPaidAmount ? parseFloat(partialPaidAmount.toString()) : 0) : 0))
         : undefined,
     };
 
@@ -645,8 +657,8 @@ export default function EditExpensePage() {
                 setSelectedVendor={setSelectedVendor}
                 paymentStatus={paymentStatus}
                 setPaymentStatus={setPaymentStatus}
-                paidAmount={typeof laborPaidAmount === 'number' ? laborPaidAmount : ''}
-                setPaidAmount={(val) => setLaborPaidAmount(val)}
+                paidAmount={partialPaidAmount}
+                setPaidAmount={setPartialPaidAmount}
                 expenseDate={materialDate}
                 setExpenseDate={setMaterialDate}
                 invoiceNumber={invoiceNumber}

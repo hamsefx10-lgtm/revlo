@@ -58,6 +58,7 @@ function AddExpenseContent() {
   // Salary specific fields
   const [selectedEmployeeForSalary, setSelectedEmployeeForSalary] = useState('');
   const [salaryPaymentAmount, setSalaryPaymentAmount] = useState<number | ''>('');
+  const [partialPaidAmount, setPartialPaidAmount] = useState<number | string>(''); // Support string for decimal typing
   const [salaryPaymentDate, setSalaryPaymentDate] = useState(new Date().toISOString().split('T')[0]);
 
   // Project labor wage tracking
@@ -330,8 +331,8 @@ function AddExpenseContent() {
 
   // --- Calculations ---
   const totalMaterialCost = materials.reduce((sum, item) => {
-    const qty = parseFloat(item.qty as string) || 0;
-    const price = parseFloat(item.price as string) || 0;
+    const qty = Number(item.qty) || 0;
+    const price = Number(item.price) || 0;
     return sum + (qty * price);
   }, 0);
 
@@ -499,7 +500,7 @@ function AddExpenseContent() {
         if (paymentStatus === 'PAID' && !paidFrom) errors.paidFrom = 'Akoonka lacagta laga jarayo waa waajib.';
         if (paymentStatus === 'PARTIAL') {
           if (!paidFrom) errors.paidFrom = 'Akoonka lacagta laga jarayo waa waajib.';
-          if (!laborPaidAmount || laborPaidAmount <= 0) errors.paidAmount = 'Fadlan geli lacagta la bixiyay.';
+          if (!partialPaidAmount || parseFloat(partialPaidAmount.toString()) <= 0) errors.paidAmount = 'Fadlan geli lacagta la bixiyay.';
         }
         if (paymentStatus === 'PARTIAL' && !paidFrom) errors.paidFrom = 'Akoonka lacagta laga jarayo waa waajib marka lacagta qayb la bixiyay.';
         break;
@@ -682,6 +683,13 @@ function AddExpenseContent() {
       mat.id === id ? { ...mat, [field]: value } : mat
     ));
   };
+
+  // Sync amount with total material cost
+  useEffect(() => {
+    if (category === 'Material' || (category === 'Company Expense' && companyExpenseType === 'Material')) {
+      setAmount(totalMaterialCost);
+    }
+  }, [totalMaterialCost, category, companyExpenseType]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -894,7 +902,7 @@ function AddExpenseContent() {
             if (paymentStatus === 'PAID') {
               expenseData.paidAmount = totalMaterialCost;
             } else if (paymentStatus === 'PARTIAL') {
-              expenseData.paidAmount = laborPaidAmount || 0;
+              expenseData.paidAmount = partialPaidAmount ? parseFloat(partialPaidAmount.toString()) : 0;
             } else {
               expenseData.paidAmount = 0;
             }
@@ -1387,13 +1395,13 @@ function AddExpenseContent() {
                 setSelectedVendor={setSelectedVendor}
                 paymentStatus={paymentStatus}
                 setPaymentStatus={setPaymentStatus}
-                paidAmount={typeof laborPaidAmount === 'number' ? laborPaidAmount : ''}
-                setPaidAmount={(val) => setLaborPaidAmount(val)}
+                paidAmount={partialPaidAmount}
+                setPaidAmount={setPartialPaidAmount}
                 expenseDate={materialDate}
                 setExpenseDate={setMaterialDate}
                 invoiceNumber={invoiceNumber}
                 setInvoiceNumber={setInvoiceNumber}
-                totalAmount={typeof amount === 'number' ? amount : 0}
+                totalAmount={totalMaterialCost}
                 setTotalAmount={(val) => setAmount(val)}
                 setReceiptImage={setReceiptImage}
                 errors={validationErrors}
