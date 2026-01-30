@@ -267,7 +267,7 @@ const ProjectDetailsPage: React.FC = () => {
         </div>
         <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md">
           <p className="text-sm text-redError">Total Remaining</p>
-          <p className="text-2xl font-bold text-redError">Br{remainingAmount.toLocaleString()}</p>
+          <p className={`text-2xl font-bold ${remainingAmount <= 0 ? 'text-green-600' : 'text-redError'}`}>Br{remainingAmount.toLocaleString()}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md flex flex-col justify-center items-center">
           <ProjectStatusBadge status={project.status} />
@@ -724,7 +724,7 @@ const ProjectDetailsPage: React.FC = () => {
               const totalPaid = (project.payments || []).reduce((sum: number, p: any) => sum + (typeof p.amount === 'number' ? p.amount : parseFloat(p.amount as any) || 0), 0) +
                 totalAdvance + totalRepaidViaTransactions;
 
-              const remainingAmount = typeof project.remainingAmount === 'number' ? project.remainingAmount : parseFloat(project.remainingAmount as any) || 0;
+              const remainingAmount = totalValue - totalPaid;
 
               const totalExpenses = ((project.expenses || []).reduce((sum: number, e: any) => sum + (typeof e.amount === 'number' ? e.amount : parseFloat(e.amount) || 0), 0) +
                 (project.laborRecords || []).reduce((sum: number, l: any) => sum + (typeof l.paidAmount === 'number' ? l.paidAmount : parseFloat(l.paidAmount) || 0), 0));
@@ -741,7 +741,7 @@ const ProjectDetailsPage: React.FC = () => {
                     </div>
                     <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
                       <p className="text-xs text-orange-600 dark:text-orange-400 mb-1">Ku Dhiman</p>
-                      <p className="text-lg font-bold text-orange-700 dark:text-orange-300">
+                      <p className={`text-lg font-bold ${remainingAmount <= 0 ? 'text-green-700 dark:text-green-300' : 'text-orange-700 dark:text-orange-300'}`}>
                         Br{remainingAmount.toLocaleString()}
                       </p>
                     </div>

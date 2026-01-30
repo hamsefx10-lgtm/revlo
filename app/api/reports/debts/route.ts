@@ -454,7 +454,7 @@ export async function GET(req: Request) {
         customerId: project.customerId,
         customerName: project.customer?.name
       };
-    }).filter((debt: any) => debt.remaining > 0); // Only show projects with remaining debt
+    }); // Return all projects, even fully paid or overpaid
 
     // Add project debts to main debts array
     const allDebts = [...debts, ...projectDebts];

@@ -1,0 +1,155 @@
+Project Details:
+Name: Nasra SIte
+Agreement Amount: 326850
+Advance Paid (Static): 233850
+Remaining Amount (DB): 93000
+Created At: 2025-10-10T20:25:55.957Z
+
+Transactions:
+- ID: 5ed51c79-d958-4aae-8cd0-9e4f84869ec8
+  Type: INCOME
+  Amount: 233850
+  Desc: Advance Payment for Project: Nasra SIte
+  Date: 2025-10-10T20:25:55.986Z
+  > Dedup Check: isIncome=true, diff=0.029s, isAuto=true => SHOULD HIDE? true
+---
+- ID: b0f370de-cf2f-4d77-b307-0d317e5081e6
+  Type: EXPENSE
+  Amount: -2000
+  Desc: aluniam ayuu ka shaqeeyay
+  Date: 2025-12-17T00:00:00.000Z
+  > Dedup Check: isIncome=false, diff=5801644.043s, isAuto=false => SHOULD HIDE? false
+---
+- ID: 13426ef6-310b-4a25-b0a3-d1929db0e1b3
+  Type: EXPENSE
+  Amount: -1000
+  Desc: Laxaamadle
+  Date: 2025-08-04T00:00:00.000Z
+  > Dedup Check: isIncome=false, diff=5862355.957s, isAuto=false => SHOULD HIDE? false
+---
+- ID: 06197644-c54a-4a6f-a209-cea483a096f8
+  Type: EXPENSE
+  Amount: -2000
+  Desc: Laxaamadle
+  Date: 2025-08-06T00:00:00.000Z
+  > Dedup Check: isIncome=false, diff=5689555.957s, isAuto=false => SHOULD HIDE? false
+---
+- ID: 0b0c0efb-d1ae-4bab-948d-f3d260a166ef
+  Type: EXPENSE
+  Amount: -1000
+  Desc: Riinjiile
+  Date: 2025-08-08T00:00:00.000Z
+  > Dedup Check: isIncome=false, diff=5516755.957s, isAuto=false => SHOULD HIDE? false
+---
+- ID: c9a1cab8-7a99-4f1f-9ee7-f18e15fe6d5b
+  Type: EXPENSE
+  Amount: -600
+  Desc: Taxi/Xamaal - Taxi
+  Date: 2025-11-21T00:00:00.000Z
+  > Dedup Check: isIncome=false, diff=3555244.043s, isAuto=false => SHOULD HIDE? false
+---
+- ID: 68051c22-b956-4a0d-b9d6-83c20c04daca
+  Type: EXPENSE
+  Amount: -800
+  Desc: xamaal
+  Date: 2025-11-19T00:00:00.000Z
+  > Dedup Check: isIncome=false, diff=3382444.043s, isAuto=false => SHOULD HIDE? false
+---
+- ID: c3774519-7940-4986-a987-04ed42963542
+  Type: EXPENSE
+  Amount: -1000
+  Desc: Taxi/Xamaal - Xamaal
+  Date: 2025-11-02T00:00:00.000Z
+  > Dedup Check: isIncome=false, diff=1913644.043s, isAuto=false => SHOULD HIDE? false
+---
+- ID: 2bce75f9-cb28-4b94-b971-5578f2e4e4ca
+  Type: EXPENSE
+  Amount: -5000
+  Desc: almuniam
+  Date: 2025-11-24T00:00:00.000Z
+  > Dedup Check: isIncome=false, diff=3814444.043s, isAuto=false => SHOULD HIDE? false
+---
+- ID: f8fb0946-0d3d-4ec0-8f2e-a3562daa3054
+  Type: EXPENSE
+  Amount: -500
+  Desc: Taxi/Xamaal - Xamaal
+  Date: 2025-11-27T00:00:00.000Z
+  > Dedup Check: isIncome=false, diff=4073644.043s, isAuto=false => SHOULD HIDE? false
+---
+- ID: ae45804b-5f27-4ee8-a1cb-88ac94998cd5
+  Type: EXPENSE
+  Amount: -5000
+  Desc: farxaan almunaim
+  Date: 2025-12-05T00:00:00.000Z
+  > Dedup Check: isIncome=false, diff=4764844.043s, isAuto=false => SHOULD HIDE? false
+---
+- ID: 543aa1d6-5cc2-4cb2-b402-2b3e78276a3e
+  Type: EXPENSE
+  Amount: -2000
+  Desc: Aluminium ayu ka shaqeeyay 
+  Date: 2025-12-14T00:00:00.000Z
+  > Dedup Check: isIncome=false, diff=5542444.043s, isAuto=false => SHOULD HIDE? false
+---
+- ID: 42194aa0-3ab1-4b6e-8172-e68e69af7d2f
+  Type: EXPENSE
+  Amount: -2580
+  Desc: muraayad jabtay
+  Date: 2026-01-16T00:00:00.000Z
+  > Dedup Check: isIncome=false, diff=8393644.043s, isAuto=false => SHOULD HIDE? false
+---
+- ID: afdb0157-aacf-423f-a048-b0ac5e2638b0
+  Type: EXPENSE
+  Amount: -2580
+  Desc: Material expense - 2026-01-23
+  Date: 2026-01-16T00:00:00.000Z
+  > Dedup Check: isIncome=false, diff=8393644.043s, isAuto=false => SHOULD HIDE? false
+---
+- ID: 589dd954-a25a-4331-8611-ba8d83a6288e
+  Type: EXPENSE
+  Amount: -18440
+  Desc: Material expense - 2025-10-27
+  Date: 2025-08-04T00:00:00.000Z
+  > Dedup Check: isIncome=false, diff=5862355.957s, isAuto=false => SHOULD HIDE? false
+---
+- ID: 8c0291a2-54ad-42ab-afbd-856b8c14d4de
+  Type: EXPENSE
+  Amount: -2650
+  Desc: Material expense - 2025-10-27
+  Date: 2025-08-06T00:00:00.000Z
+  > Dedup Check: isIncome=false, diff=5689555.957s, isAuto=false => SHOULD HIDE? false
+---
+- ID: 4676b9ac-ac0c-48d5-bf5a-6c3adaa1c5ca
+  Type: EXPENSE
+  Amount: -163620
+  Desc: Material expense - 2025-10-27
+  Date: 2025-08-18T00:00:00.000Z
+  > Dedup Check: isIncome=false, diff=4652755.957s, isAuto=false => SHOULD HIDE? false
+---
+- ID: a55af711-3504-4c6c-9189-2688bdb10c4b
+  Type: EXPENSE
+  Amount: -13000
+  Desc: Material expense - 2025-11-28
+  Date: 2025-11-21T00:00:00.000Z
+  > Dedup Check: isIncome=false, diff=3555244.043s, isAuto=false => SHOULD HIDE? false
+---
+- ID: 4fdf19c0-acfb-4084-8389-bd29dc264664
+  Type: EXPENSE
+  Amount: -5500
+  Desc: Material expense - 2025-11-29
+  Date: 2025-11-21T00:00:00.000Z
+  > Dedup Check: isIncome=false, diff=3555244.043s, isAuto=false => SHOULD HIDE? false
+---
+- ID: 7a88508b-3f42-4f2a-abb2-40353161a5ca
+  Type: EXPENSE
+  Amount: -1800
+  Desc: Material expense - 2025-12-10
+  Date: 2025-11-27T00:00:00.000Z
+  > Dedup Check: isIncome=false, diff=4073644.043s, isAuto=false => SHOULD HIDE? false
+---
+- ID: 41faf07b-7141-4069-8369-6a50f484acc5
+  Type: EXPENSE
+  Amount: -88500
+  Desc: Material expense - 2025-12-10
+  Date: 2025-11-28T00:00:00.000Z
+  > Dedup Check: isIncome=false, diff=4160044.043s, isAuto=false => SHOULD HIDE? false
+---
