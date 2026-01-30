@@ -109,11 +109,8 @@ export async function POST(request: Request) {
     const {
       description, amount, type, transactionDate, note,
       accountId, // Account ID
-      projectId, expenseId, customerId, itemVendorId, employeeId // itemVendorId renamed from vendorId to avoid conflict if any, but let's stick to schema
+      projectId, expenseId, customerId, vendorId, employeeId
     } = await request.json();
-
-    // Use vendorId from request but ensure we map it correctly
-    const vendorId = (await request.json()).vendorId;
 
     if (!description || typeof amount !== 'number' || !type || !transactionDate) {
       return NextResponse.json(

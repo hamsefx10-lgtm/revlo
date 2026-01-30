@@ -111,7 +111,7 @@ export default function AddTransactionPage() {
       if (!lenderName.trim()) newErrors.lenderName = 'Magaca deyn bixiyaha waa waajib.';
       if (!loanDate) newErrors.loanDate = 'Taariikhda deynta waa waajib.';
     }
-    if (transactionType === 'DEBT_REPAID' || transactionType === 'PAY_VENDOR_DEBT' || transactionType === 'COLLECT_CUSTOMER_DEBT') {
+    if (transactionType === 'DEBT_REPAID' || transactionType === 'PAY_VENDOR_DEBT' || transactionType === 'COLLECT_CUSTOMER_DEBT' || transactionType === 'REPAY_PROJECT_DEBT') {
       if (!selectedDebtToRepay) newErrors.selectedDebtToRepay = 'Deynta la bixinayo waa waajib.';
     }
 
@@ -134,7 +134,7 @@ export default function AddTransactionPage() {
 
     // Determine the actual API transaction type
     let apiTransactionType = transactionType;
-    if (transactionType === 'PAY_VENDOR_DEBT' || transactionType === 'COLLECT_CUSTOMER_DEBT') {
+    if (transactionType === 'PAY_VENDOR_DEBT' || transactionType === 'COLLECT_CUSTOMER_DEBT' || transactionType === 'REPAY_PROJECT_DEBT') {
       apiTransactionType = 'DEBT_REPAID';
     }
 
@@ -179,6 +179,11 @@ export default function AddTransactionPage() {
         else {
           if (debt.customerId || debt.clientId) {
             transactionData.customerId = debt.customerId || debt.clientId;
+          }
+          else if (debt.projectId) {
+            // For Projects
+            transactionData.projectId = debt.projectId;
+            if (debt.customerId || debt.lenderId) transactionData.customerId = debt.customerId || debt.lenderId;
           }
           else if (debt.lenderId) {
             transactionData.vendorId = debt.lenderId;
@@ -302,6 +307,7 @@ export default function AddTransactionPage() {
                 <option value="DEBT_TAKEN">Deyn (La Qaatay)</option>
                 <option value="PAY_VENDOR_DEBT">Bixi Deyn (Vendor/Iibiye)</option>
                 <option value="COLLECT_CUSTOMER_DEBT">Soo Xaree Deyn (Macmiil)</option>
+                <option value="REPAY_PROJECT_DEBT">Soo Xaree Deyn (Mashruuc)</option>
                 <option value="OTHER">Kale</option>
               </select>
               <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
@@ -435,7 +441,7 @@ export default function AddTransactionPage() {
           {/* Collect Customer Debt (Accounts Receivable) */}
           {transactionType === 'COLLECT_CUSTOMER_DEBT' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border border-green-500/20 rounded-lg bg-green-500/5 animate-fade-in">
-              <h3 className="col-span-full text-lg font-bold text-green-600 dark:text-green-400 mb-2">Soo Xaree Deyn (Macmiil/Mashruuc)</h3>
+              <h3 className="col-span-full text-lg font-bold text-green-600 dark:text-green-400 mb-2">Soo Xaree Deyn (Macmiil)</h3>
               <div className="col-span-2">
                 <label htmlFor="selectedDebtToRepay" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Dooro Deynta La Soo Xareynayo <span className="text-redError">*</span></label>
                 <div className="relative">
@@ -446,13 +452,42 @@ export default function AddTransactionPage() {
                     onChange={(e) => setSelectedDebtToRepay(e.target.value)}
                     className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.selectedDebtToRepay ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                   >
-                    <option value="">-- Dooro Macmiil/Mashruuc --</option>
-                    {debts && debts.filter(d => d.clientId || d.customerId).length > 0 ? debts.filter(d => d.clientId || d.customerId).map(debt => (
+                    <option value="">-- Dooro Macmiil --</option>
+                    {debts && debts.filter(d => (d.clientId || d.customerId) && !d.projectId).length > 0 ? debts.filter(d => (d.clientId || d.customerId) && !d.projectId).map(debt => (
                       <option key={debt.id} value={debt.id}>
-                        {debt.client || debt.customer || debt.project || 'N/A'} - Waa laga rabaa: ${debt.remaining?.toLocaleString() || debt.amount?.toLocaleString() || 0}
+                        {debt.client || debt.customer || 'N/A'} - Waa laga rabaa: ${debt.remaining?.toLocaleString() || debt.amount?.toLocaleString() || 0}
                       </option>
                     )) : (
-                      <option value="" disabled>Ma jiraan daymo aad leedahay (Receivables)</option>
+                      <option value="" disabled>Ma jiraan daymo aad leedahay (Macmiil)</option>
+                    )}
+                  </select>
+                  <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Collect Project Debt (New Feature) */}
+          {transactionType === 'REPAY_PROJECT_DEBT' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border border-blue-500/20 rounded-lg bg-blue-500/5 animate-fade-in">
+              <h3 className="col-span-full text-lg font-bold text-blue-600 dark:text-blue-400 mb-2">Soo Xaree Deyn (Mashruuc)</h3>
+              <div className="col-span-2">
+                <label htmlFor="selectedDebtToRepay" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Dooro Deynta Mashruuca <span className="text-redError">*</span></label>
+                <div className="relative">
+                  <HardHat className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
+                  <select
+                    id="selectedDebtToRepay"
+                    value={selectedDebtToRepay}
+                    onChange={(e) => setSelectedDebtToRepay(e.target.value)}
+                    className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.selectedDebtToRepay ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                  >
+                    <option value="">-- Dooro Mashruuc --</option>
+                    {debts && debts.filter(d => d.projectId && d.remaining > 0).length > 0 ? debts.filter(d => d.projectId && d.remaining > 0).map(debt => (
+                      <option key={debt.id} value={debt.id}>
+                        {debt.project || 'N/A'} - Laga rabo: ${debt.remaining?.toLocaleString() || 0}
+                      </option>
+                    )) : (
+                      <option value="" disabled>Ma jiraan daymo mashruuc</option>
                     )}
                   </select>
                   <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
@@ -557,7 +592,14 @@ export default function AddTransactionPage() {
                   <BriefcaseIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
                   <select id="relatedProject" value={relatedProject} onChange={(e) => setRelatedProject(e.target.value)} className="w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200">
                     <option value="">-- Dooro Mashruuc --</option>
-                    {projects.map(proj => <option key={proj.id} value={proj.id}>{proj.name}</option>)}
+                    {projects.map(proj => {
+                      const relatedDebt = debts.find(d => d.projectId === proj.id);
+                      return (
+                        <option key={proj.id} value={proj.id}>
+                          {proj.name} {relatedDebt && relatedDebt.remaining > 0 ? `(Laga rabo: $${relatedDebt.remaining.toLocaleString()})` : ''}
+                        </option>
+                      );
+                    })}
                   </select>
                   <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
                 </div>

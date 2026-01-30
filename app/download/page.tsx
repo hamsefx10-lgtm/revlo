@@ -181,7 +181,7 @@ export default function DownloadPage() {
           <div className="space-y-8 relative before:absolute before:inset-0 before:left-4 md:before:left-8 before:h-full before:w-0.5 before:bg-gray-100 dark:before:bg-gray-700">
             {[
               { title: "Soo Deji (Download)", desc: "Dooro nooca kombiyuutarkaaga sare oo riix badhanka 'Download'." },
-              { title: "Rakib (Install)", desc: "Fur faylka soo degay (Installer file). Raac tilmaamaha shaashada." },
+              { title: "Rakib (Install-soon)", desc: "Fur faylka soo degay (Installer file). Raac tilmaamaha shaashada." },
               { title: "Gal (Login)", desc: "Fur Revlo app, kadibna ku gal akoonkaaga ganacsi ama sameyso mid cusub." }
             ].map((step, i) => (
               <div key={i} className="relative flex gap-6 md:gap-8 items-start">
