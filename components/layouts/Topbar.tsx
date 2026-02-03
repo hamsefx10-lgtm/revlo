@@ -90,6 +90,7 @@ const Topbar: React.FC<TopbarProps> = ({
           </button>
         )}
         {currentCompany.logoUrl ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src={currentCompany.logoUrl}
             alt={currentCompany.name || 'Company Logo'}
@@ -129,8 +130,8 @@ const Topbar: React.FC<TopbarProps> = ({
                 <button
                   onClick={() => handleLanguageChange('so')}
                   className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 flex items-center space-x-2 ${language === 'so'
-                      ? 'bg-primary text-white'
-                      : 'text-darkGray dark:text-gray-100 hover:bg-lightGray dark:hover:bg-gray-700'
+                    ? 'bg-primary text-white'
+                    : 'text-darkGray dark:text-gray-100 hover:bg-lightGray dark:hover:bg-gray-700'
                     }`}
                 >
                   <span className="text-lg">🇸🇴</span>
@@ -139,8 +140,8 @@ const Topbar: React.FC<TopbarProps> = ({
                 <button
                   onClick={() => handleLanguageChange('en')}
                   className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 flex items-center space-x-2 ${language === 'en'
-                      ? 'bg-primary text-white'
-                      : 'text-darkGray dark:text-gray-100 hover:bg-lightGray dark:hover:bg-gray-700'
+                    ? 'bg-primary text-white'
+                    : 'text-darkGray dark:text-gray-100 hover:bg-lightGray dark:hover:bg-gray-700'
                     }`}
                 >
                   <span className="text-lg">🇺🇸</span>
@@ -214,9 +215,9 @@ const Topbar: React.FC<TopbarProps> = ({
                                   notification.type === 'success' ? '✅' : 'ℹ️'}
                             </span>
                             <span className={`text-sm font-medium capitalize ${notification.type === 'success' ? 'text-green-600' :
-                                notification.type === 'error' ? 'text-red-600' :
-                                  notification.type === 'warning' ? 'text-yellow-600' :
-                                    'text-blue-600'
+                              notification.type === 'error' ? 'text-red-600' :
+                                notification.type === 'warning' ? 'text-yellow-600' :
+                                  'text-blue-600'
                               }`}>
                               {t.notifications.notificationTypes[notification.type]}
                             </span>
@@ -298,6 +299,7 @@ const Topbar: React.FC<TopbarProps> = ({
         <div className="relative group">
           <button className="flex items-center space-x-2 text-darkGray dark:text-gray-100 bg-lightGray dark:bg-gray-700 p-2 rounded-full shadow-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
             {currentCompany.logoUrl ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
               <img
                 src={currentCompany.logoUrl}
                 alt={currentCompany.name || 'Company Logo'}

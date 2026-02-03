@@ -18,38 +18,38 @@ model Wallet {
 }
 
 model User {
-  id             String           @id @default(uuid()) @map("_id")
-  email          String           @unique
+  id             String             @id @default(uuid()) @map("_id")
+  email          String             @unique
   emailVerified  DateTime?
   password       String
   fullName       String
-  role           Role             @default(MEMBER)
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  role           Role               @default(MEMBER)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
   companyId      String
-  TwoFAEnabled   Boolean          @default(false)
+  TwoFAEnabled   Boolean            @default(false)
   lastLogin      DateTime?
-  status         String           @default("Active")
-  phone          String           @default("")
+  status         String             @default("Active")
+  phone          String             @default("")
   chatFiles      ChatFile[]
   chatMembers    ChatMember[]
-  chatMessages   ChatMessage[]    @relation("MessageUser")
+  chatMessages   ChatMessage[]      @relation("MessageUser")
   chatReactions  ChatReaction[]
   expenses       Expense[]
   notifications  Notification[]
-  tasksAssigned  Task[]           @relation("AssignedTo")
+  tasksAssigned  Task[]             @relation("AssignedTo")
   transactions   Transaction[]
-  company        Company          @relation(fields: [companyId], references: [id])
+  company        Company            @relation(fields: [companyId], references: [id])
   wallet         Wallet?
-  projects       Project[]        @relation("ProjectMembers")
+  projects       Project[]          @relation("ProjectMembers")
   PendingExpense PendingExpense[]
   telegramLinks  TelegramUserLink[]
-  
+
   // Security / Trusted Devices
   trustedDevices TrustedDevice[]
-  twoFASecret    String?          // For TOTP if we implement later, or just general secret
-  otpCode        String?          // Current email OTP
-  otpExpires     DateTime?        // When OTP expires
+  twoFASecret    String? // For TOTP if we implement later, or just general secret
+  otpCode        String? // Current email OTP
+  otpExpires     DateTime? // When OTP expires
 
   // Shop Management Relations
   products       Product[]       @relation("UserProducts")
@@ -62,6 +62,7 @@ model User {
   customers      Customer[]      @relation("UserCustomers")
   inventoryItems InventoryItem[]
   deletedItems   DeletedItem[]
+  auditLogs      AuditLog[]
 
   @@map("users")
 }
@@ -74,7 +75,7 @@ model TrustedDevice {
   lastUsed  DateTime @default(now())
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@map("trusted_devices")
 }
 
@@ -144,7 +145,7 @@ model Company {
   shareholders            Shareholder[]
   transactions            Transaction[]
   users                   User[]
-  vendors        ShopVendor[]
+  vendors                 ShopVendor[]
   pendingExpenses         PendingExpense[]
   telegramChats           TelegramChat[]
   telegramUsers           TelegramUserLink[]
@@ -153,21 +154,22 @@ model Company {
   taxReturns              TaxReturn[]
   workshopJobs            WorkshopJob[]
   deletedItems            DeletedItem[]
+  auditLogs               AuditLog[]
 
   @@map("companies")
 }
 
 model Shareholder {
-  id              String   @id @default(uuid()) @map("_id")
+  id              String        @id @default(uuid()) @map("_id")
   name            String
   email           String
   sharePercentage Float
-  profitSplit     Decimal  @default(0.0) @db.Decimal(12, 2)
+  profitSplit     Decimal       @default(0.0) @db.Decimal(12, 2)
   joinedDate      DateTime
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
   companyId       String
-  company         Company  @relation(fields: [companyId], references: [id])
+  company         Company       @relation(fields: [companyId], references: [id])
   transactions    Transaction[]
 
   @@map("shareholders")
@@ -392,13 +394,13 @@ model Expense {
   expenseCategory ExpenseCategory? @relation(fields: [categoryId], references: [id])
   company         Company          @relation(fields: [companyId], references: [id])
   purchaseOrderId String?
-  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+  purchaseOrder   PurchaseOrder?   @relation(fields: [purchaseOrderId], references: [id])
   customer        Customer?        @relation(fields: [customerId], references: [id])
   employee        Employee?        @relation(fields: [employeeId], references: [id])
   fiscalYear      FiscalYear?      @relation(fields: [fiscalYearId], references: [id])
   project         Project?         @relation(fields: [projectId], references: [id])
   user            User?            @relation(fields: [userId], references: [id])
-  vendor          ShopVendor?          @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  vendor          ShopVendor?      @relation(fields: [vendorId], references: [id], onDelete: SetNull)
   transactions    Transaction[]
 
   @@map("expenses")
@@ -422,29 +424,29 @@ model InventoryItem {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   companyId      String
-  userId         String?            // Owner
-  company        Company            @relation(fields: [companyId], references: [id])
-  user           User?              @relation(fields: [userId], references: [id])
+  userId         String? // Owner
+  company        Company  @relation(fields: [companyId], references: [id])
+  user           User?    @relation(fields: [userId], references: [id])
 
   @@unique([name, companyId])
   @@map("inventory_items")
 }
 
 model FixedAsset {
-  id               String   @id @default(uuid()) @map("_id")
+  id               String        @id @default(uuid()) @map("_id")
   name             String
   type             String
-  value            Decimal  @db.Decimal(12, 2)
+  value            Decimal       @db.Decimal(12, 2)
   purchaseDate     DateTime
   assignedTo       String?
-  status           String   @default("Active")
+  status           String        @default("Active")
   depreciationRate Float
-  currentBookValue Decimal  @db.Decimal(12, 2)
-  lastUpdated      DateTime @default(now())
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  currentBookValue Decimal       @db.Decimal(12, 2)
+  lastUpdated      DateTime      @default(now())
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
   companyId        String
-  company          Company  @relation(fields: [companyId], references: [id])
+  company          Company       @relation(fields: [companyId], references: [id])
   transactions     Transaction[]
 
   @@unique([name, companyId])
@@ -463,7 +465,7 @@ model Customer {
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
   companyId        String
-  userId           String?           // Owner
+  userId           String? // Owner
   contactPerson    String?
   phoneNumber      String?
   company          Company           @relation(fields: [companyId], references: [id])
@@ -559,12 +561,12 @@ model Transaction {
   fiscalYear      FiscalYear?     @relation(fields: [fiscalYearId], references: [id])
   project         Project?        @relation(fields: [projectId], references: [id])
   user            User?           @relation(fields: [userId], references: [id])
-  vendor          ShopVendor?      @relation(fields: [vendorId], references: [id])
+  vendor          ShopVendor?     @relation(fields: [vendorId], references: [id])
 
-  shareholderId   String?
-  shareholder     Shareholder?    @relation(fields: [shareholderId], references: [id])
-  fixedAssetId    String?
-  fixedAsset      FixedAsset?     @relation(fields: [fixedAssetId], references: [id])
+  shareholderId String?
+  shareholder   Shareholder? @relation(fields: [shareholderId], references: [id])
+  fixedAssetId  String?
+  fixedAsset    FixedAsset?  @relation(fields: [fixedAssetId], references: [id])
 
   @@map("transactions")
 }
@@ -588,58 +590,58 @@ model Notification {
 }
 
 model PendingExpense {
-  id                 String    @id @default(uuid()) @map("_id")
-  telegramMessageId  String?
-  telegramChatId     String?
-  telegramSenderName String?
-  telegramSenderId   String?
-  originalMessage    String
-  parsedData         Json // { projectName, amount, category, description, accountNumber, etc }
-  status             String    @default("PENDING") // PENDING, APPROVED, REJECTED
-  companyId          String
-  userId             String? // Approver
-  approvedAt         DateTime?
-  projectId          String?
+  id                   String        @id @default(uuid()) @map("_id")
+  telegramMessageId    String?
+  telegramChatId       String?
+  telegramSenderName   String?
+  telegramSenderId     String?
+  originalMessage      String
+  parsedData           Json // { projectName, amount, category, description, accountNumber, etc }
+  status               String        @default("PENDING") // PENDING, APPROVED, REJECTED
+  companyId            String
+  userId               String? // Approver
+  approvedAt           DateTime?
+  projectId            String?
   telegramChatConfigId String?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  company            Company   @relation(fields: [companyId], references: [id])
-  user               User?     @relation(fields: [userId], references: [id])
-  project            Project?  @relation(fields: [projectId], references: [id])
-  telegramChatConfig TelegramChat? @relation(fields: [telegramChatConfigId], references: [id])
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  company              Company       @relation(fields: [companyId], references: [id])
+  user                 User?         @relation(fields: [userId], references: [id])
+  project              Project?      @relation(fields: [projectId], references: [id])
+  telegramChatConfig   TelegramChat? @relation(fields: [telegramChatConfigId], references: [id])
 
   @@map("pending_expenses")
 }
 
 model TelegramChat {
-  id               String   @id @default(uuid()) @map("_id")
-  chatId           String   @unique
+  id               String           @id @default(uuid()) @map("_id")
+  chatId           String           @unique
   chatName         String?
   chatType         String?
   companyId        String
   defaultProjectId String?
-  active           Boolean  @default(true)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  company          Company  @relation(fields: [companyId], references: [id])
-  defaultProject   Project? @relation(fields: [defaultProjectId], references: [id])
+  active           Boolean          @default(true)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  company          Company          @relation(fields: [companyId], references: [id])
+  defaultProject   Project?         @relation(fields: [defaultProjectId], references: [id])
   pendingExpenses  PendingExpense[]
 
   @@map("telegram_chats")
 }
 
 model TelegramUserLink {
-  id                   String   @id @default(uuid()) @map("_id")
-  telegramUserId       String
-  telegramUsername     String?
-  telegramDisplayName  String?
-  companyId            String
-  userId               String?
-  status               String   @default("PENDING") // PENDING, APPROVED, BLOCKED
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-  company              Company  @relation(fields: [companyId], references: [id])
-  user                 User?    @relation(fields: [userId], references: [id])
+  id                  String   @id @default(uuid()) @map("_id")
+  telegramUserId      String
+  telegramUsername    String?
+  telegramDisplayName String?
+  companyId           String
+  userId              String?
+  status              String   @default("PENDING") // PENDING, APPROVED, BLOCKED
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  company             Company  @relation(fields: [companyId], references: [id])
+  user                User?    @relation(fields: [userId], references: [id])
 
   @@unique([companyId, telegramUserId])
   @@map("telegram_user_links")
@@ -720,20 +722,20 @@ model ProductionOrder {
 }
 
 model BillOfMaterial {
-  id                String          @id @default(uuid()) @map("_id")
+  id                String           @id @default(uuid()) @map("_id")
   materialName      String
   quantity          Float
   unit              String
-  costPerUnit       Decimal         @db.Decimal(10, 2)
-  totalCost         Decimal         @db.Decimal(10, 2)
+  costPerUnit       Decimal          @db.Decimal(10, 2)
+  totalCost         Decimal          @db.Decimal(10, 2)
   notes             String?
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
   companyId         String
   productionOrderId String?
   productId         String?
-  company           Company         @relation(fields: [companyId], references: [id])
-  product           ProductCatalog? @relation(fields: [productId], references: [id])
+  company           Company          @relation(fields: [companyId], references: [id])
+  product           ProductCatalog?  @relation(fields: [productId], references: [id])
   productionOrder   ProductionOrder? @relation(fields: [productionOrderId], references: [id])
 
   @@map("bill_of_materials")
@@ -770,6 +772,8 @@ model FiscalYear {
   description       String?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
+  isClosed          Boolean            @default(false)
+  closedAt          DateTime?
   companyId         String
   expenses          Expense[]
   company           Company            @relation(fields: [companyId], references: [id])
@@ -783,27 +787,26 @@ model FiscalYear {
 }
 
 model MaterialPurchase {
-  id                String           @id @default(uuid()) @map("_id")
+  id                String      @id @default(uuid()) @map("_id")
   materialName      String
   quantity          Float
-  unit              String           @default("pcs")
+  unit              String      @default("pcs")
   unitPrice         Float
   totalPrice        Float
   vendorId          String
   purchaseDate      DateTime
   invoiceNumber     String?
   notes             String?
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
   companyId         String
   productionOrderId String?
   fiscalYearId      String?
-  company           Company          @relation(fields: [companyId], references: [id])
-  fiscalYear        FiscalYear?      @relation(fields: [fiscalYearId], references: [id])
+  company           Company     @relation(fields: [companyId], references: [id])
+  fiscalYear        FiscalYear? @relation(fields: [fiscalYearId], references: [id])
 
-
-  productionOrder   ProductionOrder? @relation(fields: [productionOrderId], references: [id])
-  vendor            ShopVendor           @relation(fields: [vendorId], references: [id])
+  productionOrder ProductionOrder? @relation(fields: [productionOrderId], references: [id])
+  vendor          ShopVendor       @relation(fields: [vendorId], references: [id])
 
   @@map("material_purchases")
 }
@@ -972,30 +975,31 @@ enum TransactionType {
   DEBT_REPAID
   OTHER
 }
+
 // ============================================
 // SHOP MANAGEMENT MODELS
 // ============================================
 
 model Product {
-  id            String          @id @default(uuid())
-  name          String
-  sku           String          @unique
-  category      String
-  description   String?
-  costPrice     Float
-  sellingPrice  Float
-  stock         Int             @default(0)
-  minStock      Int             @default(5)
-  status        String          @default("In Stock") // In Stock, Low Stock, Out of Stock
-  userId        String
-  supplierId    String?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  
-  user          User            @relation("UserProducts", fields: [userId], references: [id])
-  supplier      ShopVendor?      @relation(fields: [supplierId], references: [id])
-  saleItems     SaleItem[]
-  purchaseItems PurchaseOrderItem[]
+  id           String   @id @default(uuid())
+  name         String
+  sku          String   @unique
+  category     String
+  description  String?
+  costPrice    Float
+  sellingPrice Float
+  stock        Int      @default(0)
+  minStock     Int      @default(5)
+  status       String   @default("In Stock") // In Stock, Low Stock, Out of Stock
+  userId       String
+  supplierId   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user           User                @relation("UserProducts", fields: [userId], references: [id])
+  supplier       ShopVendor?         @relation(fields: [supplierId], references: [id])
+  saleItems      SaleItem[]
+  purchaseItems  PurchaseOrderItem[]
   stockMovements StockMovement[]
 
   @@map("products")
@@ -1011,38 +1015,38 @@ model ShopClient {
   userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  user      User     @relation("UserShopClients", fields: [userId], references: [id])
-  sales     Sale[]
+
+  user  User   @relation("UserShopClients", fields: [userId], references: [id])
+  sales Sale[]
 
   @@map("shop_clients")
 }
 
 model Sale {
-  id            String     @id @default(uuid())
-  invoiceNumber String     @unique
+  id            String    @id @default(uuid())
+  invoiceNumber String    @unique
   customerId    String?
   userId        String
   subtotal      Float
   tax           Float
   total         Float
-  paymentMethod String     @default("Cash") // Cash, Card, Mobile Money, E-Dahab, Credit
-  status        String     @default("Completed") // Completed, Cancelled, Refunded
+  paymentMethod String    @default("Cash") // Cash, Card, Mobile Money, E-Dahab, Credit
+  status        String    @default("Completed") // Completed, Cancelled, Refunded
   // NEW: Accounts Receivable Fields
-  paymentStatus String     @default("Paid") // Paid, Partial, Unpaid
-  paidAmount    Float      @default(0)
+  paymentStatus String    @default("Paid") // Paid, Partial, Unpaid
+  paidAmount    Float     @default(0)
   dueDate       DateTime?
   notes         String?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  
-  user          User          @relation("UserSales", fields: [userId], references: [id])
-  customer      ShopClient? @relation(fields: [customerId], references: [id])
-  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user     User        @relation("UserSales", fields: [userId], references: [id])
+  customer ShopClient? @relation(fields: [customerId], references: [id])
+
   realCustomerId String?
-  realCustomer   Customer?   @relation(fields: [realCustomerId], references: [id])
-  
-  items         SaleItem[]
+  realCustomer   Customer? @relation(fields: [realCustomerId], references: [id])
+
+  items SaleItem[]
 
   @@map("sales")
 }
@@ -1055,178 +1059,194 @@ model SaleItem {
   quantity    Int
   unitPrice   Float
   total       Float
+  costPrice   Float    @default(0) // COGS per unit at time of sale
+  totalCost   Float    @default(0) // Total COGS for this line item
   createdAt   DateTime @default(now())
-  
-  sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
-  product     Product  @relation(fields: [productId], references: [id])
+
+  sale    Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
 
   @@map("sale_items")
 }
 
 model PurchaseOrder {
-  id               String              @id @default(uuid())
-  poNumber         String              @unique
+  id               String    @id @default(uuid())
+  poNumber         String    @unique
   vendorId         String
   userId           String
   subtotal         Float
   tax              Float
   total            Float
-  paidAmount       Float               @default(0)
-  paymentStatus    String              @default("Unpaid") // Unpaid, Partial, Paid
-  status           String              @default("Pending") // Pending, Ordered, Received, Cancelled
+  paidAmount       Float     @default(0)
+  paymentStatus    String    @default("Unpaid") // Unpaid, Partial, Paid
+  status           String    @default("Pending") // Pending, Ordered, Received, Cancelled
   expectedDelivery DateTime?
   notes            String?
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
-  
-  user             User                @relation("UserPurchaseOrders", fields: [userId], references: [id])
-  vendor           ShopVendor          @relation(fields: [vendorId], references: [id])
-  items            PurchaseOrderItem[]
-  expenses         Expense[]           // Link to payments
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user     User                @relation("UserPurchaseOrders", fields: [userId], references: [id])
+  vendor   ShopVendor          @relation(fields: [vendorId], references: [id])
+  items    PurchaseOrderItem[]
+  expenses Expense[] // Link to payments
 
   @@map("purchase_orders")
 }
 
 model PurchaseOrderItem {
-  id          String        @id @default(uuid())
+  id          String   @id @default(uuid())
   poId        String
   productId   String
   productName String
   quantity    Int
   unitCost    Float
   total       Float
-  createdAt   DateTime      @default(now())
-  
+  createdAt   DateTime @default(now())
+
   purchaseOrder PurchaseOrder @relation(fields: [poId], references: [id], onDelete: Cascade)
   product       Product       @relation(fields: [productId], references: [id])
 
   @@map("purchase_order_items")
 }
 
-
 model StockMovement {
   id        String   @id @default(uuid())
   productId String
-  type      String   // Sale, Purchase, Adjustment, Return
-  quantity  Int      // Positive for additions, negative for reductions
-  reference String?  // Invoice number, PO number, etc.
+  type      String // Sale, Purchase, Adjustment, Return
+  quantity  Int // Positive for additions, negative for reductions
+  reference String? // Invoice number, PO number, etc.
   userId    String
   createdAt DateTime @default(now())
-  
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  user      User     @relation("UserStockMovements", fields: [userId], references: [id])
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation("UserStockMovements", fields: [userId], references: [id])
 
   @@map("stock_movements")
 }
 
 model TillSession {
-  id            String    @id @default(uuid())
-  userId        String
-  companyId     String
-  openingTime   DateTime  @default(now())
-  closingTime   DateTime?
-  
-  openingFloat  Float     @default(0)
-  closingCash   Float?    // Counted by user
-  
-  expectedCash  Float?    // Calculated by system
-  variance      Float?    // closingCash - expectedCash
-  
-  status        String    @default("OPEN") // OPEN, CLOSED
-  note          String?
+  id          String    @id @default(uuid())
+  userId      String
+  companyId   String
+  openingTime DateTime  @default(now())
+  closingTime DateTime?
 
-  user          User      @relation(fields: [userId], references: [id])
-  company       Company   @relation(fields: [companyId], references: [id])
+  openingFloat Float  @default(0)
+  closingCash  Float? // Counted by user
+
+  expectedCash Float? // Calculated by system
+  variance     Float? // closingCash - expectedCash
+
+  status String  @default("OPEN") // OPEN, CLOSED
+  note   String?
+
+  user    User    @relation(fields: [userId], references: [id])
+  company Company @relation(fields: [companyId], references: [id])
 
   @@map("till_sessions")
 }
 
-
 model TaxReturn {
-  id              String    @id @default(uuid())
-  companyId       String
-  periodStart     DateTime
-  periodEnd       DateTime
-  taxCollected    Float
-  taxPaid         Float
-  taxDue          Float     // Collected - Paid
-  status          String    @default("FILED") // FILED, PAID
-  filingDate      DateTime  @default(now())
-  paymentDate     DateTime?
-  reference       String?   // e.g. TR-2024-01
+  id           String    @id @default(uuid())
+  companyId    String
+  periodStart  DateTime
+  periodEnd    DateTime
+  taxCollected Float
+  taxPaid      Float
+  taxDue       Float // Collected - Paid
+  status       String    @default("FILED") // FILED, PAID
+  filingDate   DateTime  @default(now())
+  paymentDate  DateTime?
+  reference    String? // e.g. TR-2024-01
 
-  company         Company   @relation(fields: [companyId], references: [id])
+  company              Company @relation(fields: [companyId], references: [id])
   paymentTransactionId String?
 
   @@map("tax_returns")
 }
 
-
 // --- WORKSHOP SYSTEM ---
 
 model WorkshopJob {
-  id             String        @id @default(uuid()) @map("_id")
-  jobNumber      String        // e.g. JOB-1001
-  name           String        
-  description    String?
-  status         String        @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, STOCK, SOLD
-  
-  startDate      DateTime      @default(now())
+  id          String  @id @default(uuid()) @map("_id")
+  jobNumber   String // e.g. JOB-1001
+  name        String
+  description String?
+  status      String  @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, STOCK, SOLD
+
+  startDate      DateTime  @default(now())
   completionDate DateTime?
 
   // Costs
-  materialCost   Float       @default(0)
-  laborCost      Float       @default(0)
-  overheadCost   Float       @default(0)
-  totalCost      Float       @default(0)
+  materialCost Float @default(0)
+  laborCost    Float @default(0)
+  overheadCost Float @default(0)
+  totalCost    Float @default(0)
 
   // Link to created product if finished
   generatedProductId String?
-  
-  projectId      String?       
-  customerId     String?       
-  companyId      String
 
-  company        Company       @relation(fields: [companyId], references: [id])
-  project        Project?      @relation(fields: [projectId], references: [id])
-  customer       Customer?     @relation(fields: [customerId], references: [id])
-  
-  expenses       JobExpense[]
+  projectId  String?
+  customerId String?
+  companyId  String
 
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  company  Company   @relation(fields: [companyId], references: [id])
+  project  Project?  @relation(fields: [projectId], references: [id])
+  customer Customer? @relation(fields: [customerId], references: [id])
+
+  expenses JobExpense[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("workshop_jobs")
 }
 
 model JobExpense {
-  id             String       @id @default(uuid()) @map("_id")
-  description    String       
-  amount         Float      
-  category       String       // MATERIAL, LABOR
-  date           DateTime     @default(now())
-  
-  jobId          String
-  job            WorkshopJob  @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id          String   @id @default(uuid()) @map("_id")
+  description String
+  amount      Float
+  category    String // MATERIAL, LABOR
+  date        DateTime @default(now())
+
+  jobId String
+  job   WorkshopJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("job_expenses")
 }
 
 model DeletedItem {
-  id          String   @id @default(uuid()) @map("_id")
-  modelName   String   // e.g. "Expense"
-  originalId  String?  // Keep reference if useful
-  data        Json     // Full record data
-  deletedAt   DateTime @default(now())
-  deletedBy   String?
-  companyId   String
-  
-  company     Company  @relation(fields: [companyId], references: [id])
-  user        User?    @relation(fields: [deletedBy], references: [id])
-  
+  id         String   @id @default(uuid()) @map("_id")
+  modelName  String // e.g. "Expense"
+  originalId String? // Keep reference if useful
+  data       Json // Full record data
+  deletedAt  DateTime @default(now())
+  deletedBy  String?
+  companyId  String
+
+  company Company @relation(fields: [companyId], references: [id])
+  user    User?   @relation(fields: [deletedBy], references: [id])
+
   @@map("deleted_items")
 }
 
+model AuditLog {
+  id        String   @id @default(uuid()) @map("_id")
+  action    String   // e.g. "CLOSE_PERIOD", "VIEW_REPORT", "UPDATE_SETTINGS"
+  entity    String   // e.g. "FiscalYear", "Transaction"
+  entityId  String?
+  details   String?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  userId    String
+  companyId String
+
+  user    User    @relation(fields: [userId], references: [id])
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@map("audit_logs")
+}

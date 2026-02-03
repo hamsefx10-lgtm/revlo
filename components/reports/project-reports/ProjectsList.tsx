@@ -40,8 +40,8 @@ const ProjectRow: React.FC<{
                 onClick={onToggle}
             >
                 {/* Project Name & Date */}
-                <div className="col-span-3">
-                    <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{project.name}</div>
+                <div className="col-span-2">
+                    <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm truncate" title={project.name}>{project.name}</div>
                     <div className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                         <Clock size={10} />
                         {project.startDate ? new Date(project.startDate).toLocaleDateString('so-SO') : '-'}
@@ -49,7 +49,7 @@ const ProjectRow: React.FC<{
                 </div>
 
                 {/* Customer */}
-                <div className="col-span-2 text-sm text-gray-600 dark:text-gray-300 font-medium truncate">
+                <div className="col-span-1 text-sm text-gray-600 dark:text-gray-300 font-medium truncate">
                     {project.customer}
                 </div>
 
@@ -65,8 +65,26 @@ const ProjectRow: React.FC<{
                     <div className="text-sm font-bold text-gray-900 dark:text-gray-100">
                         {project.projectValue.toLocaleString()} <span className="text-[10px] text-gray-500 font-normal">ETB</span>
                     </div>
-                    <div className="text-[10px] text-gray-400 mt-0.5">
-                        Rev: {project.totalRevenue.toLocaleString()}
+                </div>
+
+                {/* Expenses */}
+                <div className="col-span-1 text-right">
+                    <div className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                        {project.totalExpenses.toLocaleString()}
+                    </div>
+                </div>
+
+                {/* Paid (Revenue Collected) */}
+                <div className="col-span-1 text-right">
+                    <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                        {project.totalRevenue.toLocaleString()}
+                    </div>
+                </div>
+
+                {/* Debt (Outstanding Balance) */}
+                <div className="col-span-1 text-right">
+                    <div className="text-sm font-bold text-rose-600 dark:text-rose-400">
+                        {project.remainingRevenue.toLocaleString()}
                     </div>
                 </div>
 
@@ -77,18 +95,14 @@ const ProjectRow: React.FC<{
                     </span>
                 </div>
 
-                {/* Margin */}
-                <div className="col-span-1 text-right text-sm text-gray-500 font-medium">
-                    {project.profitMargin.toFixed(1)}%
-                </div>
-
-                {/* Existing Action */}
-                <div className="col-span-1 flex justify-center">
-                    <button className={`p-2 rounded-full transition-colors ${isExpanded
-                            ? 'bg-primary/10 text-primary'
-                            : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'
+                {/* Margin & Action */}
+                <div className="col-span-1 flex items-center justify-end gap-2">
+                    <span className="text-sm text-gray-500 font-medium">{project.profitMargin.toFixed(1)}%</span>
+                    <button className={`p-1 rounded-full transition-colors ${isExpanded
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'
                         }`}>
-                        {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                     </button>
                 </div>
             </div>
@@ -109,8 +123,8 @@ const ProjectRow: React.FC<{
                                 <button
                                     onClick={(e) => { e.stopPropagation(); setActiveTab('expenses'); }}
                                     className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${activeTab === 'expenses'
-                                            ? 'bg-primary/10 text-primary shadow-sm'
-                                            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                                        ? 'bg-primary/10 text-primary shadow-sm'
+                                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                                         }`}
                                 >
                                     Kharashyada ({project.expenses.length})
@@ -118,8 +132,8 @@ const ProjectRow: React.FC<{
                                 <button
                                     onClick={(e) => { e.stopPropagation(); setActiveTab('transactions'); }}
                                     className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${activeTab === 'transactions'
-                                            ? 'bg-primary/10 text-primary shadow-sm'
-                                            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                                        ? 'bg-primary/10 text-primary shadow-sm'
+                                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                                         }`}
                                 >
                                     Dhaqdhaqaaqa ({project.transactions.length})
@@ -127,8 +141,8 @@ const ProjectRow: React.FC<{
                                 <button
                                     onClick={(e) => { e.stopPropagation(); setActiveTab('payments'); }}
                                     className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${activeTab === 'payments'
-                                            ? 'bg-primary/10 text-primary shadow-sm'
-                                            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                                        ? 'bg-primary/10 text-primary shadow-sm'
+                                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                                         }`}
                                 >
                                     Lacagaha ({project.payments.length})
@@ -163,11 +177,24 @@ const ProjectRow: React.FC<{
                                                         {cleanDescription(expense.description)}
                                                     </td>
                                                     <td className="px-4 py-3 text-xs text-gray-500">
-                                                        <div className="flex flex-wrap gap-1">
-                                                            {expense.subCategory && <span className="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded border border-blue-100">{expense.subCategory}</span>}
-                                                            {expense.employeeName && <span className="bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded border border-purple-100">Shaqaale: {expense.employeeName}</span>}
-                                                            {expense.supplierName && <span className="bg-orange-50 text-orange-600 px-1.5 py-0.5 rounded border border-orange-100">Supplier: {expense.supplierName}</span>}
-                                                        </div>
+                                                        {expense.category === 'Material' && expense.materials && Array.isArray(expense.materials) && expense.materials.length > 0 ? (
+                                                            <div className="flex flex-col gap-1">
+                                                                {expense.materials.map((m: any, idx: number) => (
+                                                                    <div key={idx} className="flex justify-between items-center text-[10px] bg-gray-50 dark:bg-gray-700/50 px-2 py-1 rounded border border-gray-100 dark:border-gray-600">
+                                                                        <span className="font-medium text-gray-700 dark:text-gray-300">{m.name}</span>
+                                                                        <span className="text-gray-500 dark:text-gray-400 font-mono">
+                                                                            {Number(m.qty ?? m.quantity).toLocaleString()} {m.unit} x {Number(m.price).toLocaleString()}
+                                                                        </span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {expense.subCategory && <span className="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded border border-blue-100 dark:border-blue-800">{expense.subCategory}</span>}
+                                                                {expense.employeeName && <span className="bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded border border-purple-100 dark:border-purple-800">Shaqaale: {expense.employeeName}</span>}
+                                                                {expense.supplierName && <span className="bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 rounded border border-orange-100 dark:border-orange-800">Supplier: {expense.supplierName}</span>}
+                                                            </div>
+                                                        )}
                                                     </td>
                                                     <td className="px-4 py-3 text-right font-semibold text-gray-900 dark:text-gray-100">
                                                         {expense.amount.toLocaleString()}
@@ -284,13 +311,15 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
             {/* Table Header */}
             <div className="grid grid-cols-12 gap-4 p-4 bg-gray-50/50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                <div className="col-span-3">Mashruuc</div>
-                <div className="col-span-2">Macmiil</div>
+                <div className="col-span-2">Mashruuc</div>
+                <div className="col-span-1">Macmiil</div>
                 <div className="col-span-1">Xaalad</div>
                 <div className="col-span-2 text-right">Qiimaha</div>
+                <div className="col-span-1 text-right">Kharashka</div>
+                <div className="col-span-1 text-right text-emerald-600 dark:text-emerald-400">La Bixiyay</div>
+                <div className="col-span-1 text-right text-rose-600 dark:text-rose-400">Dayn</div>
                 <div className="col-span-2 text-right">Faa'iidada</div>
                 <div className="col-span-1 text-right">%</div>
-                <div className="col-span-1 text-center"></div>
             </div>
 
             {/* Project Rows */}
@@ -309,18 +338,27 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
                 {visibleProjects.length > 0 && (
                     <div className="bg-gray-50 dark:bg-gray-800/80 p-4 border-t border-gray-200 dark:border-gray-700">
                         <div className="grid grid-cols-12 gap-4 items-center">
-                            <div className="col-span-6 font-bold text-gray-700 dark:text-gray-200 uppercase text-xs tracking-wider">
+                            <div className="col-span-5 font-bold text-gray-700 dark:text-gray-200 uppercase text-xs tracking-wider">
                                 Wadarta Guud
                             </div>
                             <div className="col-span-2 text-right font-bold text-gray-900 dark:text-white text-sm">
                                 {visibleProjects.reduce((sum, p) => sum + p.projectValue, 0).toLocaleString()} <span className="text-[10px] text-gray-500 font-normal">ETB</span>
+                            </div>
+                            <div className="col-span-1 text-right font-bold text-gray-700 dark:text-gray-300 text-sm">
+                                {visibleProjects.reduce((sum, p) => sum + p.totalExpenses, 0).toLocaleString()}
+                            </div>
+                            <div className="col-span-1 text-right font-bold text-emerald-600 dark:text-emerald-400 text-sm">
+                                {visibleProjects.reduce((sum, p) => sum + p.totalRevenue, 0).toLocaleString()}
+                            </div>
+                            <div className="col-span-1 text-right font-bold text-rose-600 dark:text-rose-400 text-sm">
+                                {visibleProjects.reduce((sum, p) => sum + p.remainingRevenue, 0).toLocaleString()}
                             </div>
                             <div className="col-span-2 text-right font-bold text-gray-900 dark:text-white text-sm">
                                 <span className={visibleProjects.reduce((sum, p) => sum + p.grossProfit, 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'}>
                                     {visibleProjects.reduce((sum, p) => sum + p.grossProfit, 0).toLocaleString()}
                                 </span>
                             </div>
-                            <div className="col-span-2"></div>
+                            <div className="col-span-1"></div>
                         </div>
                     </div>
                 )}

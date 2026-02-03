@@ -173,9 +173,10 @@ export default function AddProjectPage() {
     const advancePaidNum = typeof advancePaid === 'number' ? advancePaid : parseFloat(advancePaid as any) || 0;
 
     if (!name.trim()) newErrors.name = 'Magaca Mashruuca waa waajib.';
-    if (!agreementAmountNum || isNaN(agreementAmountNum) || agreementAmountNum <= 0) newErrors.agreementAmount = 'Qiimaha Heshiiska waa inuu noqdaa nambar wanaagsan.';
+    if (agreementAmountNum < 0 || isNaN(agreementAmountNum)) newErrors.agreementAmount = 'Qiimaha Heshiiska waa inuu noqdaa nambar wanaagsan ( ama 0 for Pay-As-You-Go).';
     if (advancePaidNum < 0) newErrors.advancePaid = 'Lacagta Hore Loo Bixiyay waa inuu noqdaa nambar wanaagsan.';
-    if (advancePaidNum > agreementAmountNum) newErrors.advancePaid = 'Lacagta Hore Loo Bixiyay ma dhaafi karto Qiimaha Heshiiska.';
+    // Only cap advance if agreement is fixed (greater than 0)
+    if (agreementAmountNum > 0 && advancePaidNum > agreementAmountNum) newErrors.advancePaid = 'Lacagta Hore Loo Bixiyay ma dhaafi karto Qiimaha Heshiiska.';
     if (!projectType) newErrors.projectType = 'Nooca Mashruuca waa waajib.';
     if (!expectedCompletionDate) newErrors.expectedCompletionDate = 'Taariikhda Dhammaystirka waa waajib.';
     if (!customerId) newErrors.customerId = 'Macmiilka waa waajib.';
@@ -276,7 +277,7 @@ export default function AddProjectPage() {
                 className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${errors.name ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
               />
             </div>
-            {errors.name && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.name}</p>}
+            {errors.name && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.name}</p>}
           </div>
 
           {/* Customer Selection */}
@@ -305,13 +306,13 @@ export default function AddProjectPage() {
                 <Plus size={18} />
               </button>
             </div>
-            {errors.customerId && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.customerId}</p>}
+            {errors.customerId && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.customerId}</p>}
           </div>
 
           {/* Agreement Amount & Advance Paid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="agreementAmount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Qiimaha Heshiiska ($) <span className="text-redError">*</span></label>
+              <label htmlFor="agreementAmount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Qiimaha Heshiiska ($) - (0 for T&M) <span className="text-redError">*</span></label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
                 <input
@@ -323,7 +324,7 @@ export default function AddProjectPage() {
                   className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${errors.agreementAmount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 />
               </div>
-              {errors.agreementAmount && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.agreementAmount}</p>}
+              {errors.agreementAmount && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.agreementAmount}</p>}
             </div>
             <div>
               <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">
@@ -362,7 +363,7 @@ export default function AddProjectPage() {
               <div className="mt-2 text-sm text-mediumGray">
                 Wadar Advance Paid: <span className="font-bold">{advancePaid || 0}</span>
               </div>
-              {errors.advancePayments && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.advancePayments}</p>}
+              {errors.advancePayments && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.advancePayments}</p>}
             </div>
           </div>
 
@@ -386,7 +387,7 @@ export default function AddProjectPage() {
                 </select>
                 <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
               </div>
-              {errors.projectType && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.projectType}</p>}
+              {errors.projectType && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.projectType}</p>}
             </div>
             <div>
               <label htmlFor="expectedCompletionDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Dhammaystirka La Filayo <span className="text-redError">*</span></label>
@@ -400,7 +401,7 @@ export default function AddProjectPage() {
                   className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${errors.expectedCompletionDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 />
               </div>
-              {errors.expectedCompletionDate && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.expectedCompletionDate}</p>}
+              {errors.expectedCompletionDate && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.expectedCompletionDate}</p>}
             </div>
           </div>
 

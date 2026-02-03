@@ -64,25 +64,25 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   try {
     const { id } = params;
     console.log('Project edit API called for ID:', id);
-    
+
     const companyId = await getSessionCompanyId();
     console.log('Company ID:', companyId);
-    
+
     const body = await request.json();
     console.log('Request body:', body);
-    
+
     // Validate required fields
-    if (!body.name || !body.agreementAmount || !body.customerId) {
-      return NextResponse.json({ 
-        message: 'Fadlan buuxi dhammaan beeraha waajibka ah: name, agreementAmount, customerId.' 
+    if (!body.name || body.agreementAmount === undefined || body.agreementAmount === null || !body.customerId) {
+      return NextResponse.json({
+        message: 'Fadlan buuxi dhammaan beeraha waajibka ah: name, agreementAmount, customerId.'
       }, { status: 400 });
     }
-    
+
     // Verify project exists and belongs to company
     const existingProject = await prisma.project.findFirst({
       where: { id, companyId }
     });
-    
+
     if (!existingProject) {
       console.log('Project not found or does not belong to company');
       return NextResponse.json({ message: 'Mashruuca lama helin.' }, { status: 404 });
@@ -91,13 +91,13 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     // Calculate remaining amount with proper validation
     const agreementAmount = parseFloat(body.agreementAmount);
     const advancePaid = parseFloat(body.advancePaid || 0);
-    
+
     if (isNaN(agreementAmount) || isNaN(advancePaid)) {
-      return NextResponse.json({ 
-        message: 'Qiimaha lacagta ma sax ah.' 
+      return NextResponse.json({
+        message: 'Qiimaha lacagta ma sax ah.'
       }, { status: 400 });
     }
-    
+
     const remainingAmount = agreementAmount - advancePaid;
     console.log('Calculated remaining amount:', remainingAmount);
 
@@ -154,41 +154,103 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       meta: error.meta,
       stack: error.stack
     });
-    
+
     // Return more specific error messages
     if (error.code === 'P2002') {
-      return NextResponse.json({ 
-        message: 'Mashruucan horay u jiraa.' 
+      return NextResponse.json({
+        message: 'Mashruucan horay u jiraa.'
       }, { status: 400 });
     }
-    
+
     if (error.code === 'P2025') {
-      return NextResponse.json({ 
-        message: 'Mashruuca lama helin.' 
+      return NextResponse.json({
+        message: 'Mashruuca lama helin.'
       }, { status: 404 });
     }
-    
+
     return NextResponse.json(
-      { 
+      {
         message: 'Cilad server ayaa dhacday. Fadlan isku day mar kale.',
         error: process.env.NODE_ENV === 'development' ? error.message : undefined
       },
       { status: 500 }
     );
   }
+
 }
+
+// PATCH /api/projects/[id] - Partial update project (e.g., status)
+export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+  try {
+    const { id } = params;
+    const companyId = await getSessionCompanyId();
+
+    const body = await request.json();
+
+    // Verify project exists and belongs to company
+    const existingProject = await prisma.project.findFirst({
+      where: { id, companyId }
+    });
+
+    if (!existingProject) {
+      return NextResponse.json({ message: 'Mashruuca lama helin.' }, { status: 404 });
+    }
+
+    // Only allow updating specific fields via PATCH for safety
+    // Currently mainly for status updates from Kanban board
+    const allowedUpdates = ['status'];
+    const updateData: any = {};
+
+    for (const key of Object.keys(body)) {
+      if (allowedUpdates.includes(key)) {
+        updateData[key] = body[key];
+      }
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ message: 'No valid fields to update.' }, { status: 400 });
+    }
+
+    const updatedProject = await prisma.project.update({
+      where: { id },
+      data: updateData,
+      include: {
+        customer: { select: { id: true, name: true } }, // Minimal return
+      },
+    });
+
+    // Notify about project update
+    const projectEvent = {
+      id: updatedProject.id,
+      action: 'updated',
+      timestamp: Date.now()
+    };
+
+    return NextResponse.json(
+      { message: 'Mashruuca waa la cusboonaysiiyay.', project: updatedProject, event: projectEvent },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    console.error('Error patching project:', error);
+    return NextResponse.json(
+      { message: 'Cilad server ayaa dhacday.' },
+      { status: 500 }
+    );
+  }
+}
+
 
 // DELETE /api/projects/[id] - Delete project
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
     const companyId = await getSessionCompanyId();
-    
+
     // Verify project exists and belongs to company
     const existingProject = await prisma.project.findFirst({
       where: { id, companyId }
     });
-    
+
     if (!existingProject) {
       return NextResponse.json({ message: 'Mashruuca lama helin.' }, { status: 404 });
     }

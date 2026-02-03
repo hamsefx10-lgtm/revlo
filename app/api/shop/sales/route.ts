@@ -70,6 +70,8 @@ export async function POST(req: NextRequest) {
                     quantity: item.quantity,
                     unitPrice: product.sellingPrice,
                     total: itemTotal,
+                    costPrice: product.costPrice || 0,
+                    totalCost: (product.costPrice || 0) * item.quantity,
                 });
 
                 // Update product stock

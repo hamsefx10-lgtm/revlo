@@ -58,28 +58,27 @@ interface ProjectRowProps {
 
 const ProjectRow: React.FC<ProjectRowProps> = ({ project, onDelete }) => {
   const { class: statusClass, icon: statusIcon } = getStatusProps(project.status);
-  const progress = project.agreementAmount > 0 ? (project.advancePaid / project.agreementAmount) * 100 : 0;
+  const isPAYG = project.agreementAmount === 0;
+  const progress = !isPAYG && project.agreementAmount > 0 ? (project.advancePaid / project.agreementAmount) * 100 : 0;
 
   return (
     // On mobile (default), it's a flex-column (card). On md screens and up, it's a table-row.
-    <tr className="block md:table-row border-b md:border-b-0 border-lightGray dark:border-gray-700 mb-4 md:mb-0 rounded-lg md:rounded-none bg-white dark:bg-gray-800 md:bg-transparent shadow-md md:shadow-none md:hover:bg-lightGray/50 dark:md:hover:bg-gray-700/50 transition-colors duration-150">
+    <tr className={`block md:table-row border-b md:border-b-0 border-lightGray dark:border-gray-700 mb-4 md:mb-0 rounded-lg md:rounded-none bg-white dark:bg-gray-800 md:bg-transparent shadow-md md:shadow-none md:hover:bg-lightGray/50 dark:md:hover:bg-gray-700/50 transition-colors duration-150 ${isPAYG ? 'border-l-4 md:border-l-0 border-l-blue-400' : ''}`}>
 
       {/* Helper function to create table cells that work on both mobile and desktop */}
-      {/* On mobile, it shows a label. On desktop, it's a normal cell. */}
-      {/* data-label is used for the mobile view label via CSS */}
       <td data-label="Project" className="p-3 md:p-4 flex justify-between items-center md:table-cell text-left font-bold text-lg md:font-medium md:text-base text-darkGray dark:text-gray-100 whitespace-nowrap border-b md:border-b-0 border-lightGray dark:border-gray-700/50">
-        <span className="md:hidden text-primary font-bold">{project.name}</span>
-        <span className="hidden md:inline">{project.name}</span>
-        {/* Mobile-only menu for actions */}
-        <div className="md:hidden">
-          {/* Dropdown can be added here if needed */}
+        <div className="flex flex-col">
+          <span className="md:hidden text-primary font-bold">{project.name}</span>
+          <span className="hidden md:inline">{project.name}</span>
+          {isPAYG && <span className="text-[10px] text-blue-500 font-bold uppercase tracking-wider">Pay As You Go</span>}
         </div>
       </td>
       <td data-label="Client" className="p-3 md:p-4 flex justify-between items-center md:table-cell text-left text-mediumGray dark:text-gray-300 whitespace-nowrap border-b md:border-b-0 border-lightGray dark:border-gray-700/50">
         <span className="font-bold md:hidden">Client:</span> {project.customer.name}
       </td>
       <td data-label="Amount" className="p-3 md:p-4 flex justify-between items-center md:table-cell text-left md:text-right text-mediumGray dark:text-gray-300 whitespace-nowrap border-b md:border-b-0 border-lightGray dark:border-gray-700/50">
-        <span className="font-bold md:hidden">Amount:</span> Br{project.agreementAmount.toLocaleString()}
+        <span className="font-bold md:hidden">Amount:</span>
+        {isPAYG ? <span className="text-blue-500 font-medium">Open / T&M</span> : `Br${project.agreementAmount.toLocaleString()}`}
       </td>
       <td data-label="Paid" className="p-3 md:p-4 flex justify-between items-center md:table-cell text-left md:text-right text-secondary dark:text-green-400 whitespace-nowrap border-b md:border-b-0 border-lightGray dark:border-gray-700/50">
         <span className="font-bold md:hidden">Paid:</span> Br{project.advancePaid.toLocaleString()}
@@ -96,10 +95,16 @@ const ProjectRow: React.FC<ProjectRowProps> = ({ project, onDelete }) => {
       <td data-label="Progress" className="p-3 md:p-4 flex justify-between items-center md:table-cell text-left whitespace-nowrap">
         <span className="font-bold md:hidden">Progress:</span>
         <div className="w-full">
-          <div className="w-full bg-lightGray dark:bg-gray-700 rounded-full h-2">
-            <div className={`h-2 rounded-full ${progress < 100 ? 'bg-primary' : 'bg-secondary'}`} style={{ width: `${progress}%` }}></div>
-          </div>
-          <span className="text-xs text-mediumGray dark:text-gray-400">{progress.toFixed(0)}% Paid</span>
+          {!isPAYG ? (
+            <>
+              <div className="w-full bg-lightGray dark:bg-gray-700 rounded-full h-2">
+                <div className={`h-2 rounded-full ${progress < 100 ? 'bg-primary' : 'bg-secondary'}`} style={{ width: `${progress}%` }}></div>
+              </div>
+              <span className="text-xs text-mediumGray dark:text-gray-400">{progress.toFixed(0)}% Paid</span>
+            </>
+          ) : (
+            <span className="text-xs text-mediumGray italic">N/A (Open)</span>
+          )}
         </div>
       </td>
       {/* Actions are grouped and hidden on mobile, shown on desktop */}
@@ -125,25 +130,33 @@ const ProjectRow: React.FC<ProjectRowProps> = ({ project, onDelete }) => {
 interface KanbanCardProps {
   project: Project;
   onDelete: (id: string) => void;
+  onUpdateStatus: (id: string, newStatus: Project['status']) => void;
 }
 
-const KanbanCard: React.FC<KanbanCardProps> = ({ project, onDelete }) => {
-  const progress = project.agreementAmount > 0 ? (project.advancePaid / project.agreementAmount) * 100 : 0;
+const KanbanCard: React.FC<KanbanCardProps> = ({ project, onDelete, onUpdateStatus }) => {
+  const isPAYG = project.agreementAmount === 0;
+  const progress = !isPAYG && project.agreementAmount > 0 ? (project.advancePaid / project.agreementAmount) * 100 : 0;
   const { class: statusClass, icon: statusIcon } = getStatusProps(project.status);
+
+  // Border Color Logic
   let borderColor = 'border-lightGray dark:border-gray-700';
-  if (project.status === 'Active') borderColor = 'border-primary';
-  if (project.status === 'Completed') borderColor = 'border-secondary';
-  if (project.status === 'On Hold') borderColor = 'border-accent';
-  if (project.status === 'Cancelled') borderColor = 'border-redError';
-  if (project.status === 'Overdue') borderColor = 'border-redError';
-  if (project.status === 'Nearing Deadline') borderColor = 'border-orange-500';
+  if (isPAYG) borderColor = 'border-blue-400'; // Distinct color for PAYG
+  else if (project.status === 'Active') borderColor = 'border-primary';
+  else if (project.status === 'Completed') borderColor = 'border-secondary';
+  else if (project.status === 'On Hold') borderColor = 'border-accent';
+  else if (project.status === 'Cancelled') borderColor = 'border-redError';
+  else if (project.status === 'Overdue') borderColor = 'border-redError';
+  else if (project.status === 'Nearing Deadline') borderColor = 'border-orange-500';
 
   return (
-    <div className={`bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg mb-4 border-l-4 ${borderColor} transform hover:scale-[1.02] hover:shadow-xl transition-all duration-300 flex flex-col justify-between`}>
+    <div className={`bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg mb-4 border-l-4 ${borderColor} ${isPAYG ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''} transform hover:scale-[1.02] hover:shadow-xl transition-all duration-300 flex flex-col justify-between`}>
       <div>
         {/* --- Card Header --- */}
         <div className="flex justify-between items-start mb-3">
-          <h4 className="font-bold text-lg text-darkGray dark:text-gray-100">{project.name}</h4>
+          <div>
+            <h4 className="font-bold text-lg text-darkGray dark:text-gray-100">{project.name}</h4>
+            {isPAYG && <span className="text-[10px] text-blue-500 font-bold uppercase tracking-wider block mt-1">Pay As You Go</span>}
+          </div>
           <span className={`px-2 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1.5 ${statusClass}`}>
             {statusIcon} <span>{project.status}</span>
           </span>
@@ -157,7 +170,9 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ project, onDelete }) => {
           </div>
           <div className="flex items-center gap-2">
             <DollarSign size={14} className="text-gray-400" />
-            <span>Amount: <span className="font-medium text-darkGray dark:text-gray-200">Br{project.agreementAmount.toLocaleString()}</span></span>
+            <span>Amount: <span className="font-medium text-darkGray dark:text-gray-200">
+              {isPAYG ? <span className="text-blue-500">Open / T&M</span> : `Br${project.agreementAmount.toLocaleString()}`}
+            </span></span>
           </div>
           <div className="flex items-center gap-2">
             <Calendar size={14} className="text-gray-400" />
@@ -168,14 +183,29 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ project, onDelete }) => {
 
       {/* --- Progress & Actions --- */}
       <div className="mt-4">
-        <div className="flex justify-between items-center mb-1">
-          <span className="text-xs font-semibold text-redError">Remaining: Br{project.remainingAmount.toLocaleString()}</span>
-          <span className="text-xs font-semibold text-secondary">{progress.toFixed(0)}% Paid</span>
-        </div>
-        <div className="w-full bg-lightGray dark:bg-gray-700 rounded-full h-2">
-          <div className={`h-2 rounded-full ${progress >= 100 ? 'bg-secondary' : 'bg-primary'}`} style={{ width: `${progress}%` }}></div>
-        </div>
+        {!isPAYG ? (
+          <>
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-xs font-semibold text-redError">Remaining: Br{project.remainingAmount.toLocaleString()}</span>
+              <span className="text-xs font-semibold text-secondary">{progress.toFixed(0)}% Paid</span>
+            </div>
+            <div className="w-full bg-lightGray dark:bg-gray-700 rounded-full h-2">
+              <div className={`h-2 rounded-full ${progress >= 100 ? 'bg-secondary' : 'bg-primary'}`} style={{ width: `${progress}%` }}></div>
+            </div>
+          </>
+        ) : (
+          <div className="flex justify-between items-center mb-1">
+            <span className="text-xs font-semibold text-blue-500">Total Paid: Br{project.advancePaid.toLocaleString()}</span>
+            <span className="text-xs font-medium text-mediumGray">Open Budget</span>
+          </div>
+        )}
+
         <div className="flex justify-end space-x-2 mt-4">
+          {project.status !== 'Completed' && (
+            <button onClick={() => onUpdateStatus(project.id, 'Completed')} className="p-2 rounded-full bg-secondary/10 text-secondary hover:bg-secondary hover:text-white transition-colors duration-200" title="Mark as Completed">
+              <CheckCircle size={16} />
+            </button>
+          )}
           <Link href={`/projects/${project.id}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View Details">
             <Eye size={16} />
           </Link>
@@ -234,6 +264,29 @@ export default function ProjectsPage() {
         console.error('Error deleting project:', error);
         setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka mashruuca la tirtirayay.', type: 'error' });
       }
+    }
+  };
+
+  const handleUpdateStatus = async (id: string, newStatus: Project['status']) => {
+    // Optimistic update
+    setProjects(prev => prev.map(p => p.id === id ? { ...p, status: newStatus } : p));
+
+    try {
+      const response = await fetch(`/api/projects/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to update project status');
+
+      setToastMessage({ message: data.message || 'Xaalada mashruuca waa la cusboonaysiiyay!', type: 'success' });
+      // No need to refetch if successful, as we did optimistic update. 
+      // But maybe good to sync? Let's just keep optimistic.
+    } catch (error: any) {
+      console.error('Error updating status:', error);
+      setToastMessage({ message: error.message || 'Cilad ayaa dhacday.', type: 'error' });
+      fetchProjects(); // Revert on error
     }
   };
 
@@ -434,7 +487,7 @@ export default function ProjectsPage() {
                 </h3>
                 <div className="flex-1 space-y-4 overflow-y-auto pr-2 -mr-2"> {/* Scrollable content */}
                   {projectsInColumn.map(project => (
-                    <KanbanCard key={project.id} project={project} onDelete={handleDeleteProject} />
+                    <KanbanCard key={project.id} project={project} onDelete={handleDeleteProject} onUpdateStatus={handleUpdateStatus} />
                   ))}
                 </div>
               </div>

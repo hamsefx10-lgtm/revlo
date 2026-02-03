@@ -1,4 +1,5 @@
 'use client';
+// Force rebuild
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
@@ -139,6 +140,36 @@ interface Translations {
     high: string;
     critical: string;
   };
+
+  // Reports
+  reports: {
+    debtsOverview: string;
+    companyPayables: string;
+    projectReceivables: string;
+    projectPayables: string;
+    customerReceivables: string;
+    totalPayables: string;
+    totalReceivables: string;
+    paid: string;
+    received: string;
+    remaining: string;
+    overdue: string;
+    upcoming: string;
+    active: string;
+    download: string;
+    viewDetails: string;
+    recordPayment: string;
+    recordReceipt: string;
+    sendReminder: string;
+    project: string;
+    client: string;
+    lender: string;
+    type: string;
+    dueDate: string;
+    status: string;
+    noDebts: string;
+    noReceivables: string;
+  };
 }
 
 // Language Context Type
@@ -276,6 +307,34 @@ const translations: Record<Language, Translations> = {
       high: 'Sare',
       critical: 'Muhiim',
     },
+    reports: {
+      debtsOverview: 'Warbixinta Deymaha',
+      companyPayables: 'Company Payables',
+      projectReceivables: 'Project Receivables',
+      projectPayables: 'Project Payables',
+      customerReceivables: 'Customer Receivables',
+      totalPayables: 'Wadarta Payables',
+      totalReceivables: 'Wadarta Receivables',
+      paid: 'La Bixiyay',
+      received: 'La Helay',
+      remaining: 'Hadhay',
+      overdue: 'Dib U Dhacay',
+      upcoming: 'La Sugayo',
+      active: 'Firfircoon',
+      download: 'Soo Deji',
+      viewDetails: 'Fiiri Faahfaahinta',
+      recordPayment: 'Diiwaangeli Bixin',
+      recordReceipt: 'Diiwaangeli Lacag',
+      sendReminder: 'Dir Xasuusin',
+      project: 'Mashruuc',
+      client: 'Macmiil',
+      lender: 'Deyn Bixiye',
+      type: 'Nooca',
+      dueDate: 'Taariikhda Bixinta',
+      status: 'Xaaladda',
+      noDebts: 'Majiraan deymo',
+      noReceivables: 'Majiraan lacago la sugayo',
+    },
   },
   en: {
     common: {
@@ -398,6 +457,34 @@ const translations: Record<Language, Translations> = {
       medium: 'Medium',
       high: 'High',
       critical: 'Critical',
+    },
+    reports: {
+      debtsOverview: 'Debts Overview',
+      companyPayables: 'Company Payables',
+      projectReceivables: 'Project Receivables',
+      projectPayables: 'Project Payables',
+      customerReceivables: 'Customer Receivables',
+      totalPayables: 'Total Payables',
+      totalReceivables: 'Total Receivables',
+      paid: 'Paid',
+      received: 'Received',
+      remaining: 'Remaining',
+      overdue: 'Overdue',
+      upcoming: 'Upcoming',
+      active: 'Active',
+      download: 'Download',
+      viewDetails: 'View Details',
+      recordPayment: 'Record Payment',
+      recordReceipt: 'Record Receipt',
+      sendReminder: 'Send Reminder',
+      project: 'Project',
+      client: 'Client',
+      lender: 'Lender',
+      type: 'Type',
+      dueDate: 'Due Date',
+      status: 'Status',
+      noDebts: 'No debts found',
+      noReceivables: 'No receivables found',
     },
   },
 };

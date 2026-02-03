@@ -69,7 +69,10 @@ export default async function ProjectInvoicePage({ params }: { params: { id: str
                             {/* Company Logo Or Name */}
                             <div className="mb-6">
                                 {project.company.logoUrl ? (
-                                    <img src={project.company.logoUrl} alt={project.company.name} className="h-20 w-auto object-contain" />
+                                    <>
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={project.company.logoUrl} alt={project.company.name} className="h-20 w-auto object-contain" />
+                                    </>
                                 ) : (
                                     <h2 className="text-3xl font-bold text-primary">{project.company.name}</h2>
                                 )}

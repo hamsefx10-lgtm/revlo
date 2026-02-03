@@ -262,8 +262,8 @@ const CustomerDetailsPage: React.FC = () => {
         <div className="block lg:hidden sticky top-0 z-10 bg-white dark:bg-gray-800 pb-2">
           <div className="px-2 pt-2">
             {/* Grid Layout - 3 columns, multiple rows */}
-            <nav 
-              className="grid grid-cols-3 gap-2" 
+            <nav
+              className="grid grid-cols-3 gap-2"
               aria-label="Tabs"
             >
               {[
@@ -283,9 +283,9 @@ const CustomerDetailsPage: React.FC = () => {
                   data-tab={tab.name}
                   className={`py-3 px-2 rounded-lg font-medium text-xs focus:outline-none transition-all duration-200 flex flex-col items-center justify-center space-y-1.5 min-h-[70px]
                               ${activeTab === tab.name
-                        ? 'bg-primary text-white shadow-md'
-                        : 'bg-gray-100 dark:bg-gray-700 text-mediumGray dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                      }`}
+                      ? 'bg-primary text-white shadow-md'
+                      : 'bg-gray-100 dark:bg-gray-700 text-mediumGray dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
                 >
                   <tab.icon size={20} className={activeTab === tab.name ? 'text-white' : 'text-mediumGray dark:text-gray-400'} />
                   <span className="text-[11px] leading-tight text-center font-semibold">{tab.label}</span>
@@ -1049,6 +1049,7 @@ const CustomerDetailsPage: React.FC = () => {
 
                         {expense.receiptUrl && (
                           <div className="mb-3">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={expense.receiptUrl}
                               alt={`Receipt for ${expense.note || '-'}`}

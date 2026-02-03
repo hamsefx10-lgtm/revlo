@@ -29,7 +29,7 @@ export default function FloatingChat() {
   const [selectedRoom, setSelectedRoom] = useState<ChatRoom | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -49,19 +49,19 @@ export default function FloatingChat() {
   const fetchChatRoom = async () => {
     try {
       setIsLoading(true);
-      
+
       // Debug session data
       console.log('FloatingChat - Session data:', session);
       console.log('FloatingChat - User data:', session?.user);
       console.log('FloatingChat - Company ID:', (session?.user as any)?.companyId);
-      
+
       const response = await fetch('/api/chat/rooms');
       console.log('FloatingChat - Rooms response status:', response.status);
-      
+
       if (response.ok) {
         const data = await response.json();
         console.log('FloatingChat - Rooms data:', data);
-        
+
         if (data.success && data.rooms && data.rooms.length > 0) {
           setSelectedRoom(data.rooms[0]);
           fetchMessages(data.rooms[0].id);
@@ -74,13 +74,13 @@ export default function FloatingChat() {
               'Content-Type': 'application/json',
             },
           });
-          
+
           console.log('FloatingChat - Create response status:', createResponse.status);
-          
+
           if (createResponse.ok) {
             const createData = await createResponse.json();
             console.log('FloatingChat - Create data:', createData);
-            
+
             if (createData.success && createData.room) {
               setSelectedRoom(createData.room);
               fetchMessages(createData.room.id);
@@ -105,7 +105,7 @@ export default function FloatingChat() {
     try {
       const response = await fetch(`/api/chat/messages?roomId=${roomId}`);
       if (response.ok) {
-      const data = await response.json();
+        const data = await response.json();
         if (data.success && data.messages) {
           setMessages(data.messages);
         }
@@ -121,18 +121,18 @@ export default function FloatingChat() {
     const messageContent = newMessage.trim();
     setNewMessage('');
     setIsSending(true);
-      
-      // Add message to local state immediately for better UX
-      const tempMessage: Message = {
-        id: Date.now().toString(),
+
+    // Add message to local state immediately for better UX
+    const tempMessage: Message = {
+      id: Date.now().toString(),
       content: messageContent,
-        senderId: (session?.user as any)?.id || 'current-user',
-        senderName: session?.user?.name || 'You',
-        timestamp: new Date(),
-        type: 'text'
-      };
-      
-      setMessages(prev => [...prev, tempMessage]);
+      senderId: (session?.user as any)?.id || 'current-user',
+      senderName: session?.user?.name || 'You',
+      timestamp: new Date(),
+      type: 'text'
+    };
+
+    setMessages(prev => [...prev, tempMessage]);
 
     try {
       const response = await fetch('/api/chat/messages', {
@@ -152,7 +152,7 @@ export default function FloatingChat() {
 
       if (response.ok && data.success && data.message) {
         // Replace temp message with real message from server
-        setMessages(prev => prev.map(msg => 
+        setMessages(prev => prev.map(msg =>
           msg.id === tempMessage.id ? data.message : msg
         ));
       } else {
@@ -224,7 +224,7 @@ export default function FloatingChat() {
 
   const formatTime = (date: Date) => {
     return new Date(date).toLocaleTimeString('en-US', {
-      hour: '2-digit', 
+      hour: '2-digit',
       minute: '2-digit',
       hour12: true
     });
@@ -234,7 +234,7 @@ export default function FloatingChat() {
     return null;
   }
 
-    return (
+  return (
     <>
       {/* Floating Chat Button */}
       {!isOpen && (
@@ -252,50 +252,49 @@ export default function FloatingChat() {
       {/* Chat Window */}
       {isOpen && (
         <div className="fixed bottom-6 right-6 w-80 h-96 bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col z-50">
-      {/* Header */}
+          {/* Header */}
           <div className="bg-primary text-white p-4 rounded-t-lg flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
                 <Users className="w-4 h-4" />
-          </div>
-          <div>
+              </div>
+              <div>
                 <h3 className="font-semibold text-sm">
                   {selectedRoom?.name || 'Company Chat'}
                 </h3>
                 <p className="text-xs opacity-80">
                   {selectedRoom?.members?.length || 0} members
                 </p>
-          </div>
-        </div>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="p-1 hover:bg-white/20 rounded transition-colors"
-          >
+              </div>
+            </div>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="p-1 hover:bg-white/20 rounded transition-colors"
+            >
               <X className="w-4 h-4" />
-          </button>
-      </div>
+            </button>
+          </div>
 
           {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+          <div className="flex-1 overflow-y-auto p-3 space-y-2">
             {isLoading ? (
-          <div className="flex items-center justify-center h-full">
+              <div className="flex items-center justify-center h-full">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-          </div>
-        ) : (
+              </div>
+            ) : (
               messages.map((message) => {
                 const currentUserId = (session?.user as any)?.id;
                 const isCurrentUser = message.senderId === currentUserId;
-                
+
                 return (
                   <div
                     key={message.id}
                     className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div className={`max-w-xs px-3 py-2 rounded-lg text-sm ${
-                      isCurrentUser 
-                        ? 'bg-primary text-white' 
+                    <div className={`max-w-xs px-3 py-2 rounded-lg text-sm ${isCurrentUser
+                        ? 'bg-primary text-white'
                         : 'bg-lightGray text-darkGray'
-                    }`}>
+                      }`}>
                       {!isCurrentUser && (
                         <p className="text-xs font-medium mb-1 opacity-70">
                           {message.senderName}
@@ -303,9 +302,10 @@ export default function FloatingChat() {
                       )}
                       {message.type === 'image' && message.fileUrl ? (
                         <div className="space-y-2">
-                          <img 
-                            src={message.fileUrl} 
-                            alt={message.fileName || 'Image'} 
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={message.fileUrl}
+                            alt={message.fileName || 'Image'}
                             className="max-w-xs max-h-48 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
                             onClick={() => window.open(message.fileUrl, '_blank')}
                           />
@@ -314,8 +314,8 @@ export default function FloatingChat() {
                       ) : message.type === 'file' && message.fileUrl ? (
                         <div className="flex items-center space-x-2 p-2 bg-gray-100 rounded-lg">
                           <Paperclip className="w-3 h-3 text-gray-500" />
-                          <a 
-                            href={message.fileUrl} 
+                          <a
+                            href={message.fileUrl}
                             download={message.fileName}
                             className="text-xs text-blue-600 hover:underline"
                           >
@@ -325,9 +325,8 @@ export default function FloatingChat() {
                       ) : (
                         <p>{message.content}</p>
                       )}
-                      <p className={`text-xs mt-1 ${
-                        isCurrentUser ? 'text-white/70' : 'text-mediumGray'
-                      }`}>
+                      <p className={`text-xs mt-1 ${isCurrentUser ? 'text-white/70' : 'text-mediumGray'
+                        }`}>
                         {formatTime(message.timestamp)}
                       </p>
                     </div>
@@ -340,40 +339,40 @@ export default function FloatingChat() {
 
           {/* Message Input */}
           <div className="p-3 border-t border-gray-200">
-        <div className="flex items-center space-x-2">
-          <button
+            <div className="flex items-center space-x-2">
+              <button
                 onClick={() => fileInputRef.current?.click()}
                 className="p-1 hover:bg-lightGray rounded transition-colors"
               >
                 <Paperclip className="w-4 h-4 text-mediumGray" />
               </button>
-              
+
               <button
                 onClick={() => imageInputRef.current?.click()}
                 className="p-1 hover:bg-lightGray rounded transition-colors"
               >
                 <Image className="w-4 h-4 text-mediumGray" />
-          </button>
-          
-            <input
-              type="text"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Type a message..."
+              </button>
+
+              <input
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Type a message..."
                 className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
-          
-          <button
-            onClick={handleSendMessage}
+
+              <button
+                onClick={handleSendMessage}
                 disabled={!newMessage.trim() || isSending}
-            className="p-2 bg-primary text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
+                className="p-2 bg-primary text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
                 <Send className="w-4 h-4" />
-          </button>
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
       )}
 
       {/* Hidden file inputs */}

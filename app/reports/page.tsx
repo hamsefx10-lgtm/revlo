@@ -7,7 +7,7 @@ import Layout from '../../components/layouts/Layout';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import {
   ArrowLeft, LineChart, DollarSign, Warehouse, Scale, CreditCard, Banknote, CalendarCheck, FileText, Plus, ArrowRight,
-  TrendingUp, TrendingDown, Briefcase, Building, Users, Clock, Download, Share2, Printer, Mail, MessageSquare, Send, Bell, XCircle, Info, PlayCircle, Settings, Factory, PieChart, BarChart3, Eye // New icons for sharing
+  Activity, TrendingUp, TrendingDown, Briefcase, Building, Users, Clock, Download, Share2, Printer, Mail, MessageSquare, Send, Bell, XCircle, Info, PlayCircle, Settings, Factory, PieChart, BarChart3, Eye // New icons for sharing
 } from 'lucide-react';
 import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar, PieChart as RechartsPieChart, Pie, Cell } from 'recharts';
 
@@ -649,7 +649,20 @@ export default function ReportsOverviewPage() {
 
       {/* Mobile-Optimized Quick Reports Section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 animate-fade-in-up">
+        {/* NEW: Balance Sheet Card */}
+        <Link href="/reports/financial-summary" className="bg-white dark:bg-gray-800 p-4 md:p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6 group border-l-4 border-blue-500">
+          <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 p-3 md:p-4 rounded-full group-hover:bg-blue-600 group-hover:text-white transition-colors duration-200">
+            <Activity size={32} className="md:w-10 md:h-10" />
+          </div>
+          <div className="text-center md:text-left flex-1">
+            <h3 className="text-lg md:text-2xl font-bold text-darkGray dark:text-gray-100 mb-2">Financial Summary</h3>
+            <p className="text-sm md:text-base text-mediumGray dark:text-gray-400">Guudmar Maaliyadeed (Performance & Position).</p>
+          </div>
+          <ArrowRight size={20} className="md:w-6 md:h-6 text-mediumGray dark:text-gray-400 group-hover:translate-x-2 transition-transform duration-200" />
+        </Link>
+
         <Link href="/reports/profit-loss" className="bg-white dark:bg-gray-800 p-4 md:p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6 group">
+
           <div className="bg-primary/10 text-primary p-3 md:p-4 rounded-full group-hover:bg-primary group-hover:text-white transition-colors duration-200">
             <LineChart size={32} className="md:w-10 md:h-10" />
           </div>
@@ -771,6 +784,18 @@ export default function ReportsOverviewPage() {
             <ArrowRight size={20} className="md:w-6 md:h-6 text-mediumGray dark:text-gray-400 group-hover:translate-x-2 transition-transform duration-200" />
           </Link>
         )}
+
+        {/* NEW: Company Report Card */}
+        <Link href="/reports/company-report" className="bg-emerald-50 dark:bg-emerald-900/20 p-4 md:p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6 group border border-emerald-200 dark:border-emerald-800">
+          <div className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 p-3 md:p-4 rounded-full group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-200">
+            <Building size={32} className="md:w-10 md:h-10" />
+          </div>
+          <div className="text-center md:text-left flex-1">
+            <h3 className="text-lg md:text-2xl font-bold text-darkGray dark:text-gray-100 mb-2">Company Report</h3>
+            <p className="text-sm md:text-base text-mediumGray dark:text-gray-400">Warbixin guud ee shirkadda (Income, Expenses, Assets, & Profit).</p>
+          </div>
+          <ArrowRight size={20} className="md:w-6 md:h-6 text-mediumGray dark:text-gray-400 group-hover:translate-x-2 transition-transform duration-200" />
+        </Link>
       </div>
 
       {/* Mobile-Optimized Export/Share Buttons */}

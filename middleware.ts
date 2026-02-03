@@ -3,13 +3,27 @@ import { NextResponse } from "next/server";
 
 export default withAuth(
     function middleware(req) {
-        // Halkan waxaan ku samayn karnaa role-based authorization haddii loo baahdo
-        // Tusaale ahaan, haddii user-ku rabo inuu galo /shop laakiin aanu ahayn SHOP owner
+        const token = req.nextauth.token;
+        const path = req.nextUrl.pathname;
+        const role = token?.role as string | undefined;
+
+        // Role-Based Access Control (RBAC)
+
+        // 1. Reports: Only ADMIN and MANAGER
+        if (path.startsWith('/shop/reports') && role !== 'ADMIN' && role !== 'MANAGER') {
+            return NextResponse.redirect(new URL('/shop/dashboard?error=Unauthorized', req.url));
+        }
+
+        // 2. Settings: Only ADMIN
+        if (path.startsWith('/shop/settings') && role !== 'ADMIN') {
+            return NextResponse.redirect(new URL('/shop/dashboard?error=Unauthorized', req.url));
+        }
+
         return NextResponse.next();
     },
     {
         callbacks: {
-            authorized: ({ token }) => !!token, // Kaliya ogolaaw haddii user-ku login yahay
+            authorized: ({ token }) => !!token,
         },
     }
 );

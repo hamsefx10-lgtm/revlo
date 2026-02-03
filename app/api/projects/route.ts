@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     // Validation
     if (
       !name ||
-      !agreementAmount ||
+      agreementAmount === undefined || agreementAmount === null ||
       !projectType ||
       !expectedCompletionDate ||
       !customerId

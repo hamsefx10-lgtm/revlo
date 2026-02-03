@@ -7,7 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Layout from '../../../components/layouts/Layout';
 import {
   ArrowLeft, DollarSign, User, Layers, HardHat, FileText, Plus, Edit, Trash2, CheckCircle, Clock, Loader2,
-  Calendar, Info, Tag, Wallet, BarChart2, AlertTriangle, Download, List, LayoutGrid
+  Calendar, Info, Tag, Wallet, BarChart2, AlertTriangle, Download, List, LayoutGrid, Scale, ArrowUpRight
 } from 'lucide-react';
 import Toast from '../../../components/common/Toast';
 import { subscribeToExpenseChange } from '@/lib/client-events';
@@ -175,7 +175,7 @@ const ProjectDetailsPage: React.FC = () => {
   // Total Paid = Static Advance Field + Other Transactions
   const totalPaid = totalAdvance + totalRepaidViaTransactions;
   const remainingAmount = Math.max(0, totalValue - totalPaid);  // ✅ Ensure not negative
-  const tabs = ['Overview', 'Expenses', 'Materials', 'Labor', 'Payments', 'Documents'];
+  const tabs = ['Overview', 'Expenses', 'Materials', 'Labor', 'Payments', 'Documents', 'Financials'];
 
   // Calculate total expenses (for this project only)
   const totalExpenses = project?.expenses?.reduce((sum, expense) => sum + (typeof expense.amount === 'number' ? expense.amount : parseFloat(expense.amount as any) || 0), 0) || 0;
@@ -214,24 +214,26 @@ const ProjectDetailsPage: React.FC = () => {
   );
 
   // --- View Toggle Component ---
-  const ViewSwitcher = ({ tabKey }: { tabKey: 'overview' | 'expenses' | 'materials' }) => (
-    <div className="flex items-center gap-1 bg-lightGray p-1 rounded-lg">
-      <button
-        onClick={() => setViewModes(prev => ({ ...prev, [tabKey]: 'list' }))}
-        className={`p-1.5 rounded-md ${viewModes[tabKey] === 'list' ? 'bg-white shadow' : 'text-mediumGray'}`}
-        title="List View"
-      >
-        <List size={18} />
-      </button>
-      <button
-        onClick={() => setViewModes(prev => ({ ...prev, [tabKey]: 'board' }))}
-        className={`p-1.5 rounded-md ${viewModes[tabKey] === 'board' ? 'bg-white shadow' : 'text-mediumGray'}`}
-        title="Board View"
-      >
-        <LayoutGrid size={18} />
-      </button>
-    </div>
-  );
+  const ViewSwitcher = ({ tabKey }: { tabKey: 'overview' | 'expenses' | 'materials' }) => {
+    return (
+      <div className="flex items-center gap-1 bg-lightGray p-1 rounded-lg">
+        <button
+          onClick={() => setViewModes(prev => ({ ...prev, [tabKey]: 'list' }))}
+          className={`p-1.5 rounded-md ${viewModes[tabKey] === 'list' ? 'bg-white shadow' : 'text-mediumGray'}`}
+          title="List View"
+        >
+          <List size={18} />
+        </button>
+        <button
+          onClick={() => setViewModes(prev => ({ ...prev, [tabKey]: 'board' }))}
+          className={`p-1.5 rounded-md ${viewModes[tabKey] === 'board' ? 'bg-white shadow' : 'text-mediumGray'}`}
+          title="Board View"
+        >
+          <LayoutGrid size={18} />
+        </button>
+      </div>
+    );
+  };
 
   return (
     <Layout>
@@ -954,6 +956,7 @@ const ProjectDetailsPage: React.FC = () => {
 
                       {expense.receiptUrl && (
                         <div className="mb-3">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={expense.receiptUrl}
                             alt={`Receipt for ${expense.description}`}
@@ -981,6 +984,12 @@ const ProjectDetailsPage: React.FC = () => {
                 </div>
               );
             })()}
+          </div>
+        )}
+        {/* Mobile Financials Content */}
+        {activeTab === 'Financials' && (
+          <div className="mt-4">
+            <ProjectFinancials projectId={project.id} />
           </div>
         )}
       </div >
@@ -1622,6 +1631,7 @@ const ProjectDetailsPage: React.FC = () => {
 
                           {expense.receiptUrl && (
                             <div className="mb-3">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
                                 src={expense.receiptUrl}
                                 alt={`Receipt for ${expense.description}`}
@@ -1650,6 +1660,18 @@ const ProjectDetailsPage: React.FC = () => {
                   );
                 })()}
               </div>
+
+            )}
+
+            {/* Desktop Financials Content */}
+            {activeTab === 'Financials' && (
+              <div className="animate-in fade-in duration-300">
+                <h4 className="font-bold text-lg mb-6 text-primary flex items-center gap-2 border-b border-lightGray dark:border-gray-700 pb-3">
+                  <Scale size={24} />
+                  Warbixinta Maaliyadda (Financial Statement)
+                </h4>
+                <ProjectFinancials projectId={project.id} />
+              </div>
             )}
 
           </div>
@@ -1661,3 +1683,109 @@ const ProjectDetailsPage: React.FC = () => {
 };
 
 export default ProjectDetailsPage;
+
+// --- SUB-COMPONENT: PROJECT FINANCIALS ---
+function ProjectFinancials({ projectId }: { projectId: string }) {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFS = async () => {
+      try {
+        const res = await fetch(`/api/shop/reports/balance-sheet?projectId=${projectId}`);
+        if (res.ok) {
+          setData(await res.json());
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFS();
+  }, [projectId]);
+
+  if (loading) return <div className="p-8 text-center"><Loader2 className="animate-spin inline-block w-8 h-8 text-primary" /></div>;
+  if (!data) return <div className="p-8 text-center text-red-500 font-bold">Failed to load financial data.</div>;
+
+  const netProfit = data.equity.retainedEarnings.value; // Revenue - Expense
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Summary Cards */}
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-lightGray dark:border-gray-700 shadow-sm">
+          <h4 className="text-mediumGray dark:text-gray-400 font-bold text-xs uppercase tracking-wider mb-2">Net Profit / Loss</h4>
+          <p className={`text-3xl font-black ${netProfit >= 0 ? 'text-emerald-500' : 'text-redError'}`}>
+            Br{netProfit.toLocaleString()}
+          </p>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-lightGray dark:border-gray-700 shadow-sm">
+          <h4 className="text-mediumGray dark:text-gray-400 font-bold text-xs uppercase tracking-wider mb-2">Total Receivables</h4>
+          <p className="text-3xl font-black text-blue-500">
+            Br{data.assets.current.accountsReceivable.value.toLocaleString()}
+          </p>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-lightGray dark:border-gray-700 shadow-sm">
+          <h4 className="text-mediumGray dark:text-gray-400 font-bold text-xs uppercase tracking-wider mb-2">Unpaid Expenses</h4>
+          <p className="text-3xl font-black text-orange-500">
+            Br{data.liabilities.current.accountsPayable.value.toLocaleString()}
+          </p>
+        </div>
+      </div>
+
+      {/* Detailed Statement */}
+      <div className="bg-white dark:bg-gray-800 rounded-[2rem] border border-lightGray dark:border-gray-700 overflow-hidden shadow-sm">
+        <div className="p-6 border-b border-lightGray dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+          <h3 className="text-lg font-black text-darkGray dark:text-gray-100 flex items-center gap-2">
+            <Scale size={20} className="text-primary" /> Project Balance Sheet
+          </h3>
+        </div>
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-12">
+          {/* Assets */}
+          <div>
+            <h4 className="font-bold text-emerald-600 uppercase tracking-widest text-xs mb-4 border-b border-emerald-100 dark:border-emerald-900/30 pb-2">Assets</h4>
+            <div className="space-y-4">
+              <FinancialRow label="Accounts Receivable (Unpaid)" value={data.assets.current.accountsReceivable.value} />
+              {data.assets.current.inventory.value > 0 && <FinancialRow label="Inventory / WIP" value={data.assets.current.inventory.value} />}
+              {data.assets.fixed.value > 0 && <FinancialRow label="Project Assets" value={data.assets.fixed.value} />}
+              <div className="pt-4 border-t border-dashed border-gray-200 dark:border-gray-700">
+                <FinancialRow label="Total Assets" value={data.assets.total} bold />
+              </div>
+            </div>
+          </div>
+
+          {/* Liabilities & Equity */}
+          <div>
+            <h4 className="font-bold text-orange-600 uppercase tracking-widest text-xs mb-4 border-b border-orange-100 dark:border-orange-900/30 pb-2">Liabilities & Equity</h4>
+            <div className="space-y-4">
+              <FinancialRow label="Unpaid Expenses" value={data.liabilities.current.accountsPayable.value} />
+              <FinancialRow label="Project Net Profit (Equity)" value={data.equity.retainedEarnings.value} />
+              <div className="pt-4 border-t border-dashed border-gray-200 dark:border-gray-700">
+                <FinancialRow label="Total L & E" value={data.liabilities.total + data.equity.total} bold />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="text-center">
+        <Link
+          href={`/shop/reports/ledger?type=PROJECT&id=${projectId}`}
+          className="inline-flex items-center gap-2 text-primary font-bold hover:underline bg-primary/10 px-4 py-2 rounded-full transition-colors hover:bg-primary/20"
+        >
+          View General Ledger for this Project <ArrowUpRight size={16} />
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+function FinancialRow({ label, value, bold }: { label: string, value: number, bold?: boolean }) {
+  return (
+    <div className={`flex justify-between items-center ${bold ? 'text-base font-black' : 'text-sm'}`}>
+      <span className={`${bold ? 'text-darkGray dark:text-gray-100' : 'text-mediumGray dark:text-gray-400 font-medium'}`}>{label}</span>
+      <span className={`${bold ? 'text-darkGray dark:text-gray-100' : 'text-darkGray dark:text-gray-200 font-bold'}`}>Br{value.toLocaleString()}</span>
+    </div>
+  );
+}

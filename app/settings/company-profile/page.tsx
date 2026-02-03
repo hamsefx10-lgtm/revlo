@@ -171,10 +171,10 @@ export default function CompanyProfileSettingsPage() {
         ) : (
           <div className="flex space-x-3">
             <button onClick={handleCancel} className="bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 py-2 px-4 rounded-lg font-bold hover:bg-gray-200 dark:hover:bg-gray-600 transition">
-              <X size={20} className="mr-2"/> Jooji
+              <X size={20} className="mr-2" /> Jooji
             </button>
             <button onClick={handleSave} className="bg-secondary text-white py-2 px-4 rounded-lg font-bold hover:bg-green-600 transition duration-200 shadow-md flex items-center" disabled={loading}>
-              {loading ? <Loader2 className="animate-spin mr-2" size={20} /> : <Save size={20} className="mr-2"/>} Badbaadi
+              {loading ? <Loader2 className="animate-spin mr-2" size={20} /> : <Save size={20} className="mr-2" />} Badbaadi
             </button>
           </div>
         )}
@@ -183,6 +183,7 @@ export default function CompanyProfileSettingsPage() {
       <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md mb-8 animate-fade-in-up">
         {/* Company Logo and Basic Info */}
         <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8 mb-6 pb-6 border-b border-lightGray dark:border-gray-700">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={profile.logoUrl || 'https://placehold.co/120x120/3498DB/FFFFFF?text=LOGO'} alt={`${profile.name} Logo`} className="w-28 h-28 rounded-full object-cover border-4 border-primary/50 shadow-lg flex-shrink-0" />
           {isEditing && (
             <div className="text-center md:text-left">
@@ -210,10 +211,10 @@ export default function CompanyProfileSettingsPage() {
           <div className="text-center md:text-left flex-1">
             <h3 className="text-4xl font-bold text-darkGray dark:text-gray-100 mb-2">{profile.name}</h3>
             <p className="text-lg text-mediumGray dark:text-gray-400 mb-1 flex items-center justify-center md:justify-start space-x-2">
-                <Building size={20} className="text-primary"/> <span>{profile.industry}</span>
+              <Building size={20} className="text-primary" /> <span>{profile.industry}</span>
             </p>
             <p className="text-sm text-mediumGray dark:text-gray-400 flex items-center justify-center md:justify-start space-x-2">
-                <Calendar size={16} className="text-primary"/> <span>Diiwaan Gashan: {profile.registrationDate ? new Date(profile.registrationDate).toLocaleDateString() : 'N/A'}</span>
+              <Calendar size={16} className="text-primary" /> <span>Diiwaan Gashan: {profile.registrationDate ? new Date(profile.registrationDate).toLocaleDateString() : 'N/A'}</span>
             </p>
           </div>
         </div>
@@ -224,31 +225,31 @@ export default function CompanyProfileSettingsPage() {
           <div>
             <label htmlFor="companyName" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Magaca Shirkadda <span className="text-redError">*</span></label>
             {isEditing ? (
-              <input type="text" id="companyName" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Magaca Shirkadda" className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.name ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}/>
+              <input type="text" id="companyName" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Magaca Shirkadda" className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.name ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} />
             ) : (
-              <p className="p-3 bg-lightGray dark:bg-gray-700 rounded-lg text-darkGray dark:text-gray-100 flex items-center space-x-2"><Building size={20} className="text-primary"/><span>{profile.name}</span></p>
+              <p className="p-3 bg-lightGray dark:bg-gray-700 rounded-lg text-darkGray dark:text-gray-100 flex items-center space-x-2"><Building size={20} className="text-primary" /><span>{profile.name}</span></p>
             )}
-            {errors.name && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.name}</p>}
+            {errors.name && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.name}</p>}
           </div>
           {/* Email */}
           <div>
             <label htmlFor="companyEmail" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Email <span className="text-redError">*</span></label>
             {isEditing ? (
-              <input type="email" id="companyEmail" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="info@example.com" className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.email ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}/>
+              <input type="email" id="companyEmail" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="info@example.com" className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.email ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} />
             ) : (
-              <p className="p-3 bg-lightGray dark:bg-gray-700 rounded-lg text-darkGray dark:text-gray-100 flex items-center space-x-2"><Mail size={20} className="text-primary"/><span>{profile.email}</span></p>
+              <p className="p-3 bg-lightGray dark:bg-gray-700 rounded-lg text-darkGray dark:text-gray-100 flex items-center space-x-2"><Mail size={20} className="text-primary" /><span>{profile.email}</span></p>
             )}
-            {errors.email && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.email}</p>}
+            {errors.email && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.email}</p>}
           </div>
           {/* Phone */}
           <div>
             <label htmlFor="companyPhone" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taleefan</label>
             {isEditing ? (
-              <input type="tel" id="companyPhone" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} placeholder="063-XXXXXXX" className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.phone ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}/>
+              <input type="tel" id="companyPhone" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} placeholder="063-XXXXXXX" className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.phone ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} />
             ) : (
-              <p className="p-3 bg-lightGray dark:bg-gray-700 rounded-lg text-darkGray dark:text-gray-100 flex items-center space-x-2"><Phone size={20} className="text-primary"/><span>{profile.phone || 'N/A'}</span></p>
+              <p className="p-3 bg-lightGray dark:bg-gray-700 rounded-lg text-darkGray dark:text-gray-100 flex items-center space-x-2"><Phone size={20} className="text-primary" /><span>{profile.phone || 'N/A'}</span></p>
             )}
-            {errors.phone && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.phone}</p>}
+            {errors.phone && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.phone}</p>}
           </div>
           {/* Address */}
           <div>
@@ -256,35 +257,35 @@ export default function CompanyProfileSettingsPage() {
             {isEditing ? (
               <textarea id="companyAddress" value={editAddress} onChange={(e) => setEditAddress(e.target.value)} rows={3} placeholder="Wadada 1, Guriga 20, Hargeisa" className="w-full p-3 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary"></textarea>
             ) : (
-              <p className="p-3 bg-lightGray dark:bg-gray-700 rounded-lg text-darkGray dark:text-gray-100 flex items-center space-x-2"><MapPin size={20} className="text-primary"/><span>{profile.address || 'N/A'}</span></p>
+              <p className="p-3 bg-lightGray dark:bg-gray-700 rounded-lg text-darkGray dark:text-gray-100 flex items-center space-x-2"><MapPin size={20} className="text-primary" /><span>{profile.address || 'N/A'}</span></p>
             )}
           </div>
           {/* Website */}
           <div>
             <label htmlFor="companyWebsite" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Website</label>
             {isEditing ? (
-              <input type="url" id="companyWebsite" value={editWebsite} onChange={(e) => setEditWebsite(e.target.value)} placeholder="https://www.example.com" className="w-full p-3 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary"/>
+              <input type="url" id="companyWebsite" value={editWebsite} onChange={(e) => setEditWebsite(e.target.value)} placeholder="https://www.example.com" className="w-full p-3 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary" />
             ) : (
-              <p className="p-3 bg-lightGray dark:bg-gray-700 rounded-lg text-darkGray dark:text-gray-100 flex items-center space-x-2"><Globe size={20} className="text-primary"/><span>{profile.website || 'N/A'}</span></p>
+              <p className="p-3 bg-lightGray dark:bg-gray-700 rounded-lg text-darkGray dark:text-gray-100 flex items-center space-x-2"><Globe size={20} className="text-primary" /><span>{profile.website || 'N/A'}</span></p>
             )}
           </div>
           {/* Industry */}
           <div>
             <label htmlFor="companyIndustry" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Warshad <span className="text-redError">*</span></label>
             {isEditing ? (
-              <input type="text" id="companyIndustry" value={editIndustry} onChange={(e) => setEditIndustry(e.target.value)} placeholder="Tusaale: Furniture Manufacturing" className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.industry ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}/>
+              <input type="text" id="companyIndustry" value={editIndustry} onChange={(e) => setEditIndustry(e.target.value)} placeholder="Tusaale: Furniture Manufacturing" className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.industry ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} />
             ) : (
-              <p className="p-3 bg-lightGray dark:bg-gray-700 rounded-lg text-darkGray dark:text-gray-100 flex items-center space-x-2"><ClipboardList size={20} className="text-primary"/><span>{profile.industry}</span></p>
+              <p className="p-3 bg-lightGray dark:bg-gray-700 rounded-lg text-darkGray dark:text-gray-100 flex items-center space-x-2"><ClipboardList size={20} className="text-primary" /><span>{profile.industry}</span></p>
             )}
-            {errors.industry && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.industry}</p>}
+            {errors.industry && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.industry}</p>}
           </div>
           {/* Tax ID */}
           <div>
             <label htmlFor="companyTaxId" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Aqoonsiga Canshuurta (TIN)</label>
             {isEditing ? (
-              <input type="text" id="companyTaxId" value={editTaxId} onChange={(e) => setEditTaxId(e.target.value)} placeholder="Tusaale: REVLO-TIN-12345" className="w-full p-3 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary"/>
+              <input type="text" id="companyTaxId" value={editTaxId} onChange={(e) => setEditTaxId(e.target.value)} placeholder="Tusaale: REVLO-TIN-12345" className="w-full p-3 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary" />
             ) : (
-              <p className="p-3 bg-lightGray dark:bg-gray-700 rounded-lg text-darkGray dark:text-gray-100 flex items-center space-x-2"><FileText size={20} className="text-primary"/><span>{profile.taxId || 'N/A'}</span></p>
+              <p className="p-3 bg-lightGray dark:bg-gray-700 rounded-lg text-darkGray dark:text-gray-100 flex items-center space-x-2"><FileText size={20} className="text-primary" /><span>{profile.taxId || 'N/A'}</span></p>
             )}
           </div>
         </div>
@@ -295,8 +296,8 @@ export default function CompanyProfileSettingsPage() {
         <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-4">Diiwaanka Dhaqdhaqaaqa Dhawaan</h3>
         <p className="text-mediumGray dark:text-gray-400">Dhammaan isbeddelada lagu sameeyay profile-ka shirkadda ayaa halkan ka muuqan doona.</p>
         <ul className="mt-4 space-y-2 text-mediumGray dark:text-gray-400 text-sm">
-            <li className="flex items-center space-x-2"><CheckCircle size={16} className="text-secondary"/><span>Profile-ka la cusboonaysiiyay - Axmed Cali (2025-07-24)</span></li>
-            <li className="flex items-center space-x-2"><CheckCircle size={16} className="text-secondary"/><span>Magaca shirkadda la beddelay - Faadumo Maxamed (2025-06-15)</span></li>
+          <li className="flex items-center space-x-2"><CheckCircle size={16} className="text-secondary" /><span>Profile-ka la cusboonaysiiyay - Axmed Cali (2025-07-24)</span></li>
+          <li className="flex items-center space-x-2"><CheckCircle size={16} className="text-secondary" /><span>Magaca shirkadda la beddelay - Faadumo Maxamed (2025-06-15)</span></li>
         </ul>
       </div>
 

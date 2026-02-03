@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Layout from '../../../../components/layouts/Layout';
 import Toast from '../../../../components/common/Toast';
-import { 
+import {
   Plus, X, Loader2, Info, Briefcase, DollarSign, Calendar, Users, Tag,
   ArrowLeft, ChevronRight, Save
 } from 'lucide-react';
@@ -31,12 +31,12 @@ const getUserCompanyId = () => {
 };
 
 const EditProjectPage: React.FC = () => {
-    const { id } = useParams();
-    const router = useRouter();
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [project, setProject] = useState<any>(null);
-  
+  const { id } = useParams();
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [project, setProject] = useState<any>(null);
+
   // Form state (matching add page)
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -69,42 +69,42 @@ const EditProjectPage: React.FC = () => {
   const companyId = getUserCompanyId();
 
   // Fetch project data
-    const fetchProject = async () => {
-        setLoading(true);
-        try {
-            const res = await fetch(`/api/projects/${id}`);
-            const data = await res.json();
-            if (res.ok) {
-                setProject(data.project);
+  const fetchProject = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/projects/${id}`);
+      const data = await res.json();
+      if (res.ok) {
+        setProject(data.project);
         setName(data.project.name || '');
         setDescription(data.project.description || '');
-        setAgreementAmount(data.project.agreementAmount || '');
+        setAgreementAmount(data.project.agreementAmount ?? '');
         setProjectType(data.project.projectType || '');
         setExpectedCompletionDate(data.project.expectedCompletionDate?.slice(0, 10) || '');
         setActualCompletionDate(data.project.actualCompletionDate?.slice(0, 10) || '');
         setNotes(data.project.notes || '');
         setCustomerId(data.project.customer?.id || '');
         setStatus(data.project.status || 'Active');
-        
+
         // Set advance payments if they exist
         if (data.project.advancePaid > 0) {
           // For edit, we'll need to fetch advance payment details from transactions
           // For now, set a single row with the total
           setAdvancePayments([{ accountId: '', amount: data.project.advancePaid }]);
         }
-            } else {
+      } else {
         setToastMessage({ message: data.message || 'Mashruucaan lama helin', type: 'error' });
-            }
-        } catch (e) {
+      }
+    } catch (e) {
       setToastMessage({ message: 'Cilad ayaa dhacday marka mashruuca la soo gelinayay.', type: 'error' });
-        } finally {
-            setLoading(false);
-        }
-    };
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Fetch customers
-    const fetchCustomers = async () => {
-        try {
+  const fetchCustomers = async () => {
+    try {
       const response = await fetch('/api/customers');
       if (!response.ok) throw new Error('Failed to fetch customers');
       const data = await response.json();
@@ -112,7 +112,7 @@ const EditProjectPage: React.FC = () => {
     } catch (error: any) {
       setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka macaamiisha la soo gelinayay.', type: 'error' });
     }
-    };
+  };
 
   // Fetch accounts
   const fetchAccounts = async () => {
@@ -215,9 +215,9 @@ const EditProjectPage: React.FC = () => {
     const advancePaidNum = typeof advancePaid === 'number' ? advancePaid : parseFloat(advancePaid as any) || 0;
 
     if (!name.trim()) newErrors.name = 'Magaca Mashruuca waa waajib.';
-    if (!agreementAmountNum || isNaN(agreementAmountNum) || agreementAmountNum <= 0) newErrors.agreementAmount = 'Qiimaha Heshiiska waa inuu noqdaa nambar wanaagsan.';
+    if (agreementAmountNum < 0 || isNaN(agreementAmountNum)) newErrors.agreementAmount = 'Qiimaha Heshiiska waa inuu noqdaa nambar wanaagsan ( ama 0 for Pay-As-You-Go).';
     if (advancePaidNum < 0) newErrors.advancePaid = 'Lacagta Hore Loo Bixiyay waa inuu noqdaa nambar wanaagsan.';
-    if (advancePaidNum > agreementAmountNum) newErrors.advancePaid = 'Lacagta Hore Loo Bixiyay ma dhaafi karto Qiimaha Heshiiska.';
+    if (agreementAmountNum > 0 && advancePaidNum > agreementAmountNum) newErrors.advancePaid = 'Lacagta Hore Loo Bixiyay ma dhaafi karto Qiimaha Heshiiska.';
     if (!projectType) newErrors.projectType = 'Nooca Mashruuca waa waajib.';
     if (!expectedCompletionDate) newErrors.expectedCompletionDate = 'Taariikhda Dhammaystirka waa waajib.';
     if (!customerId) newErrors.customerId = 'Macmiilka waa waajib.';
@@ -232,15 +232,15 @@ const EditProjectPage: React.FC = () => {
       );
       if (advancePaidNum !== totalAdvance) {
         newErrors.advancePayments = 'Wadar advance-ka account-yada iyo advance paid waa inay is le\'ekaadaan.';
-            }
-        }
+      }
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-    };
+  };
 
   // Submit
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setSaving(true);
     setErrors({});
     setToastMessage(null);
@@ -248,13 +248,13 @@ const EditProjectPage: React.FC = () => {
     if (!validateForm()) {
       setSaving(false);
       setToastMessage({ message: 'Fadlan sax khaladaadka foomka.', type: 'error' });
-            return;
-        }
+      return;
+    }
 
     try {
       const response = await fetch(`/api/projects/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name,
           description: description || null,
@@ -272,7 +272,7 @@ const EditProjectPage: React.FC = () => {
       });
 
       const data = await response.json();
-            
+
       if (response.ok) {
         setToastMessage({ message: data.message || 'Mashruuca si guul leh ayaa loo cusbooneysiiyey!', type: 'success' });
         // Trigger accounts refresh event
@@ -280,58 +280,58 @@ const EditProjectPage: React.FC = () => {
           window.dispatchEvent(new Event('accountsShouldRefresh'));
           localStorage.setItem('accountsShouldRefresh', Date.now().toString());
         }
-                setTimeout(() => {
-                    router.push(`/projects/${id}`);
-                }, 1500);
-            } else {
+        setTimeout(() => {
+          router.push(`/projects/${id}`);
+        }, 1500);
+      } else {
         setToastMessage({ message: data.message || 'Cilad ayaa dhacday marka mashruuca la cusbooneysiinayay.', type: 'error' });
-            }
-        } catch (error: any) {
+      }
+    } catch (error: any) {
       setToastMessage({ message: 'Cilad shabakadeed ayaa dhacday. Fadlan isku day mar kale.', type: 'error' });
-        } finally {
-            setSaving(false);
-        }
-    };
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (loading) {
     return (
-        <Layout>
-            <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
-                <Loader2 className="animate-spin text-primary mb-4" size={48} />
-                <h2 className="text-2xl font-semibold text-darkGray dark:text-gray-200">Waa la soo kaxaynayaa...</h2>
-            </div>
-        </Layout>
+      <Layout>
+        <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
+          <Loader2 className="animate-spin text-primary mb-4" size={48} />
+          <h2 className="text-2xl font-semibold text-darkGray dark:text-gray-200">Waa la soo kaxaynayaa...</h2>
+        </div>
+      </Layout>
     );
   }
 
   if (!project) {
     return (
-        <Layout>
-            <div className="max-w-2xl mx-auto text-center p-8 mt-10 bg-white dark:bg-gray-800 rounded-xl shadow-lg flex flex-col items-center gap-4">
-          <Info size={48} className="text-redError"/>
-                <h2 className="text-2xl font-bold text-redError">Mashruucaan Lama Helin</h2>
-                <Link href="/projects" className="mt-4 inline-flex items-center gap-2 bg-primary text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition">
-                    <ArrowLeft size={18}/> Ku noqo Liiska Mashaariicda
-                </Link>
-            </div>
-        </Layout>
+      <Layout>
+        <div className="max-w-2xl mx-auto text-center p-8 mt-10 bg-white dark:bg-gray-800 rounded-xl shadow-lg flex flex-col items-center gap-4">
+          <Info size={48} className="text-redError" />
+          <h2 className="text-2xl font-bold text-redError">Mashruucaan Lama Helin</h2>
+          <Link href="/projects" className="mt-4 inline-flex items-center gap-2 bg-primary text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition">
+            <ArrowLeft size={18} /> Ku noqo Liiska Mashaariicda
+          </Link>
+        </div>
+      </Layout>
     );
   }
 
-    return (
-        <Layout>
+  return (
+    <Layout>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">
           <Link href={`/projects/${id}`} className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
             <ArrowLeft size={28} className="inline-block" />
-                    </Link>
+          </Link>
           Beddel Mashruuc
         </h1>
-                </div>
+      </div>
 
       <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md animate-fade-in-up">
         <form onSubmit={handleSubmit} className="space-y-6">
-                            {/* Project Name */}
+          {/* Project Name */}
           <div>
             <label htmlFor="projectName" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Magaca Mashruuca <span className="text-redError">*</span></label>
             <div className="relative">
@@ -344,12 +344,12 @@ const EditProjectPage: React.FC = () => {
                 placeholder="Tusaale: Furniture Project A"
                 className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${errors.name ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
               />
-                                </div>
-            {errors.name && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.name}</p>}
-                            </div>
+            </div>
+            {errors.name && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.name}</p>}
+          </div>
 
           {/* Customer Selection */}
-                            <div>
+          <div>
             <label htmlFor="customer" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Macmiil <span className="text-redError">*</span></label>
             <div className="relative flex">
               <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
@@ -359,11 +359,11 @@ const EditProjectPage: React.FC = () => {
                 onChange={(e) => setCustomerId(e.target.value)}
                 className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${errors.customerId ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
               >
-                                        <option value="">-- Dooro Macmiil --</option>
+                <option value="">-- Dooro Macmiil --</option>
                 {customers.map(customer => (
                   <option key={customer.id} value={customer.id}>{customer.name}</option>
                 ))}
-                                    </select>
+              </select>
               <ChevronRight className="pointer-events-none absolute inset-y-0 right-10 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
               <button
                 type="button"
@@ -373,14 +373,14 @@ const EditProjectPage: React.FC = () => {
               >
                 <Plus size={18} />
               </button>
-                                </div>
-            {errors.customerId && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.customerId}</p>}
-                            </div>
+            </div>
+            {errors.customerId && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.customerId}</p>}
+          </div>
 
           {/* Agreement Amount & Advance Paid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-              <label htmlFor="agreementAmount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Qiimaha Heshiiska ($) <span className="text-redError">*</span></label>
+            <div>
+              <label htmlFor="agreementAmount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Qiimaha Heshiiska ($) - (0 for T&M) <span className="text-redError">*</span></label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
                 <input
@@ -391,10 +391,10 @@ const EditProjectPage: React.FC = () => {
                   placeholder="Tusaale: 15000.00"
                   className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${errors.agreementAmount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 />
-                                </div>
-              {errors.agreementAmount && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.agreementAmount}</p>}
-                            </div>
-                            <div>
+              </div>
+              {errors.agreementAmount && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.agreementAmount}</p>}
+            </div>
+            <div>
               <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">
                 Advance Payment Accounts
                 <span className="text-redError">*</span>
@@ -427,17 +427,17 @@ const EditProjectPage: React.FC = () => {
               <div className="flex gap-2">
                 <button type="button" onClick={addAdvancePaymentRow} title="Add Another Account" className="text-primary underline">Add Another Account</button>
                 <button type="button" onClick={() => setShowAddAccountModal(true)} title="Add Account" className="text-primary underline">Add Account</button>
-                                </div>
+              </div>
               <div className="mt-2 text-sm text-mediumGray">
                 Wadar Advance Paid: <span className="font-bold">{advancePaid || 0}</span>
-                            </div>
-              {errors.advancePayments && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.advancePayments}</p>}
-                                </div>
-                            </div>
+              </div>
+              {errors.advancePayments && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.advancePayments}</p>}
+            </div>
+          </div>
 
           {/* Project Type & Expected Completion Date */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                             <div>
+            <div>
               <label htmlFor="projectType" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Nooca Mashruuca <span className="text-redError">*</span></label>
               <div className="relative">
                 <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
@@ -454,10 +454,10 @@ const EditProjectPage: React.FC = () => {
                   ))}
                 </select>
                 <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
-                                </div>
-              {errors.projectType && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.projectType}</p>}
-                            </div>
-                            <div>
+              </div>
+              {errors.projectType && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.projectType}</p>}
+            </div>
+            <div>
               <label htmlFor="expectedCompletionDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Dhammaystirka La Filayo <span className="text-redError">*</span></label>
               <div className="relative">
                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
@@ -469,10 +469,10 @@ const EditProjectPage: React.FC = () => {
                   className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${errors.expectedCompletionDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 />
               </div>
-              {errors.expectedCompletionDate && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.expectedCompletionDate}</p>}
-                                </div>
-                            </div>
-                            
+              {errors.expectedCompletionDate && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.expectedCompletionDate}</p>}
+            </div>
+          </div>
+
           {/* Actual Completion Date & Status */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -488,7 +488,7 @@ const EditProjectPage: React.FC = () => {
                 />
               </div>
             </div>
-                            <div>
+            <div>
               <label htmlFor="status" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Heerka Mashruuca</label>
               <div className="relative">
                 <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
@@ -498,17 +498,17 @@ const EditProjectPage: React.FC = () => {
                   onChange={(e) => setStatus(e.target.value)}
                   className="w-full p-3 pl-10 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200"
                 >
-                                        <option value="Active">Active</option>
-                                        <option value="On Hold">On Hold</option>
-                                        <option value="Nearing Deadline">Nearing Deadline</option>
-                                        <option value="Overdue">Overdue</option>
-                                        <option value="Completed">Completed</option>
-                                        <option value="Cancelled">Cancelled</option>
-                                    </select>
+                  <option value="Active">Active</option>
+                  <option value="On Hold">On Hold</option>
+                  <option value="Nearing Deadline">Nearing Deadline</option>
+                  <option value="Overdue">Overdue</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
                 <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
               </div>
-                                </div>
-                            </div>
+            </div>
+          </div>
 
           {/* Description & Notes */}
           <div>
@@ -521,7 +521,7 @@ const EditProjectPage: React.FC = () => {
               placeholder="Sharaxaad kooban oo ku saabsan mashruucan..."
               className="w-full p-3 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200"
             ></textarea>
-                            </div>
+          </div>
           <div>
             <label htmlFor="notes" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Fiiro Gaar Ah (Optional)</label>
             <textarea
@@ -532,7 +532,7 @@ const EditProjectPage: React.FC = () => {
               placeholder="Wixii faahfaahin dheeraad ah ee mashruuca..."
               className="w-full p-3 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200"
             ></textarea>
-                            </div>
+          </div>
 
           {/* Submit Button */}
           <div className="flex gap-4">
@@ -541,7 +541,7 @@ const EditProjectPage: React.FC = () => {
               className="flex-1 text-center px-6 py-3 rounded-lg font-bold text-mediumGray dark:text-gray-400 hover:bg-lightGray dark:hover:bg-gray-700 transition duration-200"
             >
               Iska Daa
-                                </Link>
+            </Link>
             <button
               type="submit"
               className="flex-1 bg-primary text-white py-3 px-4 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md transform hover:scale-105 flex items-center justify-center"
@@ -552,9 +552,9 @@ const EditProjectPage: React.FC = () => {
               ) : (
                 <Save className="mr-2" size={20} />
               )}
-                                    {saving ? 'Waa la keydinayaa...' : 'Update Garee'}
-                                </button>
-                            </div>
+              {saving ? 'Waa la keydinayaa...' : 'Update Garee'}
+            </button>
+          </div>
         </form>
       </div>
 
@@ -565,7 +565,7 @@ const EditProjectPage: React.FC = () => {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-bold">Add New Account</h2>
               <button onClick={() => setShowAddAccountModal(false)} title="Close modal"><X /></button>
-                        </div>
+            </div>
             <form onSubmit={handleAddAccount}>
               <input
                 type="text"
@@ -583,8 +583,8 @@ const EditProjectPage: React.FC = () => {
                 {addingAccount ? <Loader2 className="animate-spin inline-block mr-2" size={18} /> : <Plus className="inline-block mr-2" size={18} />}
                 {addingAccount ? 'Adding...' : 'Add Account'}
               </button>
-                    </form>
-                </div>
+            </form>
+          </div>
         </div>
       )}
 
@@ -618,11 +618,11 @@ const EditProjectPage: React.FC = () => {
         </div>
       )}
 
-            {toastMessage && (
-                <Toast message={toastMessage.message} type={toastMessage.type} onClose={() => setToastMessage(null)} />
-            )}
-        </Layout>
-    );
+      {toastMessage && (
+        <Toast message={toastMessage.message} type={toastMessage.type} onClose={() => setToastMessage(null)} />
+      )}
+    </Layout>
+  );
 };
 
 export default EditProjectPage;

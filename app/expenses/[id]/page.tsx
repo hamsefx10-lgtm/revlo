@@ -352,6 +352,7 @@ export default function ExpenseDetailsPage() {
               <div className="mt-10 pt-10 border-t-2 border-dashed border-gray-100 dark:border-gray-700">
                 <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest block mb-4">Attached Receipt / Document</label>
                 <div className="relative group rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 inline-block shadow-sm hover:shadow-md transition-all">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={expense.receiptUrl} alt="Receipt" className="max-h-80 object-contain p-2" />
                   <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">
                     <a href={expense.receiptUrl} download target="_blank" className="bg-white text-gray-900 px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-blue-50 transition-colors transform hover:scale-105"><Download size={16} /> Download Source</a>
@@ -429,6 +430,7 @@ export default function ExpenseDetailsPage() {
               </div>
 
               <div className="text-right">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/logo.png" alt="Company Logo" className="h-6 opacity-20 grayscale mb-1 ml-auto" onError={(e) => e.currentTarget.style.display = 'none'} />
                 <p className="text-[10px] text-gray-300 font-mono">GEN-VOUCHER-V1</p>
               </div>

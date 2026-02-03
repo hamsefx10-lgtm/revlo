@@ -178,6 +178,7 @@ export async function getSessionCompanyUser() {
     companyId: session.user.companyId,
     userId: session.user.id,
     userName: session.user.name,
-    companyName: session.user.companyName
+    companyName: session.user.companyName,
+    companyLogoUrl: session.user.companyLogoUrl
   };
 }

@@ -92,7 +92,10 @@ export default function FactoryLayout({ children }: { children: React.ReactNode 
                                     </div>
                                     <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#3498DB] to-cyan-500 p-[2px] shadow-md shadow-blue-500/20">
                                         <div className="w-full h-full rounded-full bg-white dark:bg-[#0f172a] flex items-center justify-center overflow-hidden">
-                                            {currentUser?.avatar === 'U' ? <User size={20} className="text-gray-400" /> : <img src={currentUser?.avatar} alt="User" />}
+                                            {currentUser?.avatar === 'U' ? <User size={20} className="text-gray-400" /> : (
+                                                /* eslint-disable-next-line @next/next/no-img-element */
+                                                <img src={currentUser?.avatar} alt="User" />
+                                            )}
                                         </div>
                                     </div>
                                 </div>

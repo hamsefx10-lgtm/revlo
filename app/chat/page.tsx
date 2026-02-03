@@ -217,7 +217,10 @@ export default function ChatPage() {
                   <div className="flex items-center gap-3">
                     <div className="relative flex-shrink-0">
                       <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${activeRoom === room.id ? 'bg-primary text-white' : 'bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-300'}`}>
-                        {room.avatar ? <img src={room.avatar} alt={room.name} className="w-full h-full rounded-full object-cover" /> : <Users size={20} />}
+                        {room.avatar ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img src={room.avatar} alt={room.name} className="w-full h-full rounded-full object-cover" />
+                        ) : <Users size={20} />}
                       </div>
                       {room.isOnline && <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>}
                     </div>
@@ -303,7 +306,10 @@ export default function ChatPage() {
                                         `}>
                             {/* File/Image */}
                             {msg.type === 'image' && msg.fileUrl ? (
-                              <img src={msg.fileUrl} alt="attachment" className="rounded-lg max-w-full mb-2 cursor-pointer hover:opacity-95" onClick={() => window.open(msg.fileUrl!, '_blank')} />
+                              <>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={msg.fileUrl} alt="attachment" className="rounded-lg max-w-full mb-2 cursor-pointer hover:opacity-95" onClick={() => window.open(msg.fileUrl!, '_blank')} />
+                              </>
                             ) : msg.type === 'file' ? (
                               <div className={`flex items-center gap-2 p-3 rounded-lg mb-1 ${isMe ? 'bg-white/20' : 'bg-white border border-gray-200'}`}>
                                 <Paperclip size={16} /> <a href={msg.fileUrl} download={msg.fileName} className="underline decoration-dotted font-medium truncate">{msg.fileName}</a>
