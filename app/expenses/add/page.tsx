@@ -13,6 +13,8 @@ import {
 import Toast from '@/components/common/Toast'; // Reuse Toast component
 import { calculateEmployeeSalary } from '@/lib/utils';
 import { MaterialExpenseForm, MaterialItem } from '@/components/expenses/MaterialExpenseForm';
+import { EmployeeSelect } from '@/components/expenses/EmployeeSelect';
+import { CustomerSelect } from '@/components/expenses/CustomerSelect';
 
 
 function AddExpenseContent() {
@@ -57,6 +59,7 @@ function AddExpenseContent() {
   const [companyExpenseType, setCompanyExpenseType] = useState('');
   // Salary specific fields
   const [selectedEmployeeForSalary, setSelectedEmployeeForSalary] = useState('');
+  const [selectedEmployeeApiData, setSelectedEmployeeApiData] = useState<any>(null); // NEW: Store employee API data
   const [salaryPaymentAmount, setSalaryPaymentAmount] = useState<number | ''>('');
   const [partialPaidAmount, setPartialPaidAmount] = useState<number | string>(''); // Support string for decimal typing
   const [salaryPaymentDate, setSalaryPaymentDate] = useState(new Date().toISOString().split('T')[0]);
@@ -409,6 +412,27 @@ function AddExpenseContent() {
     }
   }, [selectedEmployeeForSalary, expenseType, companyExpenseType, companyLabors]);
 
+  // NEW: Fetch employee details from API when selected for salary
+  useEffect(() => {
+    const fetchEmployeeDetails = async () => {
+      if (!selectedEmployeeForSalary) {
+        setSelectedEmployeeApiData(null);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/employees/${selectedEmployeeForSalary}`);
+        if (res.ok) {
+          const data = await res.json();
+          setSelectedEmployeeApiData(data.employee);
+        }
+      } catch (error) {
+        console.error('Error fetching employee details:', error);
+        setSelectedEmployeeApiData(null);
+      }
+    };
+    fetchEmployeeDetails();
+  }, [selectedEmployeeForSalary]);
+
   const laborRemainingAmount = (typeof wage === 'number' ? wage : 0) - (typeof laborPaidAmount === 'number' ? laborPaidAmount : 0);
 
   const selectedEmployeeData = employees.find(emp => emp.id === selectedEmployeeForSalary);
@@ -745,7 +769,7 @@ function AddExpenseContent() {
         if (paymentStatus === 'PAID') {
           expenseData.paidAmount = totalMaterialCost;
         } else if (paymentStatus === 'PARTIAL') {
-          expenseData.paidAmount = laborPaidAmount || 0;
+          expenseData.paidAmount = partialPaidAmount ? parseFloat(partialPaidAmount.toString()) : 0;
         } else {
           expenseData.paidAmount = 0;
         }
@@ -998,20 +1022,6 @@ function AddExpenseContent() {
         break;
     }
 
-    // Handle receipt image upload if exists (requires FormData for API)
-    let receiptUrl = null;
-    if (receiptImage) {
-      // For now, we'll store the receipt image as a base64 string
-      // In production, you would upload to a cloud storage service
-      receiptUrl = await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          resolve(e.target?.result as string);
-        };
-        reader.readAsDataURL(receiptImage);
-      });
-    }
-
     // Add debug log for Labor project expense submission
     if (category === 'Labor' && expenseType === 'project') {
       console.log('Labor Project Expense Submission:', {
@@ -1026,10 +1036,42 @@ function AddExpenseContent() {
         dateWorked: expenseData.dateWorked
       });
     }
-    console.log('Submitting Expense Data:', expenseData);
 
     // --- API Integration ---
     try {
+      // Helper function to submit expense data with optional receipt image
+      const submitExpenseData = async (endpoint: string, payload: any) => {
+        // If receipt image exists, use FormData
+        if (receiptImage) {
+          const formData = new FormData();
+          formData.append('receiptImage', receiptImage);
+
+          // Append all other fields as JSON strings or primitive values
+          Object.keys(payload).forEach(key => {
+            const value = payload[key];
+            if (value !== undefined && value !== null) {
+              if (typeof value === 'object') {
+                formData.append(key, JSON.stringify(value));
+              } else {
+                formData.append(key, String(value));
+              }
+            }
+          });
+
+          return fetch(endpoint, {
+            method: 'POST',
+            body: formData,
+          });
+        } else {
+          // No receipt image, use JSON
+          return fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+        }
+      };
+
       // If Labor and project expense, submit to /api/expenses/project with all required backend fields
       if (category === 'Labor' && expenseType === 'project') {
         const laborPayload = {
@@ -1046,15 +1088,10 @@ function AddExpenseContent() {
           amount: expenseData.paidAmount, // required by backend
           laborPaidAmount: expenseData.paidAmount, // required by backend
           note: expenseData.note || '', // Add note to labor payload
-          receiptUrl: receiptUrl, // Add receipt URL to labor payload
           startNewAgreement: Boolean((window as any)._startNewAgreement || false),
         };
         // Submit to /api/expenses/project (this creates both ProjectLabor and Expense records)
-        const expenseRes = await fetch('/api/expenses/project', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(laborPayload),
-        });
+        const expenseRes = await submitExpenseData('/api/expenses/project', laborPayload);
         const expenseDataRes = await expenseRes.json();
         if (!expenseRes.ok) {
           const errorMsg = expenseDataRes.message || (typeof expenseDataRes === 'string' ? expenseDataRes : JSON.stringify(expenseDataRes)) || 'Failed to record expense';
@@ -1066,7 +1103,7 @@ function AddExpenseContent() {
         setToastMessage({ message: 'Shaqaale mashruuc iyo kharashkiisa si guul leh ayaa loo diiwaan geliyay!', type: 'success' });
         // Clear form
         setCategory(''); setAmount(''); setPaidFrom('Cash'); setExpenseDate(new Date().toISOString().split('T')[0]); setNote(''); setSelectedProject('');
-        setMaterials([{ id: 1, name: '', qty: '', price: '', unit: '' }]);
+        setMaterials([{ id: 1, name: '', qty: '', price: '', unit: 'pcs' }]);
         setSelectedEmployeeForSalary(''); setWorkDescription(''); setWage(''); setLaborPaidAmount(''); setTransportType(''); setTaxiXamaalType('');
         setCompanyExpenseType(''); setLenderName(''); setLoanDate(''); setReceiptImage(null);
         setSelectedEmployeeForSalary(''); setSalaryPaymentAmount('');
@@ -1096,15 +1133,10 @@ function AddExpenseContent() {
           category: 'Company Labor',
           amount: expenseData.laborPaidAmount,
           note: expenseData.note || '',
-          receiptUrl: receiptUrl,
           startNewAgreement: Boolean((window as any)._startNewAgreement || false),
         };
         // Submit to /api/expenses/company (this creates both CompanyLabor and Expense records)
-        const expenseRes = await fetch('/api/expenses/company', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(companyLaborPayload),
-        });
+        const expenseRes = await submitExpenseData('/api/expenses/company', companyLaborPayload);
         const expenseDataRes = await expenseRes.json();
         if (!expenseRes.ok) {
           const errorMsg = expenseDataRes.message || (typeof expenseDataRes === 'string' ? expenseDataRes : JSON.stringify(expenseDataRes)) || 'Failed to record expense';
@@ -1116,7 +1148,7 @@ function AddExpenseContent() {
         setToastMessage({ message: 'Shaqaale shirkad iyo kharashkiisa si guul leh ayaa loo diiwaan geliyay!', type: 'success' });
         // Clear form
         setCategory(''); setAmount(''); setPaidFrom('Cash'); setExpenseDate(new Date().toISOString().split('T')[0]); setNote(''); setSelectedProject('');
-        setMaterials([{ id: 1, name: '', qty: '', price: '', unit: '' }]);
+        setMaterials([{ id: 1, name: '', qty: '', price: '', unit: 'pcs' }]);
         setSelectedEmployeeForSalary(''); setWorkDescription(''); setWage(''); setLaborPaidAmount(''); setTransportType(''); setTaxiXamaalType('');
         setCompanyExpenseType(''); setLenderName(''); setLoanDate(''); setReceiptImage(null);
         setSelectedEmployeeForSalary(''); setSalaryPaymentAmount('');
@@ -1136,17 +1168,7 @@ function AddExpenseContent() {
       // Otherwise, submit as normal
       const endpoint = expenseType === 'project' ? '/api/expenses/project' : '/api/expenses/company';
 
-      // Add receipt URL to expense data
-      const finalExpenseData = {
-        ...expenseData,
-        receiptUrl: receiptUrl,
-      };
-
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(finalExpenseData),
-      });
+      const response = await submitExpenseData(endpoint, expenseData);
       const data = await response.json();
       if (!response.ok) {
         const errorMsg = data.message || (typeof data === 'string' ? data : JSON.stringify(data)) || 'Failed to record expense';
@@ -1736,12 +1758,21 @@ function AddExpenseContent() {
                     {validationErrors.selectedProject && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.selectedProject}</p>}
                   </div>
                   <div>
-                    <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Shaqaale <span className="text-redError">*</span></label>
-                    <select value={selectedEmployeeForSalary} onChange={e => setSelectedEmployeeForSalary(e.target.value)} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100" required title="Dooro Shaqaale">
-                      <option value="">-- Dooro Shaqaale --</option>
-                      {employees.map(emp => <option key={emp.id} value={emp.id}>{emp.fullName}</option>)}
-                    </select>
-                    {validationErrors.selectedEmployeeForSalary && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.selectedEmployeeForSalary}</p>}
+                    <EmployeeSelect
+                      value={selectedEmployeeForSalary}
+                      onChange={(value) => setSelectedEmployeeForSalary(value)}
+                      onEmployeeCreated={(newEmployee) => {
+                        // Refresh employees list
+                        fetch('/api/employees')
+                          .then(res => res.json())
+                          .then(data => setEmployees(data.employees || []))
+                          .catch(err => console.error('Error refreshing employees:', err));
+                      }}
+                      error={validationErrors.selectedEmployeeForSalary}
+                      label="Shaqaalaha Mashruuca"
+                      placeholder="Dooro shaqaale mashruuc..."
+                      filterCategory="PROJECT"
+                    />
                   </div>
                   <div>
                     <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Mushaharka La Ogolaaday (Agreed)</label>
@@ -2050,29 +2081,21 @@ function AddExpenseContent() {
                     {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.paidFrom}</p>}
                   </div>
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label htmlFor="selectedEmployeeForSalary" className="block text-sm font-medium text-darkGray dark:text-gray-300">Dooro Shaqaale <span className="text-redError">*</span></label>
-                      <Link
-                        href="/employees/add"
-                        className="text-primary hover:text-blue-700 text-sm font-medium flex items-center gap-1 transition"
-                      >
-                        <Plus size={16} />
-                        Add New
-                      </Link>
-                    </div>
-                    <select
-                      id="selectedEmployeeForSalary"
-                      required
+                    <EmployeeSelect
                       value={selectedEmployeeForSalary}
-                      onChange={(e) => setSelectedEmployeeForSalary(e.target.value)}
-                      className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary appearance-none ${validationErrors.selectedEmployeeForSalary ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                    >
-                      <option value="">-- Dooro Shaqaale --</option>
-                      {employees.map(emp => (
-                        <option key={emp.id} value={emp.id}>{emp.fullName || emp.name}</option>
-                      ))}
-                    </select>
-                    {validationErrors.selectedEmployeeForSalary && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.selectedEmployeeForSalary}</p>}
+                      onChange={(value) => setSelectedEmployeeForSalary(value)}
+                      onEmployeeCreated={(newEmployee) => {
+                        // Refresh employees list
+                        fetch('/api/employees')
+                          .then(res => res.json())
+                          .then(data => setEmployees(data.employees || []))
+                          .catch(err => console.error('Error refreshing employees:', err));
+                      }}
+                      error={validationErrors.selectedEmployeeForSalary}
+                      label="Dooro Shaqaale"
+                      placeholder="Dooro shaqaale..."
+                      filterCategory="COMPANY"
+                    />
                   </div>
                   <div>
                     <label htmlFor="salaryPaymentAmount" className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-1">Lacagta La Bixinayo (ETB) <span className="text-redError">*</span></label>
@@ -2102,34 +2125,37 @@ function AddExpenseContent() {
                     </div>
                     {validationErrors.salaryPaymentDate && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.salaryPaymentDate}</p>}
                   </div>
-                  {selectedEmployeeData && salaryCalculation && (
+                  {selectedEmployeeApiData && (
                     <div className="col-span-full space-y-3">
-                      {/* Salary Summary */}
+                      {/* Salary Summary - Using API Data */}
                       <div className="p-3 bg-primary/10 dark:bg-primary/20 rounded-lg">
                         <h5 className="text-sm font-bold text-primary dark:text-blue-300 mb-2">Xisaabinta Mushahaarka</h5>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
                           <div className="text-center">
                             <div className="text-mediumGray dark:text-gray-400">Bilaha La Shaqeeyay</div>
-                            <div className="font-bold text-primary dark:text-blue-300">{salaryCalculation.totalMonths}</div>
+                            <div className="font-bold text-primary dark:text-blue-300">{selectedEmployeeApiData.totalMonthsWorked || 0}</div>
                           </div>
                           <div className="text-center">
                             <div className="text-mediumGray dark:text-gray-400">Mushahaar/Bil</div>
-                            <div className="font-bold text-primary dark:text-blue-300">{salaryCalculation.monthlySalary.toLocaleString()} ETB</div>
+                            <div className="font-bold text-primary dark:text-blue-300">{Number(selectedEmployeeApiData.monthlySalary || 0).toLocaleString()} ETB</div>
                           </div>
                           <div className="text-center">
                             <div className="text-mediumGray dark:text-gray-400">Wadarta Mushahaarka</div>
-                            <div className="font-bold text-primary dark:text-blue-300">{salaryCalculation.totalSalaryOwed.toLocaleString()} ETB</div>
+                            <div className="font-bold text-primary dark:text-blue-300">{Number(selectedEmployeeApiData.totalSalaryOwed || 0).toLocaleString()} ETB</div>
                           </div>
                           <div className="text-center">
-                            <div className="text-mediumGray dark:text-gray-400">Hore La Bixiyay</div>
-                            <div className="font-bold text-primary dark:text-blue-300">{salaryCalculation.salaryPaidThisMonth.toLocaleString()} ETB</div>
+                            <div className="text-mediumGray dark:text-gray-400">Wadarta La Bixiyay</div>
+                            <div className="font-bold text-secondary dark:text-green-300">{Number(selectedEmployeeApiData.totalPaid || 0).toLocaleString()} ETB</div>
+                            <div className="text-[10px] text-mediumGray dark:text-gray-500 mt-0.5">From All Expenses</div>
                           </div>
                         </div>
                       </div>
 
                       {/* Remaining Amount */}
                       {(() => {
-                        const isOverpayment = newSalaryRemaining < 0;
+                        const currentRemaining = Number(selectedEmployeeApiData.totalRemaining || 0);
+                        const newRemaining = currentRemaining - (typeof salaryPaymentAmount === 'number' ? salaryPaymentAmount : 0);
+                        const isOverpayment = newRemaining < 0;
                         const bgColor = isOverpayment ? 'bg-orange-50 dark:bg-orange-900/20' : 'bg-green-50 dark:bg-green-900/20';
                         const borderColor = isOverpayment ? 'border-orange-200 dark:border-orange-700' : 'border-green-200 dark:border-green-700';
                         const textColor = isOverpayment ? 'text-orange-800 dark:text-orange-300' : 'text-green-800 dark:text-green-300';
@@ -2139,7 +2165,7 @@ function AddExpenseContent() {
                           <div className={`p-3 ${bgColor} rounded-lg border ${borderColor}`}>
                             <div className="flex justify-between items-center">
                               <span className={`text-sm font-medium ${textColor}`}>Lacagta Hadhay:</span>
-                              <span className={`text-lg font-bold ${amountColor}`}>{currentSalaryRemaining.toLocaleString()} ETB</span>
+                              <span className={`text-lg font-bold ${amountColor}`}>{currentRemaining.toLocaleString()} ETB</span>
                             </div>
                             {typeof salaryPaymentAmount === 'number' && salaryPaymentAmount > 0 && (
                               <div className={`flex justify-between items-center mt-2 pt-2 border-t ${borderColor}`}>
@@ -2147,7 +2173,7 @@ function AddExpenseContent() {
                                   {isOverpayment ? 'Kadib Bixinta (Overpayment):' : 'Kadib Bixinta:'}
                                 </span>
                                 <span className={`text-lg font-bold ${amountColor}`}>
-                                  {newSalaryRemaining.toLocaleString()} ETB
+                                  {newRemaining.toLocaleString()} ETB
                                   {isOverpayment && (
                                     <span className="text-xs ml-1 text-orange-600 dark:text-orange-400">(Waa ka badan)</span>
                                   )}
@@ -2167,21 +2193,21 @@ function AddExpenseContent() {
                 <div className="p-4 border border-primary/20 rounded-lg bg-primary/5 animate-fade-in">
                   <h3 className="text-lg font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Shaqaalaha Shirkadda</h3>
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="block text-md font-medium text-darkGray dark:text-gray-300">Shaqaale <span className="text-redError">*</span></label>
-                      <Link
-                        href="/employees/add"
-                        className="text-primary hover:text-blue-700 text-sm font-medium flex items-center gap-1 transition"
-                      >
-                        <Plus size={16} />
-                        Add New
-                      </Link>
-                    </div>
-                    <select value={selectedEmployeeForSalary} onChange={e => setSelectedEmployeeForSalary(e.target.value)} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100" required title="Dooro Shaqaale">
-                      <option value="">-- Dooro Shaqaale --</option>
-                      {employees.map(emp => <option key={emp.id} value={emp.id}>{emp.fullName}</option>)}
-                    </select>
-                    {validationErrors.selectedEmployeeForSalary && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.selectedEmployeeForSalary}</p>}
+                    <EmployeeSelect
+                      value={selectedEmployeeForSalary}
+                      onChange={(value) => setSelectedEmployeeForSalary(value)}
+                      onEmployeeCreated={(newEmployee) => {
+                        // Refresh employees list
+                        fetch('/api/employees')
+                          .then(res => res.json())
+                          .then(data => setEmployees(data.employees || []))
+                          .catch(err => console.error('Error refreshing employees:', err));
+                      }}
+                      error={validationErrors.selectedEmployeeForSalary}
+                      label="Shaqaalaha Shirkadda"
+                      placeholder="Dooro shaqaale shirkad..."
+                      filterCategory="COMPANY"
+                    />
                   </div>
                   <div>
                     <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Mushaharka La Ogolaaday (Agreed)</label>
@@ -2520,32 +2546,20 @@ function AddExpenseContent() {
                     {validationErrors.paidFrom && <p className="text-redError text-xs mt-1 flex items-center"><Info size={14} className="inline mr-1" />{validationErrors.paidFrom}</p>}
                   </div>
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label htmlFor="selectedCustomerDebt" className="block text-sm font-medium text-darkGray dark:text-gray-300">Dooro Macmiilka (Dayn La Siinay) <span className="text-redError">*</span></label>
-                      <Link
-                        href="/customers/add"
-                        className="text-primary hover:text-blue-700 text-sm font-medium flex items-center gap-1 transition"
-                      >
-                        <Plus size={16} />
-                        Add New
-                      </Link>
-                    </div>
-                    <select
-                      id="selectedCustomerDebt"
-                      required
+                    <CustomerSelect
                       value={lenderName}
-                      onChange={(e) => setLenderName(e.target.value)}
-                      className={`w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:ring-primary appearance-none ${validationErrors.lenderName ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                    >
-                      <option value="">-- Dooro Macmiilka (Dayn La Siinay) --</option>
-                      {allCustomers && allCustomers.length > 0 ? allCustomers.map(customer => (
-                        <option key={customer.id} value={customer.id}>
-                          {customer.name} - Dayn dhan: ${customer.outstandingDebt?.toLocaleString() || 0}
-                        </option>
-                      )) : (
-                        <option value="" disabled>Lagu heli karo customers-ka</option>
-                      )}
-                    </select>
+                      onChange={(value) => setLenderName(value)}
+                      onCustomerCreated={(newCustomer) => {
+                        // Refresh customers list
+                        fetch('/api/customers')
+                          .then(res => res.json())
+                          .then(data => setAllCustomers(data.customers || []))
+                          .catch(err => console.error('Error refreshing customers:', err));
+                      }}
+                      error={validationErrors.lenderName}
+                      label="Dooro Macmiilka (Dayn La Siinay)"
+                      placeholder="Dooro macmiil..."
+                    />
                     {(lenderName && allCustomers && allCustomers.length > 0) && (() => {
                       const cust = allCustomers.find(c => c.id === lenderName);
                       if (!cust) return null;

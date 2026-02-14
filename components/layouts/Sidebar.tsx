@@ -78,6 +78,35 @@ const NavItem: React.FC<NavItemProps> = ({ name, href, icon, isCollapsed, onClic
 };
 
 const menuConfig = {
+  SUPER_ADMIN: {
+    main: [
+      { name: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard />, group: 'Main' },
+      { name: 'Super Admin', href: '/admin', icon: <Shield />, group: 'Main', badge: 1 },
+    ],
+    business: [
+      { name: 'Projects', href: '/projects', icon: <Briefcase />, group: 'Business' },
+      { name: 'Workshop', href: '/workshop', icon: <Hammer />, group: 'Business' },
+      { name: 'Sales', href: '/sales', icon: <ShoppingCart />, group: 'Business' },
+      { name: 'Vendors', href: '/vendors', icon: <Users />, group: 'Business' },
+      { name: 'Customers', href: '/customers', icon: <Users />, group: 'Business' },
+      { name: 'Employees', href: '/employees', icon: <UserCogIcon />, group: 'Business' },
+      { name: 'Company Chat', href: '/chat', icon: <MessageCircle />, group: 'Business' },
+    ],
+    financial: [
+      { name: 'Expenses', href: '/expenses', icon: <DollarSign />, group: 'Financial' },
+      { name: 'Accounting', href: '/accounting', icon: <Landmark />, group: 'Financial' },
+      { name: 'Inventory', href: '/inventory', icon: <Package />, group: 'Financial' },
+    ],
+    reports: [
+      { name: 'Reports', href: '/reports', icon: <BarChart3 />, group: 'Reports' },
+    ],
+    admin: [
+      { name: 'Users', href: '/settings/users', icon: <Shield />, group: 'Administration' },
+      { name: 'Fiscal Years', href: '/admin/fiscal-years', icon: <Calendar />, group: 'Administration' },
+      { name: 'Contact Messages', href: '/admin/contact-messages', icon: <Mail />, group: 'Administration' },
+      { name: 'Platform Admin', href: '/admin', icon: <Wrench />, group: 'Administration' },
+    ]
+  },
   ADMIN: {
     main: [
       { name: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard />, group: 'Main' },
@@ -101,9 +130,7 @@ const menuConfig = {
     ],
     admin: [
       { name: 'Users', href: '/settings/users', icon: <Shield />, group: 'Administration' },
-      { name: 'Fiscal Years', href: '/admin/fiscal-years', icon: <Calendar />, group: 'Administration' },
-      { name: 'Contact Messages', href: '/admin/contact-messages', icon: <Mail />, group: 'Administration' },
-      { name: 'Admin', href: '/admin', icon: <Wrench />, group: 'Administration' },
+      // Fiscal Years and Platform Admin REMOVED for regular Admin
     ]
   },
   MANAGER: {

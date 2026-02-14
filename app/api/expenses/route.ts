@@ -128,6 +128,43 @@ export async function POST(request: Request) {
   try {
 
     const { companyId, userId } = await getSessionCompanyUser();
+
+    // Check if request contains FormData (file upload) or JSON
+    const contentType = request.headers.get('content-type') || '';
+    let data: any;
+    let receiptFile: File | null = null;
+
+    if (contentType.includes('multipart/form-data')) {
+      // Handle FormData with file upload
+      const formData = await request.formData();
+
+      // Extract receipt file if present
+      const file = formData.get('receiptImage');
+      if (file && file instanceof File) {
+        receiptFile = file;
+      }
+
+      // Extract all other fields from FormData
+      data = {};
+      for (const [key, value] of formData.entries()) {
+        if (key !== 'receiptImage') {
+          // Parse JSON strings and arrays
+          if (typeof value === 'string' && (value.startsWith('[') || value.startsWith('{'))) {
+            try {
+              data[key] = JSON.parse(value);
+            } catch {
+              data[key] = value;
+            }
+          } else {
+            data[key] = value;
+          }
+        }
+      }
+    } else {
+      // Handle regular JSON request
+      data = await request.json();
+    }
+
     const {
       description,
       amount,
@@ -140,14 +177,29 @@ export async function POST(request: Request) {
       customerId, // NEW: for Debt/Debt Repayment
       employeeId, // For Salary payments
       materials, // <-- NEW: for Material expenses
-      receiptUrl, // NEW: for receipt image URL
-      // NEW: Vendor payment tracking fields
-      // vendorId,
+      receiptUrl: providedReceiptUrl, // NEW: for receipt image URL (if already uploaded elsewhere)
+      vendorId, // NEW: Vendor payment tracking fields
       paymentStatus,
       invoiceNumber,
       paymentDate,
       materialDate, // NEW: for Material date tracking
-    } = await request.json();
+      paidAmount, // NEW: for Partial payments
+    } = data;
+
+    // Save receipt image if provided
+    let receiptUrl = providedReceiptUrl;
+    if (receiptFile) {
+      try {
+        const { saveReceiptImage } = await import('@/lib/upload');
+        receiptUrl = await saveReceiptImage(receiptFile);
+      } catch (uploadError: any) {
+        console.error('Receipt upload error:', uploadError);
+        return NextResponse.json(
+          { message: `Khalad sawirka rasiidka: ${uploadError.message}` },
+          { status: 400 }
+        );
+      }
+    }
 
     // Defensive: fallback for missing/invalid category
     if (!category || typeof category !== 'string' || category.trim() === '') {
@@ -187,7 +239,7 @@ export async function POST(request: Request) {
         );
       } */
     if (category === 'Material') { // Reduced check
-      if (!paymentStatus || !['PAID', 'UNPAID'].includes(paymentStatus)) {
+      if (!paymentStatus || !['PAID', 'UNPAID', 'PARTIAL'].includes(paymentStatus)) {
         return NextResponse.json(
           { message: 'Xaaladda lacag bixinta waa waajib.' },
           { status: 400 }
@@ -271,7 +323,7 @@ export async function POST(request: Request) {
         // NEW: Store receipt URL if provided
         ...(receiptUrl ? { receiptUrl } : {}),
         // NEW: Store vendor payment tracking fields
-        // ...(vendorId ? { vendorId } : {}),
+        ...(vendorId ? { vendorId } : {}),
         ...(paymentStatus ? { paymentStatus } : {}),
         ...(invoiceNumber ? { invoiceNumber } : {}),
         ...(paymentDate ? { paymentDate: new Date(paymentDate) } : {}),
@@ -296,7 +348,7 @@ export async function POST(request: Request) {
     let transactionType: 'INCOME' | 'EXPENSE' | 'TRANSFER_IN' | 'TRANSFER_OUT' | 'DEBT_TAKEN' | 'DEBT_REPAID' | 'OTHER' = 'EXPENSE';
     let transactionAmount = Number(amount);
     let transactionCustomerId = undefined;
-    let transactionVendorId = undefined; // vendorId || undefined;
+    let transactionVendorId = vendorId || undefined;
     // FIX: Initialize with paidFrom as fallback - ensures account balance is always updated when paidFrom exists
     let transactionAccountId = paidFrom || undefined;
     if (category === 'Debt' || (category === 'Company Expense' && subCategory === 'Debt')) {
@@ -330,15 +382,22 @@ export async function POST(request: Request) {
         // If paid, create expense transaction and deduct from account
         transactionType = 'EXPENSE';
         transactionAccountId = paidFrom;
-      } else if (paymentStatus === 'REPAID') {
+      } else if (paymentStatus === 'PARTIAL') {
+        // If partial, create DEBT_REPAID transaction for the paid amount only
+        // This represents the initial payment towards the vendor debt
         transactionType = 'DEBT_REPAID';
-        // transactionVendorId = vendorId;
+        transactionAccountId = paidFrom;
+        // Use paidAmount for transaction instead of total amount
+        if (paidAmount) {
+          transactionAmount = Number(paidAmount);
+        }
+        transactionVendorId = vendorId;
         // When repaying vendor debt, if paidFrom is selected, deduct from that account
         transactionAccountId = paidFrom || undefined;
       } else {
         // If unpaid, create debt transaction (vendor debt)
         transactionType = 'DEBT_TAKEN';
-        // transactionVendorId = vendorId; // Track vendor on transaction
+        transactionVendorId = vendorId; // Track vendor on transaction
         // If paidFrom is provided even for unpaid, deduct from account (user is paying now)
         transactionAccountId = paidFrom || undefined;
       }
@@ -349,8 +408,31 @@ export async function POST(request: Request) {
         transactionType = 'DEBT_TAKEN';
         transactionCustomerId = customerId;
         transactionAccountId = paidFrom;
+      } else if (vendorId) {
+        // NEW: Handle Vendor Expenses (Company Expenses related to a vendor)
+        // This mirrors the logic for Material expenses to support Partial/Unpaid statuses for vendors
+        if (paymentStatus === 'PAID') {
+          // Full payment made
+          transactionType = 'EXPENSE';
+          transactionAccountId = paidFrom;
+          transactionVendorId = vendorId;
+        } else if (paymentStatus === 'PARTIAL') {
+          // Partial payment made - create DEBT_REPAID for the paid amount
+          transactionType = 'DEBT_REPAID';
+          transactionAccountId = paidFrom;
+          if (paidAmount) {
+            transactionAmount = Number(paidAmount);
+          }
+          transactionVendorId = vendorId;
+        } else {
+          // Unpaid bill - create DEBT_TAKEN (Vendor Debt)
+          transactionType = 'DEBT_TAKEN';
+          transactionVendorId = vendorId;
+          // If paidFrom is strictly null/undefined for Unpaid, account balance won't change, which is correct
+          transactionAccountId = paidFrom || undefined;
+        }
       } else {
-        // For ALL other company expenses, deduct from paidFrom if provided
+        // For ALL other company expenses without specific vendor/customer tracking
         transactionType = 'EXPENSE';
         transactionAccountId = paidFrom;
       }
@@ -403,7 +485,14 @@ export async function POST(request: Request) {
     // 3. Update account balance based on transaction type
     // FIX: Use transactionAccountId or paidFrom as fallback to ensure account balance is updated
     const accountIdToUpdate = transactionAccountId || paidFrom;
-    if (accountIdToUpdate && amount) {
+
+    // Use the calculated transactionAmount (which handles partial payments correctly) 
+    // instead of the raw total 'amount'.
+    // We use Math.abs() because 'decrement' expects a positive number to subtract,
+    // and 'increment' expects a positive number to add.
+    const amountToAdjust = Math.abs(transactionAmount);
+
+    if (accountIdToUpdate && amountToAdjust > 0) {
       if (transactionType === 'DEBT_REPAID') {
         // DEBT_REPAID with customerId = customer repays us (money comes IN)
         // DEBT_REPAID with vendorId = we repay vendor (money goes OUT)
@@ -412,7 +501,7 @@ export async function POST(request: Request) {
           await prisma.account.update({
             where: { id: accountIdToUpdate },
             data: {
-              balance: { increment: Number(amount) },
+              balance: { increment: amountToAdjust },
             },
           });
         } else if (transactionVendorId) {
@@ -420,16 +509,39 @@ export async function POST(request: Request) {
           await prisma.account.update({
             where: { id: accountIdToUpdate },
             data: {
-              balance: { decrement: Number(amount) },
+              balance: { decrement: amountToAdjust },
+            },
+          });
+        }
+      } else if (transactionType === 'DEBT_TAKEN') {
+        // DEBT_TAKEN with customerId = We give money to customer (Money OUT)
+        if (transactionCustomerId) {
+          await prisma.account.update({
+            where: { id: accountIdToUpdate },
+            data: {
+              balance: { decrement: amountToAdjust },
+            },
+          });
+        }
+        // DEBT_TAKEN with vendorId (We owe vendor) = No cash movement usually, 
+        // BUT if paidFrom is set, it might technically be a payment? 
+        // No, standard UNPAID expense doesn't hit account. 
+        // Logic check: if paidFrom is set on UNPAID, we already prevent it in validation or allow it as "paying now". 
+        // If transactionAccountId is set, we respect it.
+        else if (transactionAccountId) {
+          await prisma.account.update({
+            where: { id: accountIdToUpdate },
+            data: {
+              balance: { decrement: amountToAdjust },
             },
           });
         }
       } else {
-        // For all other transactions (EXPENSE, DEBT_TAKEN), subtract money from account
+        // For EXPENSE (Standard payment), subtract money from account
         await prisma.account.update({
           where: { id: accountIdToUpdate },
           data: {
-            balance: { decrement: Number(amount) },
+            balance: { decrement: amountToAdjust },
           },
         });
       }

@@ -34,6 +34,10 @@ interface Expense {
   customer?: { id: string; name: string };
   user?: { fullName: string };
   company?: { name: string; address?: string; phone?: string };
+  paymentStatus?: string;
+  paidAmount?: number;
+  invoiceNumber?: string;
+  paymentDate?: string;
 }
 
 export default function ExpenseDetailsPage() {
@@ -129,6 +133,12 @@ export default function ExpenseDetailsPage() {
     </Layout>
   );
 
+  const paidAmount = expense.paidAmount !== undefined ? expense.paidAmount : (expense.paymentStatus === 'PAID' ? expense.amount : 0);
+  const remainingAmount = expense.amount - paidAmount;
+  const isFullyPaid = expense.paymentStatus === 'PAID';
+  const isPartial = expense.paymentStatus === 'PARTIAL';
+  const isUnpaid = expense.paymentStatus === 'UNPAID' || (!isFullyPaid && !isPartial);
+
   return (
     <Layout>
       {toastMessage && <Toast message={toastMessage.message} type={toastMessage.type} onClose={() => setToastMessage(null)} />}
@@ -153,7 +163,7 @@ export default function ExpenseDetailsPage() {
         {/* VOUCHER CARD */}
         <div ref={voucherRef} className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden relative print:shadow-none print:border min-h-[600px] flex flex-col">
           {/* Status Banner */}
-          <div className={`h-2 w-full ${expense.approved ? 'bg-green-500' : 'bg-amber-400'}`}></div>
+          <div className={`h-2 w-full ${isFullyPaid ? 'bg-green-500' : isPartial ? 'bg-blue-500' : 'bg-red-500'}`}></div>
 
           {/* PDF-ONLY: Company Header */}
           <div className="hidden print:block px-14 pt-8 pb-6 border-b-2 border-gray-200">
@@ -181,12 +191,13 @@ export default function ExpenseDetailsPage() {
                 </div>
                 <p className="text-xs text-gray-500">Issue Date: {new Date().toLocaleDateString()}</p>
                 <p className="text-xs text-gray-500">Print Time: {new Date().toLocaleTimeString()}</p>
+                {expense.invoiceNumber && <p className="text-xs text-gray-700 font-bold mt-1">Invoice #: {expense.invoiceNumber}</p>}
               </div>
             </div>
           </div>
 
           {/* Watermark for Approved */}
-          {expense.approved && (
+          {isFullyPaid && (
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-[0.03] select-none">
               <span className="text-[15rem] font-black -rotate-12 block">PAID</span>
             </div>
@@ -199,6 +210,7 @@ export default function ExpenseDetailsPage() {
                 <div className="flex items-center gap-3 mb-3">
                   <span className="h-8 w-8 bg-gray-900 text-white rounded-lg flex items-center justify-center font-bold text-xs">RV</span>
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">Payment Voucher</p>
+                  {expense.invoiceNumber && <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">INV: {expense.invoiceNumber}</span>}
                 </div>
                 <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-2 tracking-tight">
                   {expense.description || (expense.subCategory === 'Salary' && expense.employee ? `Salary: ${expense.employee.fullName}` : 'Expense Voucher')}
@@ -214,9 +226,21 @@ export default function ExpenseDetailsPage() {
                 <p className="text-5xl font-black text-gray-900 dark:text-white tabular-nums tracking-tighter">
                   {expense.amount.toLocaleString()} <span className="text-xl font-bold text-gray-400">ETB</span>
                 </p>
-                <div className={`inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-full text-xs font-bold ${expense.approved ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'}`}>
-                  {expense.approved ? <CheckCircle size={14} /> : <AlertCircle size={14} />}
-                  {expense.approved ? 'Approved & Paid' : 'Pending Approval'}
+
+                {/* Payment Status Badges */}
+                <div className="flex flex-col items-end gap-2 mt-3">
+                  <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${isFullyPaid ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : isPartial ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+                    {isFullyPaid ? <CheckCircle size={14} /> : isPartial ? <AlertCircle size={14} /> : <AlertCircle size={14} />}
+                    {isFullyPaid ? 'Paid' : isPartial ? 'Partial Payment' : 'Unpaid'}
+                  </div>
+
+                  {/* Partial Payment Details */}
+                  {!isFullyPaid && (
+                    <div className="text-xs text-right mt-1">
+                      <p className="text-gray-500">Paid: <span className="font-bold text-green-600">{paidAmount.toLocaleString()} ETB</span></p>
+                      <p className="text-gray-500">Rem: <span className="font-bold text-red-600">{remainingAmount.toLocaleString()} ETB</span></p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

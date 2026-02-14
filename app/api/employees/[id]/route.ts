@@ -33,12 +33,50 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       return NextResponse.json({ message: 'Shaqaalaha lama helin.' }, { status: 404 });
     }
 
+    // Calculate total months worked
+    const today = new Date();
+    const startDate = new Date(employee.startDate);
+    const yearDiff = today.getFullYear() - startDate.getFullYear();
+    const monthDiff = today.getMonth() - startDate.getMonth();
+    const totalMonthsWorked = yearDiff * 12 + monthDiff + 1;
+
+    // Get ACTUAL total paid from expenses (salary + labor expenses for this employee)
+    const salaryExpenses = await prisma.expense.findMany({
+      where: {
+        employeeId: employee.id,
+        companyId,
+        OR: [
+          { category: 'Salary' },
+          { category: 'Labor' },
+          { category: 'Company Labor' },
+          { subCategory: 'Salary' },
+        ],
+      },
+    });
+
+    const totalPaid = salaryExpenses.reduce((sum, expense) => {
+      return sum + (expense.amount ? expense.amount.toNumber() : 0);
+    }, 0);
+
+    // Calculate total salary owed (for COMPANY employees)
+    const monthlySalaryNum = employee.monthlySalary ? employee.monthlySalary.toNumber() : null;
+    const totalSalaryOwed = monthlySalaryNum ? monthlySalaryNum * totalMonthsWorked : 0;
+
+    // Calculate remaining: total owed - total paid
+    const totalRemaining = monthlySalaryNum ? totalSalaryOwed - totalPaid : 0;
+
+    // Overpaid if remaining is negative
+    const overpaidAmount = totalRemaining < 0 ? Math.abs(totalRemaining) : 0;
+
     // Convert Decimal fields to Number for frontend display
     const processedEmployee = {
       ...employee,
-      monthlySalary: employee.monthlySalary ? employee.monthlySalary.toNumber() : null, // Handle null
-      salaryPaidThisMonth: employee.salaryPaidThisMonth ? employee.salaryPaidThisMonth.toNumber() : null, // Handle null
-      overpaidAmount: employee.overpaidAmount ? employee.overpaidAmount.toNumber() : null, // Handle null
+      monthlySalary: monthlySalaryNum,
+      totalPaid, // NEW: Actual total paid from all expenses
+      totalSalaryOwed, // NEW: Total owed based on months worked
+      totalRemaining, // NEW: Remaining (negative if overpaid)
+      overpaidAmount, // NEW: Amount overpaid (shown as debt)
+      totalMonthsWorked, // NEW: Total months worked
     };
 
     return NextResponse.json({ employee: processedEmployee }, { status: 200 });

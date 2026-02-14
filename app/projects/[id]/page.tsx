@@ -17,7 +17,7 @@ interface Project {
   id: string; name: string; description?: string; customer: { id: string; name: string; email?: string; };
   agreementAmount: number; advancePaid: number; remainingAmount: number; projectType: string;
   status: 'Active' | 'Completed' | 'On Hold' | 'Cancelled' | 'Overdue' | 'Nearing Deadline';
-  expectedCompletionDate?: string; actualCompletionDate?: string; notes?: string; createdAt: string; updatedAt: string;
+  expectedCompletionDate?: string; actualCompletionDate?: string; startDate?: string; notes?: string; createdAt: string; updatedAt: string;
   expenses: {
     id: string;
     description: string;
@@ -363,6 +363,15 @@ const ProjectDetailsPage: React.FC = () => {
               </div>
               <p className="text-lg font-bold text-green-600">{project.projectType || '-'}</p>
               <p className="text-xs text-green-600 dark:text-green-300">Project Type</p>
+            </div>
+
+            <div className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-4 rounded-xl shadow-md">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-semibold text-purple-800 dark:text-purple-200">Taariikhda Bilowga</h4>
+                <Calendar size={18} className="text-purple-600" />
+              </div>
+              <p className="text-lg font-bold text-purple-600">{project.startDate ? new Date(project.startDate).toLocaleDateString() : 'N/A'}</p>
+              <p className="text-xs text-purple-600 dark:text-purple-300">Start Date</p>
             </div>
 
             <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 p-4 rounded-xl shadow-md">

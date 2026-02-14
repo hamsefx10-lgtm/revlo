@@ -37,6 +37,7 @@ export default function AddProjectPage() {
   const [description, setDescription] = useState('');
   const [agreementAmount, setAgreementAmount] = useState<number | ''>('');
   const [projectType, setProjectType] = useState('');
+  const [startDate, setStartDate] = useState(''); // Project start date
   const [expectedCompletionDate, setExpectedCompletionDate] = useState('');
   const [notes, setNotes] = useState('');
   const [customerId, setCustomerId] = useState('');
@@ -178,6 +179,7 @@ export default function AddProjectPage() {
     // Only cap advance if agreement is fixed (greater than 0)
     if (agreementAmountNum > 0 && advancePaidNum > agreementAmountNum) newErrors.advancePaid = 'Lacagta Hore Loo Bixiyay ma dhaafi karto Qiimaha Heshiiska.';
     if (!projectType) newErrors.projectType = 'Nooca Mashruuca waa waajib.';
+    if (!startDate) newErrors.startDate = 'Taariikhda Bilowga Mashruuca waa waajib.';
     if (!expectedCompletionDate) newErrors.expectedCompletionDate = 'Taariikhda Dhammaystirka waa waajib.';
     if (!customerId) newErrors.customerId = 'Macmiilka waa waajib.';
     // companyId validation looma baahna, waa automatic
@@ -220,8 +222,12 @@ export default function AddProjectPage() {
           description: description || null,
           agreementAmount: typeof agreementAmount === 'number' ? agreementAmount : parseFloat(agreementAmount as any) || 0,
           advancePaid,
-          advancePayments: advancePaid > 0 ? advancePayments : [],
+          advancePayments: advancePaid > 0 ? advancePayments.map(adv => ({
+            ...adv,
+            paymentDate: startDate // Use project start date as payment date
+          })) : [],
           projectType,
+          startDate, // ✅ Add startDate to API call
           expectedCompletionDate,
           notes: notes || null,
           customerId,
@@ -367,8 +373,8 @@ export default function AddProjectPage() {
             </div>
           </div>
 
-          {/* Project Type & Expected Completion Date */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Project Type, Start Date & Expected Completion Date */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label htmlFor="projectType" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Nooca Mashruuca <span className="text-redError">*</span></label>
               <div className="relative">
@@ -388,6 +394,20 @@ export default function AddProjectPage() {
                 <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
               </div>
               {errors.projectType && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.projectType}</p>}
+            </div>
+            <div>
+              <label htmlFor="startDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Bilowga Mashruuca <span className="text-redError">*</span></label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
+                <input
+                  type="date"
+                  id="startDate"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${errors.startDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                />
+              </div>
+              {errors.startDate && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.startDate}</p>}
             </div>
             <div>
               <label htmlFor="expectedCompletionDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Dhammaystirka La Filayo <span className="text-redError">*</span></label>

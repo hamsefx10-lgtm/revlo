@@ -10,6 +10,9 @@ let expenseChannel: BroadcastChannel | null = null;
 export type ExpenseChangePayload = {
   expenseId: string;
   projectId?: string;
+  employeeId?: string;
+  customerId?: string;
+  vendorId?: string;
   action: 'create' | 'update' | 'delete' | 'bulk-delete';
 };
 

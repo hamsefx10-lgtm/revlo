@@ -1,6 +1,7 @@
- 'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
+import useSWR from 'swr';
 import Link from 'next/link';
 import Layout from '../../../components/layouts/Layout';
 import {
@@ -51,36 +52,24 @@ export default function BackupRestorePage() {
     includeTables: [] as string[]
   });
 
+  const { data: backupsData, mutate: mutateBackups } = useSWR('/api/admin/backups', (url) => fetch(url).then(res => res.json()), { refreshInterval: 5000 });
+  const { data: restoreJobsData, mutate: mutateRestoreJobs } = useSWR('/api/admin/restore-jobs', (url) => fetch(url).then(res => res.json()), { refreshInterval: 5000 });
+
   useEffect(() => {
-    fetchBackups();
-    fetchRestoreJobs();
-  }, []);
-
-  const fetchBackups = async () => {
-    try {
-      const res = await fetch('/api/admin/backups');
-      if (res.ok) {
-        const data = await res.json();
-        setBackups(data.backups || []);
-      }
-    } catch (error) {
-      console.error('Error fetching backups:', error);
+    if (backupsData?.backups) {
+      setBackups(backupsData.backups);
     }
-  };
-
-  const fetchRestoreJobs = async () => {
-    try {
-      const res = await fetch('/api/admin/restore-jobs');
-      if (res.ok) {
-        const data = await res.json();
-        setRestoreJobs(data.jobs || []);
-      }
-    } catch (error) {
-      console.error('Error fetching restore jobs:', error);
-    } finally {
+    if (restoreJobsData?.jobs) {
+      setRestoreJobs(restoreJobsData.jobs);
+    }
+    if (backupsData || restoreJobsData) {
       setLoading(false);
     }
-  };
+  }, [backupsData, restoreJobsData]);
+
+  const fetchBackups = () => mutateBackups();
+  const fetchRestoreJobs = () => mutateRestoreJobs();
+
 
   const createBackup = async () => {
     setCreatingBackup(true);
@@ -90,7 +79,7 @@ export default function BackupRestorePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newBackup)
       });
-      
+
       if (res.ok) {
         setShowCreateModal(false);
         setNewBackup({ name: '', type: 'full', description: '', includeTables: [] });
@@ -111,7 +100,7 @@ export default function BackupRestorePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ backupId })
       });
-      
+
       if (res.ok) {
         setShowRestoreModal(false);
         setSelectedBackup(null);
@@ -133,7 +122,7 @@ export default function BackupRestorePage() {
       const res = await fetch(`/api/admin/backups/${backupId}`, {
         method: 'DELETE'
       });
-      
+
       if (res.ok) {
         fetchBackups();
       }
@@ -187,7 +176,7 @@ export default function BackupRestorePage() {
   };
 
   const availableTables = [
-    'users', 'companies', 'customers', 'projects', 'transactions', 
+    'users', 'companies', 'customers', 'projects', 'transactions',
     'expenses', 'invoices', 'payments', 'reports', 'settings'
   ];
 
@@ -228,7 +217,7 @@ export default function BackupRestorePage() {
           <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100">Total Backups</h4>
           <p className="text-2xl font-extrabold text-blue-600">{backups.length}</p>
         </div>
-        
+
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
           <div className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
             <CheckCircle size={32} />
@@ -238,7 +227,7 @@ export default function BackupRestorePage() {
             {backups.filter(b => b.status === 'completed').length}
           </p>
         </div>
-        
+
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
           <div className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
             <HardDrive size={32} />
@@ -248,7 +237,7 @@ export default function BackupRestorePage() {
             {formatFileSize(backups.reduce((sum, backup) => sum + backup.size, 0))}
           </p>
         </div>
-        
+
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
           <div className="bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-200 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
             <RotateCcw size={32} />
@@ -273,9 +262,9 @@ export default function BackupRestorePage() {
                   <div className="flex items-center space-x-4">
                     <div className={`p-2 rounded-full ${getStatusColor(job.status)}`}>
                       {job.status === 'completed' ? <CheckCircle size={20} /> :
-                       job.status === 'failed' ? <XCircle size={20} /> :
-                       job.status === 'in_progress' ? <RefreshCw size={20} className="animate-spin" /> :
-                       <Clock size={20} />}
+                        job.status === 'failed' ? <XCircle size={20} /> :
+                          job.status === 'in_progress' ? <RefreshCw size={20} className="animate-spin" /> :
+                            <Clock size={20} />}
                     </div>
                     <div>
                       <h4 className="font-semibold text-darkGray dark:text-gray-100">
@@ -291,7 +280,7 @@ export default function BackupRestorePage() {
                       {job.progress}%
                     </div>
                     <div className="w-32 bg-gray-200 rounded-full h-2 mt-1">
-                      <div 
+                      <div
                         className="bg-primary h-2 rounded-full transition-all duration-300"
                         style={{ width: `${job.progress}%` }}
                       ></div>
@@ -444,7 +433,7 @@ export default function BackupRestorePage() {
                   placeholder="Enter backup name"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-darkGray dark:text-gray-100 mb-2">
                   Backup Type
@@ -459,7 +448,7 @@ export default function BackupRestorePage() {
                   <option value="differential">Differential Backup</option>
                 </select>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-darkGray dark:text-gray-100 mb-2">
                   Description
@@ -472,7 +461,7 @@ export default function BackupRestorePage() {
                   placeholder="Enter backup description"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-darkGray dark:text-gray-100 mb-2">
                   Include Tables

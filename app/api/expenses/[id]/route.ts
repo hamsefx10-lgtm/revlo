@@ -62,7 +62,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
             role: true
           }
         },
-        /* vendor: { // Removed temporarily due to schema issue
+        vendor: {
           select: {
             id: true,
             name: true,
@@ -71,7 +71,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
             email: true,
             address: true
           }
-        }, */
+        },
         customer: { // Ku dar macluumaadka macaamiisha haddii uu la xiriira
           select: {
             id: true,
@@ -105,10 +105,13 @@ export async function GET(request: Request, { params }: { params: { id: string }
             phone: true
           }
         },
-        account: { // Fetch Account Name directly if relation exists
+        // Include transactions to calculate paid amount if needed
+        transactions: {
           select: {
             id: true,
-            name: true
+            amount: true,
+            type: true,
+            createdAt: true
           }
         }
       },
@@ -120,9 +123,15 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     // Manual Account Name Lookup if relation failed but ID exists
     let accountName = expense.paidFrom;
-    if (expense.account) {
-      accountName = expense.account.name;
-    } else if (expense.paidFrom && !expense.account) {
+
+    // Use type assertion or optional chaining to safely access account
+    // The previous error "Property 'account' does not exist" generally happens when 
+    // TypeScript inference fails on deep selects/includes.
+    const expenseWithAccount = expense as any;
+
+    if (expenseWithAccount.account) {
+      accountName = expenseWithAccount.account.name;
+    } else if (expense.paidFrom && !expenseWithAccount.account) {
       // Try to find account by ID stored in paidFrom
       // This handles cases where 'paidFrom' has ID but 'accountId' relation is null
       const relatedAccount = await prisma.account.findUnique({
@@ -131,6 +140,28 @@ export async function GET(request: Request, { params }: { params: { id: string }
       if (relatedAccount) {
         accountName = relatedAccount.name;
       }
+    }
+
+    // Calculate Paid Amount
+    let paidAmount = 0;
+
+    if (expense.paymentStatus === 'PAID') {
+      paidAmount = Number(expense.amount);
+    } else if (expense.paymentStatus === 'PARTIAL') {
+      // Logic: 
+      // 1. If we have a direct transaction linked to this expense, that's the paid amount.
+      // 2. OR sum up all DEBT_REPAID transactions linked to this expense.
+      // 3. BUT the initial PARTIAL payment creates a transaction of type EXPENSE with the paid amount.
+
+      const relatedTransactions = expense.transactions || [];
+
+      // Filter transactions that represent payments towards this expense
+      const payments = relatedTransactions.filter(t =>
+        t.type === 'EXPENSE' || // The initial partial payment
+        t.type === 'DEBT_REPAID' // Subsequent repayments
+      );
+
+      paidAmount = payments.reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
     }
 
     // Transform the expense data to match frontend interface
@@ -165,7 +196,14 @@ export async function GET(request: Request, { params }: { params: { id: string }
         phoneNumber: expense.employee.phoneNumber,
         email: expense.employee.email
       } : undefined,
-      vendor: undefined,
+      vendor: expense.vendor ? {
+        id: expense.vendor.id,
+        name: expense.vendor.name,
+        contactPerson: expense.vendor.contactPerson,
+        phoneNumber: expense.vendor.phoneNumber,
+        email: expense.vendor.email,
+        address: expense.vendor.address
+      } : undefined,
       customer: expense.customer ? {
         id: expense.customer.id,
         name: expense.customer.name,
@@ -191,6 +229,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
         address: expense.company.address,
         phoneNumber: expense.company.phone
       } : undefined,
+      paymentStatus: expense.paymentStatus,
+      paidAmount: paidAmount, // Calculated value
+      invoiceNumber: expense.invoiceNumber,
+      paymentDate: expense.paymentDate,
       createdAt: expense.createdAt,
       updatedAt: expense.updatedAt
     };

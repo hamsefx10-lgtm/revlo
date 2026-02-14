@@ -29,8 +29,96 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
         const { companyId, userId } = sessionUser;
-        const reqBody = await request.json();
-        const { description, amount, category, subCategory, paidFrom, expenseDate, note, projectId, employeeId, laborPaidAmount = 0, employeeName, transportType, consultantName, consultancyType, consultancyFee, equipmentName, rentalPeriod, rentalFee, supplierName, bankAccountId, agreedWage, startNewAgreement } = reqBody;
+
+        // Check if request contains FormData (file upload) or JSON
+        const contentType = request.headers.get('content-type') || '';
+        let reqBody: any;
+        let receiptFile: File | null = null;
+
+        if (contentType.includes('multipart/form-data')) {
+            // Handle FormData with file upload
+            const formData = await request.formData();
+
+            // Extract receipt file if present
+            const file = formData.get('receiptImage');
+            if (file && file instanceof File) {
+                receiptFile = file;
+            }
+
+            // Extract all other fields from FormData
+            reqBody = {};
+            for (const [key, value] of formData.entries()) {
+                if (key !== 'receiptImage') {
+                    // Parse JSON strings and arrays
+                    if (typeof value === 'string' && (value.startsWith('[') || value.startsWith('{'))) {
+                        try {
+                            reqBody[key] = JSON.parse(value);
+                        } catch {
+                            reqBody[key] = value;
+                        }
+                    } else {
+                        reqBody[key] = value;
+                    }
+                }
+            }
+        } else {
+            // Handle regular JSON request
+            reqBody = await request.json();
+        }
+
+        // Save receipt image if provided
+        let receiptUrl = reqBody.receiptUrl;
+        if (receiptFile) {
+            try {
+                const { saveReceiptImage } = await import('@/lib/upload');
+                receiptUrl = await saveReceiptImage(receiptFile);
+            } catch (uploadError: any) {
+                console.error('Receipt upload error:', uploadError);
+                return NextResponse.json(
+                    { message: `Khalad sawirka rasiidka: ${uploadError.message}` },
+                    { status: 400 }
+                );
+            }
+        }
+
+        const {
+            description,
+            amount: rawAmount,
+            category,
+            subCategory,
+            paidFrom,
+            expenseDate,
+            note,
+            projectId,
+            employeeId,
+            laborPaidAmount: rawLaborPaid = 0,
+            employeeName,
+            transportType,
+            consultantName,
+            consultancyType,
+            consultancyFee: rawConsultancyFee,
+            equipmentName,
+            rentalPeriod,
+            rentalFee: rawRentalFee,
+            supplierName,
+            bankAccountId,
+            agreedWage: rawAgreedWage,
+            invoiceNumber,
+            materialDate,
+            paidAmount: rawPaidAmount, // NEW: Extract paidAmount
+            vendorId, // NEW: Extract vendorId directly
+            paymentStatus, // NEW: Extract paymentStatus directly
+            startNewAgreement, // NEW: Extract startNewAgreement
+        } = reqBody;
+
+        // Convert string values from FormData to numbers
+        const amount = typeof rawAmount === 'string' ? parseFloat(rawAmount) : rawAmount;
+        const laborPaidAmount = typeof rawLaborPaid === 'string' ? parseFloat(rawLaborPaid) : rawLaborPaid;
+        const agreedWage = typeof rawAgreedWage === 'string' ? parseFloat(rawAgreedWage) : rawAgreedWage;
+        const consultancyFee = typeof rawConsultancyFee === 'string' ? parseFloat(rawConsultancyFee) : rawConsultancyFee;
+        const rentalFee = typeof rawRentalFee === 'string' ? parseFloat(rawRentalFee) : rawRentalFee;
+        const paidAmount = typeof rawPaidAmount === 'string' ? parseFloat(rawPaidAmount) : rawPaidAmount; // Parse paidAmount
+
         // General required fields
         if (!category) {
             return NextResponse.json({ message: 'Category is required.' }, { status: 400 });
@@ -83,15 +171,15 @@ export async function POST(request: Request) {
                 }
             }
             // Vendor payment fields
-            const { vendorId, paymentStatus } = reqBody;
             if (!vendorId) {
                 return NextResponse.json({ message: 'Iibiyaha (vendorId) waa waajib.' }, { status: 400 });
             }
-            if (!paymentStatus || !['PAID', 'UNPAID'].includes(paymentStatus)) {
+            if (!paymentStatus || !['PAID', 'UNPAID', 'PARTIAL'].includes(paymentStatus)) { // FIXED: Added PARTIAL
                 return NextResponse.json({ message: 'Xaaladda lacag bixinta (paymentStatus) waa waajib.' }, { status: 400 });
             }
-            if (paymentStatus === 'PAID' && !paidFrom) {
-                return NextResponse.json({ message: 'Akoonka (paidFrom) waa waajib marka la bixiyo (PAID).' }, { status: 400 });
+            // Validate paidFrom for PAID and PARTIAL
+            if ((paymentStatus === 'PAID' || paymentStatus === 'PARTIAL') && !paidFrom) {
+                return NextResponse.json({ message: 'Akoonka (paidFrom) waa waajib marka lacag la bixinayo.' }, { status: 400 });
             }
         }
 
@@ -193,6 +281,7 @@ export async function POST(request: Request) {
                     user: { connect: { id: userId } },
                     project: projectId ? { connect: { id: projectId } } : undefined,
                     employee: employeeId ? { connect: { id: employeeId } } : undefined,
+                    receiptUrl: receiptUrl || undefined,
                     transportType: category === 'Transport' ? transportType : undefined,
                     consultantName: category === 'Consultancy' ? consultantName : undefined,
                     consultancyType: category === 'Consultancy' ? consultancyType : undefined,
@@ -203,6 +292,9 @@ export async function POST(request: Request) {
                     supplierName: category === 'Equipment Rental' ? supplierName : undefined,
                     bankAccountId: category === 'Equipment Rental' ? bankAccountId : undefined,
                     materials: reqBody.materials ? reqBody.materials : undefined,
+                    invoiceNumber, // NEW: Invoice Number
+                    paymentStatus, // NEW: Payment Status
+                    expenseCategory: invoiceNumber ? undefined : undefined, // Ensure no schema conflict if not present
                 },
             });
         }
@@ -223,26 +315,29 @@ export async function POST(request: Request) {
             }
         }
 
-        // 2. Create a corresponding transaction (always for every expense)
         // 2. Create corresponding transaction based on category/paymentStatus
-        const paymentStatus = reqBody.paymentStatus as string | undefined;
-        const vendorId = reqBody.vendorId as string | undefined;
+        // const paymentStatus = reqBody.paymentStatus as string | undefined; // Already extracted
+        // const vendorId = reqBody.vendorId as string | undefined; // Already extracted
         let tType: any = 'EXPENSE';
         let tAmount = Number(laborPaidAmount > 0 ? laborPaidAmount : amount);
         let tAccountId: string | null = category === 'Equipment Rental' ? bankAccountId : paidFrom;
         let tVendorId: string | undefined = undefined;
 
         if (category === 'Material') {
+            tVendorId = vendorId;
             if (paymentStatus === 'UNPAID') {
                 tType = 'DEBT_TAKEN';
-                // If paidFrom is provided even for unpaid, deduct from account (user is paying now)
-                tAccountId = paidFrom || null;
-                tVendorId = vendorId;
+                tAmount = amount; // Full amount is debt
+                tAccountId = null; // No money moved
+            } else if (paymentStatus === 'PARTIAL') {
+                tType = 'DEBT_REPAID'; // Correct type for partial payment to vendor
+                tAmount = -Math.abs(Number(paidAmount)); // Negative because it's money OUT
+                tAccountId = paidFrom;
             } else {
+                // PAID (Full)
                 tType = 'EXPENSE';
-                tVendorId = vendorId;
-                tAmount = -Math.abs(tAmount);
-                tAccountId = paidFrom; // Deduct from account when paid
+                tAmount = -Math.abs(tAmount); // Full amount OUT
+                tAccountId = paidFrom;
             }
         } else {
             // Labor and others behave as expense - always deduct from paidFrom if provided

@@ -211,6 +211,7 @@ model Project {
   pendingExpenses        PendingExpense[]
   telegramChats          TelegramChat[]
   workshopJobs           WorkshopJob[]
+  purchaseOrders         PurchaseOrder[]
 
   @@map("projects")
 }
@@ -964,6 +965,7 @@ enum Role {
   MANAGER
   MEMBER
   VIEWER
+  SUPER_ADMIN
 }
 
 enum TransactionType {
@@ -1089,6 +1091,8 @@ model PurchaseOrder {
   vendor   ShopVendor          @relation(fields: [vendorId], references: [id])
   items    PurchaseOrderItem[]
   expenses Expense[] // Link to payments
+  projectId String?
+  project   Project?            @relation(fields: [projectId], references: [id])
 
   @@map("purchase_orders")
 }
@@ -1250,3 +1254,5 @@ model AuditLog {
 
   @@map("audit_logs")
 }
+
+

@@ -6,6 +6,7 @@ export const USER_ROLES = {
   MANAGER: 'MANAGER',
   MEMBER: 'MEMBER',
   VIEWER: 'VIEWER',
+  SUPER_ADMIN: 'SUPER_ADMIN',
 };
 
 // Expense Categories (Main)

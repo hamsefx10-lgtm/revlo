@@ -5,13 +5,14 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Layout from '../../components/layouts/Layout';
-import { 
+import {
   Plus, Search, Filter, Calendar, List, LayoutGrid, DollarSign, Tag, User, ChevronRight, Briefcase, Mail, Phone, MapPin, Truck,
   Eye, Edit, Trash2, Loader2, Info as InfoIcon, CheckCircle, XCircle, RefreshCw,
   Clock as ClockIcon, TrendingUp, TrendingDown, Coins // Added for salary/payment tracking
 } from 'lucide-react';
 import Toast from '../../components/common/Toast'; // Import Toast component
 import { calculateEmployeeSalary } from '../../lib/utils';
+import { subscribeToExpenseChange } from '@/lib/client-events';
 
 // --- Employee Data Interface (Refined for API response) ---
 interface Employee {
@@ -47,41 +48,40 @@ interface Employee {
 // --- Employee Table Row Component ---
 const EmployeeRow: React.FC<{ employee: Employee; onEdit: (id: string) => void; onDelete: (id: string) => void; onRecordDailyWork: (id: string) => void; onRecordPayment: (id: string) => void }> = ({ employee, onEdit, onDelete, onRecordDailyWork, onRecordPayment }) => {
   // Calculate total salary owed based on months worked
-  const salaryCalculation = employee.monthlySalary ? 
+  const salaryCalculation = employee.monthlySalary ?
     calculateEmployeeSalary(
       Number(employee.monthlySalary),
       employee.startDate,
       new Date().toISOString().split('T')[0],
       Number(employee.salaryPaidThisMonth || 0)
     ) : null;
-  
+
   const salaryRemaining = salaryCalculation ? salaryCalculation.remainingSalary : 0;
   const isOverpaidBasedOnWork = (employee.overpaidAmount ?? 0) > 0;
   const progress = employee.monthlySalary ? ((employee.salaryPaidThisMonth ?? 0) / employee.monthlySalary) * 100 : 0;
-  
+
   let statusClass = '';
   let statusBgClass = '';
   if (employee.isActive) {
-      statusClass = 'text-secondary';
-      statusBgClass = 'bg-secondary/10';
+    statusClass = 'text-secondary';
+    statusBgClass = 'bg-secondary/10';
   } else {
-      statusClass = 'text-mediumGray';
-      statusBgClass = 'bg-mediumGray/10';
+    statusClass = 'text-mediumGray';
+    statusBgClass = 'bg-mediumGray/10';
   }
 
   return (
     <tr className="hover:bg-gradient-to-r hover:from-primary/5 hover:to-secondary/5 dark:hover:from-primary/10 dark:hover:to-secondary/10 transition-all duration-200 border-b border-lightGray dark:border-gray-700 last:border-b-0 group">
       <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-medium">
         <div className="flex items-center space-x-3">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-            employee.category === 'COMPANY' 
-              ? 'bg-gradient-to-br from-primary to-secondary' 
-              : 'bg-gradient-to-br from-accent to-orange-500'
-          }`}>
-            <User size={16} className="text-white"/>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${employee.category === 'COMPANY'
+            ? 'bg-gradient-to-br from-primary to-secondary'
+            : 'bg-gradient-to-br from-accent to-orange-500'
+            }`}>
+            <User size={16} className="text-white" />
           </div>
           <div>
-          <span className="font-semibold">{employee.fullName}</span>
+            <span className="font-semibold">{employee.fullName}</span>
             <div className="text-xs text-mediumGray dark:text-gray-400">
               ID: {employee.id.slice(0, 8)}...
             </div>
@@ -90,20 +90,19 @@ const EmployeeRow: React.FC<{ employee: Employee; onEdit: (id: string) => void; 
       </td>
       <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">
         <div className="flex items-center space-x-2">
-          <Tag size={16} className={employee.category === 'COMPANY' ? 'text-primary' : 'text-accent'}/> 
+          <Tag size={16} className={employee.category === 'COMPANY' ? 'text-primary' : 'text-accent'} />
           <span className="font-medium">{employee.role}</span>
-          <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-            employee.category === 'COMPANY' 
-              ? 'bg-primary/10 text-primary border border-primary/30' 
-              : 'bg-accent/10 text-accent border border-accent/30'
-          }`}>
+          <span className={`px-2 py-1 rounded-full text-xs font-bold ${employee.category === 'COMPANY'
+            ? 'bg-primary/10 text-primary border border-primary/30'
+            : 'bg-accent/10 text-accent border border-accent/30'
+            }`}>
             {employee.category === 'COMPANY' ? '🏢 Company' : '🏗️ Project'}
           </span>
         </div>
       </td>
       <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">
         <div className="flex items-center space-x-2">
-          {employee.email ? <Mail size={16} className="text-green-500"/> : <XCircle size={16} className="text-redError"/>} 
+          {employee.email ? <Mail size={16} className="text-green-500" /> : <XCircle size={16} className="text-redError" />}
           <span>{employee.email || 'N/A'}</span>
         </div>
       </td>
@@ -117,14 +116,14 @@ const EmployeeRow: React.FC<{ employee: Employee; onEdit: (id: string) => void; 
       <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-semibold text-right">
         {employee.category === 'COMPANY' ? (
           employee.monthlySalary != null ? (
-          <div className="text-right">
-            <div className="text-sm font-bold text-blue-600 dark:text-blue-400">{employee.monthlySalary.toLocaleString()} ETB/bil</div>
-            {salaryCalculation && (
-              <div className="text-xs text-gray-500 dark:text-gray-400">
-                {salaryCalculation.totalMonths} bilood = {salaryCalculation.totalSalaryOwed.toLocaleString()} ETB
-              </div>
-            )}
-          </div>
+            <div className="text-right">
+              <div className="text-sm font-bold text-blue-600 dark:text-blue-400">{employee.monthlySalary.toLocaleString()} ETB/bil</div>
+              {salaryCalculation && (
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  {salaryCalculation.totalMonths} bilood = {salaryCalculation.totalSalaryOwed.toLocaleString()} ETB
+                </div>
+              )}
+            </div>
           ) : <span className="text-mediumGray">N/A</span>
         ) : (
           <div className="text-right">
@@ -140,9 +139,9 @@ const EmployeeRow: React.FC<{ employee: Employee; onEdit: (id: string) => void; 
       <td className="p-4 whitespace-nowrap text-secondary font-semibold text-right">
         {employee.category === 'COMPANY' ? (
           employee.salaryPaidThisMonth != null ? (
-          <span className="text-green-600 dark:text-green-400 font-bold">{employee.salaryPaidThisMonth.toLocaleString()} ETB</span>
-        ) : (
-          <span className="text-mediumGray">N/A</span>
+            <span className="text-green-600 dark:text-green-400 font-bold">{employee.salaryPaidThisMonth.toLocaleString()} ETB</span>
+          ) : (
+            <span className="text-mediumGray">N/A</span>
           )
         ) : (
           <div className="text-right">
@@ -155,17 +154,17 @@ const EmployeeRow: React.FC<{ employee: Employee; onEdit: (id: string) => void; 
           </div>
         )}
       </td>
-      <td className={`p-4 whitespace-nowrap font-semibold text-right ${salaryRemaining < 0 ? 'text-redError' : 'text-primary'}`}> 
+      <td className={`p-4 whitespace-nowrap font-semibold text-right ${salaryRemaining < 0 ? 'text-redError' : 'text-primary'}`}>
         {employee.category === 'COMPANY' ? (
           salaryCalculation ? (
-          <div className="text-right">
-            <div className={`text-sm font-bold ${salaryRemaining < 0 ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'}`}>
-              {Math.abs(salaryRemaining).toLocaleString()} ETB
+            <div className="text-right">
+              <div className={`text-sm font-bold ${salaryRemaining < 0 ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'}`}>
+                {Math.abs(salaryRemaining).toLocaleString()} ETB
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                {salaryRemaining < 0 ? 'Overpaid' : 'Remaining'}
+              </div>
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">
-              {salaryRemaining < 0 ? 'Overpaid' : 'Remaining'}
-            </div>
-          </div>
           ) : <span className="text-mediumGray">N/A</span>
         ) : (
           <div className="text-right">
@@ -218,32 +217,30 @@ const EmployeeCard: React.FC<{ employee: Employee; onEdit: (id: string) => void;
   const isOverpaidBasedOnWork = (employee.overpaidAmount ?? 0) > 0;
   const progress = employee.monthlySalary ? ((employee.salaryPaidThisMonth ?? 0) / employee.monthlySalary) * 100 : 0;
 
-    let borderColor = 'border-lightGray dark:border-gray-700';
-    if (employee.isActive) borderColor = 'border-primary';
-    if (isOverpaidBasedOnWork) borderColor = 'border-redError';
+  let borderColor = 'border-lightGray dark:border-gray-700';
+  if (employee.isActive) borderColor = 'border-primary';
+  if (isOverpaidBasedOnWork) borderColor = 'border-redError';
 
 
-    return (
+  return (
     <div className={`bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in-up border-l-4 ${borderColor} relative group`}>
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center space-x-3">
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-            employee.category === 'COMPANY' 
-              ? 'bg-gradient-to-br from-primary to-secondary' 
-              : 'bg-gradient-to-br from-accent to-orange-500'
-          }`}>
-            <User size={20} className="text-white"/>
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center ${employee.category === 'COMPANY'
+            ? 'bg-gradient-to-br from-primary to-secondary'
+            : 'bg-gradient-to-br from-accent to-orange-500'
+            }`}>
+            <User size={20} className="text-white" />
           </div>
           <div>
             <h4 className="font-bold text-darkGray dark:text-gray-100 text-lg">{employee.fullName}</h4>
             <p className="text-sm text-mediumGray dark:text-gray-400 flex items-center space-x-1">
-              <Tag size={14} className={employee.category === 'COMPANY' ? 'text-primary' : 'text-accent'}/> 
+              <Tag size={14} className={employee.category === 'COMPANY' ? 'text-primary' : 'text-accent'} />
               <span>{employee.role}</span>
-              <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                employee.category === 'COMPANY' 
-                  ? 'bg-primary/10 text-primary border border-primary/30' 
-                  : 'bg-accent/10 text-accent border border-accent/30'
-              }`}>
+              <span className={`px-2 py-1 rounded-full text-xs font-bold ${employee.category === 'COMPANY'
+                ? 'bg-primary/10 text-primary border border-primary/30'
+                : 'bg-accent/10 text-accent border border-accent/30'
+                }`}>
                 {employee.category === 'COMPANY' ? '🏢 Company' : '🏗️ Project'}
               </span>
             </p>
@@ -261,44 +258,44 @@ const EmployeeCard: React.FC<{ employee: Employee; onEdit: (id: string) => void;
           </button>
         </div>
       </div>
-      
+
       <div className="space-y-2 mb-4">
         <p className="text-sm text-mediumGray dark:text-gray-400 flex items-center space-x-2">
-          {employee.email ? <Mail size={14} className="text-green-500"/> : <XCircle size={14} className="text-redError"/>} 
+          {employee.email ? <Mail size={14} className="text-green-500" /> : <XCircle size={14} className="text-redError" />}
           <span>Email: {employee.email || 'N/A'}</span>
         </p>
         <p className="text-sm text-mediumGray dark:text-gray-400 flex items-center space-x-2">
-          {employee.phone ? <Phone size={14} className="text-green-500"/> : <XCircle size={14} className="text-redError"/>} 
+          {employee.phone ? <Phone size={14} className="text-green-500" /> : <XCircle size={14} className="text-redError" />}
           <span>Taleefan: {employee.phone || 'N/A'}</span>
         </p>
         <p className="text-sm text-mediumGray dark:text-gray-400 flex items-center space-x-2">
-          <DollarSign size={14} className={employee.category === 'COMPANY' ? 'text-blue-500' : 'text-accent'}/> 
+          <DollarSign size={14} className={employee.category === 'COMPANY' ? 'text-blue-500' : 'text-accent'} />
           <span>
-            {employee.category === 'COMPANY' 
+            {employee.category === 'COMPANY'
               ? `Mushahar Bil kasta: ${employee.monthlySalary != null ? `${employee.monthlySalary.toLocaleString()} ETB` : 'N/A'}`
               : `Total Project Wage: ${employee.laborRecords?.reduce((sum, record) => sum + (record.agreedWage || 0), 0).toLocaleString()} ETB`
             }
           </span>
         </p>
         <p className="text-sm text-mediumGray dark:text-gray-400 flex items-center space-x-2">
-          <Coins size={14} className="text-green-500"/> 
+          <Coins size={14} className="text-green-500" />
           <span>
-            {employee.category === 'COMPANY' 
+            {employee.category === 'COMPANY'
               ? `La Bixiyay Bishaan: ${employee.salaryPaidThisMonth != null ? `${employee.salaryPaidThisMonth.toLocaleString()} ETB` : 'N/A'}`
               : `Total Paid: ${employee.laborRecords?.reduce((sum, record) => sum + (record.paidAmount || 0), 0).toLocaleString()} ETB`
             }
           </span>
         </p>
         <p className={`text-sm flex items-center space-x-2 ${isOverpaidBasedOnWork ? 'text-redError' : 'text-primary'}`}>
-          <DollarSign size={14} className={isOverpaidBasedOnWork ? 'text-redError' : 'text-blue-500'}/> 
+          <DollarSign size={14} className={isOverpaidBasedOnWork ? 'text-redError' : 'text-blue-500'} />
           <span>
-            {employee.category === 'COMPANY' 
+            {employee.category === 'COMPANY'
               ? `Hadhay Bishaan: ${employee.overpaidAmount != null ? (isOverpaidBasedOnWork ? `-${Math.abs(employee.overpaidAmount).toLocaleString()} ETB` : `${employee.overpaidAmount.toLocaleString()} ETB`) : 'N/A'}`
               : `Total Project Remaining: ${(() => {
-                  const totalAgreedWage = employee.laborRecords?.reduce((sum, record) => sum + (record.agreedWage || 0), 0) || 0;
-                  const totalPaidAmount = employee.laborRecords?.reduce((sum, record) => sum + (record.paidAmount || 0), 0) || 0;
-                  return (totalAgreedWage - totalPaidAmount).toLocaleString();
-                })()} ETB`
+                const totalAgreedWage = employee.laborRecords?.reduce((sum, record) => sum + (record.agreedWage || 0), 0) || 0;
+                const totalPaidAmount = employee.laborRecords?.reduce((sum, record) => sum + (record.paidAmount || 0), 0) || 0;
+                return (totalAgreedWage - totalPaidAmount).toLocaleString();
+              })()} ETB`
             }
           </span>
         </p>
@@ -332,21 +329,21 @@ const EmployeeCard: React.FC<{ employee: Employee; onEdit: (id: string) => void;
         </Link>
       </div>
     </div>
-    );
+  );
 };
 
 
 export default function EmployeesPage() {
-  const router = useRouter(); 
-  const [employees, setEmployees] = useState<Employee[]>([]); 
+  const router = useRouter();
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterRole, setFilterRole] = useState('All'); 
+  const [filterRole, setFilterRole] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All'); // Active/Inactive
   const [filterEmployeeType, setFilterEmployeeType] = useState('All'); // Company/Project
   const [filterDateRange, setFilterDateRange] = useState('All');
   const [viewMode, setViewMode] = useState<'list' | 'cards'>('list'); // Default to list view
   const [activeTab, setActiveTab] = useState<'All' | 'Company' | 'Project'>('All'); // Tab state
-  const [pageLoading, setPageLoading] = useState(true); 
+  const [pageLoading, setPageLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
 
@@ -376,7 +373,7 @@ export default function EmployeesPage() {
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || 'Failed to delete employee');
-        
+
         setToastMessage({ message: data.message || 'Shaqaalaha si guul leh ayaa loo tirtiray!', type: 'success' });
         fetchEmployees(); // Re-fetch employees after deleting
       } catch (error: any) {
@@ -393,16 +390,16 @@ export default function EmployeesPage() {
   const handleRecordDailyWork = (id: string) => {
     const employee = employees.find(emp => emp.id === id);
     if (employee) {
-      setToastMessage({ 
-        message: `Recording daily work for ${employee.fullName}. This will open a form to record hours worked and tasks completed.`, 
-        type: 'info' 
+      setToastMessage({
+        message: `Recording daily work for ${employee.fullName}. This will open a form to record hours worked and tasks completed.`,
+        type: 'info'
       });
       // TODO: Open modal or navigate to daily work recording form
       // For now, we'll show a success message
       setTimeout(() => {
-        setToastMessage({ 
-          message: `Daily work recorded successfully for ${employee.fullName}!`, 
-          type: 'success' 
+        setToastMessage({
+          message: `Daily work recorded successfully for ${employee.fullName}!`,
+          type: 'success'
         });
       }, 2000);
     }
@@ -437,19 +434,30 @@ export default function EmployeesPage() {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, []); 
+  }, []);
+
+  // Subscribe to expense changes (real-time updates)
+  useEffect(() => {
+    const unsubscribe = subscribeToExpenseChange((payload) => {
+      // Refresh employee list when expenses change
+      // This ensures employee salaries and totals update in real-time
+      fetchEmployees();
+    });
+
+    return () => unsubscribe();
+  }, []);
 
 
   const filteredEmployees = employees.filter(employee => {
     const matchesSearch = employee.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (employee.email && employee.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                          (employee.phone && employee.phone.toLowerCase().includes(searchTerm.toLowerCase()));
+      (employee.email && employee.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (employee.phone && employee.phone.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesRole = filterRole === 'All' || employee.role === filterRole;
     const matchesStatus = filterStatus === 'All' || (filterStatus === 'Active' && employee.isActive) || (filterStatus === 'Inactive' && !employee.isActive);
-    const matchesEmployeeType = filterEmployeeType === 'All' || 
-                               (filterEmployeeType === 'Company' && employee.category === 'COMPANY') ||
-                               (filterEmployeeType === 'Project' && employee.category === 'PROJECT');
-    const matchesDate = filterDateRange === 'All' ? true : true; 
+    const matchesEmployeeType = filterEmployeeType === 'All' ||
+      (filterEmployeeType === 'Company' && employee.category === 'COMPANY') ||
+      (filterEmployeeType === 'Project' && employee.category === 'PROJECT');
+    const matchesDate = filterDateRange === 'All' ? true : true;
 
     return matchesSearch && matchesRole && matchesStatus && matchesEmployeeType && matchesDate;
   });
@@ -461,9 +469,9 @@ export default function EmployeesPage() {
   const dateRanges = ['All', 'Last 30 Days', 'This Quarter', 'This Year'];
 
   // Filter employees based on active tab
-  const tabFilteredEmployees = activeTab === 'All' 
-    ? filteredEmployees 
-    : activeTab === 'Company' 
+  const tabFilteredEmployees = activeTab === 'All'
+    ? filteredEmployees
+    : activeTab === 'Company'
       ? filteredEmployees.filter(emp => emp.category === 'COMPANY')
       : filteredEmployees.filter(emp => emp.category === 'PROJECT');
 
@@ -471,7 +479,7 @@ export default function EmployeesPage() {
   const totalEmployeesCount = tabFilteredEmployees.length;
   const activeEmployeesCount = tabFilteredEmployees.filter(e => e.isActive).length;
   const laborEmployeesCount = tabFilteredEmployees.filter(e => e.role === 'Labor').length;
-  
+
   // Calculate total salary owed based on months worked for each employee
   const totalSalaryOwed = tabFilteredEmployees.reduce((sum, employee) => {
     if (employee.category === 'COMPANY' && employee.monthlySalary) {
@@ -488,7 +496,7 @@ export default function EmployeesPage() {
     }
     return sum;
   }, 0);
-  
+
   const totalSalaryPaid = tabFilteredEmployees.reduce((sum, e) => {
     if (e.category === 'COMPANY') {
       return sum + (e.salaryPaidThisMonth ?? 0);
@@ -497,7 +505,7 @@ export default function EmployeesPage() {
     }
     return sum;
   }, 0);
-  
+
   const totalSalaryRemaining = totalSalaryOwed - totalSalaryPaid;
   // Calculate overpaid amount properly for each employee
   const totalOverpaidAmount = tabFilteredEmployees.reduce((sum, e) => {
@@ -508,7 +516,7 @@ export default function EmployeesPage() {
         new Date().toISOString().split('T')[0],
         Number(e.salaryPaidThisMonth || 0)
       ) : null;
-      
+
       if (salaryCalc) {
         // If remainingSalary < 0, employee is overpaid
         const overpaid = salaryCalc.remainingSalary < 0 ? Math.abs(salaryCalc.remainingSalary) : 0;
@@ -523,7 +531,7 @@ export default function EmployeesPage() {
     }
     return sum;
   }, 0);
-  
+
   // Monthly salary commitment (for reference) - includes PROJECT employees
   const totalMonthlySalaryCommitment = tabFilteredEmployees.reduce((sum, e) => {
     if (e.category === 'COMPANY') {
@@ -590,7 +598,7 @@ export default function EmployeesPage() {
           <p className="text-2xl font-extrabold text-primary">{totalEmployeesCount}</p>
           <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">{activeEmployeesCount} firfircoon</p>
         </div>
-        
+
         <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md border-l-4 border-secondary hover:shadow-xl transition-all duration-300 text-center">
           <div className="flex items-center justify-center mb-3">
             <div className="p-2 rounded-lg bg-secondary/10 text-secondary">
@@ -601,7 +609,7 @@ export default function EmployeesPage() {
           <p className="text-2xl font-extrabold text-secondary">{totalSalaryOwed.toLocaleString()} ETB</p>
           <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">Company + Project Wages</p>
         </div>
-        
+
         <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md border-l-4 border-accent hover:shadow-xl transition-all duration-300 text-center">
           <div className="flex items-center justify-center mb-3">
             <div className="p-2 rounded-lg bg-accent/10 text-accent">
@@ -612,10 +620,9 @@ export default function EmployeesPage() {
           <p className="text-2xl font-extrabold text-accent">{totalSalaryPaid.toLocaleString()} ETB</p>
           <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">Company + Project Payments</p>
         </div>
-        
-        <div className={`bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md border-l-4 hover:shadow-xl transition-all duration-300 text-center ${
-          totalSalaryRemaining >= 0 ? 'border-primary' : 'border-redError'
-        }`}>
+
+        <div className={`bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md border-l-4 hover:shadow-xl transition-all duration-300 text-center ${totalSalaryRemaining >= 0 ? 'border-primary' : 'border-redError'
+          }`}>
           <div className="flex items-center justify-center mb-3">
             <div className={`p-2 rounded-lg ${totalSalaryRemaining >= 0 ? 'bg-primary/10 text-primary' : 'bg-redError/10 text-redError'}`}>
               <TrendingUp size={22} />
@@ -629,7 +636,7 @@ export default function EmployeesPage() {
             {totalSalaryRemaining >= 0 ? 'Company + Project' : 'Overpaid'}
           </p>
         </div>
-        
+
         {totalOverpaidAmount > 0 && (
           <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md border-l-4 border-redError hover:shadow-xl transition-all duration-300 text-center md:col-span-2">
             <div className="flex items-center justify-center mb-3">
@@ -640,7 +647,7 @@ export default function EmployeesPage() {
             <h4 className="text-sm font-medium text-mediumGray dark:text-gray-400">Lacagta La Siidaayay</h4>
             <p className="text-2xl font-extrabold text-redError">{totalOverpaidAmount.toLocaleString()} ETB</p>
             <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">Waa la soo celin karaa</p>
-            </div>
+          </div>
         )}
       </div>
 
@@ -649,49 +656,49 @@ export default function EmployeesPage() {
         <div className="flex flex-col lg:flex-row items-center space-y-4 lg:space-y-0 lg:space-x-4">
           <div className="relative w-full lg:flex-1">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
-          <input
-            type="text"
+            <input
+              type="text"
               placeholder="🔍 Search employees by name, email, or phone..."
               className="w-full p-4 pl-12 border-2 border-lightGray dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 shadow-sm"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-          
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
           {/* Filter Controls */}
           <div className="flex flex-wrap gap-3 w-full lg:w-auto">
-        {/* Filter by Role */}
+            {/* Filter by Role */}
             <div className="relative w-full sm:w-48">
               <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
-          <select
+              <select
                 title="Filter by employee role"
                 className="w-full p-3 pl-10 border-2 border-lightGray dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 appearance-none shadow-sm"
-            value={filterRole}
-            onChange={(e) => setFilterRole(e.target.value)}
-          >
-            {employeeRoles.map(role => <option key={role} value={role}>{role}</option>)}
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400">
-                <ChevronRight className="transform rotate-90" size={18} />
-          </div>
-        </div>
-            
-        {/* Filter by Status */}
-            <div className="relative w-full sm:w-48">
-              <CheckCircle className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
-          <select
-                title="Filter by employee status"
-                className="w-full p-3 pl-10 border-2 border-lightGray dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 appearance-none shadow-sm"
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            {employeeStatuses.map(status => <option key={status} value={status}>{status}</option>)}
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400">
+                value={filterRole}
+                onChange={(e) => setFilterRole(e.target.value)}
+              >
+                {employeeRoles.map(role => <option key={role} value={role}>{role}</option>)}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400">
                 <ChevronRight className="transform rotate-90" size={18} />
               </div>
             </div>
-            
+
+            {/* Filter by Status */}
+            <div className="relative w-full sm:w-48">
+              <CheckCircle className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
+              <select
+                title="Filter by employee status"
+                className="w-full p-3 pl-10 border-2 border-lightGray dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 appearance-none shadow-sm"
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+              >
+                {employeeStatuses.map(status => <option key={status} value={status}>{status}</option>)}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400">
+                <ChevronRight className="transform rotate-90" size={18} />
+              </div>
+            </div>
+
             {/* Filter by Employee Type */}
             <div className="relative w-full sm:w-48">
               <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
@@ -705,49 +712,47 @@ export default function EmployeesPage() {
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400">
                 <ChevronRight className="transform rotate-90" size={18} />
-          </div>
-        </div>
-            
-        {/* Filter by Date Range */}
+              </div>
+            </div>
+
+            {/* Filter by Date Range */}
             <div className="relative w-full sm:w-48">
               <Calendar size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" />
-          <select
+              <select
                 title="Filter by date range"
                 className="w-full p-3 pl-10 border-2 border-lightGray dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 appearance-none shadow-sm"
-            value={filterDateRange}
-            onChange={(e) => setFilterDateRange(e.target.value)}
-          >
-            {dateRanges.map(range => <option key={range} value={range}>{range}</option>)}
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400">
+                value={filterDateRange}
+                onChange={(e) => setFilterDateRange(e.target.value)}
+              >
+                {dateRanges.map(range => <option key={range} value={range}>{range}</option>)}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400">
                 <ChevronRight className="transform rotate-90" size={18} />
               </div>
             </div>
           </div>
-          
-        {/* View Mode Toggle */}
+
+          {/* View Mode Toggle */}
           <div className="flex space-x-2 w-full sm:w-auto justify-center">
-            <button 
-              onClick={() => setViewMode('list')} 
-              className={`p-3 rounded-lg transition-all duration-200 shadow-sm ${
-                viewMode === 'list' 
-                  ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-md' 
-                  : 'bg-white dark:bg-gray-800 text-mediumGray dark:text-gray-400 border-2 border-lightGray dark:border-gray-700 hover:border-primary'
-              }`}
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-3 rounded-lg transition-all duration-200 shadow-sm ${viewMode === 'list'
+                ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-md'
+                : 'bg-white dark:bg-gray-800 text-mediumGray dark:text-gray-400 border-2 border-lightGray dark:border-gray-700 hover:border-primary'
+                }`}
               title="List View"
             >
-                <List size={20} />
+              <List size={20} />
             </button>
-            <button 
-              onClick={() => setViewMode('cards')} 
-              className={`p-3 rounded-lg transition-all duration-200 shadow-sm ${
-                viewMode === 'cards' 
-                  ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-md' 
-                  : 'bg-white dark:bg-gray-800 text-mediumGray dark:text-gray-400 border-2 border-lightGray dark:border-gray-700 hover:border-primary'
-              }`}
+            <button
+              onClick={() => setViewMode('cards')}
+              className={`p-3 rounded-lg transition-all duration-200 shadow-sm ${viewMode === 'cards'
+                ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-md'
+                : 'bg-white dark:bg-gray-800 text-mediumGray dark:text-gray-400 border-2 border-lightGray dark:border-gray-700 hover:border-primary'
+                }`}
               title="Card View"
             >
-                <LayoutGrid size={20} />
+              <LayoutGrid size={20} />
             </button>
           </div>
         </div>
@@ -769,13 +774,12 @@ export default function EmployeesPage() {
             <User size={18} />
             <span className="hidden sm:inline">All Employees</span>
             <span className="sm:hidden">All</span>
-            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-              activeTab === 'All' ? 'bg-primary/20 text-primary' : 'bg-gray-200 dark:bg-gray-700 text-mediumGray'
-            }`}>
+            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${activeTab === 'All' ? 'bg-primary/20 text-primary' : 'bg-gray-200 dark:bg-gray-700 text-mediumGray'
+              }`}>
               {employees.length}
             </span>
           </button>
-          
+
           <button
             onClick={() => setActiveTab('Company')}
             className={`
@@ -788,13 +792,12 @@ export default function EmployeesPage() {
           >
             <Briefcase size={18} />
             <span>Company</span>
-            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-              activeTab === 'Company' ? 'bg-primary/20 text-primary' : 'bg-gray-200 dark:bg-gray-700 text-mediumGray'
-            }`}>
+            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${activeTab === 'Company' ? 'bg-primary/20 text-primary' : 'bg-gray-200 dark:bg-gray-700 text-mediumGray'
+              }`}>
               {employees.filter(e => e.category === 'COMPANY').length}
             </span>
           </button>
-          
+
           <button
             onClick={() => setActiveTab('Project')}
             className={`
@@ -807,9 +810,8 @@ export default function EmployeesPage() {
           >
             <Truck size={18} />
             <span>Project</span>
-            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-              activeTab === 'Project' ? 'bg-accent/20 text-accent' : 'bg-gray-200 dark:bg-gray-700 text-mediumGray'
-            }`}>
+            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${activeTab === 'Project' ? 'bg-accent/20 text-accent' : 'bg-gray-200 dark:bg-gray-700 text-mediumGray'
+              }`}>
               {employees.filter(e => e.category === 'PROJECT').length}
             </span>
           </button>
@@ -834,39 +836,39 @@ export default function EmployeesPage() {
           ) : (
             viewMode === 'list' ? (
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
-                    <thead className={activeTab === 'Company' 
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
+                    <thead className={activeTab === 'Company'
                       ? 'bg-gradient-to-r from-primary/10 to-secondary/10 dark:from-primary/20 dark:to-secondary/20'
                       : activeTab === 'Project'
                         ? 'bg-gradient-to-r from-accent/10 to-orange-500/10 dark:from-accent/20 dark:to-orange-500/20'
                         : 'bg-gradient-to-r from-primary/10 to-secondary/10 dark:from-primary/20 dark:to-secondary/20'
                     }>
-                <tr>
-                  <th scope="col" className="px-4 py-4 text-left text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">MAGACA</th>
-                  <th scope="col" className="px-4 py-4 text-left text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">DOORKA</th>
-                  <th scope="col" className="px-4 py-4 text-left text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">EMAIL</th>
-                  <th scope="col" className="px-4 py-4 text-left text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">TALEEFAN</th>
-                  <th scope="col" className="px-4 py-4 text-right text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">MUSHAHAR BIL KASTA</th>
-                  <th scope="col" className="px-4 py-4 text-right text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">LA BIXIYAY BISHAAN</th>
-                  <th scope="col" className="px-4 py-4 text-right text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">HADHAY BISHAAN</th>
-                  <th scope="col" className="px-4 py-4 text-center text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">XAALADDA</th>
-                  <th scope="col" className="px-4 py-4 text-center text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-lightGray dark:divide-gray-700">
+                      <tr>
+                        <th scope="col" className="px-4 py-4 text-left text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">MAGACA</th>
+                        <th scope="col" className="px-4 py-4 text-left text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">DOORKA</th>
+                        <th scope="col" className="px-4 py-4 text-left text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">EMAIL</th>
+                        <th scope="col" className="px-4 py-4 text-left text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">TALEEFAN</th>
+                        <th scope="col" className="px-4 py-4 text-right text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">MUSHAHAR BIL KASTA</th>
+                        <th scope="col" className="px-4 py-4 text-right text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">LA BIXIYAY BISHAAN</th>
+                        <th scope="col" className="px-4 py-4 text-right text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">HADHAY BISHAAN</th>
+                        <th scope="col" className="px-4 py-4 text-center text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">XAALADDA</th>
+                        <th scope="col" className="px-4 py-4 text-center text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">ACTIONS</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-lightGray dark:divide-gray-700">
                       {tabFilteredEmployees.map(employee => (
-                  <EmployeeRow key={employee.id} employee={employee} onEdit={handleEditEmployee} onDelete={handleDeleteEmployee} onRecordDailyWork={handleRecordDailyWork} onRecordPayment={handleRecordPayment} />
-                ))}
-              </tbody>
-            </table>
-          </div>
-          </div>
+                        <EmployeeRow key={employee.id} employee={employee} onEdit={handleEditEmployee} onDelete={handleDeleteEmployee} onRecordDailyWork={handleRecordDailyWork} onRecordPayment={handleRecordPayment} />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {tabFilteredEmployees.map(employee => (
-                <EmployeeCard key={employee.id} employee={employee} onEdit={handleEditEmployee} onDelete={handleDeleteEmployee} onRecordDailyWork={handleRecordDailyWork} onRecordPayment={handleRecordPayment} />
-            ))}
+                  <EmployeeCard key={employee.id} employee={employee} onEdit={handleEditEmployee} onDelete={handleDeleteEmployee} onRecordDailyWork={handleRecordDailyWork} onRecordPayment={handleRecordPayment} />
+                ))}
               </div>
             )
           )}

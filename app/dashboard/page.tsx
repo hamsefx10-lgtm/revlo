@@ -375,11 +375,18 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, formatCurrency })
 
 
 
-export default function DashboardPage() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
+import useSWR from 'swr';
+
+// ... imports remain the same
+
+// Fetcher function for SWR
+const fetcher = (url: string) => fetch(url).then((res) => {
+  if (!res.ok) throw new Error('Server error');
+  return res.json();
+});
+
+export default function DashboardPage() {
   // Date Filtering State
   const [dateFilter, setDateFilter] = useState('ALL'); // ALL, TODAY, WEEK, MONTH, YEAR
   const [customStartDate, setCustomStartDate] = useState('');
@@ -388,69 +395,61 @@ export default function DashboardPage() {
   const { user } = require('@/components/providers/UserProvider').useUser();
   const { formatCurrency, currency } = useCurrency();
 
-  useEffect(() => {
-    async function fetchStats() {
-      // Only show full page loading on first load
-      if (!stats) setLoading(true);
+  // Construct URL based on filter
+  const getStatsUrl = () => {
+    let url = `/api/dashboard/stats`;
+    const params = new URLSearchParams();
 
-      setError(null);
+    if (dateFilter !== 'ALL') {
+      const now = new Date();
+      let start = new Date();
+      let end = new Date();
+
+      if (dateFilter === 'TODAY') {
+        start = new Date(now.setHours(0, 0, 0, 0));
+        end = new Date(now.setHours(23, 59, 59, 999));
+      } else if (dateFilter === 'WEEK') {
+        const day = now.getDay() || 7;
+        if (day !== 1) start.setHours(-24 * (day - 1));
+        else start.setHours(0, 0, 0, 0);
+        end = new Date(now.setHours(23, 59, 59, 999));
+      } else if (dateFilter === 'MONTH') {
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+      } else if (dateFilter === 'YEAR') {
+        start = new Date(now.getFullYear(), 0, 1);
+        end = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+      }
+
+      params.append('startDate', start.toISOString());
+      params.append('endDate', end.toISOString());
+      return `${url}?${params.toString()}`;
+    }
+    return url;
+  };
+
+  // SWR Hook for polling
+  const { data: stats, error, isLoading } = useSWR(getStatsUrl(), fetcher, {
+    refreshInterval: 15000, // Poll every 15 seconds
+    revalidateOnFocus: false,
+    dedupingInterval: 5000,
+  });
+
+  const loading = isLoading && !stats;
+
+  // Check plan type (side effect)
+  useEffect(() => {
+    const checkPlan = async () => {
       try {
-        // Check Plan Type first
         const planRes = await fetch('/api/company/plan-type');
         const planData = await planRes.json();
         if (planData.planType === 'FACTORIES_ONLY') {
           window.location.href = '/manufacturing';
-          return;
         }
-
-        // Build Query URL
-        let url = `/api/dashboard/stats`;
-        const params = new URLSearchParams();
-
-        if (dateFilter !== 'ALL') {
-          const now = new Date();
-          let start = new Date();
-          let end = new Date();
-
-          if (dateFilter === 'TODAY') {
-            start = new Date(now.setHours(0, 0, 0, 0));
-            end = new Date(now.setHours(23, 59, 59, 999));
-          } else if (dateFilter === 'WEEK') {
-            const day = now.getDay() || 7;
-            if (day !== 1) start.setHours(-24 * (day - 1));
-            else start.setHours(0, 0, 0, 0);
-            end = new Date(now.setHours(23, 59, 59, 999)); // End is today (or end of week if preferred)
-          } else if (dateFilter === 'MONTH') {
-            start = new Date(now.getFullYear(), now.getMonth(), 1);
-            end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-          } else if (dateFilter === 'YEAR') {
-            start = new Date(now.getFullYear(), 0, 1);
-            end = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
-          }
-
-          params.append('startDate', start.toISOString());
-          params.append('endDate', end.toISOString());
-        }
-
-        const res = await fetch(`${url}?${params.toString()}`);
-        if (!res.ok) throw new Error("Server error");
-        const json = await res.json();
-
-        // Ensure new fields have defaults strictly for UI safety
-        json.topCustomers = json.topCustomers || [];
-        json.topVendors = json.topVendors || [];
-        json.totalReceivables = json.totalReceivables || 0;
-        json.totalPayables = json.totalPayables || 0;
-
-        setStats(json);
-      } catch (err) {
-        setError((err as any).message || "Error fetching dashboard stats");
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchStats();
-  }, [dateFilter]); // Re-fetch on filter change
+      } catch (e) { console.error("Plan check failed", e); }
+    };
+    checkPlan();
+  }, []);
 
   // Initial loading only (Full Screen with Blur & Logo)
   if (loading && !stats) return (
@@ -496,7 +495,16 @@ export default function DashboardPage() {
         <div className={`transition-opacity duration-300 ${loading ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}>
           {/* Mobile-Responsive Header with Date Filter */}
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6 gap-4">
-            <h1 className="text-2xl lg:text-4xl font-bold text-darkGray dark:text-gray-100">Dashboard Overview</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl lg:text-4xl font-bold text-darkGray dark:text-gray-100">Dashboard Overview</h1>
+              <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs font-bold uppercase tracking-wider rounded-full border border-green-200 dark:border-green-800">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                Live
+              </div>
+            </div>
 
             {/* Date Filter Controls */}
             <div className="flex items-center bg-white dark:bg-gray-800 rounded-lg shadow p-1">

@@ -5,8 +5,8 @@ import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Layout from '../../../../components/layouts/Layout';
-import { 
-  ArrowLeft, Repeat, DollarSign, Calendar, MessageSquare, 
+import {
+  ArrowLeft, Repeat, DollarSign, Calendar, MessageSquare,
   Banknote, Loader2, Info as InfoIcon, CheckCircle, XCircle,
   ChevronRight
 } from 'lucide-react';
@@ -24,14 +24,15 @@ function TransferPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const prefillFromAccount = searchParams.get('fromAccount');
-  
+
   const [fromAccountId, setFromAccountId] = useState(prefillFromAccount || '');
   const [toAccountId, setToAccountId] = useState('');
   const [amount, setAmount] = useState<number | ''>('');
+  const [feeAmount, setFeeAmount] = useState<number | ''>('');
   const [description, setDescription] = useState('');
   const [transactionDate, setTransactionDate] = useState(new Date().toISOString().split('T')[0]);
   const [note, setNote] = useState('');
-  
+
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
@@ -60,20 +61,24 @@ function TransferPageContent() {
   const fromAccount = accounts.find(a => a.id === fromAccountId);
   const toAccount = accounts.find(a => a.id === toAccountId);
 
+  // Calculate fee percentage for display
+  const feePercentage = (amount && feeAmount) ? ((Number(feeAmount) / Number(amount)) * 100).toFixed(2) : '0';
+  const totalDeduction = (Number(amount) || 0) + (Number(feeAmount) || 0);
+
   // Validation
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-    
+
     if (!fromAccountId) newErrors.fromAccountId = 'Account-ka laga wareejiyay waa waajib.';
     if (!toAccountId) newErrors.toAccountId = 'Account-ka loo wareejiyay waa waajib.';
     if (fromAccountId === toAccountId) newErrors.toAccountId = 'Account-yada wareejinta ma noqon karaan isku mid.';
     if (!amount || amount <= 0) newErrors.amount = 'Qiimaha waa waajib oo waa inuu ka weyn yahay 0.';
     if (!description.trim()) newErrors.description = 'Sharaxaad waa waajib.';
     if (!transactionDate) newErrors.transactionDate = 'Taariikhda waa waajib.';
-    
+
     // Check if from account has sufficient balance
-    if (fromAccount && amount && amount > fromAccount.balance) {
-      newErrors.amount = `Account-ka '${fromAccount.name}' ma laha lacag ku filan. Balance: ${fromAccount.balance.toLocaleString()} ${fromAccount.currency}`;
+    if (fromAccount && totalDeduction > fromAccount.balance) {
+      newErrors.amount = `Account-ka '${fromAccount.name}' ma laha lacag ku filan. Waxa loo baahan yahay: ${totalDeduction.toLocaleString()} (Wareejin + Khidmad), Balance: ${fromAccount.balance.toLocaleString()} ${fromAccount.currency}`;
     }
 
     setValidationErrors(newErrors);
@@ -83,7 +88,7 @@ function TransferPageContent() {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       setToastMessage({ message: 'Fadlan buuxi dhammaan beeraha si sax ah.', type: 'error' });
       return;
@@ -101,21 +106,23 @@ function TransferPageContent() {
           description: description.trim(),
           transactionDate,
           note: note.trim() || null,
+          feeAmount: Number(feeAmount) > 0 ? Number(feeAmount) : undefined,
         }),
       });
 
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.message || 'Cilad ayaa dhacday marka lacagta la wareejinayay.');
       }
 
       setToastMessage({ message: data.message || 'Lacagta si guul leh ayaa loo wareejiyay!', type: 'success' });
-      
+
       // Clear form
       setFromAccountId(prefillFromAccount || '');
       setToAccountId('');
       setAmount('');
+      setFeeAmount('');
       setDescription('');
       setTransactionDate(new Date().toISOString().split('T')[0]);
       setNote('');
@@ -180,7 +187,7 @@ function TransferPageContent() {
             </div>
             {validationErrors.fromAccountId && (
               <p className="text-redError text-sm mt-1 flex items-center">
-                <InfoIcon size={16} className="mr-1"/>{validationErrors.fromAccountId}
+                <InfoIcon size={16} className="mr-1" />{validationErrors.fromAccountId}
               </p>
             )}
             {fromAccount && (
@@ -225,7 +232,7 @@ function TransferPageContent() {
             </div>
             {validationErrors.toAccountId && (
               <p className="text-redError text-sm mt-1 flex items-center">
-                <InfoIcon size={16} className="mr-1"/>{validationErrors.toAccountId}
+                <InfoIcon size={16} className="mr-1" />{validationErrors.toAccountId}
               </p>
             )}
             {toAccount && (
@@ -239,8 +246,8 @@ function TransferPageContent() {
             )}
           </div>
 
-          {/* Amount & Description */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Amount & Description & Fee */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label htmlFor="amount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">
                 Qiimaha <span className="text-redError">*</span>
@@ -260,15 +267,35 @@ function TransferPageContent() {
               </div>
               {validationErrors.amount && (
                 <p className="text-redError text-sm mt-1 flex items-center">
-                  <InfoIcon size={16} className="mr-1"/>{validationErrors.amount}
-                </p>
-              )}
-              {fromAccount && amount && (
-                <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">
-                  Balance ka hadhay: {(fromAccount.balance - Number(amount)).toLocaleString()} {fromAccount.currency}
+                  <InfoIcon size={16} className="mr-1" />{validationErrors.amount}
                 </p>
               )}
             </div>
+
+            <div>
+              <label htmlFor="feeAmount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">
+                Khidmad (Lacag) (Ikhtiyaari)
+              </label>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
+                <input
+                  type="number"
+                  id="feeAmount"
+                  value={feeAmount}
+                  onChange={(e) => setFeeAmount(parseFloat(e.target.value) || '')}
+                  placeholder="Tusaale: 50"
+                  step="0.01"
+                  min="0"
+                  className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 border-lightGray dark:border-gray-700`}
+                />
+              </div>
+              {amount && feeAmount && Number(feePercentage) > 0 && (
+                <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">
+                  Boqolleyda: <span className="text-primary font-semibold">{feePercentage}%</span>
+                </p>
+              )}
+            </div>
+
             <div>
               <label htmlFor="description" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">
                 Sharaxaad <span className="text-redError">*</span>
@@ -286,7 +313,7 @@ function TransferPageContent() {
               </div>
               {validationErrors.description && (
                 <p className="text-redError text-sm mt-1 flex items-center">
-                  <InfoIcon size={16} className="mr-1"/>{validationErrors.description}
+                  <InfoIcon size={16} className="mr-1" />{validationErrors.description}
                 </p>
               )}
             </div>
@@ -310,7 +337,7 @@ function TransferPageContent() {
               </div>
               {validationErrors.transactionDate && (
                 <p className="text-redError text-sm mt-1 flex items-center">
-                  <InfoIcon size={16} className="mr-1"/>{validationErrors.transactionDate}
+                  <InfoIcon size={16} className="mr-1" />{validationErrors.transactionDate}
                 </p>
               )}
             </div>
@@ -338,17 +365,30 @@ function TransferPageContent() {
               <h3 className="font-semibold text-darkGray dark:text-gray-100 mb-2">Isku Xidhka Wareejinta:</h3>
               <div className="space-y-1 text-sm">
                 <p className="text-mediumGray dark:text-gray-400">
-                  <span className="font-medium">Laga Wareejiyay:</span> {fromAccount.name} 
+                  <span className="font-medium">Laga Wareejiyay:</span> {fromAccount.name}
                   <span className="ml-2 text-redError">-{Number(amount).toLocaleString()} {fromAccount.currency}</span>
                 </p>
+                {Number(feeAmount) > 0 && (
+                  <p className="text-mediumGray dark:text-gray-400">
+                    <span className="font-medium">Khidmad ({feePercentage}%):</span>
+                    <span className="ml-2 text-redError">-{feeAmount.toLocaleString()} {fromAccount.currency}</span>
+                  </p>
+                )}
                 <p className="text-mediumGray dark:text-gray-400">
                   <span className="font-medium">Loo Wareejiyay:</span> {toAccount.name}
                   <span className="ml-2 text-secondary">+{Number(amount).toLocaleString()} {toAccount.currency}</span>
                 </p>
+                <div className="border-t border-gray-200 dark:border-gray-600 my-2 pt-2"></div>
                 <p className="text-mediumGray dark:text-gray-400">
-                  <span className="font-medium">Balance ka hadhay ({fromAccount.name}):</span> 
+                  <span className="font-medium">Total Laga Goynayo:</span>
+                  <span className="ml-2 font-bold text-redError">
+                    {totalDeduction.toLocaleString()} {fromAccount.currency}
+                  </span>
+                </p>
+                <p className="text-mediumGray dark:text-gray-400">
+                  <span className="font-medium">Balance ka hadhay ({fromAccount.name}):</span>
                   <span className="ml-2 font-semibold text-darkGray dark:text-gray-100">
-                    {(fromAccount.balance - Number(amount)).toLocaleString()} {fromAccount.currency}
+                    {(fromAccount.balance - totalDeduction).toLocaleString()} {fromAccount.currency}
                   </span>
                 </p>
               </div>

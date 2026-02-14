@@ -4,73 +4,120 @@
 import React from 'react';
 import Link from 'next/link';
 import Layout from '../../components/layouts/Layout';
-import { 
-  ArrowLeft, Shield, Database, Settings, Users, FileText, AlertTriangle, 
+import {
+  ArrowLeft, Shield, Database, Settings, Users, FileText, AlertTriangle,
   CheckCircle, XCircle, RefreshCw, Download, Upload, Trash2, Edit,
   BarChart, PieChart, LineChart, Activity, Clock, DollarSign, Briefcase,
   Building, CreditCard, Truck, Package, Calendar, Mail, Bell, Search,
   Filter, Plus, Eye, Lock, Unlock, Archive, RotateCcw, Zap, Target, MessageSquare
 } from 'lucide-react';
 
+
+import useSWR from 'swr';
+import RevloLoader from '@/components/ui/RevloLoader';
+
+// ... other imports
+
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
 export default function AdminToolsPage() {
+  const { data: stats, error, isLoading, mutate } = useSWR('/api/admin/dashboard-stats', fetcher, {
+    refreshInterval: 10000, // Poll every 10s
+    revalidateOnFocus: true,
+  });
+
+  const handleRefresh = () => {
+    mutate();
+  };
+
   return (
     <Layout>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">
-          <Link href="/" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
-            <ArrowLeft size={28} className="inline-block" />
-          </Link>
-          Admin Tools
-        </h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100 flex items-center gap-2">
+            <Link href="/" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200">
+              <ArrowLeft size={28} />
+            </Link>
+            Admin Tools
+          </h1>
+          {/* Live Indicator */}
+          <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-wider rounded-full border border-blue-200 dark:border-blue-800">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+            </span>
+            System Live
+          </div>
+        </div>
+
         <div className="flex space-x-3">
-          <button className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center">
-            <RefreshCw size={20} className="mr-2" /> Refresh System
+          <button
+            onClick={handleRefresh}
+            disabled={isLoading}
+            className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center disabled:opacity-70"
+          >
+            <RefreshCw size={20} className={`mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            {isLoading ? 'Refreshing...' : 'Refresh System'}
           </button>
         </div>
       </div>
 
-      {/* System Status Overview */}
+      {/* System Status Overview - Real Data */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-fade-in-up">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-          <div className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+        {/* System Status Card */}
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center border-b-4 border-green-500 transform hover:scale-105 transition-transform duration-300">
+          <div className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center shadow-inner">
             <CheckCircle size={32} />
           </div>
           <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100">System Status</h4>
-          <p className="text-2xl font-extrabold text-green-600">Online</p>
+          <p className="text-2xl font-extrabold text-green-600">
+            {stats ? stats.systemStatus : <span className="animate-pulse">...</span>}
+          </p>
           <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">All services running</p>
         </div>
-        
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-          <div className="bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+
+        {/* Database Health Card */}
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center border-b-4 border-blue-500 transform hover:scale-105 transition-transform duration-300">
+          <div className="bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center shadow-inner">
             <Database size={32} />
           </div>
           <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100">Database</h4>
-          <p className="text-2xl font-extrabold text-blue-600">Healthy</p>
-          <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">No issues detected</p>
+          <p className={`text-2xl font-extrabold ${stats?.databaseStatus === 'Healthy' ? 'text-blue-600' : 'text-red-500'}`}>
+            {stats ? stats.databaseStatus : <span className="animate-pulse">...</span>}
+          </p>
+          <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">
+            {stats?.databaseStatus === 'Healthy' ? 'No issues detected' : 'Check logs required'}
+          </p>
         </div>
-        
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-          <div className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+
+        {/* Active Users Card */}
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center border-b-4 border-yellow-500 transform hover:scale-105 transition-transform duration-300">
+          <div className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center shadow-inner">
             <Users size={32} />
           </div>
-          <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100">Active Users</h4>
-          <p className="text-2xl font-extrabold text-yellow-600">12</p>
-          <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Currently online</p>
+          <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100">Registered Users</h4>
+          <p className="text-2xl font-extrabold text-yellow-600">
+            {stats ? stats.activeUsers.toLocaleString() : <span className="animate-pulse">...</span>}
+          </p>
+          <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Total active accounts</p>
         </div>
-        
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-          <div className="bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-200 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+
+        {/* API Activity Card */}
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center border-b-4 border-purple-500 transform hover:scale-105 transition-transform duration-300">
+          <div className="bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-200 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center shadow-inner">
             <Activity size={32} />
           </div>
-          <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100">API Calls</h4>
-          <p className="text-2xl font-extrabold text-purple-600">1,247</p>
-          <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Last 24 hours</p>
+          <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100">System Activity</h4>
+          <p className="text-2xl font-extrabold text-purple-600">
+            {stats ? stats.apiCalls.toLocaleString() : <span className="animate-pulse">...</span>}
+          </p>
+          <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Total transactions & logs</p>
         </div>
       </div>
 
       {/* Admin Tools Categories */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up">
-        
+
         {/* Data Management */}
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
           <div className="flex items-center mb-4">
@@ -112,6 +159,15 @@ export default function AdminToolsPage() {
           </div>
           <p className="text-mediumGray dark:text-gray-400 mb-4">Manage users, roles, and permissions.</p>
           <div className="space-y-2">
+            <Link href="/admin/companies" className="block p-3 rounded-lg bg-lightGray dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <Building size={18} className="mr-3 text-primary" />
+                  <span className="text-darkGray dark:text-gray-100 font-medium">Manage Companies</span>
+                </div>
+                <ArrowLeft size={16} className="text-mediumGray dark:text-gray-400 transform rotate-180" />
+              </div>
+            </Link>
             <Link href="/settings/users" className="block p-3 rounded-lg bg-lightGray dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">

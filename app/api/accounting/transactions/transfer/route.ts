@@ -14,9 +14,10 @@ export async function POST(request: Request) {
     }
     const { companyId, userId } = sessionData;
 
-    const { 
-      fromAccountId, toAccountId, amount, description, transactionDate, note
-    } = await request.json();
+    const requestBody = await request.json();
+    const {
+      fromAccountId, toAccountId, amount, description, transactionDate, note, feeAmount
+    } = requestBody;
 
     // 1. Xaqiijinta Input-ka
     if (!fromAccountId || !toAccountId || typeof amount !== 'number' || amount <= 0 || !description || !transactionDate) {
@@ -43,10 +44,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Account-ka loo wareejinayo lama helin.' }, { status: 400 });
     }
 
-    // Hubi in account-ka laga wareejinayo uu leeyahay lacag ku filan
-  if (sourceAccount.balance < amount) {
+    // Hubi in account-ka laga wareejinayo uu leeyahay lacag ku filan (Amount + Fee)
+    const totalDeduction = amount + (Number(feeAmount) || 0);
+
+    if (sourceAccount.balance < totalDeduction) {
       return NextResponse.json(
-        { message: `Account-ka '${sourceAccount.name}' ma laha lacag ku filan (${sourceAccount.balance.toLocaleString()} ${sourceAccount.currency}).` },
+        { message: `Account-ka '${sourceAccount.name}' ma laha lacag ku filan. Waxay u baahan tahay ${totalDeduction.toLocaleString()} ${sourceAccount.currency} (Wareejin + Khidmad), laakiin waxaa ku jirta ${sourceAccount.balance.toLocaleString()} ${sourceAccount.currency}.` },
         { status: 400 }
       );
     }
@@ -55,14 +58,18 @@ export async function POST(request: Request) {
     // Tani waxay hubinaysaa in labada update ay wada dhacaan ama midna uusan dhicin (atomicity)
     await prisma.$transaction(async (prisma: any) => {
       // 1. Cusboonaysii balance-ka accounts-ka
+      // Deduct transfer amount + feeAmount (if any) from source account
+      // Note: feeAmount is optional in the request, default to 0 if not present
+      const fee = requestBody.feeAmount ? Number(requestBody.feeAmount) : 0;
+
       await prisma.account.update({
         where: { id: sourceAccount.id },
-  data: { balance: new Decimal(sourceAccount.balance - amount) },
+        data: { balance: new Decimal(sourceAccount.balance - amount - fee) },
       });
 
       await prisma.account.update({
         where: { id: destinationAccount.id },
-  data: { balance: new Decimal(destinationAccount.balance + amount) },
+        data: { balance: new Decimal(destinationAccount.balance + amount) },
       });
 
       // 2. Abuur diiwaanada transactions-ka (labo transaction oo isku xiran)
@@ -97,6 +104,23 @@ export async function POST(request: Request) {
           companyId,
         },
       });
+
+      // 3. Record Fee Transaction if exists
+      if (fee > 0) {
+        await prisma.transaction.create({
+          data: {
+            description: `Khidmad Wareejin: ${description}`,
+            amount: new Decimal(-fee), // Negative as it's an expense
+            type: 'EXPENSE',
+            category: 'Bank Charges', // Or 'Service Fee'
+            transactionDate: new Date(transactionDate),
+            note: note ? `Khidmad ku socota wareejinta: ${note}` : null,
+            accountId: sourceAccount.id,
+            userId,
+            companyId,
+          },
+        });
+      }
     });
 
     return NextResponse.json(

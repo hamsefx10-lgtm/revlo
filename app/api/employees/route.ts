@@ -24,13 +24,39 @@ export async function GET(request: Request) {
     const today = new Date();
     const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
     const currentDayOfMonth = today.getDate();
-  const processedEmployees = employees.map((emp: any) => {
+    const processedEmployees = await Promise.all(employees.map(async (emp: any) => {
       // monthlySalary can be null
       const monthlySalaryNum = emp.monthlySalary ? emp.monthlySalary.toNumber() : null;
-      const salaryPaidThisMonthNum = emp.salaryPaidThisMonth ? emp.salaryPaidThisMonth.toNumber() : null;
+
+      // Calculate total months worked
+      const startDate = new Date(emp.startDate);
+      const yearDiff = today.getFullYear() - startDate.getFullYear();
+      const monthDiff = today.getMonth() - startDate.getMonth();
+      const totalMonthsWorked = yearDiff * 12 + monthDiff + 1;
+      const totalSalaryOwed = monthlySalaryNum ? monthlySalaryNum * totalMonthsWorked : 0;
+
+      // Get ACTUAL total paid from expenses
+      const salaryExpenses = await prisma.expense.findMany({
+        where: {
+          employeeId: emp.id,
+          companyId,
+          OR: [
+            { category: 'Salary' },
+            { category: 'Labor' },
+            { category: 'Company Labor' },
+            { subCategory: 'Salary' },
+          ],
+        },
+      });
+
+      const totalPaid = salaryExpenses.reduce((sum, expense) => {
+        return sum + (expense.amount ? expense.amount.toNumber() : 0);
+      }, 0);
+
       const dailyRate = monthlySalaryNum ? monthlySalaryNum / daysInMonth : null;
       const earnedThisMonth = dailyRate ? dailyRate * currentDayOfMonth : null;
-      const overpaidAmount = (salaryPaidThisMonthNum && earnedThisMonth) ? salaryPaidThisMonthNum - earnedThisMonth : null;
+      const totalRemaining = monthlySalaryNum ? totalSalaryOwed - totalPaid : 0;
+      const overpaidAmount = totalRemaining < 0 ? Math.abs(totalRemaining) : 0;
       // Project labor records
       const laborRecords = (emp.laborRecords || []).map((labor: any) => ({
         id: labor.id,
@@ -52,14 +78,17 @@ export async function GET(request: Request) {
         isActive: emp.isActive,
         startDate: emp.startDate,
         monthlySalary: monthlySalaryNum,
-        salaryPaidThisMonth: salaryPaidThisMonthNum,
+        totalPaid, // FIXED: Actual total paid from all expenses
+        totalSalaryOwed, // FIXED: Total salary owed (months × salary)
+        totalRemaining, // FIXED: Remaining (negative if overpaid)
         dailyRate,
         earnedThisMonth,
         overpaidAmount,
         daysWorkedThisMonth: currentDayOfMonth,
         laborRecords,
+        totalMonthsWorked, // FIXED: Total months worked
       };
-    });
+    }));
     return NextResponse.json({ employees: processedEmployees }, { status: 200 });
   } catch (error) {
     console.error('Cilad ayaa dhacday marka shaqaalaha la soo gelinayay:', error);

@@ -19,6 +19,7 @@ export async function POST(request: Request) {
       advancePaid,
       advancePayments,
       projectType,
+      startDate, // ✅ Extract startDate from request
       expectedCompletionDate,
       notes,
       customerId
@@ -60,6 +61,7 @@ export async function POST(request: Request) {
         remainingAmount: parseFloat(agreementAmount) - parseFloat(advancePaid || 0),
         projectType,
         status: PROJECT_STATUSES?.ACTIVE || 'ACTIVE',
+        startDate: startDate ? new Date(startDate) : new Date(), // ✅ Save startDate
         expectedCompletionDate: new Date(expectedCompletionDate),
         notes,
         customerId,
@@ -69,6 +71,9 @@ export async function POST(request: Request) {
 
     // Haddii advancePayments la keenay, samee transaction iyo update account balance
     if (advancePayments && Array.isArray(advancePayments) && advancePayments.length > 0) {
+      // ✅ Use startDate for all advance payment transactions
+      const paymentTransactionDate = startDate ? new Date(startDate) : new Date();
+
       for (const adv of advancePayments) {
         if (!adv.accountId || !adv.amount || isNaN(Number(adv.amount)) || Number(adv.amount) <= 0) continue;
         // 1. Create Transaction
@@ -77,7 +82,7 @@ export async function POST(request: Request) {
             description: `Advance Payment for Project: ${name}`,
             amount: Number(adv.amount),
             type: 'INCOME',
-            transactionDate: new Date(),
+            transactionDate: paymentTransactionDate, // ✅ ALWAYS use project startDate
             companyId,
             accountId: adv.accountId,
             projectId: newProject.id,

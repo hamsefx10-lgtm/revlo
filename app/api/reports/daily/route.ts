@@ -397,7 +397,7 @@ export async function GET(request: Request) {
       select: { id: true, name: true, balance: true },
     });
 
-    // Calculate balances for selected date (accurate snapshot)
+    // Calculate balances for selected date (FORWARD CALCULATION - accurate historical snapshot)
     let balances: { previous: Record<string, number>; today: Record<string, number> } | null = null;
     let totalPrev: number | null = null;
     let totalToday: number | null = null;
@@ -410,14 +410,28 @@ export async function GET(request: Request) {
 
       const accountIds = accounts.map(acc => acc.id);
       const endOfSelectedDate = new Date(nextDay.getTime() - 1);
-      const now = new Date();
 
-      // Fetch all transactions after the previous day to adjust balances backwards
-      const allTransactions = await prisma.transaction.findMany({
+      // FORWARD CALCULATION: Fetch ALL transactions UP TO selected date
+      const transactionsUpToToday = await prisma.transaction.findMany({
         where: {
           companyId,
           accountId: { in: accountIds },
-          transactionDate: { gt: previousDay, lte: now },
+          transactionDate: { lte: endOfSelectedDate }, // ✅ All transactions up to end of selected date
+        },
+        select: {
+          accountId: true,
+          amount: true,
+          type: true,
+          transactionDate: true,
+        },
+      });
+
+      // Fetch ALL transactions UP TO previous day
+      const transactionsUpToPrevious = await prisma.transaction.findMany({
+        where: {
+          companyId,
+          accountId: { in: accountIds },
+          transactionDate: { lte: previousDay }, // ✅ All transactions up to end of previous day
         },
         select: {
           accountId: true,
@@ -440,22 +454,13 @@ export async function GET(request: Request) {
       };
 
       for (const acc of accounts) {
-        const accountTransactions = allTransactions.filter(tx => tx.accountId === acc.id);
+        // Calculate TODAY's balance (end of selected date) by summing ALL transactions up to that date
+        const todayTxs = transactionsUpToToday.filter(tx => tx.accountId === acc.id);
+        balances.today[acc.name] = getNetEffect(todayTxs);
 
-        // Transactions after selected date (to backtrack to selected date end)
-        const transactionsAfterSelectedDate = accountTransactions.filter(
-          tx => tx.transactionDate > endOfSelectedDate && tx.transactionDate <= now
-        );
-        const todayBalanceSnapshot = Number(acc.balance) - getNetEffect(transactionsAfterSelectedDate);
-
-        // Transactions after previous day end (to backtrack to previous day)
-        const transactionsAfterPreviousDay = accountTransactions.filter(
-          tx => tx.transactionDate > previousDay && tx.transactionDate <= now
-        );
-        const previousBalanceSnapshot = Number(acc.balance) - getNetEffect(transactionsAfterPreviousDay);
-
-        balances.previous[acc.name] = previousBalanceSnapshot;
-        balances.today[acc.name] = todayBalanceSnapshot;
+        // Calculate PREVIOUS day's balance by summing ALL transactions up to previous day
+        const prevTxs = transactionsUpToPrevious.filter(tx => tx.accountId === acc.id);
+        balances.previous[acc.name] = getNetEffect(prevTxs);
       }
 
       totalPrev = Object.values(balances.previous).reduce((sum: number, val: number) => sum + val, 0);

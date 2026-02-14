@@ -306,6 +306,10 @@ export async function GET(request: Request) {
       })),
       fixedAssetsValue: Number(fixedAssets._sum.value) || 0,
       fixedAssetsCount: fixedAssets._count.id || 0,
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=59',
+      },
     });
   } catch (err) {
     return NextResponse.json({ error: 'Dashboard stats fetch failed', details: String(err) }, { status: 500 });

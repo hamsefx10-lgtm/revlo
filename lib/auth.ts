@@ -127,17 +127,18 @@ export const authOptions = {
       return session;
     },
     // MUHIIM: Hagaajinta redirect callback
-    async redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
-      // Haddii URL-ka uu yahay bogga login-ka ama qaladka authentication-ka,
-      // si toos ah ugu gudbi dashboard-ka.
+    async redirect({ url, baseUrl, token }: { url: string; baseUrl: string; token?: any }) {
+      // Direct redirect logic based on token/role if available in scope (requires modifying next-auth types or logic flow)
+      // Since token is not easily available in this callback signature in all versions, we rely on the client-side/middleware mainly.
+      // BUT, we can check if the URL is /login or invalid, and redirect to a default.
+
       if (url === `${baseUrl}/login` || url.startsWith(`${baseUrl}/api/auth/error`)) {
         return `${baseUrl}/dashboard`;
       }
-      // Haddii kale, haddii URL-ku uu yahay mid ammaan ah oo gudaha ah, u gudbi halkaas.
+
       if (url.startsWith(baseUrl)) {
         return url;
       }
-      // Haddii kale, u gudbi dashboard-ka default ahaan.
       return `${baseUrl}/dashboard`;
     }
   },

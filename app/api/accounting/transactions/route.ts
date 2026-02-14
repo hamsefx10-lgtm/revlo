@@ -19,6 +19,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const limit = searchParams.get('limit');
     const type = searchParams.get('type');
+    const id = searchParams.get('id'); // Support direct ID fetch
     const includeDebts = searchParams.get('includeDebts') === 'true';
     const includeProjectDebts = searchParams.get('includeProjectDebts') === 'true';
     const projectId = searchParams.get('projectId');
@@ -26,40 +27,47 @@ export async function GET(request: Request) {
     // Build where clause
     let whereClause: any = { companyId };
 
-    // Add type filter if specified
-    if (type && ['INCOME', 'EXPENSE', 'DEBT_TAKEN', 'DEBT_REPAID', 'TRANSFER_IN', 'TRANSFER_OUT'].includes(type)) {
-      whereClause.type = type;
-    }
+    // If specific ID is requested, ignore other filters
+    if (id) {
+      whereClause.id = id;
+    } else {
+      // Only apply other filters if ID is not provided
 
-    // Add project filter if specified
-    if (projectId) {
-      whereClause.projectId = projectId;
-    }
+      // Add type filter if specified
+      if (type && ['INCOME', 'EXPENSE', 'DEBT_TAKEN', 'DEBT_REPAID', 'TRANSFER_IN', 'TRANSFER_OUT'].includes(type)) {
+        whereClause.type = type;
+      }
 
-    // If includeDebts is true, prioritize debt transactions
-    if (includeDebts) {
-      whereClause = {
-        companyId,
-        OR: [
-          { type: 'DEBT_TAKEN' },
-          { type: 'DEBT_REPAID' }
-        ]
-      };
+      // Add project filter if specified
       if (projectId) {
         whereClause.projectId = projectId;
       }
-    }
 
-    // If includeProjectDebts is true, get debt transactions linked to projects
-    if (includeProjectDebts) {
-      whereClause = {
-        companyId,
-        projectId: { not: null }, // Only transactions with projects
-        OR: [
-          { type: 'DEBT_TAKEN' },
-          { type: 'DEBT_REPAID' }
-        ]
-      };
+      // If includeDebts is true, prioritize debt transactions
+      if (includeDebts) {
+        whereClause = {
+          companyId,
+          OR: [
+            { type: 'DEBT_TAKEN' },
+            { type: 'DEBT_REPAID' }
+          ]
+        };
+        if (projectId) {
+          whereClause.projectId = projectId;
+        }
+      }
+
+      // If includeProjectDebts is true, get debt transactions linked to projects
+      if (includeProjectDebts) {
+        whereClause = {
+          companyId,
+          projectId: { not: null }, // Only transactions with projects
+          OR: [
+            { type: 'DEBT_TAKEN' },
+            { type: 'DEBT_REPAID' }
+          ]
+        };
+      }
     }
 
     const transactions = await prisma.transaction.findMany({
@@ -213,27 +221,34 @@ export async function POST(request: Request) {
     }
 
     // 4. DEBT_REPAID: Complexity here (Money IN or OUT?)
+    // 4. DEBT_REPAID: Complexity here (Money IN or OUT?)
+    // Logic: 
+    // - If linked to Vendor -> We are paying back debt -> MONEY OUT
+    // - If linked to Customer/Project -> They are paying us back -> MONEY IN
+    // - If type was explicitly sent as MONEY_OUT (from frontend modal) -> MONEY OUT
+
+    // However, the frontend sends `type: 'MONEY_OUT'` in the payload for vendor payment.
+    // But the Prisma schema expects `TransactionType` enum values. 
+    // The current frontend code sends `type: 'MONEY_OUT'` which might be failing validation if not mapped.
+    // Let's check the schema. TransactionType enum usually has specific values.
+    // The frontend actually sends `{..., type: 'MONEY_OUT'}` in VendorPaymentModal.
+    // If the valid types are EXPENSE, DEBT_REPAID etc, we need to map it or trust the frontend to send DEBT_REPAID.
+    // Wait, the modal says `type: 'MONEY_OUT'`. Prisma likely rejects this if it's not in enum.
+    // We should fix the Modal to send `DEBT_REPAID` and handle it here.
+
+    // Back to API logic for DEBT_REPAID:
     else if (type === 'DEBT_REPAID') {
-      // If we are paying back a Vendor (Liability) -> Money OUT
       if (vendorId) {
+        // Paying Vendor -> Decrease Balance
         await prisma.account.update({
           where: { id: primaryAccount.id },
-          data: { balance: primaryAccount.balance - Math.abs(amount) },
+          data: { balance: { decrement: Math.abs(amount) } },
         });
-      }
-      // If we are collecting debt from a Customer/Project (Receivable) -> Money IN
-      else if (customerId || projectId) {
+      } else {
+        // Collecting from Customer/Project -> Increase Balance
         await prisma.account.update({
           where: { id: primaryAccount.id },
-          data: { balance: primaryAccount.balance + Math.abs(amount) },
-        });
-      }
-      // Fallback: If unknown, assume Money IN (legacy behavior) or handle as error? 
-      // Let's assume Money IN for safety if it matches old "Customer Repayment" logic, but ideally we should be strict.
-      else {
-        await prisma.account.update({
-          where: { id: primaryAccount.id },
-          data: { balance: primaryAccount.balance + Math.abs(amount) },
+          data: { balance: { increment: Math.abs(amount) } },
         });
       }
     }

@@ -115,6 +115,9 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     };
 
     // Handle dates properly
+    if (body.startDate) {
+      updateData.startDate = new Date(body.startDate); // ✅ Save startDate
+    }
     if (body.expectedCompletionDate) {
       updateData.expectedCompletionDate = new Date(body.expectedCompletionDate);
     }
@@ -132,6 +135,43 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         company: { select: { id: true, name: true } },
       },
     });
+
+    // ✅ If startDate changed, update advance payment transaction dates
+    if (body.startDate && existingProject.startDate) {
+      const oldStartDate = new Date(existingProject.startDate);
+      const newStartDate = new Date(body.startDate);
+
+      // Only update if dates are different
+      if (oldStartDate.getTime() !== newStartDate.getTime()) {
+        console.log(`Updating transaction dates from ${oldStartDate} to ${newStartDate}`);
+
+        // Find and update advance payment transactions
+        // (Those created at project creation with description matching pattern)
+        const advanceTransactions = await prisma.transaction.findMany({
+          where: {
+            projectId: id,
+            companyId,
+            type: 'INCOME',
+            description: {
+              contains: 'Advance Payment for Project'
+            }
+          }
+        });
+
+        console.log(`Found ${advanceTransactions.length} advance transactions to update`);
+
+        // Update each advance transaction to use new startDate
+        for (const txn of advanceTransactions) {
+          await prisma.transaction.update({
+            where: { id: txn.id },
+            data: {
+              transactionDate: newStartDate
+            }
+          });
+          console.log(`Updated transaction ${txn.id} date to ${newStartDate}`);
+        }
+      }
+    }
 
     console.log('Project updated successfully:', updatedProject.id);
 

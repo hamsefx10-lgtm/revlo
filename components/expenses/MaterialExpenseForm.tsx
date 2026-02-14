@@ -52,6 +52,7 @@ export function MaterialExpenseForm({
 }: MaterialExpenseFormProps) {
 
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
 
     // Calculate total whenever materials change
     useEffect(() => {
@@ -71,6 +72,30 @@ export function MaterialExpenseForm({
             }
         }
     }, [materials, setTotalAmount, isAnalyzing, totalAmount, paymentStatus, setPaidAmount]);
+
+    // Handle paste event (Ctrl+V)
+    useEffect(() => {
+        const handlePaste = (e: ClipboardEvent) => {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    const file = items[i].getAsFile();
+                    if (file) {
+                        processReceiptFile(file);
+                        e.preventDefault();
+                        break;
+                    }
+                }
+            }
+        };
+
+        document.addEventListener('paste', handlePaste);
+        return () => {
+            document.removeEventListener('paste', handlePaste);
+        };
+    }, []);
 
     // Handle adding a new material row
     const addMaterial = () => {
@@ -97,9 +122,12 @@ export function MaterialExpenseForm({
         }));
     };
 
-    const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    // Process receipt file (shared by upload, drag-drop, and paste)
+    const processReceiptFile = async (file: File) => {
+        if (!file.type.startsWith('image/')) {
+            toast.error('Fadlan sawir kaliya soo geli!');
+            return;
+        }
 
         // Set the file for final submission
         setReceiptImage(file);
@@ -150,20 +178,67 @@ export function MaterialExpenseForm({
         }
     };
 
+    const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        await processReceiptFile(file);
+    };
+
+    // Drag and drop handlers
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+
+        const files = e.dataTransfer.files;
+        if (files && files.length > 0) {
+            const file = files[0];
+            if (file.type.startsWith('image/')) {
+                processReceiptFile(file);
+            } else {
+                toast.error('Fadlan sawir kaliya soo geli!');
+            }
+        }
+    };
+
     const materialUnits = ['pcs', 'kg', 'm', 'cm', 'l', 'm²', 'm³', 'ton', 'box', 'set', 'bag', 'roll', 'sheet'];
 
     return (
         <div className="space-y-6">
 
             {/* AI Receipt Upload Banner */}
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 animate-fade-in">
+            <div
+                className={`bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 animate-fade-in transition-all ${isDragging
+                        ? 'border-blue-500 dark:border-blue-400 border-2 bg-blue-100 dark:bg-blue-900/40'
+                        : 'border-blue-200 dark:border-blue-800'
+                    }`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+            >
                 <div className="flex items-center space-x-3">
                     <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded-full">
                         <ScanLine className="w-6 h-6 text-blue-600 dark:text-blue-300" />
                     </div>
                     <div>
                         <h4 className="font-semibold text-blue-800 dark:text-blue-200">Smart Receipt Scan</h4>
-                        <p className="text-xs text-blue-600 dark:text-blue-300">Soo geli sawirka rasiidka, AI ayaa si toos ah u buuxinaysa foomka.</p>
+                        <p className="text-xs text-blue-600 dark:text-blue-300">
+                            {isDragging
+                                ? '🎯 Sii daa sawirka halkan! (Drop image here!)'
+                                : 'Sawir soo riix ama Ctrl+V dheg (Drag, drop, or paste image)'}
+                        </p>
                     </div>
                 </div>
 

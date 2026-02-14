@@ -42,6 +42,7 @@ const EditProjectPage: React.FC = () => {
   const [description, setDescription] = useState('');
   const [agreementAmount, setAgreementAmount] = useState<number | ''>('');
   const [projectType, setProjectType] = useState('');
+  const [startDate, setStartDate] = useState(''); // Project start date
   const [expectedCompletionDate, setExpectedCompletionDate] = useState('');
   const [actualCompletionDate, setActualCompletionDate] = useState('');
   const [notes, setNotes] = useState('');
@@ -80,6 +81,7 @@ const EditProjectPage: React.FC = () => {
         setDescription(data.project.description || '');
         setAgreementAmount(data.project.agreementAmount ?? '');
         setProjectType(data.project.projectType || '');
+        setStartDate(data.project.startDate?.slice(0, 10) || ''); // Extract startDate
         setExpectedCompletionDate(data.project.expectedCompletionDate?.slice(0, 10) || '');
         setActualCompletionDate(data.project.actualCompletionDate?.slice(0, 10) || '');
         setNotes(data.project.notes || '');
@@ -219,6 +221,7 @@ const EditProjectPage: React.FC = () => {
     if (advancePaidNum < 0) newErrors.advancePaid = 'Lacagta Hore Loo Bixiyay waa inuu noqdaa nambar wanaagsan.';
     if (agreementAmountNum > 0 && advancePaidNum > agreementAmountNum) newErrors.advancePaid = 'Lacagta Hore Loo Bixiyay ma dhaafi karto Qiimaha Heshiiska.';
     if (!projectType) newErrors.projectType = 'Nooca Mashruuca waa waajib.';
+    if (!startDate) newErrors.startDate = 'Taariikhda Bilowga Mashruuca waa waajib.';
     if (!expectedCompletionDate) newErrors.expectedCompletionDate = 'Taariikhda Dhammaystirka waa waajib.';
     if (!customerId) newErrors.customerId = 'Macmiilka waa waajib.';
     // Advance Payments validation
@@ -262,6 +265,7 @@ const EditProjectPage: React.FC = () => {
           advancePaid,
           advancePayments: advancePaid > 0 ? advancePayments : [],
           projectType,
+          startDate, // ✅ Add startDate to API call
           expectedCompletionDate,
           actualCompletionDate: actualCompletionDate || null,
           notes: notes || null,
@@ -435,8 +439,8 @@ const EditProjectPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Project Type & Expected Completion Date */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Project Type, Start Date & Expected Completion Date */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label htmlFor="projectType" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Nooca Mashruuca <span className="text-redError">*</span></label>
               <div className="relative">
@@ -456,6 +460,20 @@ const EditProjectPage: React.FC = () => {
                 <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
               </div>
               {errors.projectType && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.projectType}</p>}
+            </div>
+            <div>
+              <label htmlFor="startDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Bilowga Mashruuca <span className="text-redError">*</span></label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
+                <input
+                  type="date"
+                  id="startDate"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${errors.startDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                />
+              </div>
+              {errors.startDate && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.startDate}</p>}
             </div>
             <div>
               <label htmlFor="expectedCompletionDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Dhammaystirka La Filayo <span className="text-redError">*</span></label>
