@@ -49,6 +49,10 @@ interface Employee {
     type: string;
     transactionDate: string;
   }[];
+  totalPaid: number; // Total amount paid to employee
+  totalSalaryOwed: number; // Total salary owed
+  totalRemaining: number; // Remaining amount to be paid
+  totalMonthsWorked: number; // Total months worked
   // Calculated fields for frontend display (derived from API data)
   category: string;
   dailyRate?: number;

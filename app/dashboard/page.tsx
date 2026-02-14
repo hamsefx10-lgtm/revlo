@@ -429,7 +429,7 @@ export default function DashboardPage() {
   };
 
   // SWR Hook for polling
-  const { data: stats, error, isLoading } = useSWR(getStatsUrl(), fetcher, {
+  const { data: stats, error, isLoading } = useSWR<DashboardStats>(getStatsUrl(), fetcher, {
     refreshInterval: 15000, // Poll every 15 seconds
     revalidateOnFocus: false,
     dedupingInterval: 5000,
