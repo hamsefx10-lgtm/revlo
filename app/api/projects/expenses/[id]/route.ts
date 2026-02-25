@@ -1,0 +1,828 @@
+// app/api/expenses/[id]/route.ts - Single Expense Management API Route
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/db'; // Import Prisma Client
+import { getSessionCompanyId } from '@/app/api/projects/expenses/auth';
+
+const toSafeNumber = (value: any, fallback = 0) => {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === 'object' && typeof value.toNumber === 'function') {
+    return value.toNumber();
+  }
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? fallback : parsed;
+};
+
+const decimalToNumber = (value: any, fallback = 0) => {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === 'object' && typeof value.toNumber === 'function') {
+    return value.toNumber();
+  }
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? fallback : parsed;
+};
+
+const isSameDay = (a?: Date | null, b?: Date | null) => {
+  if (!a || !b) return false;
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+};
+
+// GET /api/expenses/[id] - Soo deji kharash gaar ah
+export async function GET(request: Request, { params }: { params: { id: string } }) {
+  try {
+    const { id } = params;
+    const companyId = await getSessionCompanyId();
+
+    const expense = await prisma.expense.findFirst({
+      where: { id, companyId },
+      include: {
+        project: { // Ku dar macluumaadka mashruuca haddii uu la xiriira
+          select: {
+            id: true,
+            name: true,
+            status: true,
+            startDate: true,
+            endDate: true,
+            budget: true,
+            description: true,
+            customer: { select: { name: true } }
+          }
+        },
+        employee: { // Ku dar macluumaadka shaqaalaha haddii uu la xiriira
+          select: {
+            id: true,
+            fullName: true,
+            position: true,
+            department: true,
+            phoneNumber: true,
+            email: true,
+            role: true
+          }
+        },
+        vendor: {
+          select: {
+            id: true,
+            name: true,
+            contactPerson: true,
+            phoneNumber: true,
+            email: true,
+            address: true
+          }
+        },
+        customer: { // Ku dar macluumaadka macaamiisha haddii uu la xiriira
+          select: {
+            id: true,
+            name: true,
+            contactPerson: true,
+            phoneNumber: true,
+            email: true
+          }
+        },
+        user: { // Ku dar macluumaadka diiwaan geliyaha
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            role: true
+          }
+        },
+        expenseCategory: { // Ku dar macluumaadka qaybta kharashka
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            description: true
+          }
+        },
+        company: { // Ku dar macluumaadka shirkadda
+          select: {
+            id: true,
+            name: true,
+            address: true,
+            phone: true
+          }
+        },
+        // Include transactions to calculate paid amount if needed
+        transactions: {
+          select: {
+            id: true,
+            amount: true,
+            type: true,
+            createdAt: true
+          }
+        }
+      },
+    });
+
+    if (!expense) {
+      return NextResponse.json({ message: 'Kharashka lama helin.' }, { status: 404 });
+    }
+
+    // Manual Account Name Lookup if relation failed but ID exists
+    let accountName = expense.paidFrom;
+
+    // Use type assertion or optional chaining to safely access account
+    // The previous error "Property 'account' does not exist" generally happens when 
+    // TypeScript inference fails on deep selects/includes.
+    const expenseWithAccount = expense as any;
+
+    if (expenseWithAccount.account) {
+      accountName = expenseWithAccount.account.name;
+    } else if (expense.paidFrom && !expenseWithAccount.account) {
+      // Try to find account by ID stored in paidFrom
+      // This handles cases where 'paidFrom' has ID but 'accountId' relation is null
+      const relatedAccount = await prisma.account.findUnique({
+        where: { id: expense.paidFrom }
+      });
+      if (relatedAccount) {
+        accountName = relatedAccount.name;
+      }
+    }
+
+    // Calculate Paid Amount
+    let paidAmount = 0;
+
+    if (expense.paymentStatus === 'PAID') {
+      paidAmount = Number(expense.amount);
+    } else if (expense.paymentStatus === 'PARTIAL') {
+      // Logic: 
+      // 1. If we have a direct transaction linked to this expense, that's the paid amount.
+      // 2. OR sum up all DEBT_REPAID transactions linked to this expense.
+      // 3. BUT the initial PARTIAL payment creates a transaction of type EXPENSE with the paid amount.
+
+      const relatedTransactions = expense.transactions || [];
+
+      // Filter transactions that represent payments towards this expense
+      const payments = relatedTransactions.filter(t =>
+        t.type === 'EXPENSE' || // The initial partial payment
+        t.type === 'DEBT_REPAID' // Subsequent repayments
+      );
+
+      paidAmount = payments.reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
+    }
+
+    // Transform the expense data to match frontend interface
+    const transformedExpense = {
+      id: expense.id,
+      date: expense.expenseDate,
+      project: expense.project ? {
+        id: expense.project.id,
+        name: expense.project.name,
+        status: expense.project.status,
+        startDate: expense.project.startDate,
+        endDate: expense.project.endDate,
+        budget: expense.project.budget,
+        description: expense.project.description
+      } : undefined,
+      category: expense.category,
+      subCategory: expense.subCategory,
+      description: expense.description,
+      amount: typeof expense.amount === 'object' && 'toNumber' in expense.amount ? expense.amount.toNumber() : Number(expense.amount),
+      paidFrom: accountName, // Use resolved Name
+      note: expense.note,
+      approved: expense.approved,
+      receiptUrl: expense.receiptUrl || undefined,
+      materials: expense.materials || [],
+      materialDate: expense.materialDate || undefined,
+      transportType: expense.transportType || undefined,
+      employee: expense.employee ? {
+        id: expense.employee.id,
+        fullName: expense.employee.fullName,
+        position: expense.employee.position,
+        department: expense.employee.department,
+        phoneNumber: expense.employee.phoneNumber,
+        email: expense.employee.email
+      } : undefined,
+      vendor: expense.vendor ? {
+        id: expense.vendor.id,
+        name: expense.vendor.name,
+        contactPerson: expense.vendor.contactPerson,
+        phoneNumber: expense.vendor.phoneNumber,
+        email: expense.vendor.email,
+        address: expense.vendor.address
+      } : undefined,
+      customer: expense.customer ? {
+        id: expense.customer.id,
+        name: expense.customer.name,
+        contactPerson: expense.customer.contactPerson,
+        phoneNumber: expense.customer.phoneNumber,
+        email: expense.customer.email
+      } : undefined,
+      user: expense.user ? {
+        id: expense.user.id,
+        fullName: expense.user.fullName,
+        email: expense.user.email,
+        role: expense.user.role
+      } : undefined,
+      expenseCategory: expense.expenseCategory ? {
+        id: expense.expenseCategory.id,
+        name: expense.expenseCategory.name,
+        type: expense.expenseCategory.type,
+        description: expense.expenseCategory.description
+      } : undefined,
+      company: expense.company ? {
+        id: expense.company.id,
+        name: expense.company.name,
+        address: expense.company.address,
+        phoneNumber: expense.company.phone
+      } : undefined,
+      paymentStatus: expense.paymentStatus,
+      paidAmount: paidAmount, // Calculated value
+      invoiceNumber: expense.invoiceNumber,
+      paymentDate: expense.paymentDate,
+      createdAt: expense.createdAt,
+      updatedAt: expense.updatedAt
+    };
+
+    return NextResponse.json({ expense: transformedExpense }, { status: 200 });
+  } catch (error) {
+    console.error(`Cilad ayaa dhacday marka kharashka ${params.id} la soo gelinayay:`, error);
+    return NextResponse.json(
+      { message: 'Cilad server ayaa dhacday. Fadlan isku day mar kale.' },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT /api/expenses/[id] - Cusboonaysii kharash gaar ah
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  try {
+    const { id } = params;
+    const companyId = await getSessionCompanyId();
+    const body = await request.json();
+
+    // Verify expense exists and belongs to company
+    const existingExpense = await prisma.expense.findFirst({
+      where: { id, companyId }
+    });
+
+    if (!existingExpense) {
+      return NextResponse.json({ message: 'Kharashka lama helin.' }, { status: 404 });
+    }
+
+    // 1. TRANSACTION REVERSAL: Find old transactions and reverse their effect on account balances
+    const oldTransactions = await prisma.transaction.findMany({
+      where: { expenseId: id }
+    });
+
+    for (const tx of oldTransactions) {
+      if (tx.accountId) {
+        // To reverse a signed amount: decrement the signed amount
+        // Example: If expense was -100, decrement(-100) = +100 (Refund)
+        // Example: If income was +100, decrement(+100) = -100 (Reversal)
+        await prisma.account.update({
+          where: { id: tx.accountId },
+          data: {
+            balance: { decrement: Number(tx.amount) }
+          }
+        });
+      }
+    }
+
+    // Delete old transactions to start fresh
+    await prisma.transaction.deleteMany({
+      where: { expenseId: id }
+    });
+
+
+    // 2. If this was a salary payment, decrement the old amount from employee (Standard reversal)
+    if (existingExpense.category === 'Company Expense' && existingExpense.subCategory === 'Salary' && existingExpense.employeeId && existingExpense.amount) {
+      await prisma.employee.update({
+        where: { id: existingExpense.employeeId },
+        data: {
+          salaryPaidThisMonth: { decrement: Number(existingExpense.amount) },
+        },
+      });
+    }
+
+    // 3. Handle Company Labor updates - find and update CompanyLabor record
+    if (body.category === 'Company Labor' && body.employeeId) {
+      const existingCompanyLabor = await prisma.companyLabor.findFirst({
+        where: {
+          employeeId: body.employeeId,
+          companyId: companyId,
+        },
+        orderBy: { dateWorked: 'desc' },
+      });
+
+      if (existingCompanyLabor) {
+        // Update existing CompanyLabor record
+        const agreedWage = body.agreedWage !== undefined && body.agreedWage !== null
+          ? Number(body.agreedWage)
+          : toSafeNumber(existingCompanyLabor.agreedWage);
+        const paidAmount = body.laborPaidAmount !== undefined && body.laborPaidAmount !== null
+          ? Number(body.laborPaidAmount)
+          : toSafeNumber(existingCompanyLabor.paidAmount);
+        const remainingWage = agreedWage
+          ? agreedWage - paidAmount
+          : toSafeNumber(existingCompanyLabor.remainingWage);
+
+        await prisma.companyLabor.update({
+          where: { id: existingCompanyLabor.id },
+          data: {
+            agreedWage: agreedWage,
+            paidAmount: paidAmount,
+            remainingWage: remainingWage,
+            description: body.description || existingCompanyLabor.description,
+            dateWorked: body.expenseDate ? new Date(body.expenseDate) : existingCompanyLabor.dateWorked,
+            paidFrom: body.paidFrom || existingCompanyLabor.paidFrom,
+          },
+        });
+        // Update expense amount to match laborPaidAmount
+        body.amount = paidAmount;
+      } else if (body.agreedWage && body.laborPaidAmount) {
+        // Create new CompanyLabor record if it doesn't exist
+        const agreedWage = Number(body.agreedWage);
+        const paidAmount = Number(body.laborPaidAmount);
+        const remainingWage = agreedWage - paidAmount;
+
+        await prisma.companyLabor.create({
+          data: {
+            companyId,
+            employeeId: body.employeeId,
+            agreedWage,
+            paidAmount,
+            remainingWage,
+            description: body.description || '',
+            paidFrom: body.paidFrom,
+            dateWorked: body.expenseDate ? new Date(body.expenseDate) : new Date(),
+          },
+        });
+        // Update expense amount to match laborPaidAmount
+        body.amount = paidAmount;
+      }
+    }
+
+    // 3b. Handle Project Labor updates
+    if (body.category === 'Labor' && body.employeeId && body.projectId) {
+      const existingProjectLabor = await prisma.projectLabor.findFirst({
+        where: {
+          employeeId: body.employeeId,
+          projectId: body.projectId,
+        },
+        orderBy: { dateWorked: 'desc' },
+      });
+
+      if (existingProjectLabor) {
+        const agreedWage = body.agreedWage !== undefined && body.agreedWage !== null
+          ? Number(body.agreedWage)
+          : toSafeNumber(existingProjectLabor.agreedWage);
+        const paidAmount = body.laborPaidAmount !== undefined && body.laborPaidAmount !== null
+          ? Number(body.laborPaidAmount)
+          : toSafeNumber(existingProjectLabor.paidAmount);
+        const remainingWage = agreedWage
+          ? agreedWage - paidAmount
+          : toSafeNumber(existingProjectLabor.remainingWage);
+
+        await prisma.projectLabor.update({
+          where: { id: existingProjectLabor.id },
+          data: {
+            agreedWage: agreedWage,
+            paidAmount: paidAmount,
+            remainingWage: remainingWage,
+            description: body.description || existingProjectLabor.description,
+            dateWorked: body.expenseDate ? new Date(body.expenseDate) : existingProjectLabor.dateWorked,
+            paidFrom: body.paidFrom || existingProjectLabor.paidFrom,
+          },
+        });
+        // Update expense amount to match laborPaidAmount
+        body.amount = paidAmount;
+      } else if (body.agreedWage && body.laborPaidAmount) {
+        const agreedWage = Number(body.agreedWage);
+        const paidAmount = Number(body.laborPaidAmount);
+        const remainingWage = agreedWage - paidAmount;
+
+        await prisma.projectLabor.create({
+          data: {
+            projectId: body.projectId,
+            employeeId: body.employeeId,
+            agreedWage,
+            paidAmount,
+            remainingWage,
+            description: body.description || '',
+            paidFrom: body.paidFrom,
+            dateWorked: body.expenseDate ? new Date(body.expenseDate) : new Date(),
+          },
+        });
+        // Update expense amount to match laborPaidAmount
+        body.amount = paidAmount;
+      }
+    }
+
+    // Ensure expenseDate is properly formatted
+    let formattedExpenseDate = new Date();
+    if (body.expenseDate) {
+      if (typeof body.expenseDate === 'string') {
+        formattedExpenseDate = new Date(body.expenseDate);
+      } else if (body.expenseDate instanceof Date) {
+        formattedExpenseDate = body.expenseDate;
+      }
+    }
+
+    const updatedExpense = await prisma.expense.update({
+      where: { id },
+      data: {
+        expenseDate: formattedExpenseDate,
+        category: body.category || undefined,
+        subCategory: body.subCategory || undefined,
+        description: body.description || undefined,
+        amount: body.amount ? Number(body.amount) : undefined,
+        paidFrom: body.paidFrom || undefined,
+        note: body.note || undefined,
+        approved: body.approved !== undefined ? body.approved : undefined,
+        projectId: body.projectId || null,
+        employeeId: body.employeeId || null,
+        customerId: body.customerId || null,
+        materials: body.materials || undefined,
+        receiptUrl: body.receiptUrl || undefined,
+        materialDate: body.materialDate ? new Date(body.materialDate) : undefined,
+        transportType: body.transportType || undefined,
+        paymentStatus: body.paymentStatus || undefined,
+        invoiceNumber: body.invoiceNumber || undefined,
+        paymentDate: body.paymentDate ? new Date(body.paymentDate) : undefined,
+        consultantName: body.consultantName,
+        consultancyType: body.consultancyType,
+        consultancyFee: body.consultancyFee,
+        equipmentName: body.equipmentName,
+        rentalPeriod: body.rentalPeriod,
+        rentalFee: body.rentalFee,
+        supplierName: body.supplierName,
+        bankAccountId: body.bankAccountId,
+      },
+      include: {
+        project: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+            startDate: true,
+            endDate: true,
+            budget: true,
+            description: true
+          }
+        },
+        employee: {
+          select: {
+            id: true,
+            fullName: true,
+            position: true,
+            department: true,
+            phoneNumber: true,
+            email: true
+          }
+        },
+        customer: {
+          select: {
+            id: true,
+            name: true,
+            contactPerson: true,
+            phoneNumber: true,
+            email: true
+          }
+        },
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            role: true
+          }
+        },
+        expenseCategory: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            description: true
+          }
+        },
+        company: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+            phone: true
+          }
+        },
+        account: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
+      },
+    });
+
+    // 4. NEW TRANSACTION LOGIC (Mirrors POST logic to handle all types correctly)
+    const amount = Number(body.amount);
+    const category = body.category || updatedExpense.category;
+    const subCategory = body.subCategory || updatedExpense.subCategory;
+    const paidFrom = body.paidFrom || updatedExpense.paidFrom;
+    const paymentStatus = body.paymentStatus || updatedExpense.paymentStatus;
+    const customerId = body.customerId || updatedExpense.customerId;
+    const vendorId = body.vendorId || updatedExpense.vendorId;
+    const paidAmount = body.paidAmount ? Number(body.paidAmount) : undefined;
+    const description = body.description || updatedExpense.description;
+
+    let transactionType: 'INCOME' | 'EXPENSE' | 'TRANSFER_IN' | 'TRANSFER_OUT' | 'DEBT_TAKEN' | 'DEBT_REPAID' | 'OTHER' = 'EXPENSE';
+    let transactionAmount = amount;
+    let transactionCustomerId = customerId || undefined;
+    let transactionVendorId = vendorId || undefined;
+    let transactionAccountId = paidFrom || undefined;
+
+    if (category === 'Debt' || (category === 'Company Expense' && subCategory === 'Debt')) {
+      if (paymentStatus === 'REPAID') {
+        transactionType = 'DEBT_REPAID';
+        transactionCustomerId = customerId || null;
+      } else {
+        transactionType = 'DEBT_TAKEN';
+        transactionCustomerId = customerId || null;
+      }
+    } else if (category === 'Material') {
+      if (paymentStatus === 'PAID') {
+        transactionType = 'EXPENSE';
+      } else if (paymentStatus === 'PARTIAL') {
+        transactionType = 'DEBT_REPAID';
+        if (paidAmount) transactionAmount = paidAmount;
+      } else {
+        transactionType = 'DEBT_TAKEN';
+        transactionVendorId = vendorId;
+      }
+    } else if (category === 'Company Expense') {
+      if (customerId && paidFrom && subCategory !== 'Debt') {
+        transactionType = 'DEBT_TAKEN';
+        transactionCustomerId = customerId;
+      } else if (vendorId) {
+        if (paymentStatus === 'PAID') {
+          transactionType = 'EXPENSE';
+        } else if (paymentStatus === 'PARTIAL') {
+          transactionType = 'DEBT_REPAID';
+          if (paidAmount) transactionAmount = paidAmount;
+        } else {
+          transactionType = 'DEBT_TAKEN';
+        }
+      }
+    }
+
+    // Auto-detect customer debt if not set
+    if (customerId && paidFrom && !transactionCustomerId && transactionType === 'EXPENSE') {
+      transactionType = 'DEBT_TAKEN';
+      transactionCustomerId = customerId;
+    }
+
+    // Signed amount adjustments
+    if (transactionType === 'EXPENSE') transactionAmount = -Math.abs(transactionAmount);
+    else if (transactionType === 'DEBT_TAKEN') transactionAmount = -Math.abs(transactionAmount); // Debt taken = Money OUT
+    else if (transactionType === 'DEBT_REPAID') {
+      if (transactionCustomerId) transactionAmount = Math.abs(transactionAmount); // Customer pays us = Money IN
+      else if (transactionVendorId) transactionAmount = -Math.abs(transactionAmount); // We pay vendor = Money OUT
+    }
+
+    // Create fresh transaction
+    await prisma.transaction.create({
+      data: {
+        description: description,
+        amount: transactionAmount,
+        type: transactionType,
+        transactionDate: formattedExpenseDate,
+        note: body.note || null,
+        accountId: transactionAccountId || null,
+        projectId: body.projectId || updatedExpense.projectId || null,
+        expenseId: id,
+        userId: updatedExpense.userId,
+        companyId,
+        customerId: transactionCustomerId,
+        vendorId: transactionVendorId,
+      },
+    });
+
+    // 5. Apply new account balance adjustments
+    const amountToAdjust = Math.abs(transactionAmount);
+    if (transactionAccountId && amountToAdjust > 0) {
+      if (transactionType === 'EXPENSE' || (transactionType === 'DEBT_REPAID' && transactionVendorId) || (transactionType === 'DEBT_TAKEN' && transactionCustomerId)) {
+        // MONEY OUT
+        await prisma.account.update({
+          where: { id: transactionAccountId },
+          data: { balance: { decrement: amountToAdjust } },
+        });
+      } else if (transactionType === 'DEBT_REPAID' && transactionCustomerId) {
+        // MONEY IN
+        await prisma.account.update({
+          where: { id: transactionAccountId },
+          data: { balance: { increment: amountToAdjust } },
+        });
+      }
+    }
+
+    // 6. Final Salary update if still applicable
+    if (category === 'Company Expense' && subCategory === 'Salary' && body.employeeId && amount) {
+      await prisma.employee.update({
+        where: { id: body.employeeId },
+        data: {
+          salaryPaidThisMonth: { increment: amount },
+          lastPaymentDate: formattedExpenseDate,
+        },
+      });
+    }
+
+    return NextResponse.json(
+      { message: 'Kharashka si guul leh ayaa la cusboonaysiiyay!', expense: updatedExpense },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error(`Cilad ayaa dhacday marka kharashka ${params.id} la cusboonaysiinayay:`, error);
+    return NextResponse.json(
+      { message: 'Cilad server ayaa dhacday. Fadlan isku day mar kale.' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/expenses/[id] - Tirtir kharash gaar ah (With Recycle Bin)
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  try {
+    const { id } = params;
+    const companyId = await getSessionCompanyId();
+
+    // Verify expense exists and belongs to company
+    const existingExpense = await prisma.expense.findFirst({
+      where: { id, companyId }
+    });
+
+    if (!existingExpense) {
+      return NextResponse.json({ message: 'Kharashka lama helin.' }, { status: 404 });
+    }
+
+    const expenseAmountNumber = Math.abs(decimalToNumber(existingExpense.amount, 0));
+    const expenseDate = existingExpense.expenseDate
+      ? new Date(existingExpense.expenseDate)
+      : null;
+
+    // Resolve Account ID for refund
+    let accountIdToRefund = existingExpense.accountId;
+    if (!accountIdToRefund && existingExpense.paidFrom) {
+      const byId = await prisma.account.findUnique({ where: { id: existingExpense.paidFrom } });
+      if (byId) accountIdToRefund = byId.id;
+      else {
+        const byNameSafe = await prisma.account.findFirst({ where: { name: existingExpense.paidFrom, companyId } });
+        accountIdToRefund = byNameSafe?.id || null;
+      }
+    }
+
+    // Use interactive transaction to ensure atomicity
+    await prisma.$transaction(async (tx) => {
+      // 0. Archive to Recycle Bin
+      await tx.deletedItem.create({
+        data: {
+          modelName: 'Expense',
+          originalId: id,
+          data: JSON.parse(JSON.stringify(existingExpense)),
+          companyId,
+          deletedBy: existingExpense.userId,
+        }
+      });
+
+      // 1. Refund account balance (only if it was actually paid)
+      if (accountIdToRefund && existingExpense.amount && existingExpense.paymentStatus !== 'UNPAID') {
+        await tx.account.update({
+          where: { id: accountIdToRefund },
+          data: {
+            balance: { increment: Number(existingExpense.amount) },
+          },
+        });
+      }
+
+      // 2. If this was a salary payment
+      if (existingExpense.category === 'Company Expense' && existingExpense.subCategory === 'Salary' && existingExpense.employeeId && existingExpense.amount) {
+        await tx.employee.update({
+          where: { id: existingExpense.employeeId },
+          data: {
+            salaryPaidThisMonth: { decrement: Number(existingExpense.amount) },
+          },
+        });
+      }
+
+      // 3. Delete related transactions
+      await tx.transaction.deleteMany({
+        where: { expenseId: id }
+      });
+
+      // 4. Finally Delete the expense
+      await tx.expense.delete({
+        where: { id }
+      });
+    });
+
+    // Run Labor cleanup separately (safe mode) - This logic remains outside transaction as it was before
+    // Although ideally it should be inside, keeping it as is to minimize regression risk on labor helper logic
+    if (
+      existingExpense.category &&
+      (existingExpense.category === 'Labor' || existingExpense.category.toLowerCase() === 'labor') &&
+      existingExpense.projectId
+    ) {
+      try {
+        await removeProjectLaborPayment({
+          projectId: existingExpense.projectId,
+          employeeId: existingExpense.employeeId || undefined,
+          description: existingExpense.description || undefined,
+          expenseDate,
+          amount: expenseAmountNumber,
+        });
+      } catch (err) {
+        console.warn('Failed to cleanup project labor, continuing expense delete:', err);
+      }
+    }
+
+    return NextResponse.json(
+      { message: 'Kharashka si guul leh ayaa loo tirtiray oo Recycle Bin la geeyay!' },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error(`Cilad ayaa dhacday marka kharashka ${params.id} la tirtirayay:`, error);
+    return NextResponse.json(
+      { message: 'Cilad server ayaa dhacday. Fadlan isku day mar kale.' },
+      { status: 500 }
+    );
+  }
+}
+
+const removeProjectLaborPayment = async ({
+  projectId,
+  employeeId,
+  description,
+  expenseDate,
+  amount,
+}: {
+  projectId: string;
+  employeeId?: string;
+  description?: string;
+  expenseDate: Date | null;
+  amount: number;
+}) => {
+  if (!projectId || !amount) return;
+
+  const laborWhere: Record<string, any> = { projectId };
+  if (employeeId) {
+    laborWhere.employeeId = employeeId;
+  }
+
+  const laborRecords = await prisma.projectLabor.findMany({
+    where: laborWhere,
+  });
+
+  if (laborRecords.length === 0) return;
+
+  const normalizedDescription = (description || '').trim().toLowerCase();
+
+  const findMatchingRecord = () => {
+    const byStrictMatch = laborRecords.find((labor) => {
+      const paidAmount = decimalToNumber(labor.paidAmount, 0);
+      const sameAmount = Math.abs(paidAmount - amount) < 0.01;
+      const descMatches = normalizedDescription
+        ? (labor.description || '').trim().toLowerCase() === normalizedDescription
+        : true;
+      const dateMatches = expenseDate
+        ? isSameDay(new Date(labor.dateWorked), expenseDate)
+        : true;
+      return sameAmount && descMatches && dateMatches;
+    });
+    if (byStrictMatch) return byStrictMatch;
+
+    const byAmountMatch = laborRecords.find(
+      (labor) => Math.abs(decimalToNumber(labor.paidAmount, 0) - amount) < 0.01
+    );
+    if (byAmountMatch) return byAmountMatch;
+
+    return laborRecords[0];
+  };
+
+  const laborRecord = findMatchingRecord();
+  if (!laborRecord) return;
+
+  const paidAmount = decimalToNumber(laborRecord.paidAmount, 0);
+  const agreedWage =
+    laborRecord.agreedWage !== null && laborRecord.agreedWage !== undefined
+      ? decimalToNumber(laborRecord.agreedWage, 0)
+      : null;
+  const updatedPaid = Math.max(0, paidAmount - amount);
+  const updatedRemaining =
+    agreedWage !== null ? Math.max(0, agreedWage - updatedPaid) : null;
+
+  if (updatedPaid <= 0.0001) {
+    await prisma.projectLabor.delete({
+      where: { id: laborRecord.id },
+    });
+    return;
+  }
+
+  await prisma.projectLabor.update({
+    where: { id: laborRecord.id },
+    data: {
+      paidAmount: updatedPaid,
+      ...(updatedRemaining !== null ? { remainingWage: updatedRemaining } : {}),
+    },
+  });
+};

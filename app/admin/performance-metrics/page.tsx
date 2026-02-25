@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import {
   ArrowLeft, BarChart, LineChart, PieChart, Activity, Clock, Database,
   Users, Briefcase, DollarSign, TrendingUp, TrendingDown, RefreshCw,

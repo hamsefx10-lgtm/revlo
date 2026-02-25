@@ -4,14 +4,15 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { 
+import {
   Mail, Lock, Loader2, Info, CheckCircle, XCircle, ArrowLeft, Send
 } from 'lucide-react';
-import Toast from '../../components/common/Toast'; // Reuse Toast component
+import Toast from '@/components/common/Toast'; // Reuse Toast component
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
+  const [token, setToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,6 +30,7 @@ export default function ForgotPasswordPage() {
 
   const validatePasswordForm = () => {
     const newErrors: { [key: string]: string } = {};
+    if (!token.trim()) newErrors.token = 'Lambar-ka xaqiijinta waa waajib.';
     if (!newPassword || newPassword.length < 6) newErrors.newPassword = 'Password-ka cusub waa inuu ugu yaraan 6 xaraf ka koobnaadaa.';
     if (newPassword !== confirmNewPassword) newErrors.confirmNewPassword = 'Password-ka cusub iyo xaqiijinta password-ka isku mid maaha.';
     setErrors(newErrors);
@@ -48,14 +50,23 @@ export default function ForgotPasswordPage() {
     }
 
     try {
-      // Simulate sending reset link (in a real app, this would trigger an email)
-      // For this example, we directly move to step 2 after email submission
-      await new Promise(resolve => setTimeout(resolve, 1500)); 
-      setToastMessage({ message: 'Haddii email-kaagu uu ku jiro nidaamkeena, waxaad heli doontaa email dib u dejinta password-ka.', type: 'info' });
-      setStep(2); // Move to password entry step
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setToastMessage({ message: data.message || 'Lambarkii xaqiijinta ayaa laguu soo diray.', type: 'info' });
+        setStep(2);
+      } else {
+        setToastMessage({ message: data.message || 'Cilad ayaa dhacday.', type: 'error' });
+      }
     } catch (error: any) {
       console.error('Send Reset Link error:', error);
-      setToastMessage({ message: 'Cilad shabakadeed ayaa dhacday. Fadlan isku day mar kale.', type: 'error' });
+      setToastMessage({ message: 'Cilad shabakadeed ayaa dhacday.', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -77,7 +88,7 @@ export default function ForgotPasswordPage() {
       const response = await fetch('/api/auth/password-reset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, newPassword, confirmNewPassword }),
+        body: JSON.stringify({ email, token, newPassword, confirmNewPassword }),
       });
 
       const data = await response.json();
@@ -123,7 +134,7 @@ export default function ForgotPasswordPage() {
                   className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${errors.email ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 />
               </div>
-              {errors.email && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.email}</p>}
+              {errors.email && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.email}</p>}
             </div>
 
             {/* Submit Button */}
@@ -143,7 +154,7 @@ export default function ForgotPasswordPage() {
             {/* Back to Login */}
             <p className="text-center text-mediumGray dark:text-gray-400 text-sm mt-6">
               <Link href="/login" className="text-secondary font-semibold hover:underline flex items-center justify-center">
-                <ArrowLeft size={18} className="mr-1"/> Ku Noqo Soo Galitaanka
+                <ArrowLeft size={18} className="mr-1" /> Ku Noqo Soo Galitaanka
               </Link>
             </p>
           </form>
@@ -152,8 +163,24 @@ export default function ForgotPasswordPage() {
         {step === 2 && (
           <form onSubmit={handlePasswordReset} className="space-y-6 animate-fade-in">
             <p className="text-mediumGray dark:text-gray-400 text-sm text-center mb-4">
-              Fadlan geli password-kaaga cusub.
+              Fadlan geli lambarka xaqiijinta ee laguu soo diray iyo password-kaaga cusub.
             </p>
+            {/* Token/Code Field */}
+            <div>
+              <label htmlFor="token" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Lambar-ka Xaqiijinta</label>
+              <div className="relative">
+                <CheckCircle className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
+                <input
+                  type="text"
+                  id="token"
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                  placeholder="123456"
+                  className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${errors.token ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                />
+              </div>
+              {errors.token && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.token}</p>}
+            </div>
             {/* New Password Field */}
             <div>
               <label htmlFor="newPassword" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Password Cusub</label>
@@ -168,7 +195,7 @@ export default function ForgotPasswordPage() {
                   className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${errors.newPassword ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 />
               </div>
-              {errors.newPassword && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.newPassword}</p>}
+              {errors.newPassword && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.newPassword}</p>}
             </div>
 
             {/* Confirm New Password Field */}
@@ -185,7 +212,7 @@ export default function ForgotPasswordPage() {
                   className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${errors.confirmNewPassword ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 />
               </div>
-              {errors.confirmNewPassword && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.confirmNewPassword}</p>}
+              {errors.confirmNewPassword && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.confirmNewPassword}</p>}
             </div>
 
             {/* Submit Button */}
@@ -205,7 +232,7 @@ export default function ForgotPasswordPage() {
             {/* Back to Login */}
             <p className="text-center text-mediumGray dark:text-gray-400 text-sm mt-6">
               <Link href="/login" className="text-secondary font-semibold hover:underline flex items-center justify-center">
-                <ArrowLeft size={18} className="mr-1"/> Ku Noqo Soo Galitaanka
+                <ArrowLeft size={18} className="mr-1" /> Ku Noqo Soo Galitaanka
               </Link>
             </p>
           </form>

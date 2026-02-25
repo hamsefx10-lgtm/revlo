@@ -10,10 +10,19 @@ export async function GET(req: NextRequest) {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+        const currentUser = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { companyId: true }
+        });
+
+        if (!currentUser?.companyId) {
+            return NextResponse.json({ error: 'User setup incomplete: No Company ID' }, { status: 400 });
+        }
+
         const searchParams = req.nextUrl.searchParams;
         const status = searchParams.get('status');
 
-        const where: any = { userId: session.user.id };
+        const where: any = { companyId: currentUser.companyId };
         if (status && status !== 'All') where.paymentStatus = status;
 
         const purchaseOrders = await prisma.purchaseOrder.findMany({
@@ -64,10 +73,20 @@ export async function POST(req: NextRequest) {
         const tax = subtotal * (taxRate / 100);
         const total = subtotal + tax;
 
+        const currentUser = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { companyId: true }
+        });
+
+        if (!currentUser?.companyId) {
+            return NextResponse.json({ error: 'User setup incomplete: No Company ID' }, { status: 400 });
+        }
+
         // Create PO
         const po = await prisma.purchaseOrder.create({
             data: {
                 userId: session.user.id,
+                companyId: currentUser.companyId,
                 vendorId,
                 poNumber: `PO-${Date.now()}`, // Simple PO Number gen
                 subtotal,

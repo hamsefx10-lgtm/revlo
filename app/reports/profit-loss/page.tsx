@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { 
   ArrowLeft, LineChart, DollarSign, Plus, Search, Filter, Calendar, 
   Download, Upload, Printer, Mail, MessageSquare, Send, 
@@ -12,7 +12,7 @@ import {
   List, LayoutGrid, BarChart, PieChart, Clock as ClockIcon,
   Coins, CheckSquare, Target, Share2, ChevronRight, ChevronUp, ChevronDown, Building // New icons for project-specific insights
 } from 'lucide-react';
-import Toast from '../../../components/common/Toast'; // Reuse Toast component
+import Toast from '@/components/common/Toast'; // Reuse Toast component
 import { ResponsiveContainer, LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart as RechartsBarChart, Bar, PieChart as RechartsPieChart, Pie, Cell } from 'recharts';
 
 // ...API-driven state and useEffect already added above...

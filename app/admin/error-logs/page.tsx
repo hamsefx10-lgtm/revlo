@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import {
   ArrowLeft, AlertTriangle, XCircle, CheckCircle, RefreshCw, Search,
   Filter, Calendar, Download, Eye, Trash2, Clock, Server, Database,

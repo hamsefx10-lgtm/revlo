@@ -3,13 +3,14 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/db';
 import { isValidEmail } from '@/lib/utils';
+import crypto from 'crypto';
 
 export async function POST(request: Request) {
   try {
-    const { email, newPassword, confirmNewPassword } = await request.json();
+    const { email, token, newPassword, confirmNewPassword } = await request.json();
 
     // 1. Xaqiijinta Input-ka (Input Validation)
-    if (!email || !newPassword || !confirmNewPassword) {
+    if (!email || !token || !newPassword || !confirmNewPassword) {
       return NextResponse.json(
         { message: 'Fadlan buuxi dhammaan beeraha waajibka ah.' },
         { status: 400 }
@@ -42,22 +43,42 @@ export async function POST(request: Request) {
       where: { email },
     });
 
-    if (!user) {
-      // Amniga awgiis, ha sheegin haddii email-ka uusan jirin.
-      // Kaliya sheeg in habka dib u dejinta la bilaabay (haddii ay jirto).
+    if (!user || !user.resetToken || !user.resetTokenExpires) {
       return NextResponse.json(
-        { message: 'Haddii email-kaagu uu ku jiro nidaamkeena, waxaad heli doontaa email dib u dejinta password-ka.' },
-        { status: 200 } // OK, to avoid user enumeration
+        { message: 'Codsi dib u dejineed lama helin ama waa dhacay.' },
+        { status: 400 }
+      );
+    }
+
+    // Check expiry
+    if (new Date() > user.resetTokenExpires) {
+      return NextResponse.json(
+        { message: 'Lambar-ka xaqiijinta waa dhacay. Fadlan codso mid cusub.' },
+        { status: 400 }
+      );
+    }
+
+    // Verify token (hashed OTP)
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+    if (tokenHash !== user.resetToken) {
+      return NextResponse.json(
+        { message: 'Lambar-ka xaqiijintu waa khalad.' },
+        { status: 400 }
       );
     }
 
     // 3. Siraynta Password-ka Cusub (Hash New Password)
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // 4. Cusboonaysii Password-ka User-ka (Update User's Password)
+    // 4. Cusboonaysii Password-ka User-ka (Update User's Password and clear tokens)
     await prisma.user.update({
       where: { id: user.id },
-      data: { password: hashedPassword },
+      data: {
+        password: hashedPassword,
+        resetToken: null,
+        resetTokenExpires: null
+      },
     });
 
     // 5. Jawaab Guul ah (Success Response)

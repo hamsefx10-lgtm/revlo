@@ -14,8 +14,17 @@ export async function GET(req: NextRequest) {
         const { searchParams } = new URL(req.url);
         const search = searchParams.get('search') || '';
 
+        const currentUser = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { companyId: true }
+        });
+
+        if (!currentUser?.companyId) {
+            return NextResponse.json({ error: 'User does not belong to a company' }, { status: 400 });
+        }
+
         const where: any = {
-            userId: session.user.id,
+            companyId: currentUser.companyId,
         };
 
         if (search) {
@@ -64,6 +73,15 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Name and phone are required' }, { status: 400 });
         }
 
+        const currentUser = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { companyId: true }
+        });
+
+        if (!currentUser?.companyId) {
+            return NextResponse.json({ error: 'User does not belong to a company' }, { status: 400 });
+        }
+
         const customer = await prisma.shopClient.create({
             data: {
                 name,
@@ -72,6 +90,7 @@ export async function POST(req: NextRequest) {
                 address: address || null,
                 status: status || 'Active',
                 userId: session.user.id,
+                companyId: currentUser.companyId,
             },
         });
 

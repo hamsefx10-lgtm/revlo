@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { ArrowLeft, DollarSign, CreditCard, Search, Filter, Calendar, XCircle } from 'lucide-react';
 
 interface CashbookEntry {

@@ -46,14 +46,17 @@ model User {
   telegramLinks  TelegramUserLink[]
 
   // Security / Trusted Devices
-  trustedDevices TrustedDevice[]
-  twoFASecret    String? // For TOTP if we implement later, or just general secret
-  otpCode        String? // Current email OTP
-  otpExpires     DateTime? // When OTP expires
+  trustedDevices     TrustedDevice[]
+  twoFASecret        String?           // For TOTP if we implement later, or just general secret
+  otpCode            String?           // Current email OTP
+  otpExpires         DateTime?         // When OTP expires
+  resetToken         String?           // For password reset code
+  resetTokenExpires  DateTime?         // When reset token expires
 
   // Shop Management Relations
-  products       Product[]       @relation("UserProducts")
-  shopClients    ShopClient[]    @relation("UserShopClients")
+  products         Product[]         @relation("UserProducts")
+  factoryMaterials FactoryMaterial[] @relation("UserFactoryMaterials")
+  shopClients      ShopClient[]      @relation("UserShopClients")
   vendors        ShopVendor[]    @relation("UserShopVendors")
   sales          Sale[]          @relation("UserSales")
   purchaseOrders PurchaseOrder[] @relation("UserPurchaseOrders")
@@ -140,6 +143,8 @@ model Company {
   notifications           Notification[]
   personalizationSettings PersonalizationSettings?
   productCatalog          ProductCatalog[]
+  products                Product[]
+  factoryMaterials        FactoryMaterial[]
   productionOrders        ProductionOrder[]
   projects                Project[]
   shareholders            Shareholder[]
@@ -153,6 +158,10 @@ model Company {
   tillSessions            TillSession[]
   taxReturns              TaxReturn[]
   workshopJobs            WorkshopJob[]
+  shopClients             ShopClient[]
+  sales                   Sale[]
+  purchaseOrders          PurchaseOrder[]
+  stockMovements          StockMovement[]
   deletedItems            DeletedItem[]
   auditLogs               AuditLog[]
 
@@ -975,6 +984,8 @@ enum TransactionType {
   TRANSFER_OUT
   DEBT_TAKEN
   DEBT_REPAID
+  DEBT_GIVEN
+  DEBT_RECEIVED
   OTHER
 }
 
@@ -985,7 +996,7 @@ enum TransactionType {
 model Product {
   id           String   @id @default(uuid())
   name         String
-  sku          String   @unique
+  sku          String
   category     String
   description  String?
   costPrice    Float
@@ -994,17 +1005,44 @@ model Product {
   minStock     Int      @default(5)
   status       String   @default("In Stock") // In Stock, Low Stock, Out of Stock
   userId       String
+  companyId    String?
   supplierId   String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   user           User                @relation("UserProducts", fields: [userId], references: [id])
+  company        Company?            @relation(fields: [companyId], references: [id])
   supplier       ShopVendor?         @relation(fields: [supplierId], references: [id])
   saleItems      SaleItem[]
   purchaseItems  PurchaseOrderItem[]
   stockMovements StockMovement[]
 
+  @@unique([sku, companyId])
   @@map("products")
+}
+
+model FactoryMaterial {
+  id            String   @id @default(uuid())
+  name          String
+  sku           String
+  category      String
+  description   String?
+  unit          String   @default("pcs")
+  inStock       Float    @default(0)
+  minStock      Float    @default(10)
+  purchasePrice Float    @default(0)
+  sellingPrice  Float    @default(0)
+  location      String?
+  userId        String
+  companyId     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user    User     @relation("UserFactoryMaterials", fields: [userId], references: [id])
+  company Company? @relation(fields: [companyId], references: [id])
+
+  @@unique([sku, companyId])
+  @@map("factory_materials")
 }
 
 model ShopClient {
@@ -1015,12 +1053,15 @@ model ShopClient {
   address   String?
   status    String   @default("Active") // Active, Inactive
   userId    String
+  companyId String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user  User   @relation("UserShopClients", fields: [userId], references: [id])
-  sales Sale[]
+  user    User     @relation("UserShopClients", fields: [userId], references: [id])
+  company Company? @relation(fields: [companyId], references: [id])
+  sales   Sale[]
 
+  @@unique([name, companyId])
   @@map("shop_clients")
 }
 
@@ -1029,6 +1070,7 @@ model Sale {
   invoiceNumber String    @unique
   customerId    String?
   userId        String
+  companyId     String?
   subtotal      Float
   tax           Float
   total         Float
@@ -1042,11 +1084,11 @@ model Sale {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  user     User        @relation("UserSales", fields: [userId], references: [id])
-  customer ShopClient? @relation(fields: [customerId], references: [id])
-
+  user           User        @relation("UserSales", fields: [userId], references: [id])
+  company        Company?    @relation(fields: [companyId], references: [id])
+  customer       ShopClient? @relation(fields: [customerId], references: [id])
   realCustomerId String?
-  realCustomer   Customer? @relation(fields: [realCustomerId], references: [id])
+  realCustomer   Customer?   @relation(fields: [realCustomerId], references: [id])
 
   items SaleItem[]
 
@@ -1073,9 +1115,10 @@ model SaleItem {
 
 model PurchaseOrder {
   id               String    @id @default(uuid())
-  poNumber         String    @unique
+  poNumber         String
   vendorId         String
   userId           String
+  companyId        String?
   subtotal         Float
   tax              Float
   total            Float
@@ -1088,12 +1131,14 @@ model PurchaseOrder {
   updatedAt        DateTime  @updatedAt
 
   user     User                @relation("UserPurchaseOrders", fields: [userId], references: [id])
+  company  Company?            @relation(fields: [companyId], references: [id])
   vendor   ShopVendor          @relation(fields: [vendorId], references: [id])
   items    PurchaseOrderItem[]
   expenses Expense[] // Link to payments
   projectId String?
   project   Project?            @relation(fields: [projectId], references: [id])
 
+  @@unique([poNumber, companyId])
   @@map("purchase_orders")
 }
 
@@ -1120,10 +1165,12 @@ model StockMovement {
   quantity  Int // Positive for additions, negative for reductions
   reference String? // Invoice number, PO number, etc.
   userId    String
+  companyId String?
   createdAt DateTime @default(now())
 
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  user    User    @relation("UserStockMovements", fields: [userId], references: [id])
+  product Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User     @relation("UserStockMovements", fields: [userId], references: [id])
+  company Company? @relation(fields: [companyId], references: [id])
 
   @@map("stock_movements")
 }

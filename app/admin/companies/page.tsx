@@ -4,13 +4,13 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import useSWR from 'swr';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import {
     ArrowLeft, Building, Plus, Search, Filter, MoreVertical,
     Edit, Trash2, Users, Briefcase, Calendar, CheckCircle, XCircle,
     Loader2, Globe
 } from 'lucide-react';
-import Toast from '../../../components/common/Toast';
+import Toast from '@/components/common/Toast';
 
 interface Company {
     id: string;

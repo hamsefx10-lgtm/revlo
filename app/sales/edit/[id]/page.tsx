@@ -4,9 +4,9 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import Layout from '../../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { ArrowLeft, Save, Loader2, AlertCircle } from 'lucide-react';
-import Toast from '../../../../components/common/Toast';
+import Toast from '@/components/common/Toast';
 
 interface Customer {
     id: string;

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import {
   ArrowLeft, Download, Upload, Database, HardDrive, Clock, CheckCircle,
   XCircle, AlertTriangle, RefreshCw, Trash2, Eye, Settings, FileText,

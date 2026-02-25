@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
         // We need to fetch Sales in this period and multiply items by their CURRENT cost price.
         const sales = await prisma.sale.findMany({
             where: {
-                userId: session.user.id, // Or companyId? Sales model uses userId.
+                companyId: companyId,
                 createdAt: {
                     gte: start,
                     lte: end

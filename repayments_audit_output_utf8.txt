@@ -1,0 +1,55 @@
+﻿node.exe : (node:8216) 
+[MODULE_TYPELESS_PACKAGE_JSON] 
+Warning: Module type of file:///C:/Use
+rs/OMEN/projects/revlo-vr/scripts/deep
+-audit-repayments.ts is not specified 
+and it doesn't parse as CommonJS.
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" "C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpec 
+   ified: ((node:8216) [MO...se as C  
+  ommonJS.:String) [], RemoteExcept   
+ ion
+    + FullyQualifiedErrorId : NativeC 
+   ommandError
+ 
+Reparsing as ES module because module 
+syntax was detected. This incurs a 
+performance overhead.
+To eliminate this warning, add 
+"type": "module" to C:\Users\OMEN\proj
+ects\revlo-vr\package.json.
+(Use `node --trace-warnings ...` to 
+show where the warning was created)
+Auditing all DEBT_REPAID transactions...
+Total DEBT_REPAID found: 20
+
+--- Vendor Repayments (Expenses) [1] ---
+- Amt: -29000 | Entity: Barako compeny | Desc: 
+
+--- Customer/Project Repayments (Income) [19] ---
+- Amt: 7000 | Entity: Ma'amiin Gcc | Desc: MAGCC dayn kaso xarotay 
+- Amt: 2998 | Entity: hamse moalin | Desc: gdm
+- Amt: 22703 | Entity: Ma'amiin Gcc | Desc: MAGCC dayn kaso xarotay 
+- Amt: 100000 | Entity: Eng nuur moalin | Desc: nuur kasoo xarootay 
+- Amt: 52000 | Entity: Xasan C Mursal | Desc: dayn kaso xarootay xasan c mursal
+- Amt: 20000 | Entity: Ma'amiin Gcc | Desc: MAGCC dayn kaso xarotay 
+- Amt: 10000 | Entity: Xasan C Mursal | Desc: dayn kasoo xarootay
+- Amt: 100000 | Entity: Ma'amiin Gcc | Desc: dayn kaso xarootay 
+- Amt: 25000 | Entity: Ma'amiin Gcc | Desc: MAGCC dayn kaso xarotay 
+- Amt: 88000 | Entity: nasra site | Desc: dayn kasoo xarootay nasra
+- Amt: 7000 | Entity: maxamad duulane | Desc: dayn kaso xarootay 
+- Amt: 30000 | Entity: Ugas Ibrahim | Desc: dayn kaso xarootay ugaas ibraahim
+- Amt: 40980 | Entity: Ma'amiin Gcc | Desc: dayn kaso xarootay 
+- Amt: 11700 | Entity: Ma'amiin Gcc | Desc: MAGCC dayn kaso xarotay 
+- Amt: 8000 | Entity: maxamad duulane | Desc: dayn kaso xarootay 
+- Amt: 66000 | Entity: Eng nuur moalin | Desc: from Eng Nuur 
+- Amt: 7000 | Entity: Eng nuur moalin | Desc: from Eng Nuur 
+- Amt: 20000 | Entity: Ma'amiin Gcc | Desc: dayn kaso xarootay 
+- Amt: 60000 | Entity: Xasan C Mursal | Desc: dayn kaso xarootay 
+
+--- Ambiguous Repayments (Neither Vendor nor Customer) [0] ---

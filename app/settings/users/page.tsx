@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { useSession } from 'next-auth/react';
 import {
   ArrowLeft, Plus, Search, Filter, Edit, Trash2, X, Loader2, Info,
   Tag, CheckCircle, XCircle, ChevronRight, User as UserIcon, Lock, Key, Eye,
   UserCheck, UserX, UserCog, Mail, Calendar
 } from 'lucide-react';
-import Toast from '../../../components/common/Toast';
+import Toast from '@/components/common/Toast';
 import { USER_ROLES } from '@/lib/constants';
 
 // --- User Table Row Component ---

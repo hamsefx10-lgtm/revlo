@@ -1,0 +1,55 @@
+﻿node.exe : (node:26632) 
+[MODULE_TYPELESS_PACKAGE_JSON] 
+Warning: Module type of file:///C:/Use
+rs/OMEN/projects/revlo-vr/scripts/glob
+al-30k-search.ts is not specified and 
+it doesn't parse as CommonJS.
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" "C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpec 
+   ified: ((node:26632) [M...se as C  
+  ommonJS.:String) [], RemoteExcept   
+ ion
+    + FullyQualifiedErrorId : NativeC 
+   ommandError
+ 
+Reparsing as ES module because module 
+syntax was detected. This incurs a 
+performance overhead.
+To eliminate this warning, add 
+"type": "module" to C:\Users\OMEN\proj
+ects\revlo-vr\package.json.
+(Use `node --trace-warnings ...` to 
+show where the warning was created)
+Global search for 30,000 ETB transactions...
+Found 4 transactions with amount 30,000:
+- ID: 3c48bf85-d937-4bfb-9019-59bcc07d4624 | Date: 2025-10-10 | Type: INCOME | Project: Masjid Hagarlaawe | Customer: masjid hagarlaawe | Desc: Advance Payment for Project: Masjid Hagarlaawe
+- ID: a345656f-13c4-470f-8e29-2bd8b09b73ed | Date: 2025-12-30 | Type: DEBT_GIVEN | Project: MISSING | Customer: Farxaan mohamed ali | Desc: 
+- ID: 4b8d56f9-484b-4fa8-963c-cb8a27c30ae5 | Date: 2025-11-20 | Type: DEBT_REPAID | Project: Ganjelka Ugaas Ibrahim | Customer: Ugas Ibrahim | Desc: dayn kaso xarootay ugaas ibraahim
+- ID: 0c1d1f50-d119-4413-a8f7-a84b83c287cd | Date: 2025-11-20 | Type: DEBT_GIVEN | Project: MISSING | Customer: Farxaan mohamed ali | Desc: 
+
+Recent DEBT_REPAID transactions (last 20):
+- ID: a0e95a25-33a1-4743-a486-e03c9c7e2aff | Amt: 7000 | Project: N/A | Entity: Ma'amiin Gcc | Desc: MAGCC dayn kaso xarotay 
+- ID: dc9cdcb7-02a2-4735-bc7b-776ca16e6b7f | Amt: 100000 | Project: Nuur Moalin Site | Entity: Eng nuur moalin | Desc: nuur kasoo xarootay 
+- ID: e7e60ee8-f8b6-4ad9-996e-cd831210e83a | Amt: 100000 | Project: N/A | Entity: Ma'amiin Gcc | Desc: dayn kaso xarootay 
+- ID: 3548d845-9701-4b6f-8040-89b58e872db5 | Amt: 20000 | Project: N/A | Entity: Ma'amiin Gcc | Desc: dayn kaso xarootay 
+- ID: 1c440c5c-dc5c-4ea0-8bec-785037fc982a | Amt: -29000 | Project: N/A | Entity: Barako compeny | Desc: 
+- ID: 6cd8b2e0-ceea-48f3-93a7-bf88a05fadb3 | Amt: 7000 | Project: Nuur Moalin Site | Entity: Eng nuur moalin | Desc: from Eng Nuur 
+- ID: bb23a207-84ff-4859-a70d-6e24f7150b76 | Amt: 66000 | Project: Nuur Moalin Site | Entity: Eng nuur moalin | Desc: from Eng Nuur 
+- ID: 765fe057-1ab2-42da-8033-bdb38cc26170 | Amt: 60000 | Project: New Xasan C Mursal | Entity: Xasan C Mursal | Desc: dayn kaso xarootay 
+- ID: 4d9c82cc-fa45-4f6e-a2ee-2d20deeb24b2 | Amt: 40980 | Project: N/A | Entity: Ma'amiin Gcc | Desc: dayn kaso xarootay 
+- ID: 295a396c-b4c3-4b34-9bc0-388abfcccb2a | Amt: 8000 | Project: maxamed duulane  | Entity: maxamad duulane | Desc: dayn kaso xarootay 
+- ID: fbaf0606-0671-4ff7-868b-fb25a6db2d77 | Amt: 7000 | Project: maxamed duulane  | Entity: maxamad duulane | Desc: dayn kaso xarootay 
+- ID: 3f9a0afe-1320-469c-9396-d97aeff59b63 | Amt: 10000 | Project: Xasan Abdi Mursal Ganjel | Entity: Xasan C Mursal | Desc: dayn kasoo xarootay
+- ID: 06bfc18e-4545-401d-b498-29b52ea584cb | Amt: 11700 | Project: N/A | Entity: Ma'amiin Gcc | Desc: MAGCC dayn kaso xarotay 
+- ID: 20fe5cff-3ef3-4a42-94fa-37481403db34 | Amt: 20000 | Project: N/A | Entity: Ma'amiin Gcc | Desc: MAGCC dayn kaso xarotay 
+- ID: 5e4bd7cf-fb50-41f9-9fc5-82a9311ea3c6 | Amt: 22703 | Project: N/A | Entity: Ma'amiin Gcc | Desc: MAGCC dayn kaso xarotay 
+- ID: 4b8d56f9-484b-4fa8-963c-cb8a27c30ae5 | Amt: 30000 | Project: Ganjelka Ugaas Ibrahim | Entity: Ugas Ibrahim | Desc: dayn kaso xarootay ugaas ibraahim
+- ID: 1524529f-5cd0-4ef9-8f16-c157ab75565e | Amt: 88000 | Project: Nasra SIte | Entity: nasra site | Desc: dayn kasoo xarootay nasra
+- ID: ab4fe38b-7ee8-41ae-835a-82ffdd3cff8c | Amt: 52000 | Project: Xasan Abdi Mursal Ganjel | Entity: Xasan C Mursal | Desc: dayn kaso xarootay xasan c mursal
+- ID: fcef79e1-5eb4-4422-9184-7cbaf6740701 | Amt: 25000 | Project: N/A | Entity: Ma'amiin Gcc | Desc: MAGCC dayn kaso xarotay 
+- ID: 34c71c5b-e6f6-43c8-9155-a08e5a0b8bfe | Amt: 2998 | Project: N/A | Entity: hamse moalin | Desc: gdm

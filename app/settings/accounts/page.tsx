@@ -3,13 +3,13 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { 
   ArrowLeft, Banknote, Plus, Search, Filter, Edit, Trash2, X, Loader2, Info, 
   CreditCard, Landmark, DollarSign, CheckCircle, XCircle, ChevronRight, // MUHIIM: ChevronRight lagu daray!
   FileText, Download, Upload, Eye
 } from 'lucide-react';
-import Toast from '../../../components/common/Toast'; // Reuse Toast component
+import Toast from '@/components/common/Toast'; // Reuse Toast component
 
 // --- API Types ---
 type Account = {

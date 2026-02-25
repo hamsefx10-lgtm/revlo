@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Upload, FileUp, CheckCircle, AlertCircle, X, Loader2, Download, Table } from 'lucide-react';
+import { Upload, FileUp, CheckCircle, AlertCircle, X, Loader2, Download, Table, Factory, Package } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useRouter } from 'next/navigation';
 import * as XLSX from 'xlsx';
@@ -27,7 +27,7 @@ export default function BulkImportPage() {
     const [file, setFile] = useState<File | null>(null);
     const [previewData, setPreviewData] = useState<ImportedProduct[]>([]);
     const [dragActive, setDragActive] = useState(false);
-    const [importStats, setImportStats] = useState({ total: 0, success: 0, failed: 0 });
+    const [importStats, setImportStats] = useState({ total: 0, success: 0, failed: 0, errors: [] as any[] });
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // --- FILE HANDLING ---
@@ -134,6 +134,8 @@ export default function BulkImportPage() {
         setStep('preview');
     };
 
+    const [target, setTarget] = useState<'shop' | 'project' | 'factory'>('shop');
+
     // --- IMPORT ACTION ---
     const handleImport = async () => {
         const validItems = previewData.filter(i => i.status === 'Valid');
@@ -145,7 +147,11 @@ export default function BulkImportPage() {
         setStep('importing');
 
         try {
-            const response = await fetch('/api/shop/inventory/bulk', {
+            let endpoint = '/api/shop/inventory/bulk';
+            if (target === 'project') endpoint = '/api/projects/inventory/store/bulk';
+            if (target === 'factory') endpoint = '/api/manufacturing/inventory/bulk';
+
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ products: validItems }),
@@ -157,17 +163,18 @@ export default function BulkImportPage() {
                 setImportStats({
                     total: validItems.length,
                     success: result.successCount,
-                    failed: result.failedCount
+                    failed: result.failedCount,
+                    errors: result.errors || []
                 });
                 setStep('success');
-                toast({ title: 'Import Complete', description: `${result.successCount} products added successfully.` });
+                toast({ title: 'Import Complete', description: `${result.successCount} items added successfully to ${target}.` });
             } else {
-                throw new Error(result.error);
+                throw new Error(result.error || result.message);
             }
 
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            toast({ title: 'Import Failed', description: 'Server error during import.', variant: 'destructive' });
+            toast({ title: 'Import Failed', description: error.message || 'Server error during import.', variant: 'destructive' });
             setStep('preview'); // Go back
         }
     };
@@ -194,55 +201,55 @@ export default function BulkImportPage() {
                         </div>
                         Bulk Import Inventory
                     </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-2 ml-1">Upload a CSV or Excel file to add multiple products at once.</p>
-                </div>
+                    {/* Shop-specific import, no cross-module target selection here */}
 
-                {/* Upload Area */}
-                <div
-                    className={`border-3 border-dashed rounded-3xl p-16 text-center transition-all ${dragActive ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/10' : 'border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-600'
-                        }`}
-                    onDragEnter={handleDrag}
-                    onDragLeave={handleDrag}
-                    onDragOver={handleDrag}
-                    onDrop={handleDrop}
-                >
-                    <div className="bg-blue-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-500/30">
-                        <Upload className="text-white" size={32} />
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                        Drag & Drop your file here
-                    </h3>
-                    <p className="text-gray-400 mb-8">Supports CSV, XLSX, XLS. Max 5MB.</p>
-
-                    <button
-                        onClick={() => fileInputRef.current?.click()}
-                        className="px-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-bold hover:shadow-xl transition-all hover:scale-105"
+                    {/* Upload Area */}
+                    <div
+                        className={`border-3 border-dashed rounded-3xl p-16 text-center transition-all ${dragActive ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/10' : 'border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-600'
+                            }`}
+                        onDragEnter={handleDrag}
+                        onDragLeave={handleDrag}
+                        onDragOver={handleDrag}
+                        onDrop={handleDrop}
                     >
-                        Browse Files
-                    </button>
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept=".csv,.xlsx,.xls"
-                        className="hidden"
-                        onChange={handleChange}
-                    />
-                </div>
+                        <div className="bg-blue-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-500/30">
+                            <Upload className="text-white" size={32} />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                            Drag & Drop your file here
+                        </h3>
+                        <p className="text-gray-400 mb-8">Supports CSV, XLSX, XLS. Max 5MB.</p>
 
-                {/* Template Download */}
-                <div className="mt-8 bg-gray-50 dark:bg-gray-800 p-6 rounded-2xl flex items-center justify-between border border-gray-100 dark:border-gray-700">
-                    <div className="flex items-center gap-4">
-                        <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-xl">
-                            <Table className="text-green-600 dark:text-green-400" size={24} />
-                        </div>
-                        <div>
-                            <h4 className="font-bold text-gray-900 dark:text-white">Need a template?</h4>
-                            <p className="text-sm text-gray-500">Download our pre-formatted Excel template to ensure smooth import.</p>
-                        </div>
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            className="px-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-bold hover:shadow-xl transition-all hover:scale-105"
+                        >
+                            Browse Files
+                        </button>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".csv,.xlsx,.xls"
+                            className="hidden"
+                            onChange={handleChange}
+                        />
                     </div>
-                    <a href="/api/shop/inventory/template" download className="px-5 py-2.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all flex items-center gap-2">
-                        <Download size={18} /> Download
-                    </a>
+
+                    {/* Template Download */}
+                    <div className="mt-8 bg-gray-50 dark:bg-gray-800 p-6 rounded-2xl flex items-center justify-between border border-gray-100 dark:border-gray-700">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-xl">
+                                <Table className="text-green-600 dark:text-green-400" size={24} />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-gray-900 dark:text-white">Need a template?</h4>
+                                <p className="text-sm text-gray-500">Download our pre-formatted Excel template to ensure smooth import.</p>
+                            </div>
+                        </div>
+                        <a href="/api/shop/inventory/template" download className="px-5 py-2.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all flex items-center gap-2">
+                            <Download size={18} /> Download
+                        </a>
+                    </div>
                 </div>
             </div>
         );
@@ -327,37 +334,126 @@ export default function BulkImportPage() {
 
     // 4. SUCCESS STEP
     if (step === 'success') {
+        const hasErrors = importStats.failed > 0;
+
         return (
             <div className="min-h-screen flex flex-col items-center justify-center p-4">
-                <div className="bg-white dark:bg-gray-900 p-10 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 text-center max-w-md w-full animate-scale-in">
-                    <div className="bg-green-100 dark:bg-green-900/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <CheckCircle className="text-green-500" size={40} />
-                    </div>
-                    <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-4">Import Successful!</h2>
+                <div className={`bg-white dark:bg-gray-900 p-10 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 w-full animate-scale-in ${hasErrors ? 'max-w-3xl' : 'text-center max-w-md'}`}>
 
-                    <div className="grid grid-cols-2 gap-4 mb-8">
-                        <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
-                            <span className="block text-3xl font-black text-green-500">{importStats.success}</span>
-                            <span className="text-xs font-bold text-gray-400 uppercase">Success</span>
-                        </div>
-                        <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl">
-                            <span className="block text-3xl font-black text-red-500">{importStats.failed}</span>
-                            <span className="text-xs font-bold text-gray-400 uppercase">Failed</span>
-                        </div>
-                    </div>
+                    {hasErrors ? (
+                        <>
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="bg-orange-100 dark:bg-orange-900/20 w-16 h-16 rounded-full flex items-center justify-center shrink-0">
+                                    <AlertCircle className="text-orange-500" size={32} />
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-black text-gray-900 dark:text-white">Import Completed with Errors</h2>
+                                    <p className="text-gray-500 text-sm mt-1">Some products couldn't be imported. Review the issues below to fix your Excel file.</p>
+                                </div>
+                            </div>
 
-                    <button
-                        onClick={() => router.push('/shop/inventory')}
-                        className="w-full py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-bold hover:opacity-90 transition-all"
-                    >
-                        View Inventory
-                    </button>
-                    <button
-                        onClick={() => { setStep('upload'); setFile(null); setPreviewData([]); }}
-                        className="w-full py-4 mt-3 text-gray-500 font-bold hover:text-gray-700"
-                    >
-                        Import More
-                    </button>
+                            <div className="grid grid-cols-2 gap-4 mb-6">
+                                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl text-center border border-gray-100 dark:border-gray-700">
+                                    <span className="block text-3xl font-black text-green-500">{importStats.success}</span>
+                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Successful</span>
+                                </div>
+                                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl text-center border border-gray-100 dark:border-gray-700">
+                                    <span className="block text-3xl font-black text-red-500">{importStats.failed}</span>
+                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Failed</span>
+                                </div>
+                            </div>
+
+                            {importStats.errors && importStats.errors.length > 0 && (
+                                <div className="mb-8 bg-red-50 dark:bg-red-900/10 rounded-2xl overflow-hidden border border-red-100 dark:border-red-900/30">
+                                    <div className="bg-red-100/50 dark:bg-red-900/20 px-5 py-3 border-b border-red-100 dark:border-red-900/30 flex items-center gap-2">
+                                        <AlertCircle className="text-red-600 dark:text-red-400" size={18} />
+                                        <h3 className="font-bold text-red-800 dark:text-red-300">Failure Details & Recommendations</h3>
+                                    </div>
+                                    <div className="max-h-72 overflow-y-auto p-0">
+                                        <table className="w-full text-sm text-left">
+                                            <thead className="bg-red-50/50 dark:bg-red-900/10 text-red-800 dark:text-red-300 font-semibold text-xs uppercase sticky top-0">
+                                                <tr>
+                                                    <th className="px-5 py-3 border-b border-red-100 dark:border-red-900/30">SKU</th>
+                                                    <th className="px-5 py-3 border-b border-red-100 dark:border-red-900/30">Reason</th>
+                                                    <th className="px-5 py-3 border-b border-red-100 dark:border-red-900/30">How to Fix</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-red-100 dark:divide-red-900/30">
+                                                {importStats.errors.map((err, idx) => {
+                                                    let recommendation = "Check your Excel data formats.";
+                                                    const errMsg = err.error ? err.error.toLowerCase() : '';
+
+                                                    if (errMsg.includes('unique constraint') || errMsg.includes('already exists')) {
+                                                        recommendation = "SKU exists. Ensure SKU is unique or remove duplicate rows.";
+                                                    } else if (errMsg.includes('missing') || errMsg.includes('required')) {
+                                                        recommendation = "Provide missing required fields (Name, Selling Price, etc).";
+                                                    } else if (errMsg.includes('foreign key') || errMsg.includes('category')) {
+                                                        recommendation = "Assigned category/supplier does not exist in the system.";
+                                                    } else if (errMsg.includes('float') || errMsg.includes('int') || errMsg.includes('number')) {
+                                                        recommendation = "Remove letters/symbols from numbers (Price, Stock).";
+                                                    }
+
+                                                    return (
+                                                        <tr key={idx} className="hover:bg-red-100/30 dark:hover:bg-red-900/20">
+                                                            <td className="px-5 py-3 font-medium text-red-900 dark:text-red-200 whitespace-nowrap">{err.sku || 'Unknown'}</td>
+                                                            <td className="px-5 py-3 text-red-800 dark:text-red-300">{err.error || 'Server error'}</td>
+                                                            <td className="px-5 py-3 text-red-700 dark:text-red-400 italic font-medium">{recommendation}</td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <button
+                                    onClick={() => router.push('/shop/inventory')}
+                                    className="flex-1 py-4 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-700"
+                                >
+                                    Proceed to Inventory
+                                </button>
+                                <button
+                                    onClick={() => { setStep('upload'); setFile(null); setPreviewData([]); }}
+                                    className="flex-1 py-4 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 transition-all shadow-lg shadow-blue-500/20"
+                                >
+                                    Re-upload Fixed File
+                                </button>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div className="bg-green-100 dark:bg-green-900/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <CheckCircle className="text-green-500" size={40} />
+                            </div>
+                            <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-4">Import Successful!</h2>
+
+                            <div className="grid grid-cols-2 gap-4 mb-8">
+                                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
+                                    <span className="block text-3xl font-black text-green-500">{importStats.success}</span>
+                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Success</span>
+                                </div>
+                                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
+                                    <span className="block text-3xl font-black text-red-500">{importStats.failed}</span>
+                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Failed</span>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => router.push('/shop/inventory')}
+                                className="w-full py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-bold hover:opacity-90 transition-all mb-3"
+                            >
+                                View Inventory
+                            </button>
+                            <button
+                                onClick={() => { setStep('upload'); setFile(null); setPreviewData([]); }}
+                                className="w-full py-4 text-gray-500 font-bold hover:text-gray-700 transition-colors"
+                            >
+                                Import More
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
         );

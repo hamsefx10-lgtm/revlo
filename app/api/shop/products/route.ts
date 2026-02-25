@@ -10,13 +10,22 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        const currentUser = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { companyId: true }
+        });
+
+        if (!currentUser?.companyId) {
+            return NextResponse.json({ error: 'User does not belong to a company' }, { status: 400 });
+        }
+
         const { searchParams } = new URL(request.url);
         const category = searchParams.get('category');
         const search = searchParams.get('search');
 
         // Build where clause
         const where: any = {
-            userId: session.user.id,
+            companyId: currentUser.companyId,
         };
 
         if (category && category !== 'All') {

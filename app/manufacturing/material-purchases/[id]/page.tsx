@@ -3,12 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import Layout from '../../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { 
   ArrowLeft, Edit, Trash2, Package, Truck, Calendar, DollarSign, FileText, 
   Loader2, CheckCircle, AlertCircle, User, Building, Clock, Tag
 } from 'lucide-react';
-import Toast from '../../../../components/common/Toast';
+import Toast from '@/components/common/Toast';
 
 // --- Data Interfaces ---
 interface MaterialPurchase {

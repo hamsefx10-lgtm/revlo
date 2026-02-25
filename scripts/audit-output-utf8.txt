@@ -1,0 +1,121 @@
+﻿
+========================================
+Account Name: CBE
+Company ID:   081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+Current DB Balance: 13149.69000000006
+----------------------------------------
+Transactions Found: 242
+Calculated IN:      5944000
+Calculated OUT:     -4958552.1
+Calculated Balance: 10902552.1
+Discrepancy:        10889402.41
+
+  --- Huge Transactions (>100k) ---
+  2025-06-13 | EXPENSE         | -230300 | Material expense - 2025-10-11
+  2025-07-07 | EXPENSE         | -850000 | Material expense - 2025-10-23
+  2025-07-09 | EXPENSE         | -300000 | Material expense - 2025-10-23
+  2025-07-12 | EXPENSE         | -278450 | Material expense - 2025-10-23
+  2025-07-15 | EXPENSE         | -633413 | Material expense - 2025-10-23
+  2025-09-05 | EXPENSE         | -269000 | Material expense - 2025-10-26
+  2025-10-10 | INCOME          | 944000 | Advance Payment for Project: Masjid Garab Case
+  2025-10-10 | INCOME          | 3000000 | Advance Payment for Project: Dhobawayn Almuniam Site
+  2025-11-18 | EXPENSE         | -142500 | phase wone ayaa la siiyay 
+  2025-11-21 | INCOME          | 210000 | Advance Payment for Project: Saylada Yucub
+  2025-11-21 | INCOME          | 210000 | Advance Payment for Project: Saylada Dalaad
+  2025-12-10 | INCOME          | 130000 | Advance Payment for Project: Eng Ahmed Site
+  2025-12-31 | INCOME          | 280000 | xafiiska cusub bay kasoo xarootay 
+  2026-02-18 | EXPENSE         | -800000 | Material expense - 2026-02-21
+  2026-02-19 | INCOME          | 1000000 | Advance Payment for Project: Dhobawayn albabada loxa
+
+  --- Last Transaction Running Balance ---
+  Date: 2026-02-19 | Type: INCOME | Amount: 1000000 | RunningBalance: 13149.69
+
+========================================
+Account Name: CBE
+Company ID:   009c7dd5-c36d-415b-8d43-f1bfa7add031
+Current DB Balance: 39669
+----------------------------------------
+Transactions Found: 3
+Calculated IN:      40000
+Calculated OUT:     -331
+Calculated Balance: 40331
+Discrepancy:        662
+
+  --- Last Transaction Running Balance ---
+  Date: 2025-09-20 | Type: INCOME | Amount: 40000 | RunningBalance: 39669
+
+========================================
+Account Name: E-Birr
+Company ID:   081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+Current DB Balance: -509440.54
+----------------------------------------
+Transactions Found: 684
+Calculated IN:      6877149
+Calculated OUT:     -3911467.75
+Calculated Balance: 10788616.75
+Discrepancy:        11298057.29
+
+  --- Huge Transactions (>100k) ---
+  0785-03-28 | EXPENSE         | -328785 | 
+  2025-07-07 | EXPENSE         | 180000 | Fixed Asset Purchase - mator 
+  2025-07-29 | EXPENSE         | -130000 | Material expense - 2025-10-26
+  2025-08-14 | EXPENSE         | -138300 | Material expense - 2025-10-28
+  2025-08-18 | EXPENSE         | -163620 | Material expense - 2025-10-27
+  2025-09-02 | EXPENSE         | -450900 | Material expense - 2025-10-28
+  2025-09-19 | EXPENSE         | -135200 | totalka shaqalaha dhagaxbuur waxa ku baxay 
+  2025-09-28 | DEBT_TAKEN      | 192650 | 
+  2025-10-02 | DEBT_TAKEN      | 272050 | 
+  2025-10-10 | INCOME          | 400000 | Advance Payment for Project: New Masjid Decore
+  2025-10-10 | INCOME          | 500000 | Advance Payment for Project: Bakhaarka Abdirashid Yusuf
+  2025-10-10 | INCOME          | 400000 | Advance Payment for Project: Abdi Wali Moalin Site
+  2025-10-10 | INCOME          | 200000 | Advance Payment for Project: Sh Abdulahi SIte
+  2025-10-10 | INCOME          | 233850 | Advance Payment for Project: Nasra SIte
+  2025-10-10 | INCOME          | 143000 | Advance Payment for Project: Xasan C Mursal 
+  2025-10-10 | INCOME          | 120000 | Advance Payment for Project: Sh Abdulahi Kuras SIte
+  2025-10-10 | INCOME          | 1322299 | Advance Payment for Project: Dhagaxbur Masjid Yusuf
+  2025-10-14 | DEBT_TAKEN      | 384727 | 
+  2025-10-15 | EXPENSE         | -263583 | 
+  2025-10-19 | EXPENSE         | -118699 | Salary payment for hamse maolin amiin - 2025-11-20
+  2025-10-28 | INCOME          | 250000 | Advance Payment for Project: Dhoobawayn site birta
+  2025-10-28 | INCOME          | 105000 | Advance Payment for Project: Hayat hotel janjarta
+  2025-12-07 | INCOME          | 420000 | Advance Payment for Project: masjid Hoob
+  2026-01-05 | EXPENSE         | -300000 | Material expense - 2026-01-21
+  2026-01-13 | EXPENSE         | -284000 | Material expense - 2026-01-22
+  2026-01-21 | INCOME          | 300000 | Advance Payment for Project: Qolaji Site 
+  2026-01-22 | INCOME          | 1074000 | Advance Payment for Project: ahmed abdule site
+  2026-02-03 | INCOME          | 300000 | Advance Payment for Project: Maxamad quresh site
+
+  --- Last Transaction Running Balance ---
+  Date: 2026-02-21 | Type: EXPENSE | Amount: -3000 | RunningBalance: -509440.54
+
+========================================
+Account Name: CBE
+Company ID:   d22beba9-b3c3-40a5-8375-6ad7d7794265
+Current DB Balance: 25303
+----------------------------------------
+Transactions Found: 19
+Calculated IN:      42342
+Calculated OUT:     -8039
+Calculated Balance: 50381
+Discrepancy:        25078
+
+  --- Last Transaction Running Balance ---
+  Date: 2025-09-27 | Type: EXPENSE | Amount: -500 | RunningBalance: 25303
+
+========================================
+Account Name: E-Birr
+Company ID:   8ae29f0b-b220-4010-a5f1-8812a45ead34
+Current DB Balance: 145432
+----------------------------------------
+Transactions Found: 24
+Calculated IN:      520000
+Calculated OUT:     -374568
+Calculated Balance: 894568
+Discrepancy:        749136
+
+  --- Huge Transactions (>100k) ---
+  2025-09-27 | EXPENSE         | -230000 | Material expense - 2025-09-27
+  2025-09-27 | INCOME          | 500000 | Advance Payment for Project: Bakharka C/rashid yusuf
+
+  --- Last Transaction Running Balance ---
+  Date: 2025-09-30 | Type: INCOME | Amount: 20000 | RunningBalance: 145432

@@ -11,12 +11,21 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        const currentUser = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { companyId: true }
+        });
+
+        if (!currentUser?.companyId) {
+            return NextResponse.json({ error: 'User does not belong to a company' }, { status: 400 });
+        }
+
         const { searchParams } = new URL(req.url);
         const search = searchParams.get('search') || '';
         const status = searchParams.get('status') || 'All';
 
         const where: any = {
-            userId: session.user.id
+            companyId: currentUser.companyId
         };
 
         if (status !== 'All') {
@@ -72,7 +81,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Generate PO Number (PO-{Year}-{Sequence})
-        const count = await prisma.purchaseOrder.count({ where: { userId: session.user.id } });
+        const count = await prisma.purchaseOrder.count({ where: { companyId: user.companyId } });
         const poNumber = `PO-${new Date().getFullYear()}-${(count + 1).toString().padStart(3, '0')}`;
 
         // Calculate totals
@@ -97,6 +106,7 @@ export async function POST(req: NextRequest) {
                     poNumber,
                     vendorId,
                     userId: session.user.id,
+                    companyId: user.companyId,
                     status: 'Pending',
                     subtotal,
                     tax,

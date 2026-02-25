@@ -11,6 +11,15 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        const currentUser = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { companyId: true }
+        });
+
+        if (!currentUser?.companyId) {
+            return NextResponse.json({ error: 'User does not belong to a company' }, { status: 400 });
+        }
+
         const { searchParams } = new URL(req.url);
         const fromParam = searchParams.get('from');
         const toParam = searchParams.get('to');
@@ -25,7 +34,7 @@ export async function GET(req: NextRequest) {
         const saleItems = await prisma.saleItem.findMany({
             where: {
                 sale: {
-                    userId: session.user.id, // Assuming user isolation
+                    companyId: currentUser.companyId, // Assuming user isolation
                     createdAt: {
                         gte: from,
                         lte: to

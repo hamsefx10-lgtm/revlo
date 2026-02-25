@@ -3,14 +3,14 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { 
   ArrowLeft, Banknote, Plus, Search, Filter, Calendar, List, LayoutGrid, 
   DollarSign, CreditCard, Landmark, CheckCircle, XCircle, ChevronRight, 
   TrendingUp, TrendingDown, Eye, Edit, Trash2, Send, Upload, Download,
   RefreshCw, MessageSquare // For refresh and other icons
 } from 'lucide-react';
-import Toast from '../../../components/common/Toast'; // Reuse Toast component
+import Toast from '@/components/common/Toast'; // Reuse Toast component
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
 
 

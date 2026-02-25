@@ -3,12 +3,12 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Layout from '../../../components/layouts/Layout';
-import { 
-  ArrowLeft, HardDrive, Plus, Search, Filter, Edit, Trash2, X, Loader2, Info, 
-  Tag, Briefcase, Calendar, DollarSign, CheckCircle, XCircle, ChevronRight, Building, Home 
+import Layout from '@/components/layouts/Layout';
+import {
+  ArrowLeft, HardDrive, Plus, Search, Filter, Edit, Trash2, X, Loader2, Info,
+  Tag, Briefcase, Calendar, DollarSign, CheckCircle, XCircle, ChevronRight, Building, Home
 } from 'lucide-react';
-import Toast from '../../../components/common/Toast'; // Reuse Toast component
+import Toast from '@/components/common/Toast'; // Reuse Toast component
 
 // --- Types ---
 interface FixedAsset {
@@ -27,16 +27,16 @@ interface FixedAsset {
 const FixedAssetRow: React.FC<{ asset: FixedAsset; onEdit: (id: string) => void; onDelete: (id: string) => void }> = ({ asset, onEdit, onDelete }) => (
   <tr className="hover:bg-lightGray dark:hover:bg-gray-700 transition-colors duration-150 border-b border-lightGray dark:border-gray-700 last:border-b-0">
     <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-medium flex items-center space-x-2">
-        <HardDrive size={18} className="text-primary"/> <span>{asset.name}</span>
+      <HardDrive size={18} className="text-primary" /> <span>{asset.name}</span>
     </td>
     <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300 flex items-center space-x-2">
-        <Tag size={16} className="text-secondary"/> <span>{asset.type}</span>
+      <Tag size={16} className="text-secondary" /> <span>{asset.type}</span>
     </td>
     <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-semibold">${Number((asset as any).value ?? 0).toLocaleString()}</td>
     <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">{new Date(asset.purchaseDate).toLocaleDateString()}</td>
     <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300 flex items-center space-x-2">
-        {asset.assignedTo === 'Factory' ? <Building size={16}/> : asset.assignedTo === 'Office' ? <Home size={16}/> : <Briefcase size={16}/>}
-        <span>{asset.assignedTo}</span>
+      {asset.assignedTo === 'Factory' ? <Building size={16} /> : asset.assignedTo === 'Office' ? <Home size={16} /> : <Briefcase size={16} />}
+      <span>{asset.assignedTo}</span>
     </td>
     <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">{new Date(asset.updatedAt).toLocaleDateString()}</td>
     <td className="p-4 whitespace-nowrap text-right">
@@ -63,8 +63,8 @@ const Modal: React.FC<ModalProps> = ({ title, onClose, children }) => (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-lg animate-fade-in-up">
       <div className="flex justify-between items-center mb-4 border-b pb-3 border-lightGray dark:border-gray-700">
         <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100">{title}</h3>
-        <button 
-          onClick={onClose} 
+        <button
+          onClick={onClose}
           title="Close modal"
           className="text-mediumGray dark:text-gray-400 hover:text-redError transition-colors"
         >
@@ -106,22 +106,22 @@ const AssetForm: React.FC<AssetFormProps> = ({ onSubmit, onCancel, editingAsset 
     e.preventDefault();
     if (!validate()) return;
     setLoading(true);
-    
+
     try {
-      const url = editingAsset 
+      const url = editingAsset
         ? `/api/settings/assets/${editingAsset.id}`
         : '/api/settings/assets';
-      
+
       const method = editingAsset ? 'PUT' : 'POST';
-      
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, type, value, purchaseDate, assignedTo }),
       });
-      
+
       if (!response.ok) throw new Error('Failed to save asset');
-      
+
       const data = await response.json();
       onSubmit(data.asset);
     } catch (error) {
@@ -139,8 +139,8 @@ const AssetForm: React.FC<AssetFormProps> = ({ onSubmit, onCancel, editingAsset 
     <form onSubmit={handleSubmit} className="space-y-4 mt-4">
       <div>
         <label htmlFor="assetName" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Magaca Hantida <span className="text-redError">*</span></label>
-        <input type="text" id="assetName" value={name} onChange={(e) => setName(e.target.value)} placeholder="Tusaale: CNC Machine" className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.name ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}/>
-        {errors.name && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.name}</p>}
+        <input type="text" id="assetName" value={name} onChange={(e) => setName(e.target.value)} placeholder="Tusaale: CNC Machine" className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.name ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} />
+        {errors.name && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.name}</p>}
       </div>
       <div>
         <label htmlFor="assetType" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Nooca Hantida <span className="text-redError">*</span></label>
@@ -148,17 +148,17 @@ const AssetForm: React.FC<AssetFormProps> = ({ onSubmit, onCancel, editingAsset 
           <option value="">-- Dooro Nooca --</option>
           {assetTypes.map(typeOpt => <option key={typeOpt} value={typeOpt}>{typeOpt}</option>)}
         </select>
-        {errors.type && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.type}</p>}
+        {errors.type && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.type}</p>}
       </div>
       <div>
         <label htmlFor="assetValue" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Qiimaha ($) <span className="text-redError">*</span></label>
-        <input type="number" id="assetValue" value={value} onChange={(e) => setValue(parseFloat(e.target.value) || '')} placeholder="Tusaale: 25000.00" className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.value ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}/>
-        {errors.value && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.value}</p>}
+        <input type="number" id="assetValue" value={value} onChange={(e) => setValue(parseFloat(e.target.value) || '')} placeholder="Tusaale: 25000.00" className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.value ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} />
+        {errors.value && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.value}</p>}
       </div>
       <div>
         <label htmlFor="purchaseDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Gadashada <span className="text-redError">*</span></label>
-        <input type="date" id="purchaseDate" value={purchaseDate} onChange={(e) => setPurchaseDate(e.target.value)} className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.purchaseDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}/>
-        {errors.purchaseDate && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.purchaseDate}</p>}
+        <input type="date" id="purchaseDate" value={purchaseDate} onChange={(e) => setPurchaseDate(e.target.value)} className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.purchaseDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} />
+        {errors.purchaseDate && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.purchaseDate}</p>}
       </div>
       <div>
         <label htmlFor="assignedTo" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Meelaynta <span className="text-redError">*</span></label>
@@ -166,12 +166,12 @@ const AssetForm: React.FC<AssetFormProps> = ({ onSubmit, onCancel, editingAsset 
           <option value="">-- Dooro Meelayn --</option>
           {assignedOptions.map(option => <option key={option} value={option}>{option}</option>)}
         </select>
-        {errors.assignedTo && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.assignedTo}</p>}
+        {errors.assignedTo && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.assignedTo}</p>}
       </div>
       <div className="flex justify-end space-x-3 mt-6">
         <button type="button" onClick={onCancel} className="bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 py-2 px-4 rounded-lg font-bold hover:bg-gray-200 dark:hover:bg-gray-600 transition">Jooji</button>
         <button type="submit" className="bg-primary text-white py-2 px-4 rounded-lg font-bold hover:bg-blue-700 flex items-center justify-center" disabled={loading}>
-          {loading ? <Loader2 className="animate-spin mr-2" size={20} /> : <Plus size={20} className="mr-2"/>} {editingAsset ? 'Cusboonaysii Hantida' : 'Ku Dar Hantida'}
+          {loading ? <Loader2 className="animate-spin mr-2" size={20} /> : <Plus size={20} className="mr-2" />} {editingAsset ? 'Cusboonaysii Hantida' : 'Ku Dar Hantida'}
         </button>
       </div>
     </form>
@@ -182,6 +182,7 @@ const AssetForm: React.FC<AssetFormProps> = ({ onSubmit, onCancel, editingAsset 
 // Main Fixed Assets Page Component
 export default function FixedAssetsSettingsPage() {
   const [assets, setAssets] = useState<FixedAsset[]>([]);
+  const [totalAssetExpense, setTotalAssetExpense] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('All');
@@ -201,6 +202,7 @@ export default function FixedAssetsSettingsPage() {
       if (!response.ok) throw new Error('Failed to fetch assets');
       const data = await response.json();
       setAssets(data.assets || []);
+      if (data.totalAssetExpense !== undefined) setTotalAssetExpense(data.totalAssetExpense);
     } catch (error) {
       console.error('Error fetching assets:', error);
       setToastMessage({ message: 'Qalad ayaa dhacay markii la soo saarayay hantida', type: 'error' });
@@ -211,17 +213,14 @@ export default function FixedAssetsSettingsPage() {
 
   // Statistics
   const totalAssetsCount = assets.length;
-  const totalAssetsValue = assets.reduce((sum, asset) => {
-    const numeric = Number((asset as any).value ?? 0);
-    return sum + (isNaN(numeric) ? 0 : numeric);
-  }, 0);
+  const totalAssetsValue = totalAssetExpense; // Replaced client-sum with server-calculated true expenses
   // Treat an asset as assigned if it has a non-empty assignedTo value
   const assignedAssetsCount = assets.filter(asset => (asset.assignedTo || '').trim().length > 0).length;
 
   const filteredAssets = assets.filter(asset => {
     const matchesSearch = asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          asset.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          asset.assignedTo.toLowerCase().includes(searchTerm.toLowerCase());
+      asset.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      asset.assignedTo.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = filterType === 'All' || asset.type === filterType;
     const matchesAssignedTo = filterAssignedTo === 'All' || asset.assignedTo === filterAssignedTo;
     return matchesSearch && matchesType && matchesAssignedTo;
@@ -249,9 +248,9 @@ export default function FixedAssetsSettingsPage() {
         const response = await fetch(`/api/settings/assets/${id}`, {
           method: 'DELETE',
         });
-        
+
         if (!response.ok) throw new Error('Failed to delete asset');
-        
+
         setAssets(prev => prev.filter(asset => asset.id !== id));
         setToastMessage({ message: 'Hantida si guul leh ayaa loo tirtiray!', type: 'success' });
       } catch (error) {
@@ -278,7 +277,7 @@ export default function FixedAssetsSettingsPage() {
           </Link>
           Fixed Assets
         </h1>
-        <Link 
+        <Link
           href="/settings/assets/add"
           title="Add new asset"
           className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center"
@@ -388,13 +387,13 @@ export default function FixedAssetsSettingsPage() {
           </div>
           {/* Rows */}
           <div className="divide-y divide-lightGray dark:divide-gray-700">
-              {loading ? (
+            {loading ? (
               <div className="px-4 py-8 text-center text-mediumGray dark:text-gray-400">
-                    <Loader2 className="animate-spin mx-auto mb-2" size={24} />
-                    <div>Waa la soo saarayaa hantida...</div>
+                <Loader2 className="animate-spin mx-auto mb-2" size={24} />
+                <div>Waa la soo saarayaa hantida...</div>
               </div>
-              ) : filteredAssets.length > 0 ? (
-                filteredAssets.map(asset => (
+            ) : filteredAssets.length > 0 ? (
+              filteredAssets.map(asset => (
                 <div key={asset.id} className="grid grid-cols-12 gap-4 items-center px-4 py-4 hover:bg-lightGray dark:hover:bg-gray-700 transition-colors">
                   <div className="col-span-3 flex items-center min-w-0">
                     <HardDrive size={18} className="text-primary mr-2 shrink-0" />
@@ -407,7 +406,7 @@ export default function FixedAssetsSettingsPage() {
                   <div className="col-span-2 text-darkGray dark:text-gray-100 font-semibold">${Number((asset as any).value ?? 0).toLocaleString()}</div>
                   <div className="col-span-2 text-mediumGray dark:text-gray-300">{new Date(asset.purchaseDate).toLocaleDateString()}</div>
                   <div className="col-span-2 flex items-center text-mediumGray dark:text-gray-300 min-w-0">
-                    {asset.assignedTo === 'Factory' ? <Building size={16} className="mr-1"/> : asset.assignedTo === 'Office' ? <Home size={16} className="mr-1"/> : <Briefcase size={16} className="mr-1"/>}
+                    {asset.assignedTo === 'Factory' ? <Building size={16} className="mr-1" /> : asset.assignedTo === 'Office' ? <Home size={16} className="mr-1" /> : <Briefcase size={16} className="mr-1" />}
                     <span className="truncate">{asset.assignedTo}</span>
                   </div>
                   <div className="col-span-1 flex items-center justify-end space-x-2">
@@ -419,11 +418,11 @@ export default function FixedAssetsSettingsPage() {
                     </button>
                   </div>
                 </div>
-                ))
-              ) : (
+              ))
+            ) : (
               <div className="px-4 py-6 text-center text-mediumGray dark:text-gray-400">Ma jiraan hanti la helay.</div>
-              )}
-        </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -454,7 +453,7 @@ export default function FixedAssetsSettingsPage() {
                         <Calendar size={16} className="mr-1" /> {new Date(asset.purchaseDate).toLocaleDateString()}
                       </div>
                       <div className="flex items-center text-mediumGray dark:text-gray-400 min-w-0">
-                        {asset.assignedTo === 'Factory' ? <Building size={16} className="mr-1"/> : asset.assignedTo === 'Office' ? <Home size={16} className="mr-1"/> : <Briefcase size={16} className="mr-1"/>}
+                        {asset.assignedTo === 'Factory' ? <Building size={16} className="mr-1" /> : asset.assignedTo === 'Office' ? <Home size={16} className="mr-1" /> : <Briefcase size={16} className="mr-1" />}
                         <span className="truncate">{asset.assignedTo}</span>
                       </div>
                     </div>
@@ -480,9 +479,9 @@ export default function FixedAssetsSettingsPage() {
       {/* Add/Edit Asset Modal */}
       {showAddEditModal && (
         <Modal title={editingAsset ? "Cusboonaysii Hantida" : "Ku Dar Hantida Cusub"} onClose={() => { setShowAddEditModal(false); setEditingAsset(null); }}>
-          <AssetForm 
-            onSubmit={editingAsset ? handleEditAsset : handleAddAsset} 
-            onCancel={() => { setShowAddEditModal(false); setEditingAsset(null); }} 
+          <AssetForm
+            onSubmit={editingAsset ? handleEditAsset : handleAddAsset}
+            onCancel={() => { setShowAddEditModal(false); setEditingAsset(null); }}
             editingAsset={editingAsset}
           />
         </Modal>

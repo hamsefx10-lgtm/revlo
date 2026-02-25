@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Layout from '../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import {
   ShoppingCart, Plus, Search, Filter,
   FileText, CheckCircle, Clock, ArrowUpRight, Loader2, AlertCircle
 } from 'lucide-react';
-import Toast from '../../components/common/Toast';
+import Toast from '@/components/common/Toast';
 
 export default function SalesPage() {
   const [sales, setSales] = useState<any[]>([]);

@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { User, Mail, Phone, Building, Briefcase, Settings, Edit, Loader2, DollarSign, Calendar, Clock } from 'lucide-react';
 
 export default function UserProfilePage() {

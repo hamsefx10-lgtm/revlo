@@ -3,13 +3,13 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { 
   ArrowLeft, Tag, Plus, Search, Filter, Edit, Trash2, X, Loader2, Info, 
   Briefcase, Building, Scale, CheckCircle, XCircle, ChevronRight,
   FileText, Download, Upload, Eye // General icons
 } from 'lucide-react';
-import Toast from '../../../components/common/Toast'; // Reuse Toast component
+import Toast from '@/components/common/Toast'; // Reuse Toast component
 
 // --- Types ---
 interface ExpenseCategory {

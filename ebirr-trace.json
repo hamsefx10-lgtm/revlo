@@ -1,0 +1,89 @@
+{
+  "cbeToEbirrTransfers": [
+    {
+      "id": "921a6781-ce50-4bee-a516-7b6e974a1b28",
+      "amount": 44145,
+      "date": "2025-12-03T00:00:00.000Z",
+      "desc": "Wareejin: transfer (Laga Wareejiyay: CBE)"
+    },
+    {
+      "id": "0bd412b5-9c82-4417-be7d-f4f5bd4a6150",
+      "amount": 20000,
+      "date": "2026-02-01T00:00:00.000Z",
+      "desc": "Wareejin: trn (Loo Wareejiyay: E-Birr)"
+    },
+    {
+      "id": "4cc13451-8fd6-4b10-bd19-e54901008ff4",
+      "amount": 20000,
+      "date": "2026-02-01T00:00:00.000Z",
+      "desc": "Wareejin: trn (Laga Wareejiyay: CBE)"
+    },
+    {
+      "id": "b4dc6506-a7f8-4b65-bbc8-7df68be2bce1",
+      "amount": 5000,
+      "date": "2026-02-01T00:00:00.000Z",
+      "desc": "Wareejin: to wallet (Laga Wareejiyay: CBE)"
+    },
+    {
+      "id": "3756158e-2e88-43e6-9cd4-8318554966f0",
+      "amount": 10000,
+      "date": "2026-02-01T00:00:00.000Z",
+      "desc": "Wareejin: To Wallet (Laga Wareejiyay: CBE)"
+    },
+    {
+      "id": "3071790f-68f7-49f9-b696-731ff2746d7f",
+      "amount": 5300,
+      "date": "2026-02-01T00:00:00.000Z",
+      "desc": "Wareejin: To Wallet (Loo Wareejiyay: E-Birr)"
+    },
+    {
+      "id": "e5c80183-72b1-43c0-8c50-c6839e2fbbc2",
+      "amount": 5300,
+      "date": "2026-02-01T00:00:00.000Z",
+      "desc": "Wareejin: To Wallet (Laga Wareejiyay: CBE)"
+    },
+    {
+      "id": "9d13207f-0a8f-4cf7-bd24-bf2b78738a77",
+      "amount": 44145,
+      "date": "2025-12-03T00:00:00.000Z",
+      "desc": "Wareejin: transfer (Loo Wareejiyay: E-Birr)"
+    },
+    {
+      "id": "863df826-9648-4502-8c57-05ce56889565",
+      "amount": 60000,
+      "date": "2025-11-17T00:00:00.000Z",
+      "desc": "Wareejin: ebirr lagu diray (Laga Wareejiyay: CBE)"
+    },
+    {
+      "id": "79f4a7c0-e77d-49ed-8988-6be7a17e3485",
+      "amount": 60000,
+      "date": "2025-11-17T00:00:00.000Z",
+      "desc": "Wareejin: ebirr lagu diray (Loo Wareejiyay: E-Birr)"
+    },
+    {
+      "id": "484ba9b6-4820-4e1b-9eba-ac92b3b3f4d9",
+      "amount": 5000,
+      "date": "2026-02-01T00:00:00.000Z",
+      "desc": "Wareejin: to wallet (Loo Wareejiyay: E-Birr)"
+    },
+    {
+      "id": "63d8576c-2657-4b90-8cc8-9224b673a8a3",
+      "amount": 16353.21,
+      "date": "2025-11-30T00:00:00.000Z",
+      "desc": "Wareejin: Transfer to wallet (Loo Wareejiyay: E-Birr)"
+    },
+    {
+      "id": "772df798-d9a5-40ac-a890-30a36d3a1018",
+      "amount": 16353.21,
+      "date": "2025-11-30T00:00:00.000Z",
+      "desc": "Wareejin: Transfer to wallet (Laga Wareejiyay: CBE)"
+    },
+    {
+      "id": "892c25ad-9d8e-4253-95ee-e65906d95801",
+      "amount": 10000,
+      "date": "2026-02-01T00:00:00.000Z",
+      "desc": "Wareejin: To Wallet (Loo Wareejiyay: E-Birr)"
+    }
+  ],
+  "cbeToSomewhereElse": []
+}

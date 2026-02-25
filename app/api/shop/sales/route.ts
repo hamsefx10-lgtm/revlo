@@ -49,8 +49,11 @@ export async function POST(req: NextRequest) {
 
             // Validate and prepare sale items
             for (const item of items) {
-                const product = await tx.product.findUnique({
-                    where: { id: item.productId },
+                const product = await tx.product.findFirst({
+                    where: {
+                        id: item.productId,
+                        companyId: currentUser.companyId
+                    },
                 });
 
                 if (!product) {
@@ -115,6 +118,7 @@ export async function POST(req: NextRequest) {
                     paidAmount: paidAmount !== undefined ? paidAmount : total,
                     notes,
                     userId: session.user.id,
+                    companyId: currentUser.companyId,
                     customerId: customerId || null,
                     items: {
                         create: saleItems
@@ -178,13 +182,22 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        const currentUser = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { companyId: true }
+        });
+
+        if (!currentUser?.companyId) {
+            return NextResponse.json({ error: 'User does not belong to a company' }, { status: 400 });
+        }
+
         const { searchParams } = new URL(req.url);
         const limit = parseInt(searchParams.get('limit') || '50');
         const offset = parseInt(searchParams.get('offset') || '0');
 
         const sales = await prisma.sale.findMany({
             where: {
-                userId: session.user.id,
+                companyId: currentUser.companyId,
             },
             include: {
                 items: true,

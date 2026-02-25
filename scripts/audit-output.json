@@ -1,0 +1,77 @@
+[
+  {
+    "name": "CBE",
+    "dbBalance": 25303,
+    "transactionsFound": 19,
+    "totalIn": 42342,
+    "totalOut": -8039,
+    "calculatedBalance": 50381,
+    "discrepancy": 25078,
+    "lastTransaction": {
+      "date": "2025-09-27T00:00:00.000Z",
+      "type": "EXPENSE",
+      "amount": -500,
+      "runningBalance": 25303
+    }
+  },
+  {
+    "name": "CBE",
+    "dbBalance": 39669,
+    "transactionsFound": 3,
+    "totalIn": 40000,
+    "totalOut": -331,
+    "calculatedBalance": 40331,
+    "discrepancy": 662,
+    "lastTransaction": {
+      "date": "2025-09-20T08:15:18.392Z",
+      "type": "INCOME",
+      "amount": 40000,
+      "runningBalance": 39669
+    }
+  },
+  {
+    "name": "E-Birr",
+    "dbBalance": 145432,
+    "transactionsFound": 24,
+    "totalIn": 520000,
+    "totalOut": -374568,
+    "calculatedBalance": 894568,
+    "discrepancy": 749136,
+    "lastTransaction": {
+      "date": "2025-09-30T12:26:04.569Z",
+      "type": "INCOME",
+      "amount": 20000,
+      "runningBalance": 145432
+    }
+  },
+  {
+    "name": "E-Birr",
+    "dbBalance": -509440.54,
+    "transactionsFound": 684,
+    "totalIn": 6877149,
+    "totalOut": -3911467.75,
+    "calculatedBalance": 10788616.75,
+    "discrepancy": 11298057.29,
+    "lastTransaction": {
+      "date": "2026-02-21T00:00:00.000Z",
+      "type": "EXPENSE",
+      "amount": -3000,
+      "runningBalance": -509440.54
+    }
+  },
+  {
+    "name": "CBE",
+    "dbBalance": 13149.69000000006,
+    "transactionsFound": 242,
+    "totalIn": 5944000,
+    "totalOut": -4958552.1,
+    "calculatedBalance": 10902552.1,
+    "discrepancy": 10889402.41,
+    "lastTransaction": {
+      "date": "2026-02-19T00:00:00.000Z",
+      "type": "INCOME",
+      "amount": 1000000,
+      "runningBalance": 13149.69
+    }
+  }
+]

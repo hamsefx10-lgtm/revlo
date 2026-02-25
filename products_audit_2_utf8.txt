@@ -1,0 +1,70 @@
+﻿node.exe : 
+(node:1788) [MODULE_TY
+PELESS_PACKAGE_JSON] 
+Warning: Module type 
+of file:///C:/Users/OM
+EN/projects/revlo-vr/s
+cripts/check-products.
+ts is not specified 
+and it doesn't parse 
+as CommonJS.
+At line:1 char:1
++ & "C:\Program Files\
+nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: ((node:1788   
+ ) [MO...se as Com    
+monJS.:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+Reparsing as ES 
+module because module 
+syntax was detected. 
+This incurs a 
+performance overhead.
+To eliminate this 
+warning, add "type": 
+"module" to C:\Users\O
+MEN\projects\revlo-vr\
+package.json.
+(Use `node 
+--trace-warnings ...` 
+to show where the 
+warning was created)
+Checking Product table...
+Total Products in DB: 42
+
+20 Most Recent Products:
+- ID: e9f93aec-3e36-4dd1-9b7a-009037aa2d5e | Name: CLEANSER  | SKU: SKU-1772014477543 | Stock: 0 | User: birshil1@gmail.com (14a1010e-6621-4163-bfb7-095755e5150e)
+- ID: 85fce19a-bdde-4784-87d8-272112ef6f84 | Name: FACEWAH | SKU: SKU-1772014456423 | Stock: 0 | User: birshil1@gmail.com (14a1010e-6621-4163-bfb7-095755e5150e)
+- ID: f8094ed5-adeb-41f1-8aae-2fb1465c0b45 | Name: anua  | SKU: 0 | Stock: 12 | User: birshil1@gmail.com (14a1010e-6621-4163-bfb7-095755e5150e)
+- ID: 8080d47b-17b6-4db5-844e-6c1fa0a11c2e | Name: vaclin | SKU: 6151100139511 | Stock: 94 | User: Abdimachet@gmail.com (bf4d576c-f6e1-403c-96fe-a49bb5ef67fb)
+- ID: 5c329770-48fa-4f79-a7b1-e33c518dc658 | Name: iphone 17 | SKU: 151100139510 | Stock: 106 | User: Abdimachet@gmail.com (bf4d576c-f6e1-403c-96fe-a49bb5ef67fb)
+- ID: 6bfc092c-7e34-4a75-9a84-c610cd4c52b3 | Name: iphone 16 | SKU: 151100139519 | Stock: 105 | User: Abdimachet@gmail.com (bf4d576c-f6e1-403c-96fe-a49bb5ef67fb)
+- ID: 4bc42aca-c13d-45c0-8fe2-a46aeb090e65 | Name: iphone 15 | SKU: 151100139518 | Stock: 104 | User: Abdimachet@gmail.com (bf4d576c-f6e1-403c-96fe-a49bb5ef67fb)
+- ID: 070b7aee-19db-4e4d-81a8-95de6e9f8dad | Name: iphone 14 | SKU: 151100139516 | Stock: 103 | User: Abdimachet@gmail.com (bf4d576c-f6e1-403c-96fe-a49bb5ef67fb)
+- ID: dbdb856e-547a-4a3e-8759-5e77936e1f89 | Name: iphone 13 | SKU: 151100139515 | Stock: 102 | User: Abdimachet@gmail.com (bf4d576c-f6e1-403c-96fe-a49bb5ef67fb)
+- ID: 8e96814a-bc8a-4b66-aef7-3249722f8adf | Name: iphone 12 | SKU: 151100139514 | Stock: 101 | User: Abdimachet@gmail.com (bf4d576c-f6e1-403c-96fe-a49bb5ef67fb)
+- ID: 68c1c1d4-d7e4-4f25-b10e-fa5c3ed273fa | Name: Example Product | SKU: 151100139511 | Stock: 400 | User: Abdimachet@gmail.com (bf4d576c-f6e1-403c-96fe-a49bb5ef67fb)
+- ID: 201a8fc0-b96c-4f8f-9957-b42876349947 | Name: Imitation 8 | SKU: GEN-68457 | Stock: 300 | User: Abdimachet1@gmail.com (5a2842b4-a4a6-4116-b928-fcfa61976d91)
+- ID: 279873a5-3fb0-4943-8d8e-e2ff2af4b4c9 | Name: Lamera u over size | SKU: GEN-3907 | Stock: 29 | User: Abdimachet1@gmail.com (5a2842b4-a4a6-4116-b928-fcfa61976d91)
+- ID: 101569d2-e3a6-4a2f-bdfb-2cc82b8785c6 | Name: Laamera get 50 cm | SKU: GEN-59978 | Stock: 20 | User: Abdimachet1@gmail.com (5a2842b4-a4a6-4116-b928-fcfa61976d91)
+- ID: 607adcf7-f1b1-497b-af91-3ddd13edfba7 | Name: Laamera get ganjel | SKU: GEN-64454 | Stock: 50 | User: Abdimachet1@gmail.com (5a2842b4-a4a6-4116-b928-fcfa61976d91)
+- ID: 3fa499f2-e898-4e94-8615-386b93825107 | Name: Imitation 8 | SKU: GEN-69826 | Stock: 300 | User: Abdimachet1@gmail.com (5a2842b4-a4a6-4116-b928-fcfa61976d91)
+- ID: d7e07197-fcca-4a84-a22c-cd3a7495e6c1 | Name: Lamera u over size | SKU: GEN-33620 | Stock: 29 | User: Abdimachet1@gmail.com (5a2842b4-a4a6-4116-b928-fcfa61976d91)
+- ID: a11dc14b-099c-43d3-852a-531628cebe1f | Name: Laamera get 50 cm | SKU: GEN-23667 | Stock: 20 | User: Abdimachet1@gmail.com (5a2842b4-a4a6-4116-b928-fcfa61976d91)
+- ID: 2228cc53-e1db-4c57-8fb0-613ca1f2d8f6 | Name: Laamera get ganjel | SKU: GEN-14833 | Stock: 50 | User: Abdimachet1@gmail.com (5a2842b4-a4a6-4116-b928-fcfa61976d91)
+- ID: baa13b13-964e-42ca-ac79-a4f6a44985b4 | Name: gfd | SKU: par001 | Stock: 22 | User: Abdimachet@gmail.com (bf4d576c-f6e1-403c-96fe-a49bb5ef67fb)
+
+Unique Users in Product Table: 0a53dee6-593b-496c-b995-2e3993194b49, bf4d576c-f6e1-403c-96fe-a49bb5ef67fb, 5a2842b4-a4a6-4116-b928-fcfa61976d91, 13ea637a-b61e-49f5-8917-dce7ba88af21, e4b89db5-c578-41fb-900b-88c4b61f8d6d, 6d370bd6-6ebe-41b2-8380-8cf09a64ecdd, 14a1010e-6621-4163-bfb7-095755e5150e

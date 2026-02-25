@@ -3,13 +3,13 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { 
   ArrowLeft, Scale, Plus, Search, Filter, Edit, Trash2, X, Loader2, Info, 
   User, Percent, DollarSign, CheckCircle, XCircle, ChevronRight, Calendar,
   Mail, Phone, List, LayoutGrid // Added List and LayoutGrid for view toggle
 } from 'lucide-react';
-import Toast from '../../../components/common/Toast'; // Reuse Toast component
+import Toast from '@/components/common/Toast'; // Reuse Toast component
 
 // --- Types ---
 interface Shareholder {

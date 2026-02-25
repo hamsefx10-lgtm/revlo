@@ -16,7 +16,7 @@ import {
     DollarSign,
     Scale
 } from 'lucide-react';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 
 export default function FinancialSummaryPage() {
     const [data, setData] = useState<any>(null);

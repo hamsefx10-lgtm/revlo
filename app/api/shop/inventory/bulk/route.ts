@@ -38,9 +38,12 @@ export async function POST(req: NextRequest) {
 
         for (const item of products) {
             try {
-                // Check if SKU exists
-                const existing = await prisma.product.findUnique({
-                    where: { sku: item.sku }
+                // Check if SKU exists within this company
+                const existing = await prisma.product.findFirst({
+                    where: {
+                        sku: item.sku,
+                        companyId: user.companyId
+                    }
                 });
 
                 if (existing) {
@@ -66,6 +69,7 @@ export async function POST(req: NextRequest) {
                                 type: 'Adjustment',
                                 quantity: item.stock,
                                 userId: session.user.id,
+                                companyId: user.companyId,
                                 reference: 'Bulk Import (Add)'
                             }
                         });
@@ -83,7 +87,8 @@ export async function POST(req: NextRequest) {
                             minStock: item.minStock,
                             description: item.description,
                             status: item.stock > item.minStock ? 'In Stock' : item.stock > 0 ? 'Low Stock' : 'Out of Stock',
-                            userId: session.user.id
+                            userId: session.user.id,
+                            companyId: user.companyId
                         }
                     });
 
@@ -94,6 +99,7 @@ export async function POST(req: NextRequest) {
                             type: 'Initial',
                             quantity: item.stock,
                             userId: session.user.id,
+                            companyId: user.companyId,
                             reference: 'Bulk Import (Initial)'
                         }
                     });

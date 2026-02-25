@@ -3,7 +3,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Layout from '../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import {
   ArrowLeft, Shield, Database, Settings, Users, FileText, AlertTriangle,
   CheckCircle, XCircle, RefreshCw, Download, Upload, Trash2, Edit,

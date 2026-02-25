@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { 
   ArrowLeft, DollarSign, Plus, Search, Filter, Calendar, 
   Download, Upload, Printer, Mail, MessageSquare, Send, 
@@ -16,7 +16,7 @@ import {
   ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, Tooltip, Legend, 
   BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart as RechartsLineChart, Line
 } from 'recharts';
-import Toast from '../../../components/common/Toast'; // Reuse Toast component
+import Toast from '@/components/common/Toast'; // Reuse Toast component
 
 // --- Types ---
 interface Expense {

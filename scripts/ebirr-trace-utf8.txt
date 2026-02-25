@@ -1,0 +1,752 @@
+﻿Found 3 accounts named E-Birr
+
+========================================
+Analyzing Account: E-Birr (ID: 4eb99e0e-addd-4de2-b68a-a3d538c43d03, Company: 8ae29f0b-b220-4010-a5f1-8812a45ead34)
+Current DB Balance: 145432
+========================================
+Date | Type | Amount | Running Balance | Details
+--------------------------------------------------
+2025-05-31 | EXPENSE      | -1678      | -1678 |  ΓÜá∩╕Å DIPPED NEGATIVE
+2025-06-11 | EXPENSE      | -1000      | -2678 | laxamadle 
+2025-06-17 | EXPENSE      | -2000      | -4678 | birta 
+2025-09-27 | EXPENSE      | -2000      | -6678 | Transport 
+2025-09-27 | EXPENSE      | -230000    | -236678 | Material expense - 2025-09-27 
+2025-09-27 | INCOME       | +500000    | 263322 | Advance Payment for Project: B 
+2025-09-29 | EXPENSE      | -2999      | 260323 | dhaqis 
+2025-09-29 | EXPENSE      | -50000     | 210323 | Salary payment for Hamse moali 
+2025-09-29 | EXPENSE      | -11001     | 199322 | intii u dhinayd ayaa la siiyay 
+2025-09-29 | EXPENSE      | -11001     | 188321 | tkdhg 
+2025-09-29 | EXPENSE      | -4000      | 184321 | da 
+2025-09-29 | EXPENSE      | -1000      | 183321 | aaaaaaaaaaaaaa 
+2025-09-29 | EXPENSE      | -12001     | 171320 | tkdhg 
+2025-09-30 | EXPENSE      | -200       | 171120 | darbiga cusub  
+2025-09-30 | EXPENSE      | -24        | 171096 | Material expense - 2025-09-30 
+2025-09-30 | EXPENSE      | -300       | 170796 | mar marka ayuu ka shaqaynayaa  
+2025-09-30 | EXPENSE      | -500       | 170296 | laxaamadle 
+2025-09-30 | EXPENSE      | -400       | 169896 | birta ayuu ka shaqeeyay  
+2025-09-30 | EXPENSE      | -499       | 169397 | klahlfsda 
+2025-09-30 | EXPENSE      | -18648     | 150749 | Material expense - 2025-09-30 
+2025-09-30 | EXPENSE      | -23618     | 127131 | Material expense - 2025-09-30 
+2025-09-30 | EXPENSE      | -700       | 126431 | birta ayuu ka shaqeeyay  
+2025-09-30 | EXPENSE      | -999       | 125432 | klahlfsda 
+2025-09-30 | INCOME       | +20000     | 145432 | Advance Payment for Project: n 
+
+Final Math for Account 4eb99e0e-addd-4de2-b68a-a3d538c43d03:
+Total In: 520000
+Total Out: 374568
+Expected Balance: 145432
+DB Balance: 145432
+
+========================================
+Analyzing Account: E-Birr (ID: ed07533f-41a4-4588-bcd4-08e920ca01bf, Company: cecb8c98-315a-4e69-9f1a-6a00dafd3aab)
+Current DB Balance: 0
+========================================
+Date | Type | Amount | Running Balance | Details
+--------------------------------------------------
+
+Final Math for Account ed07533f-41a4-4588-bcd4-08e920ca01bf:
+Total In: 0
+Total Out: 0
+Expected Balance: 0
+DB Balance: 0
+
+========================================
+Analyzing Account: E-Birr (ID: 3c156507-ea0a-4974-8a54-92f1e9dd519a, Company: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e)
+Current DB Balance: -509440.54
+========================================
+Date | Type | Amount | Running Balance | Details
+--------------------------------------------------
+0785-03-28 | EXPENSE      | -328785    | -328785 |  ΓÜá∩╕Å DIPPED NEGATIVE
+2025-05-30 | EXPENSE      | -900       | -329685 | xamaal 
+2025-05-31 | EXPENSE      | -2000      | -331685 | laxaamadle 
+2025-06-01 | EXPENSE      | -1000      | -332685 | Transport 
+2025-06-01 | EXPENSE      | -1000      | -333685 | laxaamadle 
+2025-06-01 | EXPENSE      | -15000     | -348685 | jarjaris mdf weeye transport m 
+2025-06-01 | EXPENSE      | -2000      | -350685 | Material expense - 2025-10-13 
+2025-06-01 | EXPENSE      | -1000      | -351685 | alaabo looso qaaday xamal 
+2025-06-01 | EXPENSE      | -7000      | -358685 | Material expense - 2025-10-26 
+2025-06-01 | EXPENSE      | -3900      | -362585 | Material expense - 2025-10-26 
+2025-06-01 | EXPENSE      | -9279      | -371864 | Material expense - 2025-10-26 
+2025-06-01 | EXPENSE      | -3500      | -375364 | Material expense - 2025-10-28 
+2025-06-02 | EXPENSE      | -1000      | -376364 | laxaamadle 
+2025-06-03 | EXPENSE      | -1000      | -377364 | salamun farsamayaqan 
+2025-06-03 | EXPENSE      | -1000      | -378364 | laxaamadle 
+2025-06-04 | EXPENSE      | -1200      | -379564 | salamun farsamayaqan  
+2025-06-04 | EXPENSE      | -700       | -380264 | xamaal? 
+2025-06-05 | EXPENSE      | -2450      | -382714 | project expense ayaa ku qoran  
+2025-06-08 | EXPENSE      | -1000      | -383714 | Transport 
+2025-06-09 | EXPENSE      | -500       | -384214 | project expense aya ku qoran  
+2025-06-09 | EXPENSE      | -1500      | -385714 | Transport 
+2025-06-09 | EXPENSE      | -1000      | -386714 | labor 
+2025-06-09 | EXPENSE      | -1680      | -388394 | Material expense - 2025-10-13 
+2025-06-09 | EXPENSE      | -200       | -388594 | Transport 
+2025-06-09 | EXPENSE      | -90600     | -479194 | Material expense - 2025-10-26 
+2025-06-09 | EXPENSE      | -1300      | -480494 | Material expense - 2025-10-28 
+2025-06-10 | EXPENSE      | -75000     | -555494 | omer yamani  
+2025-06-10 | EXPENSE      | -22000     | -577494 | Fixed Asset Purchase - daynabo 
+2025-06-10 | EXPENSE      | -22000     | -599494 | Fixed Asset Purchase - mashiin 
+2025-06-11 | EXPENSE      | -1500      | -600994 | --wu ka shaqeyay? 
+2025-06-13 | EXPENSE      | -2000      | -602994 | xamaale alaabta loogu qaaday  
+2025-06-13 | EXPENSE      | -1000      | -603994 | farxaan taxi  
+2025-06-14 | EXPENSE      | -3000      | -606994 | laguma cadaynin laborkads magi 
+2025-06-14 | EXPENSE      | -600       | -607594 | labor  
+2025-06-15 | EXPENSE      | -5000      | -612594 | labor 
+2025-06-15 | EXPENSE      | -450       | -613044 | Material expense - 2025-10-13 
+2025-06-16 | EXPENSE      | -1000      | -614044 | riinjiile 
+2025-06-16 | EXPENSE      | -250       | -614294 | taxi riinji lagusoo qaaday  
+2025-06-18 | EXPENSE      | -1000      | -615294 | labor aya  laguso qoroay un  
+2025-06-18 | EXPENSE      | -5300      | -620594 | Material expense - 2025-10-13 
+2025-06-18 | EXPENSE      | -1500      | -622094 | Material expense - 2025-10-13 
+2025-06-18 | EXPENSE      | -500       | -622594 | Material expense - 2025-10-13 
+2025-06-18 | EXPENSE      | -12000     | -634594 | Fixed Asset Purchase - driling 
+2025-06-18 | EXPENSE      | -55980     | -690574 | Fixed Asset Purchase - jiingad 
+2025-06-19 | EXPENSE      | -7000      | -697574 | laxamadle 
+2025-06-19 | EXPENSE      | -6550      | -704124 | Material expense - 2025-10-11 
+2025-06-19 | EXPENSE      | -1850      | -705974 | Material expense - 2025-10-11 
+2025-06-19 | EXPENSE      | -1300      | -707274 | riinjiile  
+2025-06-19 | EXPENSE      | -800       | -708074 | Material expense - 2025-10-26 
+2025-06-21 | EXPENSE      | -5000      | -713074 | laxaamadle 
+2025-06-24 | EXPENSE      | -1500      | -714574 | Material expense - 2025-10-11 
+2025-06-26 | EXPENSE      | -2000      | -716574 | laxamadle 
+2025-06-27 | EXPENSE      | -55980     | -772554 | Fixed Asset Purchase - jiingad 
+2025-06-27 | EXPENSE      | -7800      | -780354 | Fixed Asset Purchase - jiingad 
+2025-06-28 | EXPENSE      | -3200      | -783554 | laxaamadle 
+2025-06-28 | EXPENSE      | -6800      | -790354 | xamaal iyo transport 
+2025-06-29 | EXPENSE      | -2000      | -792354 | Riinjiile 
+2025-06-29 | EXPENSE      | -2000      | -794354 | Riinjiile 
+2025-06-29 | EXPENSE      | -2000      | -796354 | Riinjiile 
+2025-07-01 | EXPENSE      | -5800      | -802154 | Material expense - 2025-10-13 
+2025-07-01 | EXPENSE      | -1000      | -803154 | Material expense - 2025-10-13 
+2025-07-01 | EXPENSE      | -2000      | -805154 | riinjiile 
+2025-07-01 | EXPENSE      | -500       | -805654 | Transport 
+2025-07-02 | EXPENSE      | -3900      | -809554 | riinjiile 
+2025-07-02 | EXPENSE      | -2300      | -811854 | Material expense - 2025-10-13 
+2025-07-02 | EXPENSE      | -1500      | -813354 | laxaamadle 
+2025-07-02 | EXPENSE      | -1499      | -814853 | laxaamadle 
+2025-07-02 | EXPENSE      | -1500      | -816353 | laxaamadle  
+2025-07-03 | EXPENSE      | -700       | -817053 | transport weeye
+ 
+2025-07-03 | EXPENSE      | -2000      | -819053 | laxaamadle 
+2025-07-05 | EXPENSE      | -1100      | -820153 | riinjiile 
+2025-07-05 | EXPENSE      | -800       | -820953 | Transport 
+2025-07-07 | EXPENSE      | -2800      | -823753 | Material expense - 2025-10-13 
+2025-07-07 | EXPENSE      | -180000    | -1003753 | Fixed Asset Purchase - mator  
+2025-07-07 | EXPENSE      | -21400     | -1025153 | Fixed Asset Purchase - xadhiko 
+2025-07-07 | EXPENSE      | -60000     | -1085153 | Fixed Asset Purchase - comporo 
+2025-07-07 | EXPENSE      | -8500      | -1093653 | Fixed Asset Purchase - matoor  
+2025-07-08 | EXPENSE      | -14500     | -1108153 | Material expense - 2025-10-26 
+2025-07-08 | EXPENSE      | -13500     | -1121653 | Material expense - 2025-10-26 
+2025-07-08 | EXPENSE      | -3000      | -1124653 | laxaamadle 
+2025-07-10 | EXPENSE      | -1500      | -1126153 | laxaamadle 
+2025-07-11 | EXPENSE      | -1000      | -1127153 | riinjiile 
+2025-07-11 | EXPENSE      | -1000      | -1128153 | xamaale suhayb 
+2025-07-11 | EXPENSE      | -1000      | -1129153 | laxaamadle 
+2025-07-12 | EXPENSE      | -1500      | -1130653 | riinjiile 
+2025-07-12 | EXPENSE      | -2540      | -1133193 | laxaamadle 
+2025-07-12 | EXPENSE      | -1350      | -1134543 | Material expense - 2025-10-26 
+2025-07-12 | EXPENSE      | -1180      | -1135723 | Material expense - 2025-10-26 
+2025-07-13 | EXPENSE      | -2000      | -1137723 | laxaamadle 
+2025-07-13 | EXPENSE      | -1100      | -1138823 | Material expense - 2025-10-26 
+2025-07-14 | EXPENSE      | -3800      | -1142623 | Material expense - 2025-10-26 
+2025-07-14 | EXPENSE      | -3560      | -1146183 | Material expense - 2025-10-26 
+2025-07-15 | EXPENSE      | -18750     | -1164933 | Material expense - 2025-10-27 
+2025-07-20 | EXPENSE      | -700       | -1165633 | riijiile 
+2025-07-20 | EXPENSE      | -3500      | -1169133 | sadam cali xamalka almuniamka  
+2025-07-21 | EXPENSE      | -46790     | -1215923 | Material expense - 2025-10-26 
+2025-07-21 | EXPENSE      | -25650     | -1241573 | Material expense - 2025-10-26 
+2025-07-22 | EXPENSE      | -2500      | -1244073 | c wasac 
+2025-07-22 | EXPENSE      | -2850      | -1246923 | Material expense - 2025-10-26 
+2025-07-23 | EXPENSE      | -15480     | -1262403 | Fixed Asset Purchase - musbaar 
+2025-07-29 | EXPENSE      | -130000    | -1392403 | Material expense - 2025-10-26 
+2025-07-30 | EXPENSE      | -3000      | -1395403 | shaqo gacmed 
+2025-08-01 | EXPENSE      | -2100      | -1397503 | Material expense - 2025-10-13 
+2025-08-04 | EXPENSE      | -1000      | -1398503 | Laxaamadle 
+2025-08-04 | EXPENSE      | -18440     | -1416943 | Material expense - 2025-10-27 
+2025-08-04 | EXPENSE      | -13165     | -1430108 | Material expense - 2025-10-28 
+2025-08-06 | EXPENSE      | -2000      | -1432108 | Laxaamadle 
+2025-08-06 | EXPENSE      | -2650      | -1434758 | Material expense - 2025-10-27 
+2025-08-08 | EXPENSE      | -1000      | -1435758 | Riinjiile 
+2025-08-08 | EXPENSE      | -6400      | -1442158 | totalka labor ka nasra site ku 
+2025-08-11 | EXPENSE      | -78530     | -1520688 | Material expense - 2025-10-27 
+2025-08-11 | EXPENSE      | -800       | -1521488 | Xamaalka alaabta 
+2025-08-13 | EXPENSE      | -45009     | -1566497 | maykal 
+2025-08-14 | EXPENSE      | -138300    | -1704797 | Material expense - 2025-10-28 
+2025-08-15 | EXPENSE      | -17100     | -1721897 | shaqalaha ka shaqeeyay wixii k 
+2025-08-16 | EXPENSE      | -1500      | -1723397 | Xamaal c abdiwali 
+2025-08-18 | EXPENSE      | -163620    | -1887017 | Material expense - 2025-10-27 
+2025-08-18 | EXPENSE      | -51400     | -1938417 | Material expense - 2025-10-27 
+2025-08-22 | EXPENSE      | -2300      | -1940717 | Riinjiile 
+2025-08-23 | EXPENSE      | -3000      | -1943717 | Material expense - 2025-10-27 
+2025-08-23 | EXPENSE      | -550       | -1944267 | Material expense - 2025-10-27 
+2025-08-23 | EXPENSE      | -2160      | -1946427 | Material expense - 2025-10-28 
+2025-08-24 | EXPENSE      | -7300      | -1953727 | Laxaamadle afar phase oo lakal 
+2025-08-24 | EXPENSE      | -3000      | -1956727 | Laxaamadle 
+2025-08-24 | EXPENSE      | -2500      | -1959227 | Laxaamadle 
+2025-08-24 | EXPENSE      | -4000      | -1963227 | Laxaamadle 
+2025-08-24 | EXPENSE      | -15000     | -1978227 | totalka shaqalah abdulahi kura 
+2025-08-25 | EXPENSE      | -8500      | -1986727 | Riinjiile halmar ayaan diwaan  
+2025-08-25 | EXPENSE      | -11950     | -1998677 | Material expense - 2025-10-27 
+2025-08-26 | EXPENSE      | -41500     | -2040177 | waa totalka lacagtii uu c waas 
+2025-08-26 | EXPENSE      | -25350     | -2065527 | Material expense - 2025-08-26 
+2025-08-27 | EXPENSE      | -800       | -2066327 | XAMAAL DHOBWYN SIT MATERIAL 
+2025-08-27 | EXPENSE      | -39750     | -2106077 | Material expense - 2025-10-28 
+2025-08-28 | EXPENSE      | -300       | -2106377 | XAMAAL ALMUnium 
+2025-08-30 | EXPENSE      | -500       | -2106877 | jarjaris tawale 
+2025-08-30 | EXPENSE      | -1200      | -2108077 | samayn sanduq 
+2025-08-31 | EXPENSE      | -1200      | -2109277 | samaynta sanduq muraydaha 
+2025-09-02 | EXPENSE      | -450900    | -2560177 | Material expense - 2025-10-28 
+2025-09-04 | EXPENSE      | -8900      | -2569077 | Material expense - 2025-10-28 
+2025-09-04 | EXPENSE      | -1100      | -2570177 | shaqaalaha ka shaqeeyay  
+2025-09-05 | EXPENSE      | -1500      | -2571677 | xidhxidhis kuraas  
+2025-09-08 | EXPENSE      | -2500      | -2574177 | xamaalka miiska lagu qaaday  
+2025-09-09 | EXPENSE      | -22000     | -2596177 | lacagta transport iyo xamaal k 
+2025-09-10 | EXPENSE      | -4500      | -2600677 | kharakhska shaqalaha ku baxay  
+2025-09-11 | EXPENSE      | -6000      | -2606677 | transport  
+2025-09-11 | EXPENSE      | -3000      | -2609677 | Material expense - 2025-10-28 
+2025-09-11 | EXPENSE      | -3600      | -2613277 | Transport 
+2025-09-12 | EXPENSE      | -6000      | -2619277 | kirada alabta iyo wiilasha bab 
+2025-09-13 | EXPENSE      | -27080     | -2646357 | Material expense - 2025-10-28 
+2025-09-14 | EXPENSE      | -800       | -2647157 | xamaal  
+2025-09-17 | EXPENSE      | -11000     | -2658157 | Material expense - 2025-10-26 
+2025-09-17 | EXPENSE      | -28800     | -2686957 | totalka lacagta ku baxday shaq 
+2025-09-17 | EXPENSE      | -17800     | -2704757 | totalka kharashka shaqalaha ku 
+2025-09-17 | EXPENSE      | -24190     | -2728947 | Material expense - 2025-10-28 
+2025-09-18 | EXPENSE      | -5000      | -2733947 | maykal 
+2025-09-18 | EXPENSE      | -1150      | -2735097 | Fixed Asset Purchase - faylal 
+2025-09-19 | EXPENSE      | -135200    | -2870297 | totalka shaqalaha dhagaxbuur w 
+2025-09-20 | EXPENSE      | -1000      | -2871297 | subayb damer qadiye 
+2025-09-27 | EXPENSE      | -2785.75   | -2874082.75 | Khidmad transactions 3months 
+2025-09-28 | DEBT_TAKEN   | -192650    | -3066732.75 |  
+2025-09-30 | EXPENSE      | -68750     | -3135482.75 | Material expense - 2025-10-28 
+2025-10-01 | EXPENSE      | -10000     | -3145482.75 | alab transport dhoobawayn site 
+2025-10-02 | DEBT_TAKEN   | -272050    | -3417532.75 |  
+2025-10-10 | EXPENSE      | -47550     | -3465082.75 | Material expense - 2025-10-28 
+2025-10-10 | INCOME       | +400000    | -3065082.75 | Advance Payment for Project: N 
+2025-10-10 | INCOME       | +55000     | -3010082.75 | Advance Payment for Project: N 
+2025-10-10 | INCOME       | +500000    | -2510082.75 | Advance Payment for Project: B 
+2025-10-10 | INCOME       | +400000    | -2110082.75 | Advance Payment for Project: A 
+2025-10-10 | INCOME       | +63000     | -2047082.75 | Advance Payment for Project: S 
+2025-10-10 | INCOME       | +48000     | -1999082.75 | Advance Payment for Project: M 
+2025-10-10 | INCOME       | +39000     | -1960082.75 | Advance Payment for Project: W 
+2025-10-10 | INCOME       | +200000    | -1760082.75 | Advance Payment for Project: S 
+2025-10-10 | INCOME       | +45000     | -1715082.75 | Advance Payment for Project: M 
+2025-10-10 | INCOME       | +50000     | -1665082.75 | Advance Payment for Project: H 
+2025-10-10 | INCOME       | +30000     | -1635082.75 | Advance Payment for Project: M 
+2025-10-10 | INCOME       | +233850    | -1401232.75 | Advance Payment for Project: N 
+2025-10-10 | INCOME       | +143000    | -1258232.75 | Advance Payment for Project: X 
+2025-10-10 | INCOME       | +90000     | -1168232.75 | Advance Payment for Project: G 
+2025-10-10 | INCOME       | +38000     | -1130232.75 | Advance Payment for Project: N 
+2025-10-10 | INCOME       | +50000     | -1080232.75 | Advance Payment for Project: S 
+2025-10-10 | INCOME       | +120000    | -960232.75 | Advance Payment for Project: S 
+2025-10-10 | INCOME       | +1322299   | 362066.25 | Advance Payment for Project: D 
+2025-10-10 | INCOME       | +18000     | 380066.25 | Advance Payment for Project: N 
+2025-10-10 | INCOME       | +45000     | 425066.25 | Advance Payment for Project: X 
+2025-10-10 | INCOME       | +50000     | 475066.25 | Advance Payment for Project: N 
+2025-10-11 | EXPENSE      | -5000      | 470066.25 | labor 
+2025-10-13 | EXPENSE      | -21000     | 449066.25 | Material expense - 2025-10-13 
+2025-10-13 | EXPENSE      | -1000      | 448066.25 | Material expense - 2025-10-13 
+2025-10-13 | EXPENSE      | -1         | 448065.25 | error 
+2025-10-14 | EXPENSE      | -1200      | 446865.25 | xamaalka alaabta  
+2025-10-14 | DEBT_TAKEN   | -384727    | 62138.25 | xisaabtan waxay taala telegram 
+2025-10-15 | EXPENSE      | -3000      | 59138.25 | laxaamadle 
+2025-10-15 | EXPENSE      | -4000      | 55138.25 | laxaamadle 
+2025-10-15 | EXPENSE      | -263583    | -208444.75 |  ΓÜá∩╕Å DIPPED NEGATIVE
+2025-10-18 | EXPENSE      | -790       | -209234.75 | Xamaalka alabta 
+2025-10-19 | EXPENSE      | -118699    | -327933.75 | Salary payment for hamse maoli 
+2025-10-20 | EXPENSE      | -1000      | -328933.75 | riinjiile 
+2025-10-21 | EXPENSE      | -43700     | -372633.75 | Material expense - 2025-11-05 
+2025-10-21 | EXPENSE      | -1000      | -373633.75 | riinjiile 
+2025-10-21 | EXPENSE      | -10000     | -383633.75 | Salary payment for Farxaan Moh 
+2025-10-22 | EXPENSE      | -1500      | -385133.75 | Xamaal 
+2025-10-22 | EXPENSE      | -1800      | -386933.75 |  
+2025-10-22 | EXPENSE      | -25000     | -411933.75 | almuniamka ayuu ka shaqeeyay  
+2025-10-22 | DEBT_REPAID  | +25000     | -386933.75 | MAGCC dayn kaso xarotay  
+2025-10-23 | EXPENSE      | -3500      | -390433.75 | kirada ganjeelka 
+ 
+2025-10-23 | EXPENSE      | -2000      | -392433.75 | Salary payment for Farxaan Moh 
+2025-10-25 | EXPENSE      | -2500      | -394933.75 | mahamed abdi qadir  
+2025-10-25 | EXPENSE      | -1200      | -396133.75 | Material expense - 2025-11-09 
+2025-10-25 | EXPENSE      | -5000      | -401133.75 | Salary payment for Ahmad  - 20 
+2025-10-25 | EXPENSE      | -550       | -401683.75 |  
+2025-10-27 | EXPENSE      | -3600      | -405283.75 | Material expense - 2025-10-27 
+2025-10-27 | EXPENSE      | -3300      | -408583.75 | Material expense - 2025-11-07 
+2025-10-27 | EXPENSE      | -10000     | -418583.75 | salamun wixi ku baxay  
+2025-10-27 | EXPENSE      | -10000     | -428583.75 | salamuun  
+2025-10-28 | EXPENSE      | -6400      | -434983.75 | shaqalaha nimco site wixii ku  
+2025-10-28 | INCOME       | +250000    | -184983.75 | Advance Payment for Project: D ΓÜá∩╕Å DIPPED NEGATIVE
+2025-10-28 | INCOME       | +100000    | -84983.75 | Advance Payment for Project: C ΓÜá∩╕Å DIPPED NEGATIVE
+2025-10-28 | INCOME       | +105000    | 20016.25 | Advance Payment for Project: H 
+2025-10-29 | EXPENSE      | -4500      | 15516.25 |  
+2025-10-29 | EXPENSE      | -700       | 14816.25 |  
+2025-10-30 | EXPENSE      | -2000      | 12816.25 |  
+2025-10-30 | EXPENSE      | -4000      | 8816.25 | Salary payment for Farxaan Moh 
+2025-10-30 | EXPENSE      | -2000      | 6816.25 |  
+2025-10-30 | EXPENSE      | -1000      | 5816.25 | nijaar ayuu ka shaqeeyay 
+2025-10-30 | EXPENSE      | -6500      | -683.75 | salamun laxamadle ΓÜá∩╕Å DIPPED NEGATIVE
+2025-10-30 | EXPENSE      | -1400      | -2083.75 | amaniwal nijaar 
+2025-10-30 | EXPENSE      | -1000      | -3083.75 | Salary payment for Farxaan Moh 
+2025-10-31 | EXPENSE      | -20000     | -23083.75 | Salary payment for Ahmed Moham 
+2025-10-31 | EXPENSE      | -600       | -23683.75 | Taxi/Xamaal - Xamaal 
+2025-10-31 | EXPENSE      | -3000      | -26683.75 | Salary payment for Farxaan Moh 
+2025-10-31 | EXPENSE      | -1000      | -27683.75 | xafiiska cusub  
+2025-10-31 | EXPENSE      | -1000      | -28683.75 | xafiiska cusub 
+2025-10-31 | EXPENSE      | -399       | -29082.75 | Salary payment for hamse maoli 
+2025-11-01 | EXPENSE      | -44000     | -73082.75 | Salary payment for Ahmad  - 20 
+2025-11-01 | EXPENSE      | -589       | -73671.75 | Taxi/Xamaal - Xamaal 
+2025-11-01 | EXPENSE      | -1000      | -74671.75 | Salary payment for Farxaan Moh 
+2025-11-01 | EXPENSE      | -1050      | -75721.75 | xafiiska cusub  
+2025-11-01 | EXPENSE      | -2058      | -77779.75 | Salary payment for hamse maoli 
+2025-11-02 | EXPENSE      | -2000      | -79779.75 | Salary payment for Farxaan Lax 
+2025-11-02 | EXPENSE      | -1500      | -81279.75 | xafiiska cusub 
+2025-11-02 | EXPENSE      | -1000      | -82279.75 | xafiiska cusub  
+2025-11-02 | EXPENSE      | -1000      | -83279.75 | Taxi/Xamaal - Xamaal 
+2025-11-03 | EXPENSE      | -62460     | -145739.75 | Salary payment for Farxaan Moh 
+2025-11-04 | EXPENSE      | -2000      | -147739.75 | Salary payment for Farxaan Moh 
+2025-11-04 | EXPENSE      | -10000     | -157739.75 | kirada xafiiska 
+2025-11-04 | EXPENSE      | -1550      | -159289.75 | Salary payment for hamse maoli 
+2025-11-05 | INCOME       | +20000     | -139289.75 | Advance Payment for Project: X 
+2025-11-06 | EXPENSE      | -600       | -139889.75 | Kiep mashiino 
+2025-11-06 | DEBT_TAKEN   | -1500      | -141389.75 | nuur loo diray - nuur loo dira 
+2025-11-09 | EXPENSE      | -2000      | -143389.75 |  
+2025-11-11 | EXPENSE      | -1000      | -144389.75 | Material expense - 2025-11-29 
+2025-11-11 | EXPENSE      | -2000      | -146389.75 | Salary payment for Farxaan Moh 
+2025-11-11 | EXPENSE      | -1000      | -147389.75 | Salary payment for Farxaan Moh 
+2025-11-12 | EXPENSE      | -2000      | -149389.75 | Material expense - 2025-11-29 
+2025-11-12 | EXPENSE      | -3000      | -152389.75 | Salary payment for Farxaan Moh 
+2025-11-12 | DEBT_TAKEN   | -12000     | -164389.75 | sacada laydhka farxaan - sacad 
+2025-11-12 | EXPENSE      | -4000      | -168389.75 | shaqale mashruc 
+2025-11-14 | EXPENSE      | -2000      | -170389.75 | c waasax 
+2025-11-14 | EXPENSE      | -370       | -170759.75 | Salary payment for hamse maoli 
+2025-11-15 | EXPENSE      | -4000      | -174759.75 | Material expense - 2025-11-29 
+2025-11-15 | EXPENSE      | -400       | -175159.75 | Taxi/Xamaal - Taxi 
+2025-11-15 | EXPENSE      | -10000     | -185159.75 | c wasac masjid hoob ka shaqeey 
+2025-11-15 | EXPENSE      | -71800     | -256959.75 | Material expense - 2025-12-07 
+2025-11-15 | EXPENSE      | -710       | -257669.75 | Salary payment for hamse maoli 
+2025-11-16 | EXPENSE      | -2000      | -259669.75 | Salary payment for Farxaan Moh 
+2025-11-16 | EXPENSE      | -2800      | -262469.75 | Taxi/Xamaal - Xamaal 
+2025-11-16 | EXPENSE      | -5000      | -267469.75 | Salary payment for Farxaan Moh 
+2025-11-16 | EXPENSE      | -1000      | -268469.75 | Taxi/Xamaal - Xamaal 
+2025-11-16 | DEBT_TAKEN   | -15000     | -283469.75 | haawo ayaa loo diray  - haawo  
+2025-11-17 | EXPENSE      | -1000      | -284469.75 | Taxi/Xamaal - Taxi 
+2025-11-17 | EXPENSE      | -400       | -284869.75 | Expense 
+2025-11-17 | EXPENSE      | -200       | -285069.75 | Taxi/Xamaal - Taxi 
+2025-11-17 | EXPENSE      | -3700      | -288769.75 | Salary payment for Ahmad  - 20 
+2025-11-17 | EXPENSE      | -2000      | -290769.75 | Salary payment for Farxaan Moh 
+2025-11-17 | TRANSFER_OUT |            | -290769.75 | Wareejin: ebirr lagu diray (Lo 
+2025-11-17 | TRANSFER_IN  | +60000     | -230769.75 | Wareejin: ebirr lagu diray (La 
+2025-11-17 | EXPENSE      | -70        | -230839.75 | Salary payment for hamse maoli 
+2025-11-18 | EXPENSE      | -300       | -231139.75 | Taxi/Xamaal - Taxi 
+2025-11-18 | EXPENSE      | -150       | -231289.75 | Taxi/Xamaal - Taxi 
+2025-11-18 | DEBT_TAKEN   | -10000     | -241289.75 | suhayra lo diray 
+2025-11-19 | EXPENSE      | -800       | -242089.75 | xamaal 
+2025-11-19 | DEBT_TAKEN   | -5000      | -247089.75 | hibo loo diray  - hibo loo dir 
+2025-11-20 | EXPENSE      | -2000      | -249089.75 | Salary payment for Farxaan Moh 
+2025-11-20 | EXPENSE      | -1925      | -251014.75 | Salary payment for hamse maoli 
+2025-11-20 | EXPENSE      | -2000      | -253014.75 | Salary payment for Farxaan Moh 
+2025-11-20 | DEBT_REPAID  | +52000     | -201014.75 | dayn kaso xarootay xasan c mur 
+2025-11-20 | DEBT_TAKEN   | -22094     | -223108.75 | Expense 
+2025-11-20 | DEBT_REPAID  | +88000     | -135108.75 | dayn kasoo xarootay nasra 
+2025-11-20 | DEBT_REPAID  | +30000     | -105108.75 | dayn kaso xarootay ugaas ibraa 
+2025-11-20 | DEBT_TAKEN   | -30000     | -135108.75 | Expense 
+2025-11-21 | EXPENSE      | -350       | -135458.75 | Taxi/Xamaal - Taxi 
+2025-11-21 | EXPENSE      | -1000      | -136458.75 | Taxi/Xamaal - Xamaal 
+2025-11-21 | EXPENSE      | -13000     | -149458.75 | Material expense - 2025-11-28 
+2025-11-21 | EXPENSE      | -600       | -150058.75 | Taxi/Xamaal - Taxi 
+2025-11-21 | EXPENSE      | -52000     | -202058.75 | Material expense - 2025-11-29 
+2025-11-21 | EXPENSE      | -5500      | -207558.75 | Material expense - 2025-11-29 
+2025-11-21 | EXPENSE      | -495       | -208053.75 | Salary payment for hamse maoli 
+2025-11-21 | EXPENSE      | -10000     | -218053.75 | c waasac 
+2025-11-21 | DEBT_TAKEN   | -15000     | -233053.75 | hibo loo diray - hibo loo dira 
+2025-11-21 | EXPENSE      | -1000      | -234053.75 | Transport 
+2025-11-22 | EXPENSE      | -14900     | -248953.75 | Material expense - 2025-12-08 
+2025-11-22 | EXPENSE      | -12200     | -261153.75 | Material expense - 2025-12-08 
+2025-11-22 | EXPENSE      | -700       | -261853.75 | Material expense - 2025-12-08 
+2025-11-22 | EXPENSE      | -2000      | -263853.75 | laxaamadle 
+2025-11-22 | EXPENSE      | -200       | -264053.75 | Taxi/Xamaal - Taxi 
+2025-11-22 | EXPENSE      | -1000      | -265053.75 | Taxi/Xamaal - Xamaal 
+2025-11-22 | EXPENSE      | -6950      | -272003.75 | Salary payment for hamse maoli 
+2025-11-22 | DEBT_TAKEN   | -90000     | -362003.75 | farxaan loo diray - farxaan lo 
+2025-11-23 | EXPENSE      | -600       | -362603.75 | Taxi/Xamaal - Xamaal 
+2025-11-23 | DEBT_TAKEN   | -3200      | -365803.75 |  
+2025-11-23 | EXPENSE      | -5740      | -371543.75 | Material expense - 2025-12-09 
+2025-11-23 | EXPENSE      | -150       | -371693.75 | Taxi/Xamaal - Taxi 
+2025-11-23 | EXPENSE      | -1000      | -372693.75 | Taxi/Xamaal - Xamaal 
+2025-11-23 | EXPENSE      | -2000      | -374693.75 | cwaasac 
+2025-11-23 | EXPENSE      | -1310      | -376003.75 | Salary payment for hamse maoli 
+2025-11-23 | EXPENSE      | -6500      | -382503.75 | salamuun 
+2025-11-24 | EXPENSE      | -5000      | -387503.75 | almuniam 
+2025-11-24 | EXPENSE      | -5000      | -392503.75 | cwaasac 
+2025-11-24 | EXPENSE      | -1000      | -393503.75 | Taxi/Xamaal - Xamaal 
+2025-11-24 | EXPENSE      | -5000      | -398503.75 | Dhasalayn abara rinjile 
+2025-11-24 | EXPENSE      | -4500      | -403003.75 | laxaamadle 
+2025-11-24 | EXPENSE      | -855       | -403858.75 | Salary payment for hamse maoli 
+2025-11-24 | DEBT_TAKEN   | -10000     | -413858.75 | ahmed abdirahmaan ayaan u dira 
+2025-11-24 | EXPENSE      | -15670     | -429528.75 | Material expense - 2026-01-26 
+2025-11-24 | EXPENSE      | -4500      | -434028.75 | laxaamadle 
+2025-11-25 | EXPENSE      | -1200      | -435228.75 | Transport 
+2025-11-25 | EXPENSE      | -6050      | -441278.75 | Salary payment for hamse maoli 
+2025-11-25 | EXPENSE      | -5450      | -446728.75 | Material expense - 2026-01-26 
+2025-11-25 | EXPENSE      | -6500      | -453228.75 | salamun laxamadle 
+2025-11-26 | EXPENSE      | -5000      | -458228.75 | c waasac  
+2025-11-26 | EXPENSE      | -4650      | -462878.75 | Material expense - 2026-01-26 
+2025-11-26 | EXPENSE      | -2000      | -464878.75 | Salary payment for Farxaan Moh 
+2025-11-26 | EXPENSE      | -695       | -465573.75 | Salary payment for hamse maoli 
+2025-11-26 | EXPENSE      | -1000      | -466573.75 | Salary payment for Farxaan Moh 
+2025-11-27 | EXPENSE      | -500       | -467073.75 | Taxi/Xamaal - Xamaal 
+2025-11-27 | EXPENSE      | -1800      | -468873.75 | Material expense - 2025-12-10 
+2025-11-27 | EXPENSE      | -2300      | -471173.75 | laxaamadle 
+2025-11-27 | EXPENSE      | -5000      | -476173.75 | c waasac 
+2025-11-27 | EXPENSE      | -5000      | -481173.75 | riinjiile  
+2025-11-28 | EXPENSE      | -1200      | -482373.75 | tigisdh dhoobawayn  
+2025-11-28 | EXPENSE      | -2550      | -484923.75 | Material expense - 2025-12-10 
+2025-11-28 | EXPENSE      | -88500     | -573423.75 | Material expense - 2025-12-10 
+2025-11-28 | EXPENSE      | -3830      | -577253.75 | Salary payment for hamse maoli 
+2025-11-28 | EXPENSE      | -3000      | -580253.75 | Salary payment for Farxaan Moh 
+2025-11-28 | INCOME       | +95000     | -485253.75 | Advance Payment for Project: m 
+2025-11-29 | EXPENSE      | -5000      | -490253.75 | riinjiile 
+2025-11-29 | EXPENSE      | -1500      | -491753.75 | riinjiiile 
+2025-11-29 | DEBT_TAKEN   | -2000      | -493753.75 | hibo loo diray  
+2025-11-30 | EXPENSE      | -400       | -494153.75 | c wwasac 
+2025-11-30 | EXPENSE      | -500       | -494653.75 | Material expense - 2025-11-30 
+2025-11-30 | EXPENSE      | -1998      | -496651.75 | tacab 
+2025-11-30 | EXPENSE      | -2000      | -498651.75 | riinjiile 
+2025-11-30 | EXPENSE      | -1400      | -500051.75 | Taxi/Xamaal - Xamaal 
+2025-11-30 | EXPENSE      | -1000      | -501051.75 | ahmed matoor hagajiyay  
+2025-11-30 | TRANSFER_OUT |            | -501051.75 | Wareejin: Transfer to wallet ( 
+2025-11-30 | TRANSFER_IN  | +16353.21  | -484698.54 | Wareejin: Transfer to wallet ( 
+2025-12-01 | EXPENSE      | -13000     | -497698.54 | Salary payment for Ahmad  - 20 
+2025-12-02 | EXPENSE      | -375       | -498073.54 | Taxi/Xamaal - Xamaal 
+2025-12-02 | EXPENSE      | -700       | -498773.54 | c waasac  
+2025-12-02 | DEBT_REPAID  | +22703     | -476070.54 | MAGCC dayn kaso xarotay  
+2025-12-03 | TRANSFER_OUT |            | -476070.54 | Wareejin: transfer (Loo Wareej 
+2025-12-03 | TRANSFER_IN  | +44145     | -431925.54 | Wareejin: transfer (Laga Waree 
+2025-12-04 | EXPENSE      | -2000      | -433925.54 | barakat nijaar 
+2025-12-05 | EXPENSE      | -10000     | -443925.54 | Office Rent - Monthly - 2025-1 
+2025-12-05 | EXPENSE      | -5000      | -448925.54 | farxaan almunaim 
+2025-12-05 | EXPENSE      | -2000      | -450925.54 | laxaamadle  
+2025-12-05 | DEBT_TAKEN   | -7000      | -457925.54 | hibo loo diray  
+2025-12-05 | EXPENSE      | -13000     | -470925.54 | Salary payment for Ahmad  - 20 
+2025-12-06 | EXPENSE      | -1290      | -472215.54 | mohamed aadan 
+2025-12-06 | EXPENSE      | -3000      | -475215.54 | laxaamadle 
+2025-12-06 | EXPENSE      | -3000      | -478215.54 | Taxi/Xamaal - Xamaal 
+2025-12-06 | EXPENSE      | -1000      | -479215.54 | riinjiile 
+2025-12-06 | EXPENSE      | -1050      | -480265.54 | Material expense - 2025-12-11 
+2025-12-06 | DEBT_TAKEN   | -1000      | -481265.54 | Expense 
+2025-12-06 | DEBT_REPAID  | +20000     | -461265.54 | MAGCC dayn kaso xarotay  
+2025-12-07 | EXPENSE      | -2000      | -463265.54 | waraqu riinjiile 
+2025-12-07 | EXPENSE      | -600       | -463865.54 | Taxi/Xamaal - Taxi 
+2025-12-07 | EXPENSE      | -1100      | -464965.54 | Material expense - 2025-12-07 
+2025-12-07 | EXPENSE      | -1000      | -465965.54 | Material expense - 2025-12-11 
+2025-12-07 | EXPENSE      | -2500      | -468465.54 | Taxi/Xamaal - Xamaal 
+2025-12-07 | EXPENSE      | -1000      | -469465.54 | Salary payment for Farxaan Moh 
+2025-12-07 | INCOME       | +420000    | -49465.53999999998 | Advance Payment for Project: m ΓÜá∩╕Å DIPPED NEGATIVE
+2025-12-08 | EXPENSE      | -3600      | -53065.53999999998 | riinjiile 
+2025-12-08 | DEBT_REPAID  | +11700     | -41365.53999999998 | MAGCC dayn kaso xarotay  
+2025-12-09 | EXPENSE      | -1000      | -42365.53999999998 | Taxi/Xamaal - Xamaal 
+2025-12-09 | EXPENSE      | -9000      | -51365.53999999998 | Material expense - 2025-12-09 
+2025-12-09 | EXPENSE      | -1000      | -52365.53999999998 | Salary payment for Farxaan Moh 
+2025-12-10 | EXPENSE      | -2800      | -55165.53999999998 | Material expense - 2025-12-10 
+2025-12-10 | EXPENSE      | -3300      | -58465.53999999998 | riinjile 
+2025-12-10 | EXPENSE      | -3600      | -62065.53999999998 | warsame hashim loo diray 
+2025-12-11 | EXPENSE      | -3000      | -65065.53999999998 | c waasac 
+2025-12-11 | DEBT_TAKEN   | -3000      | -68065.53999999998 | hibo loo diray 
+2025-12-11 | EXPENSE      | -2000      | -70065.53999999998 | c wasac loodiray  
+2025-12-11 | EXPENSE      | -3000      | -73065.53999999998 | c waasac 
+2025-12-11 | INCOME       | +100000    | 26934.46000000002 | Advance Payment for Project: S 
+2025-12-12 | DEBT_TAKEN   | -4000      | 22934.46000000002 | farxaan loo diray  
+2025-12-12 | EXPENSE      | -87650     | -64715.53999999998 | Material expense - 2026-01-29 ΓÜá∩╕Å DIPPED NEGATIVE
+2025-12-13 | DEBT_TAKEN   | -2150      | -66865.53999999998 | farxaan loo diray 
+2025-12-14 | EXPENSE      | -2000      | -68865.53999999998 | Aluminium ayu ka shaqeeyay  
+2025-12-14 | EXPENSE      | -6000      | -74865.53999999998 | Laxaamadle 
+2025-12-15 | EXPENSE      | -2000      | -76865.53999999998 | laxaamadle 
+2025-12-15 | EXPENSE      | -4000      | -80865.53999999998 | Salary payment for Farxaan Moh 
+2025-12-17 | EXPENSE      | -51400     | -132265.53999999998 | Material expense - 2025-07-24 
+2025-12-17 | DEBT_TAKEN   | -10000     | -142265.53999999998 | farxaan loo diray 
+2025-12-17 | DEBT_TAKEN   | -7000      | -149265.53999999998 | nuur loo diray 
+2025-12-17 | EXPENSE      | -2000      | -151265.53999999998 | aluniam ayuu ka shaqeeyay 
+2025-12-17 | EXPENSE      | -6000      | -157265.53999999998 | laxaamadle 
+2025-12-18 | EXPENSE      | -3000      | -160265.53999999998 | Salary payment for Farxaan Moh 
+2025-12-19 | EXPENSE      | -4000      | -164265.53999999998 | Material expense - 2025-12-22 
+2025-12-19 | EXPENSE      | -8950      | -173215.53999999998 | Material expense - 2025-12-22 
+2025-12-19 | EXPENSE      | -1200      | -174415.53999999998 | Riinjiile 
+2025-12-19 | EXPENSE      | -41000     | -215415.53999999998 | Material expense - 2025-12-19 
+2025-12-19 | EXPENSE      | -1000      | -216415.53999999998 | Taxi/Xamaal - Xamaal 
+2025-12-20 | EXPENSE      | -1000      | -217415.53999999998 | Taxi/Xamaal - Xamaal 
+2025-12-21 | EXPENSE      | -2500      | -219915.53999999998 | Taxi/Xamaal - Xamaal 
+2025-12-21 | EXPENSE      | -3600      | -223515.53999999998 | Riinjiile 
+2025-12-21 | EXPENSE      | -2000      | -225515.53999999998 | Laxaamadle 
+2025-12-22 | EXPENSE      | -2200      | -227715.53999999998 | Expense 
+2025-12-22 | DEBT_TAKEN   | -3000      | -230715.53999999998 | cunto dhaqamed kuso gaday  
+2025-12-22 | DEBT_TAKEN   | -12000     | -242715.53999999998 | farxaan loo diray 
+2025-12-22 | INCOME       | +70000     | -172715.53999999998 | Advance Payment for Project: A 
+2025-12-23 | EXPENSE      | -5000      | -177715.53999999998 | laxaamadle  
+2025-12-23 | EXPENSE      | -2000      | -179715.53999999998 | Salary payment for Farxaan Moh 
+2025-12-24 | DEBT_REPAID  | +10000     | -169715.53999999998 | dayn kasoo xarootay 
+2025-12-24 | EXPENSE      | -6140      | -175855.53999999998 | Material expense - 2026-01-30 
+2025-12-24 | DEBT_TAKEN   | -7000      | -182855.53999999998 | nuur loodiray 
+2025-12-24 | DEBT_TAKEN   | -3999      | -186854.53999999998 | Expense 
+2025-12-24 | DEBT_TAKEN   | -1400      | -188254.53999999998 | caano loguso gaday  
+2025-12-24 | EXPENSE      | -200       | -188454.53999999998 | xamaal 
+2025-12-25 | EXPENSE      | -20500     | -208954.53999999998 | Material expense - 2025-12-25 
+2025-12-26 | EXPENSE      | -2500      | -211454.53999999998 | riinjiile rinjiga ayuu ka shaq 
+2025-12-26 | EXPENSE      | -1000      | -212454.53999999998 | Taxi/Xamaal - Xamaal 
+2025-12-26 | EXPENSE      | -3000      | -215454.53999999998 | Material expense - 2026-01-30 
+2025-12-26 | EXPENSE      | -1000      | -216454.53999999998 | Salary payment for Farxaan Moh 
+2025-12-26 | DEBT_TAKEN   | -1800      | -218254.53999999998 | hooyo clinic aya lo diray  
+2025-12-27 | EXPENSE      | -1000      | -219254.53999999998 | Salary payment for Farxaan Moh 
+2025-12-30 | EXPENSE      | -1000      | -220254.53999999998 | Salary payment for Farxaan Moh 
+2025-12-30 | DEBT_TAKEN   | -30000     | -250254.53999999998 | Expense 
+2025-12-31 | EXPENSE      | -36370     | -286624.54 | Salary payment for hamse maoli 
+2025-12-31 | INCOME       | +20000     | -266624.54 | Advance Payment for Project: m 
+2026-01-01 | EXPENSE      | -750       | -267374.54 | Material expense - 2026-01-20 
+2026-01-01 | EXPENSE      | -250       | -267624.54 | Taxi/Xamaal - Taxi 
+2026-01-01 | EXPENSE      | -1000      | -268624.54 | laxaamadle 
+2026-01-01 | EXPENSE      | -3600      | -272224.54 | riinjiile  
+2026-01-01 | EXPENSE      | -3500      | -275724.54 | laxaamadle 
+2026-01-01 | EXPENSE      | -1000      | -276724.54 | Taxi/Xamaal - Xamaal 
+2026-01-03 | EXPENSE      | -2000      | -278724.54 | 2000 
+2026-01-03 | EXPENSE      | -2000      | -280724.54 | riinjiile  
+2026-01-03 | DEBT_REPAID  | +7000      | -273724.54 | dayn kaso xarootay  
+2026-01-05 | EXPENSE      | -300000    | -573724.54 | Material expense - 2026-01-21 
+2026-01-06 | EXPENSE      | -60000     | -633724.54 | tadase wilder 
+2026-01-08 | INCOME       | +31000     | -602724.54 | dayn kaso xarootay  
+2026-01-08 | EXPENSE      | -11000     | -613724.54 | Salary payment for Ahmad  - 20 
+2026-01-08 | DEBT_TAKEN   | -7000      | -620724.54 | hibo ayaa loo diray 
+ 
+2026-01-08 | EXPENSE      | -3000      | -623724.54 | laxaamadle  
+2026-01-08 | EXPENSE      | -3000      | -626724.54 | fildhi dhagaxbuur 
+2026-01-09 | DEBT_TAKEN   | -10000     | -636724.54 | farxaaan loo diray  
+2026-01-10 | DEBT_TAKEN   | -25000     | -661724.54 | farxaan loo diray  
+2026-01-10 | DEBT_TAKEN   | -15000     | -676724.54 | nuur loo diray  
+2026-01-11 | EXPENSE      | -4500      | -681224.54 | biraha lo qadayay yucub shaqal 
+2026-01-11 | DEBT_TAKEN   | -15000     | -696224.54 | nuur loo diray  
+2026-01-11 | EXPENSE      | -2000      | -698224.54 | Salary payment for Farxaan Moh 
+2026-01-12 | EXPENSE      | -50000     | -748224.54 | Material expense - 2026-01-22 
+2026-01-12 | EXPENSE      | -97050     | -845274.54 | Material expense - 2026-01-22 
+2026-01-12 | EXPENSE      | -3000      | -848274.54 | xamaale 
+2026-01-12 | EXPENSE      | -2000      | -850274.54 | Salary payment for Farxaan Moh 
+2026-01-12 | EXPENSE      | -100000    | -950274.54 | tadase welder (2an paymant) 
+2026-01-12 | DEBT_TAKEN   | -4000      | -954274.54 | Expense 
+2026-01-12 | EXPENSE      | -1000      | -955274.54 | xamaale 
+2026-01-12 | EXPENSE      | -39900     | -995174.54 | Material expense - 2026-01-31 
+2026-01-13 | EXPENSE      | -3200      | -998374.54 | baazin 
+2026-01-13 | EXPENSE      | -3500      | -1001874.54 | Material expense - 2026-01-22 
+2026-01-13 | EXPENSE      | -284000    | -1285874.54 | Material expense - 2026-01-22 
+2026-01-13 | EXPENSE      | -11700     | -1297574.54 | Material expense - 2026-01-22 
+2026-01-13 | DEBT_TAKEN   | -10000     | -1307574.54 | farxaan loo diray  
+2026-01-13 | EXPENSE      | -2500      | -1310074.54 | riinjile  
+2026-01-14 | EXPENSE      | -2200      | -1312274.54 | adan xamalka almuniamka 
+2026-01-14 | EXPENSE      | -1000      | -1313274.54 | bajaaj farxaan 
+2026-01-14 | EXPENSE      | -11000     | -1324274.54 | Material expense - 2026-01-22 
+2026-01-14 | EXPENSE      | -4000      | -1328274.54 | darawal fermada qaaday 
+2026-01-14 | EXPENSE      | -1000      | -1329274.54 | bajaaj farxaan 
+2026-01-14 | EXPENSE      | -5000      | -1334274.54 | adis gala fermo galiye 
+2026-01-14 | EXPENSE      | -26119     | -1360393.54 | Material expense - 2026-01-22 
+2026-01-14 | EXPENSE      | -23280     | -1383673.54 | Material expense - 2026-01-23 
+2026-01-14 | DEBT_TAKEN   | -1600      | -1385273.54 | caano safa lo gaday  
+2026-01-14 | EXPENSE      | -500       | -1385773.54 | Salary payment for Farxaan Moh 
+2026-01-15 | EXPENSE      | -500       | -1386273.54 | bajaaj farxaan 
+2026-01-15 | EXPENSE      | -2000      | -1388273.54 | farxan abal qolaji 
+2026-01-15 | DEBT_TAKEN   | -2000      | -1390273.54 | Expense 
+2026-01-15 | EXPENSE      | -6000      | -1396273.54 | Sadiiq maxamad taxi 
+2026-01-15 | EXPENSE      | -5223      | -1401496.54 | Material expense - 2026-01-22 
+2026-01-15 | EXPENSE      | -5000      | -1406496.54 | fermo xidhe 
+2026-01-15 | EXPENSE      | -1000      | -1407496.54 | Salary payment for Farxaan Moh 
+2026-01-15 | DEBT_TAKEN   | -2000      | -1409496.54 | hibo loo diray 
+2026-01-15 | DEBT_REPAID  | +8000      | -1401496.54 | dayn kaso xarootay  
+2026-01-16 | EXPENSE      | -10000     | -1411496.54 | samaynta  almuniamka  
+2026-01-16 | EXPENSE      | -2580      | -1414076.54 | muraayad jabtay 
+2026-01-16 | EXPENSE      | -10000     | -1424076.54 | samaynta albabada loxa  
+2026-01-16 | EXPENSE      | -11350     | -1435426.54 | Material expense - 2026-01-23 
+2026-01-16 | EXPENSE      | -17500     | -1452926.54 | Material expense - 2026-01-23 
+2026-01-17 | EXPENSE      | -16400     | -1469326.54 | Material expense - 2026-01-23 
+2026-01-17 | EXPENSE      | -13499     | -1482825.54 | Material expense - 2026-01-23 
+2026-01-17 | EXPENSE      | -5000      | -1487825.54 | adisu fermo xidhe 
+2026-01-17 | EXPENSE      | -16800     | -1504625.54 | Fixed Asset Purchase - morse 
+2026-01-17 | EXPENSE      | -1000      | -1505625.54 | aadan damerqadiye 
+2026-01-17 | DEBT_TAKEN   | -10000     | -1515625.54 | farxaan loodiray 
+2026-01-17 | EXPENSE      | -32900     | -1548525.54 | material guriga nuur 
+2026-01-18 | EXPENSE      | -2500      | -1551025.54 | xamaal almuniam dirdawa 
+2026-01-18 | EXPENSE      | -12000     | -1563025.54 | Material expense - 2026-01-23 
+2026-01-18 | EXPENSE      | -33200     | -1596225.54 | Material expense - 2026-01-23 
+2026-01-18 | EXPENSE      | -21600     | -1617825.54 | Material expense - 2026-01-23 
+2026-01-18 | EXPENSE      | -32000     | -1649825.54 | Material expense - 2026-01-23 
+2026-01-18 | EXPENSE      | -1000      | -1650825.54 | xamaal adan 
+2026-01-18 | EXPENSE      | -2500      | -1653325.54 | Salary payment for Farxaan Moh 
+2026-01-18 | EXPENSE      | -4430      | -1657755.54 | Material expense - 2026-01-31 
+2026-01-19 | EXPENSE      | -9750      | -1667505.54 | Material expense - 2026-01-25 
+2026-01-19 | EXPENSE      | -500       | -1668005.54 | taxi farxaan 
+2026-01-19 | EXPENSE      | -350       | -1668355.54 | shaah 
+2026-01-20 | EXPENSE      | -20000     | -1688355.54 | tadase welder 
+2026-01-20 | EXPENSE      | -4330      | -1692685.54 | Material expense - 2026-01-26 
+2026-01-20 | EXPENSE      | -1500      | -1694185.54 | laxamadle 
+2026-01-20 | EXPENSE      | -4000      | -1698185.54 | riinjile 
+2026-01-20 | EXPENSE      | -1300      | -1699485.54 | Material expense - 2026-01-26 
+2026-01-20 | EXPENSE      | -600       | -1700085.54 | Material expense - 2026-01-26 
+2026-01-20 | EXPENSE      | -2500      | -1702585.54 | xamaale 
+2026-01-20 | EXPENSE      | -20000     | -1722585.54 | tadase welder 
+2026-01-20 | INCOME       | +12000     | -1710585.54 | Advance Payment for Project: f 
+2026-01-21 | EXPENSE      | -4000      | -1714585.54 | samaynta kitabsarka iyo riinji 
+2026-01-21 | EXPENSE      | -3500      | -1718085.54 | Material expense - 2026-01-26 
+2026-01-21 | INCOME       | +300000    | -1418085.54 | Advance Payment for Project: Q 
+2026-01-22 | EXPENSE      | -10000     | -1428085.54 | Office Rent - Monthly - 2026-0 
+2026-01-22 | EXPENSE      | -2000      | -1430085.54 | lacagtii alabta lagu qaaday 
+2026-01-22 | EXPENSE      | -5000      | -1435085.54 | Adis fermo xidhe 
+2026-01-22 | INCOME       | +1074000   | -361085.54000000004 | Advance Payment for Project: a ΓÜá∩╕Å DIPPED NEGATIVE
+2026-01-23 | EXPENSE      | -11350     | -372435.54000000004 | Material expense - 2026-01-23 
+2026-01-23 | EXPENSE      | -5000      | -377435.54000000004 | xidhida albada 
+2026-01-23 | EXPENSE      | -3000      | -380435.54000000004 | farxaan transportetion 
+2026-01-24 | EXPENSE      | -5000      | -385435.54000000004 | albaabada ahmed abdule 
+2026-01-24 | EXPENSE      | -1000      | -386435.54000000004 | ahmed mohamed abal 
+2026-01-25 | EXPENSE      | -1500      | -387935.54000000004 | Material expense - 2026-01-26 
+2026-01-25 | EXPENSE      | -2000      | -389935.54000000004 | abal qolaji ahmed 
+2026-01-25 | EXPENSE      | -5000      | -394935.54000000004 | fermo xidhe 
+2026-01-25 | EXPENSE      | -4000      | -398935.54000000004 | Material expense 
+2026-01-26 | EXPENSE      | -9750      | -408685.54000000004 | Material expense - 2026-01-26 
+2026-01-26 | EXPENSE      | -3500      | -412185.54000000004 | adan xamalka 
+2026-01-26 | EXPENSE      | -300       | -412485.54000000004 | Transport 
+2026-01-26 | EXPENSE      | -5000      | -417485.54000000004 | albabo xidhe  
+2026-01-26 | EXPENSE      | -500       | -417985.54000000004 | hagajin laydhka meherada 
+2026-01-26 | EXPENSE      | -1000      | -418985.54000000004 | Salary payment for Ahmed Moham 
+2026-01-26 | EXPENSE      | -3000      | -421985.54000000004 | fermo xidhe 
+2026-01-26 | EXPENSE      | -2000      | -423985.54000000004 | fermo xidhe  
+2026-01-27 | EXPENSE      | -6000      | -429985.54000000004 | c wasac 
+2026-01-27 | EXPENSE      | -2000      | -431985.54000000004 | cabi cabdulahi  
+2026-01-27 | EXPENSE      | -2000      | -433985.54000000004 | CABDI ABDILAHI 
+2026-01-28 | DEBT_REPAID  | +40980     | -393005.54000000004 | dayn kaso xarootay  
+2026-01-28 | EXPENSE      | -980       | -393985.54000000004 | Material expense - 2026-02-01 
+2026-01-28 | EXPENSE      | -2000      | -395985.54000000004 | abal ahmed mohamed 
+2026-01-28 | EXPENSE      | -1200      | -397185.54000000004 | Transport 
+2026-01-29 | EXPENSE      | -3000      | -400185.54000000004 | farxan abal sonoqosho dhagaxbu 
+2026-01-29 | EXPENSE      | -2000      | -402185.54000000004 | mohamed fermo xidhe 
+2026-01-29 | EXPENSE      | -3000      | -405185.54000000004 | c wasac ba ka shaqeyay  
+2026-01-29 | DEBT_TAKEN   | -2500      | -407685.54000000004 | soo koobiyayn furyasha xafada  
+2026-01-30 | EXPENSE      | -5000      | -412685.54000000004 | Material expense - 2026-02-01 
+2026-01-31 | EXPENSE      | -11350     | -424035.54000000004 | Material expense - 2026-01-31 
+2026-01-31 | EXPENSE      | -7000      | -431035.54000000004 | fermo xidhe 
+2026-01-31 | EXPENSE      | -1000      | -432035.54000000004 | Material expense - 2026-02-01 
+2026-01-31 | EXPENSE      | -530       | -432565.54000000004 | shaah 
+2026-01-31 | EXPENSE      | -51201     | -483766.54000000004 | Salary payment for hamse maoli 
+2026-01-31 | INCOME       | +40000     | -443766.54000000004 | Advance Payment for Project: N 
+2026-02-01 | TRANSFER_OUT |            | -443766.54000000004 | Wareejin: trn (Loo Wareejiyay: 
+2026-02-01 | TRANSFER_IN  | +20000     | -423766.54000000004 | Wareejin: trn (Laga Wareejiyay 
+2026-02-01 | TRANSFER_OUT |            | -423766.54000000004 | Wareejin: to wallet (Loo Waree 
+2026-02-01 | TRANSFER_IN  | +5000      | -418766.54000000004 | Wareejin: to wallet (Laga Ware 
+2026-02-01 | TRANSFER_OUT |            | -418766.54000000004 | Wareejin: To Wallet (Loo Waree 
+2026-02-01 | TRANSFER_IN  | +10000     | -408766.54000000004 | Wareejin: To Wallet (Laga Ware 
+2026-02-01 | TRANSFER_OUT |            | -408766.54000000004 | Wareejin: To Wallet (Loo Waree 
+2026-02-01 | TRANSFER_IN  | +5300      | -403466.54000000004 | Wareejin: To Wallet (Laga Ware 
+2026-02-01 | EXPENSE      | -25000     | -428466.54000000004 |  rahinu muraayad xidhe  
+2026-02-01 | EXPENSE      | -1264      | -429730.54000000004 | Salary payment for hamse maoli 
+2026-02-01 | EXPENSE      | -1800      | -431530.54000000004 | Comition bank 3 month 
+2026-02-02 | EXPENSE      | -2000      | -433530.54000000004 | Salary payment for Farxaan Moh 
+2026-02-02 | DEBT_REPAID  | +66000     | -367530.54000000004 | from Eng Nuur  
+2026-02-02 | EXPENSE      | -66100     | -433630.54000000004 | Material expense - 2026-02-06 
+2026-02-02 | DEBT_REPAID  | +7000      | -426630.54000000004 | from Eng Nuur  
+2026-02-02 | EXPENSE      | -7000      | -433630.54000000004 | Material expense - 2026-02-06 
+2026-02-02 | EXPENSE      | -10000     | -443630.54000000004 | Material expense - 2026-02-06 
+2026-02-03 | EXPENSE      | -2700      | -446330.54000000004 | xafiiska cusub 
+2026-02-03 | INCOME       | +300000    | -146330.54000000004 | Advance Payment for Project: M ΓÜá∩╕Å DIPPED NEGATIVE
+2026-02-04 | EXPENSE      | -58600     | -204930.54000000004 | Material expense - 2026-02-10 
+2026-02-04 | EXPENSE      | -1600      | -206530.54000000004 | Material expense - 2026-02-10 
+2026-02-04 | EXPENSE      | -2700      | -209230.54000000004 | wastar kuuli shaqo ay qabteen 
+2026-02-04 | EXPENSE      | -700       | -209930.54000000004 | dhagafe biyoole 
+2026-02-04 | EXPENSE      | -2000      | -211930.54000000004 | c wasac ba ka shaqeeyay  
+2026-02-04 | EXPENSE      | -5000      | -216930.54000000004 | database ka birshil revlo vee  
+2026-02-04 | EXPENSE      | -1400      | -218330.54000000004 | Salary payment for hamse maoli 
+2026-02-04 | EXPENSE      | -6000      | -224330.54000000004 | Salary payment for hamse maoli 
+2026-02-05 | EXPENSE      | -55000     | -279330.54000000004 | Material expense - 2026-02-10 
+2026-02-05 | EXPENSE      | -15000     | -294330.54000000004 | Salary payment for Ahmed Moham 
+2026-02-05 | EXPENSE      | -35900     | -330230.54000000004 | Material expense - 2026-02-10 
+2026-02-05 | EXPENSE      | -700       | -330930.54000000004 | bajaaj yirtagajiq 
+2026-02-05 | EXPENSE      | -3400      | -334330.54000000004 | Birshil 1 
+2026-02-05 | EXPENSE      | -2600      | -336930.54000000004 | Material expense - 2026-02-10 
+2026-02-05 | EXPENSE      | -5000      | -341930.54000000004 | c wasac albaabada ka shaqeeyay 
+2026-02-05 | EXPENSE      | -1000      | -342930.54000000004 | xamaale 
+2026-02-06 | EXPENSE      | -6500      | -349430.54000000004 | xafiiska cusub boloomo loo gad 
+2026-02-06 | EXPENSE      | -180       | -349610.54000000004 | delivery  lagu qaadya bloomo 
+2026-02-06 | DEBT_TAKEN   | -16200     | -365810.54000000004 | mashiin looguso gaday  
+2026-02-07 | EXPENSE      | -225       | -366035.54000000004 | xamaale 
+2026-02-07 | EXPENSE      | -1000      | -367035.54000000004 | xamaale 
+2026-02-07 | EXPENSE      | -1200      | -368235.54000000004 | xafiiska cusub 
+2026-02-07 | EXPENSE      | -20000     | -388235.54000000004 | laxaamadle 
+2026-02-07 | EXPENSE      | -1000      | -389235.54000000004 | hagaajin jeghamar 
+2026-02-07 | EXPENSE      | -6000      | -395235.54000000004 | riinjiile 
+2026-02-07 | EXPENSE      | -3000      | -398235.54000000004 | calaamadayn boos 
+2026-02-07 | EXPENSE      | -1000      | -399235.54000000004 | hagaajinta wajahada 
+2026-02-07 | DEBT_REPAID  | +-29000    | -428235.54000000004 | xafiiska cusub 
+2026-02-07 | EXPENSE      | -5000      | -433235.54000000004 | riinjiile 
+2026-02-07 | EXPENSE      | -500       | -433735.54000000004 | taxi hamse qaadida drilka 
+2026-02-07 | EXPENSE      | -1000      | -434735.54000000004 | hagaajinta wajahada 
+2026-02-08 | EXPENSE      | -2000      | -436735.54000000004 | Salary payment for Farxaan Moh 
+2026-02-09 | EXPENSE      | -1000      | -437735.54000000004 | hagaajinta wajahada 
+2026-02-09 | DEBT_TAKEN   | -3000      | -440735.54000000004 | xaawo loo diray  
+2026-02-09 | EXPENSE      | -2700      | -443435.54000000004 | shidal 
+2026-02-09 | EXPENSE      | -1000      | -444435.54000000004 | shaqaale cusub harar transport 
+2026-02-09 | DEBT_REPAID  | +20000     | -424435.54000000004 | dayn kaso xarootay  
+2026-02-10 | EXPENSE      | -1000      | -425435.54000000004 | xamaale 
+2026-02-10 | EXPENSE      | -8400      | -433835.54000000004 | Wastat             1700 Kuli   
+2026-02-10 | EXPENSE      | -1000      | -434835.54000000004 | hagajinta wajahada xafiiska cu 
+2026-02-10 | EXPENSE      | -700       | -435535.54000000004 | hagaajinta wajahada 
+2026-02-10 | EXPENSE      | -59750     | -495285.54000000004 | xafiiska cusub  
+2026-02-10 | EXPENSE      | -1200      | -496485.54000000004 | biyoole 
+2026-02-10 | EXPENSE      | -3600      | -500085.54000000004 | furaashyo sahqale cusub 
+2026-02-10 | EXPENSE      | -3600      | -503685.54000000004 | xamaalka marmarka 
+2026-02-10 | EXPENSE      | -1500      | -505185.54000000004 | abal ahmed mohamed 
+2026-02-10 | DEBT_TAKEN   | -5000      | -510185.54000000004 | farxaan loo diray 
+2026-02-10 | EXPENSE      | -1000      | -511185.54000000004 | bajaaj 
+2026-02-10 | EXPENSE      | -3000      | -514185.54000000004 | nijar loox  
+2026-02-11 | EXPENSE      | -1000      | -515185.54000000004 | riinjiile  
+2026-02-11 | EXPENSE      | -6000      | -521185.54000000004 | taxi farxaan 
+2026-02-11 | EXPENSE      | -3000      | -524185.54000000004 | nijar albaab  
+2026-02-11 | EXPENSE      | -1000      | -525185.54 | riijiile  
+2026-02-12 | EXPENSE      | -16100     | -541285.54 | Material expense - 2026-02-12 
+2026-02-12 | EXPENSE      | -200       | -541485.54 | bajaaj farxaan 
+2026-02-12 | EXPENSE      | -0         | -541485.54 | laxaamadle 
+2026-02-12 | EXPENSE      | -3000      | -544485.54 | xafiiska cusub  
+2026-02-12 | EXPENSE      | -1200      | -545685.54 | Material expense - 2026-02-15 
+2026-02-12 | EXPENSE      | -4000      | -549685.54 | albaabda looxa  
+2026-02-12 | EXPENSE      | -6000      | -555685.54 | albaab 
+2026-02-12 | EXPENSE      | -0         | -555685.54 | marmardhige 
+2026-02-12 | EXPENSE      | -1900      | -557585.54 | Shambad  heading line fidhin 
+2026-02-13 | EXPENSE      | -5000      | -562585.54 | albaabada ayuu ka shaqeeyay  
+2026-02-13 | EXPENSE      | -1200      | -563785.54 | tigidh dhagaxbuur c waasac  
+2026-02-13 | EXPENSE      | -3750      | -567535.54 | xafiiska cusub 
+2026-02-13 | DEBT_REPAID  | +100000    | -467535.54000000004 | dayn kaso xarootay  
+2026-02-13 | EXPENSE      | -1600      | -469135.54000000004 | Material expense - 2026-02-15 
+2026-02-13 | EXPENSE      | -300       | -469435.54000000004 | taxi 
+2026-02-13 | EXPENSE      | -5000      | -474435.54000000004 | albaabada ayuu ka shaqeeyay  
+2026-02-13 | EXPENSE      | -25000     | -499435.54000000004 | albaabo iyo daqado samayn 
+2026-02-13 | EXPENSE      | -10000     | -509435.54000000004 | c waasac ka shaqeeyay albaabad 
+2026-02-13 | EXPENSE      | -1000      | -510435.54000000004 | Material expense - 2026-02-15 
+2026-02-13 | EXPENSE      | -1000      | -511435.54000000004 | kaarka saacada laydhka 
+2026-02-14 | EXPENSE      | -2000      | -513435.54000000004 | hagaajinta wajahada 
+2026-02-14 | DEBT_REPAID  | +100000    | -413435.54000000004 | nuur kasoo xarootay  
+2026-02-14 | EXPENSE      | -3000      | -416435.54000000004 | Expense 
+2026-02-14 | EXPENSE      | -5400      | -421835.54000000004 | Material expense - 2026-02-15 
+2026-02-14 | EXPENSE      | -7000      | -428835.54000000004 | laxaamadle  
+2026-02-14 | EXPENSE      | -1500      | -430335.54000000004 | riinjiile  
+2026-02-14 | EXPENSE      | -1000      | -431335.54000000004 | xamaale 
+2026-02-14 | DEBT_TAKEN   | -6000      | -437335.54000000004 | xamaale 
+2026-02-14 | DEBT_TAKEN   | -7000      | -444335.54000000004 | xamaal 
+2026-02-14 | EXPENSE      | -10000     | -454335.54000000004 | riinjiile  
+2026-02-15 | EXPENSE      | -5000      | -459335.54000000004 | xamaal 
+2026-02-15 | EXPENSE      | -4000      | -463335.54000000004 | Salary payment for Farxaan Moh 
+2026-02-15 | EXPENSE      | -1000      | -464335.54000000004 | riinjiile 
+2026-02-16 | EXPENSE      | -20000     | -484335.54000000004 | albaabada 
+2026-02-17 | DEBT_TAKEN   | -48000     | -532335.54 | dayn xaawo laga qaatay  
+2026-02-18 | EXPENSE      | -5000      | -537335.54 | Albaabxidhe 
+2026-02-18 | DEBT_TAKEN   | -6000      | -543335.54 | Hibo loodiray 
+2026-02-18 | DEBT_TAKEN   | -10000     | -553335.54 | Nuur lodiray 
+2026-02-18 | DEBT_TAKEN   | -4000      | -557335.54 | Farxaan lodiray
+ 
+2026-02-19 | EXPENSE      | -2105      | -559440.54 | Salary payment for hamse maoli 
+2026-02-20 | EXPENSE      | -3000      | -562440.54 | Riinjiile 
+2026-02-20 | EXPENSE      | -2000      | -564440.54 | Xamaal 
+2026-02-21 | EXPENSE      | -3000      | -567440.54 | Salary payment for hamse maoli 
+
+Final Math for Account 3c156507-ea0a-4974-8a54-92f1e9dd519a:
+Total In: 7617330.21
+Total Out: 8184770.75
+Expected Balance: -567440.54
+DB Balance: -509440.54

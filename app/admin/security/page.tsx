@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import {
   ArrowLeft, Shield, Lock, Unlock, Users, Eye, EyeOff, Key, AlertTriangle,
   CheckCircle, XCircle, RefreshCw, Settings, Activity, Clock, Database,

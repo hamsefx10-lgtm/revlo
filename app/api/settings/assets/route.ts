@@ -16,9 +16,24 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({ 
+    // Calculate total from transactions (real expenses)
+    const totalExpenseResult = await prisma.transaction.aggregate({
+      _sum: {
+        amount: true,
+      },
+      where: {
+        companyId,
+        category: 'FIXED_ASSET_PURCHASE',
+        type: { in: ['EXPENSE', 'DEBT_TAKEN'] } // Ensure it's an expense
+      },
+    });
+
+    const totalAssetExpense = totalExpenseResult._sum.amount ? Number(totalExpenseResult._sum.amount) : 0;
+
+    return NextResponse.json({
       assets,
-      message: 'Assets retrieved successfully' 
+      totalAssetExpense,
+      message: 'Assets retrieved successfully'
     });
   } catch (error) {
     console.error('Error fetching assets:', error);
@@ -86,10 +101,10 @@ export async function POST(request: Request) {
       });
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       asset,
       transaction: createdTransaction,
-      message: 'Asset created successfully' 
+      message: 'Asset created successfully'
     }, { status: 201 });
   } catch (error) {
     console.error('Error creating asset:', error);

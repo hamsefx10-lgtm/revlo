@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import * as XLSX from 'xlsx';
 
 interface LedgerEntry {
     id: string;
@@ -48,6 +49,30 @@ export default function GeneralLedgerPage() {
         }
     };
 
+    const exportToExcel = () => {
+        if (entries.length === 0) return;
+
+        const dataToExport = entries.map((entry) => ({
+            'Date': format(new Date(entry.date), 'MMM dd, yyyy'),
+            'Description': entry.description,
+            'Account': entry.account,
+            'Reference': entry.reference,
+            'Debit': entry.type === 'Debit' ? entry.amount : 0,
+            'Credit': entry.type === 'Credit' ? entry.amount : 0,
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'General Ledger');
+
+        const colWidths = [
+            { wch: 15 }, { wch: 40 }, { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 }
+        ];
+        worksheet['!cols'] = colWidths;
+
+        XLSX.writeFile(workbook, `General_Ledger_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
+
     return (
         <div className="min-h-screen animate-fade-in pb-20 font-sans w-full">
             {/* HEADER */}
@@ -71,7 +96,7 @@ export default function GeneralLedgerPage() {
                     <button className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-bold text-gray-600 dark:text-gray-300 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         <Filter size={18} /> Filter
                     </button>
-                    <button className="px-4 py-2 bg-[#3498DB] text-white rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-blue-500/20 hover:bg-blue-600 transition-colors">
+                    <button onClick={exportToExcel} className="px-4 py-2 bg-[#3498DB] text-white rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-blue-500/20 hover:bg-blue-600 transition-colors">
                         <Download size={18} /> Export
                     </button>
                 </div>

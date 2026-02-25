@@ -3,13 +3,13 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { 
   ArrowLeft, Palette, Save, X, Loader2, Info, 
   Sun, Moon, Monitor, Globe, Home, Bell, DollarSign, Calendar, Rows, User, CheckCircle, XCircle,
   Type, Volume2, Image as ImageIcon, Accessibility, Download, Upload, UploadCloud // New icons for new features
 } from 'lucide-react';
-import Toast from '../../../components/common/Toast'; // Reuse Toast component
+import Toast from '@/components/common/Toast'; // Reuse Toast component
 
 // --- Dummy Data ---
 const dummyPersonalizationSettings = {

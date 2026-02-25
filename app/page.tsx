@@ -653,7 +653,7 @@ const Pricing = () => {
     {
       name: 'Professional',
       target: 'Shirkadaha Dhexe & Ganacsiga Guud',
-      price: billingCycle === 'monthly' ? '$49' : '$490',
+      price: billingCycle === 'monthly' ? '$0' : '$00',
       period: billingCycle === 'monthly' ? '/mo' : '/yr',
       description: 'Xalka ugu fiican ee lagu maamulo kaydka, shaqaalaha, iyo xisaabaadka.',
       buttonText: 'Tijaabi 14 Maalmood',
@@ -1026,7 +1026,7 @@ const Footer = () => {
         </div>
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 pt-8 border-t border-gray-800 text-center text-gray-500 text-sm flex flex-col md:flex-row justify-between items-center gap-4">
-        <p>&copy; {new Date().getFullYear()} Revlo. Xuquuqda oo dhan waa ay xifdisan tahay.</p>
+        <p>&copy; {new Date().getFullYear()} Revlo.2026 Xuquuqda oo dhan waa ay xifdisan tahay.</p>
         <div className="flex gap-6">
           <Link href="/terms" className="hover:text-white">Terms</Link>
           <Link href="/privacy" className="hover:text-white">Privacy</Link>

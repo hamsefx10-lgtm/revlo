@@ -1,0 +1,33 @@
+
+=== GLOBAL AGGREGATIONS ===
+Total Account Balance (Actual): 1010171.25
+
+Sum of Transactions by Type:
+- INCOME: 14841335.1
+- EXPENSE (Non-Asset): -12153551.85
+- FIXED ASSET: 524590
+- DEBT_TAKEN (Money Out?): 0
+- DEBT_RECEIVED: 0
+- DEBT_GIVEN: 1737620
+- DEBT_REPAID: 642381
+- TRANSFER IN: 160798.21
+- TRANSFER OUT: -160798.21
+- UNKNOWN: 1200
+
+Total Advance Paid recorded in Projects: 13967991
+
+=== ACCOUNT MISMATCHES (Actual vs Calculated from Txns) ===
+Account: E-Birr (3c156507-ea0a-4974-8a54-92f1e9dd519a) | Actual: 266059.46 | Txn Sum: 12941680.96 | Diff: -12675621.5
+Account: Ebirr (4021e489-3de7-4546-bf17-2f7d1e597933) | Actual: -84 | Txn Sum: 84 | Diff: -168
+Account: CBE (5ee02434-8433-47e6-b691-a4cd8f9e399b) | Actual: 25303 | Txn Sum: 56377 | Diff: -31074
+Account: CBE (b56b13ee-cfc8-4ffa-aeb3-5f063f513a2b) | Actual: 39669 | Txn Sum: 40331 | Diff: -662
+Account: cbe (9a4ad217-f219-46c7-8917-027f64592810) | Actual: 98000 | Txn Sum: 102000 | Diff: -4000
+Account: E-Birr (4eb99e0e-addd-4de2-b68a-a3d538c43d03) | Actual: 145432 | Txn Sum: 894568 | Diff: -749136
+Account: cbe (dcd6fa61-e8d4-44c8-ba89-8510b44cbfea) | Actual: 30000 | Txn Sum: 110000 | Diff: -80000
+Account: CBE (c8306c05-5279-4b05-b5fc-dda41c793a77) | Actual: 13149.69000000006 | Txn Sum: 11183350.309999999 | Diff: -11170200.62
+Account: E-birr (e60c8290-82e4-46e4-b3e2-f17b423d1ce5) | Actual: 898 | Txn Sum: 12902 | Diff: -12004
+Account: Qasnada (b7768bcc-a361-4233-aa72-7a8ffd5a477b) | Actual: 387769.1 | Txn Sum: 532769.1 | Diff: -145000
+Account: Kaafi E-birr (5b800813-ba34-4b78-9dcc-3040809eaf5d) | Actual: 3975 | Txn Sum: 5175 | Diff: -1200
+
+Total Unaccounted Difference in Accounts: -24869066.119999997
+(Positive diff means the account has more money than its transactions justify. Negative means less.)

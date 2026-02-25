@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Layout from '../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { Trash2, RotateCcw, Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 interface DeletedItem {

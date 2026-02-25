@@ -1,0 +1,21 @@
+{
+  "dashboardIncome": 15512716.1,
+  "dashboardExpense": 14159337.85,
+  "dashboardAssets": 524590,
+  "dashboardExpectedBalance": 828788.25,
+  "trueLedgerFlow": 952171.25,
+  "discrepancy": 123383,
+  "breakdown": {
+    "incomeTxns": 873344.1,
+    "debtRepaidCustomer": 671381,
+    "expenseTxns": 12392717.85,
+    "debtTaken": 0,
+    "debtGiven": 1737620,
+    "debtRepaidVendor": 29000,
+    "fixedAssets": 524590,
+    "debtReceived": 0,
+    "unbalancedTransfers": 0,
+    "other": 1200
+  },
+  "projectAdvances": 13967991
+}

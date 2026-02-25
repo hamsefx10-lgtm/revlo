@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import Link from 'next/link';
 import { ArrowLeft, Settings as SettingsIcon, Lightbulb, Info, Plus, UploadCloud } from 'lucide-react'; // Icons
 

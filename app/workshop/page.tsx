@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Layout from '../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import {
     Hammer, ClipboardCheck, PackageCheck, Plus, Search,
     ArrowRight, Clock, DollarSign, Calendar, MoreVertical

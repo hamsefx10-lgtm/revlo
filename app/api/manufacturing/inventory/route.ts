@@ -12,7 +12,8 @@ export async function GET(request: Request) {
 
         const where: any = {
             companyId,
-            userId, // Strict filtering by User
+            // userId, // We can allow company-wide visibility if needed, or keep it strict. 
+            // For now, let's keep it companyId based for visibility.
         };
 
         if (search) {
@@ -26,7 +27,7 @@ export async function GET(request: Request) {
             where.category = category;
         }
 
-        const items = await prisma.inventoryItem.findMany({
+        const items = await prisma.factoryMaterial.findMany({
             where,
             orderBy: { name: 'asc' }
         });
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
         const { companyId, userId } = await requireManufacturingAccess();
         const body = await request.json();
 
-        const item = await prisma.inventoryItem.create({
+        const item = await prisma.factoryMaterial.create({
             data: {
                 companyId,
                 userId, // Owner
@@ -57,15 +58,13 @@ export async function POST(request: Request) {
                 minStock: parseFloat(body.minStock) || 0,
                 purchasePrice: parseFloat(body.purchasePrice) || 0,
                 sellingPrice: parseFloat(body.sellingPrice) || 0,
-                location: body.location,
-                supplier: body.supplier
+                location: body.location
             }
         });
 
-        return NextResponse.json({ item, message: 'Item added successfully' });
+        return NextResponse.json({ item, message: 'Material added successfully' });
     } catch (error: any) {
-        console.error('Error creating inventory item (FULL):', JSON.stringify(error, null, 2));
-        console.error('Error Object:', error);
-        return NextResponse.json({ message: 'Error creating item', details: error.message }, { status: 500 });
+        console.error('Error creating factory material:', error);
+        return NextResponse.json({ message: 'Error creating material', details: error.message }, { status: 500 });
     }
 }

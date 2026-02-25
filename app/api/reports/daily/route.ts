@@ -76,6 +76,7 @@ export async function GET(request: Request) {
         project: { select: { name: true } },
         expenseCategory: { select: { name: true } },
         employee: { select: { fullName: true } },
+        vendor: { select: { name: true } },
       },
     });
 
@@ -113,6 +114,8 @@ export async function GET(request: Request) {
         subCategory: exp.subCategory || null,
         note: exp.note || null,
         paidFrom: exp.paidFrom || 'Cash', // Add account info
+        employeeName: exp.employee?.fullName || null,
+        vendorName: exp.vendor?.name || null,
       };
 
       // Add specific fields for company expenses

@@ -1,0 +1,623 @@
+﻿≡ƒöì Checking existing transactions...
+
+≡ƒôè Found 20 transactions:
+
+1. Transaction ID: cbb12603-97fb-40b8-83ec-2e6f465b7e1e
+   Description: Salary payment for hamse maolin amiin - 2026-02-21
+   Amount: $-3000
+   Type: EXPENSE
+   Date: 2026-02-21
+   Account: E-Birr
+   Project: Γ¥î NO PROJECT LINKED
+   Customer: Γ¥î NO CUSTOMER LINKED
+
+2. Transaction ID: 365a90c5-0f34-4d44-8523-c1a7bcdec42a
+   Description: Riinjiile
+   Amount: $-3000
+   Type: EXPENSE
+   Date: 2026-02-20
+   Account: E-Birr
+   Project: Nuur Moalin Site (2970784b-8a6f-415e-a0cd-a6d3e1177801)
+   Customer: Γ¥î NO CUSTOMER LINKED
+
+3. Transaction ID: 06b0e23a-db3f-4bb5-8ef1-e8a4a2bcce6a
+   Description: Xamaal
+   Amount: $-2000
+   Type: EXPENSE
+   Date: 2026-02-20
+   Account: E-Birr
+   Project: Γ¥î NO PROJECT LINKED
+   Customer: Γ¥î NO CUSTOMER LINKED
+
+4. Transaction ID: 6ca2be64-486e-450b-9cfc-ddeb3eecc857
+   Description: Salary payment for hamse maolin amiin - 2026-02-19
+   Amount: $-2105
+   Type: EXPENSE
+   Date: 2026-02-19
+   Account: E-Birr
+   Project: Γ¥î NO PROJECT LINKED
+   Customer: Γ¥î NO CUSTOMER LINKED
+
+5. Transaction ID: b40a47da-11bc-4abe-8458-29136821fee6
+   Description: Advance Payment for Project: Dhobawayn albabada loxa
+   Amount: $1000000
+   Type: INCOME
+   Date: 2026-02-19
+   Account: CBE
+   Project: Dhobawayn albabada loxa (9ce24df7-6d85-48b4-a5e1-fd97c278910e)
+   Customer: Maxamed Nur Xaji (59705c85-d71e-4d23-8b05-4b75791fee18)
+
+6. Transaction ID: f2ff0215-6447-4cb5-b72f-c67ea02d5dde
+   Description: 
+   Amount: $100000
+   Type: DEBT_TAKEN
+   Date: 2026-02-18
+   Account: CBE
+   Project: Γ¥î NO PROJECT LINKED
+   Customer: Farxaan mohamed ali (06ac2ccd-c01a-4552-b992-cb457ba71abb)
+
+7. Transaction ID: 48c11bbc-8236-44b4-a55e-fe73bc6d18b6
+   Description: 
+   Amount: $90000
+   Type: DEBT_TAKEN
+   Date: 2026-02-18
+   Account: CBE
+   Project: Γ¥î NO PROJECT LINKED
+   Customer: Eng nuur moalin (859e95e5-b19f-4f4c-a0d7-563f197a583a)
+
+8. Transaction ID: 4031f7b0-d6e3-4e42-969a-5ac13864fb89
+   Description: Albaabxidhe
+   Amount: $-5000
+   Type: EXPENSE
+   Date: 2026-02-18
+   Account: E-Birr
+   Project: ahmed abdule site (94fbe85c-c694-411e-bf6a-a558bcfa92e6)
+   Customer: Γ¥î NO CUSTOMER LINKED
+
+9. Transaction ID: a58b2cc7-8a4d-40d8-b0cf-7af2b2e512a4
+   Description: 
+   Amount: $10000
+   Type: DEBT_TAKEN
+   Date: 2026-02-18
+   Account: E-Birr
+   Project: Γ¥î NO PROJECT LINKED
+   Customer: Eng nuur moalin (859e95e5-b19f-4f4c-a0d7-563f197a583a)
+
+10. Transaction ID: 3ab7066a-ff5b-495d-86db-5662b3309fcf
+   Description: 
+   Amount: $4000
+   Type: DEBT_TAKEN
+   Date: 2026-02-18
+   Account: E-Birr
+   Project: Γ¥î NO PROJECT LINKED
+   Customer: Farxaan mohamed ali (06ac2ccd-c01a-4552-b992-cb457ba71abb)
+
+11. Transaction ID: 0341cedb-045b-430b-9914-5b2a413d0eb9
+   Description: Material expense - 2026-02-21
+   Amount: $-800000
+   Type: EXPENSE
+   Date: 2026-02-18
+   Account: CBE
+   Project: Dhobawayn albabada loxa (9ce24df7-6d85-48b4-a5e1-fd97c278910e)
+   Customer: Γ¥î NO CUSTOMER LINKED
+
+12. Transaction ID: cbbccc32-9124-4311-931f-58bef3827e39
+   Description: 
+   Amount: $6000
+   Type: DEBT_TAKEN
+   Date: 2026-02-18
+   Account: E-Birr
+   Project: Γ¥î NO PROJECT LINKED
+   Customer: Farxaan mohamed ali (06ac2ccd-c01a-4552-b992-cb457ba71abb)
+
+13. Transaction ID: e86478ee-2eb1-4d17-ad0c-65fc74f0914a
+   Description: riijilile 
+   Amount: $-5000
+   Type: EXPENSE
+   Date: 2026-02-17
+   Account: CBE
+   Project: Nuur Moalin Site (2970784b-8a6f-415e-a0cd-a6d3e1177801)
+   Customer: Γ¥î NO CUSTOMER LINKED
+
+14. Transaction ID: 479d1de3-4cff-4353-9cbb-bb7e92ca7aad
+   Description: Material expense - 2026-02-19
+   Amount: $-300
+   Type: EXPENSE
+   Date: 2026-02-17
+   Account: CBE
+   Project: Nuur Moalin Site (2970784b-8a6f-415e-a0cd-a6d3e1177801)
+   Customer: Γ¥î NO CUSTOMER LINKED
+
+15. Transaction ID: c480bc8f-9ad9-452f-b321-79a007a5460f
+   Description: taxi
+   Amount: $-500
+   Type: EXPENSE
+   Date: 2026-02-17
+   Account: CBE
+   Project: ahmed abdule site (94fbe85c-c694-411e-bf6a-a558bcfa92e6)
+   Customer: Γ¥î NO CUSTOMER LINKED
+
+16. Transaction ID: f6c960c1-6749-42ab-a0fc-14446b86b5d0
+   Description: dayn xaawo laga qaatay 
+   Amount: $48000
+   Type: DEBT_TAKEN
+   Date: 2026-02-17
+   Account: E-Birr
+   Project: Γ¥î NO PROJECT LINKED
+   Customer: Xaawo  (748f08ac-ff43-47a6-9dd1-173ee09b96e7)
+
+17. Transaction ID: 3b377a1a-2353-48d1-914a-6367509ce49e
+   Description: Material expense - 2026-02-19
+   Amount: $-700
+   Type: EXPENSE
+   Date: 2026-02-17
+   Account: CBE
+   Project: ahmed abdule site (94fbe85c-c694-411e-bf6a-a558bcfa92e6)
+   Customer: Γ¥î NO CUSTOMER LINKED
+
+18. Transaction ID: 53114244-0299-4570-825b-c19bc76a240b
+   Description: albaabada
+   Amount: $-20000
+   Type: EXPENSE
+   Date: 2026-02-16
+   Account: E-Birr
+   Project: Dhagaxbur Masjid Yusuf (57880638-2a74-4a25-889e-3c8302f0d2c7)
+   Customer: Γ¥î NO CUSTOMER LINKED
+
+19. Transaction ID: f5c6d3aa-bf87-4698-b345-f927bd26b465
+   Description: riinjiile
+   Amount: $-1000
+   Type: EXPENSE
+   Date: 2026-02-15
+   Account: E-Birr
+   Project: Maxamad quresh site (d6addfb6-fa88-4495-a767-c01040747dc2)
+   Customer: Γ¥î NO CUSTOMER LINKED
+
+20. Transaction ID: 9fed1e99-e525-4bde-8730-43e434082772
+   Description: xamaal
+   Amount: $-5000
+   Type: EXPENSE
+   Date: 2026-02-15
+   Account: E-Birr
+   Project: ahmed abdule site (94fbe85c-c694-411e-bf6a-a558bcfa92e6)
+   Customer: Γ¥î NO CUSTOMER LINKED
+
+≡ƒÜ¿ Found 8 INCOME transactions without project links:
+   1. xafiiska cusub bay kasoo xarootay  - $280000 - No customer
+   2. Sale Receipt #INV-1770219447655 - $1725 - No customer
+   3. Sale Receipt #INV-1770227823296 - $3450 - No customer
+   4. Sale Receipt #INV-1768244661249 - $6325 - No customer
+   5. Sale Receipt #INV-1768244692150 - $575 - No customer
+   6. POS Sale - INV-1768162247450 - $287769.1 - No customer
+   7. POS Sale - INV-1768162734758 - $172500 - No customer
+   8. dayn kaso xarootay  - $31000 - Ma'amiin Gcc
+
+≡ƒôï Projects and their INCOME transactions:
+
+1. Project: new masjid  (eb3c5d50-58c6-44c4-b962-f6aba49e693a)
+   Customer: hamse moalin
+   Agreement: $50000
+   Advance Paid: $40000
+   Remaining: $10000
+   INCOME Transactions: 0
+
+2. Project: mohamed site (ad465d1f-e18c-49df-acf3-92df48e002b7)
+   Customer: hamse moalin
+   Agreement: $500000
+   Advance Paid: $50000
+   Remaining: $450000
+   INCOME Transactions: 0
+
+3. Project: abdi site (b034103b-0cf3-42c4-a940-a1910b911d1e)
+   Customer: hamse moalin
+   Agreement: $60000
+   Advance Paid: $50000
+   Remaining: $10000
+   INCOME Transactions: 0
+
+4. Project: jkdtg (84c0475e-2bb3-4a70-b1a1-d7629669fd1f)
+   Customer: hamse moalin
+   Agreement: $700000
+   Advance Paid: $50000
+   Remaining: $650000
+   INCOME Transactions: 0
+
+5. Project: gsd (be2d5176-202b-4ff0-9807-694b5224f01f)
+   Customer: hamse moalin
+   Agreement: $5353452
+   Advance Paid: $42342
+   Remaining: $5311110
+   INCOME Transactions: 1
+     1. Advance payment for project: gsd - $42342 - 2025-09-20
+
+6. Project: new masjid decore (f4caaa44-cbab-48d7-a96f-a41bf7578476)
+   Customer: hamse
+   Agreement: $50000
+   Advance Paid: $40000
+   Remaining: $10000
+   INCOME Transactions: 1
+     1. Advance payment for project: new masjid decore - $40000 - 2025-09-20
+
+7. Project: Bakharka C/rashid yusuf (1c38d075-9027-49ab-8955-57ab8b8fe074)
+   Customer: C/rashiid yuusuf
+   Agreement: $500000
+   Advance Paid: $500000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Bakharka C/rashid yusuf - $500000 - 2025-09-27
+
+8. Project: new project (18adbf52-66eb-426b-995b-4bb6627ce43b)
+   Customer: C/rashiid yuusuf
+   Agreement: $30000
+   Advance Paid: $20000
+   Remaining: $10000
+   INCOME Transactions: 1
+     1. Advance Payment for Project: new project - $20000 - 2025-09-30
+
+9. Project: Wajahada Dukaanka Dool (180abdf6-d71b-4c1b-9888-2ea5692d35e2)
+   Customer: dukanka dool
+   Agreement: $39000
+   Advance Paid: $39000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Wajahada Dukaanka Dool - $39000 - 2025-10-10
+
+10. Project: New Masjid Decore (baf0b553-ae90-4989-9870-5ced75c89ca5)
+   Customer: New Masjid Decore
+   Agreement: $500000
+   Advance Paid: $400000
+   Remaining: $100000
+   INCOME Transactions: 1
+     1. Advance Payment for Project: New Masjid Decore - $400000 - 2025-10-10
+
+11. Project: Masjid Garab Case (6f7572b6-1c9d-4d14-aa34-e4891406d073)
+   Customer: Masjid Garabcase
+   Agreement: $944000
+   Advance Paid: $944000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Masjid Garab Case - $944000 - 2025-10-10
+
+12. Project: Bakhaarka Abdirashid Yusuf (9c9d1486-1797-4116-a653-725df71b04a8)
+   Customer: Abdirashid yusuf
+   Agreement: $500000
+   Advance Paid: $500000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Bakhaarka Abdirashid Yusuf - $500000 - 2025-10-10
+
+13. Project: Dhobawayn Almuniam Site (219db447-ef8f-4151-8542-1498b0902044)
+   Customer: Maxamed Nur Xaji
+   Agreement: $3000000
+   Advance Paid: $3000000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Dhobawayn Almuniam Site - $3000000 - 2025-10-10
+
+14. Project: New Ganjel (f7632eb1-3354-4b94-b3ad-d39ac35b33a6)
+   Customer: new ganjeel
+   Agreement: $55000
+   Advance Paid: $55000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: New Ganjel - $55000 - 2025-10-10
+
+15. Project: Abdi Wali Moalin Site (52a2e095-f530-4bc1-896b-6102605603e3)
+   Customer: Abdiwali Macalin 
+   Agreement: $432221
+   Advance Paid: $400000
+   Remaining: $32221
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Abdi Wali Moalin Site - $400000 - 2025-10-10
+
+16. Project: Xasan C Mursal (6cc118a3-a8cf-4d18-9ff4-ae0343eeb89a)
+   Customer: Xasan C Mursal
+   Agreement: $143000
+   Advance Paid: $143000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Xasan C Mursal  - $143000 - 2025-10-10
+
+17. Project: Siciid SIte (65cd2dfb-18fd-41fb-8ebf-8a3608f632be)
+   Customer: Siciid site
+   Agreement: $63000
+   Advance Paid: $63000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Siciid SIte - $63000 - 2025-10-10
+
+18. Project: Mamo Trik (8e0943cc-d368-48a5-87ac-b49f07a584b1)
+   Customer: Mamo Trik
+   Agreement: $48000
+   Advance Paid: $48000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Mamo Trik - $48000 - 2025-10-10
+
+19. Project: Sh Abdulahi SIte (043cfd20-dee7-4823-8123-107bb2a00632)
+   Customer: sh abdulahi site
+   Agreement: $200000
+   Advance Paid: $200000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Sh Abdulahi SIte - $200000 - 2025-10-10
+
+20. Project: Nasra Mohamed miis site (ffb88599-27e1-4531-97d1-c5f1dceea30d)
+   Customer: Nasra Mohamed
+   Agreement: $18000
+   Advance Paid: $18000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Nasra Mohamed miis site - $18000 - 2025-10-10
+
+21. Project: Mahamed Daud SIte (917348bb-d352-4251-9499-11851e277951)
+   Customer: mohamed daud 
+   Agreement: $45000
+   Advance Paid: $45000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Mahamed Daud SIte - $45000 - 2025-10-10
+
+22. Project: Hayat Hotel (10263e3b-4742-4915-9c66-154cf9d0d313)
+   Customer: hayaat hotell
+   Agreement: $50000
+   Advance Paid: $50000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Hayat Hotel - $50000 - 2025-10-10
+
+23. Project: Nasra SIte (1a506ff3-bac6-4de1-8cab-3388ae7f47f6)
+   Customer: nasra site
+   Agreement: $326850
+   Advance Paid: $233850
+   Remaining: $93000
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Nasra SIte - $233850 - 2025-10-10
+
+24. Project: Ganjelka Ugaas Ibrahim (e72acce4-3287-4cfd-9b68-2fd2afac06b8)
+   Customer: Ugas Ibrahim
+   Agreement: $120000
+   Advance Paid: $90000
+   Remaining: $30000
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Ganjelka Ugaas Ibrahim  - $90000 - 2025-10-10
+
+25. Project: Nimco SIte (33ade254-453c-4b18-b8b0-dfe9700e8f28)
+   Customer: Nimco Site
+   Agreement: $38000
+   Advance Paid: $38000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Nimco SIte - $38000 - 2025-10-10
+
+26. Project: jj (4c6542b8-ebd8-48ef-976d-10c90bd5769f)
+   Customer: test
+   Agreement: $70000
+   Advance Paid: $70000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: jj - $70000 - 2025-10-23
+
+27. Project: Dhagaxbur Masjid Yusuf (57880638-2a74-4a25-889e-3c8302f0d2c7)
+   Customer: Dhagaxbur Masjid Yusuf
+   Agreement: $1819000
+   Advance Paid: $1322299
+   Remaining: $496701
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Dhagaxbur Masjid Yusuf - $1322299 - 2025-10-10
+
+28. Project: Sh Abdulahi Kuras SIte (4eeb2363-15e9-4dc5-ad06-58b8999f4044)
+   Customer: sh abdulahi kuraas
+   Agreement: $120000
+   Advance Paid: $120000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Sh Abdulahi Kuras SIte - $120000 - 2025-10-10
+
+29. Project: Xasan Sulub Site (dda49cab-8785-402d-9423-13f5ec145512)
+   Customer: Xasan Sulub
+   Agreement: $45000
+   Advance Paid: $45000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Xasan Sulub Site - $45000 - 2025-10-10
+
+30. Project: Shugri Mohamed SIte (31a05942-4754-4670-984a-4d9dbe186cdf)
+   Customer: Shugri Maxamed Site
+   Agreement: $79000
+   Advance Paid: $50000
+   Remaining: $29000
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Shuri Mohamed SIte - $50000 - 2025-10-10
+
+31. Project: Masjid Hagarlaawe (6401e786-1bb7-4da9-af8c-9abbf8c7cc83)
+   Customer: masjid hagarlaawe
+   Agreement: $50000
+   Advance Paid: $30000
+   Remaining: $20000
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Masjid Hagarlaawe - $30000 - 2025-10-10
+
+32. Project: 5fkh (43382144-a2a9-4e54-ba19-91fe73633e99)
+   Customer: hamse
+   Agreement: $150000
+   Advance Paid: $100000
+   Remaining: $50000
+   INCOME Transactions: 1
+     1. Advance Payment for Project: 5fkh - $100000 - 2025-11-01
+
+33. Project: fadumo sharif site (6f9abc73-d875-447e-a35a-9e21dff9d081)
+   Customer: New Masjid Decore
+   Agreement: $12000
+   Advance Paid: $12000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: fadumo sharif site - $12000 - 2026-01-20
+
+34. Project: maxamed duulane  (f72a2e9d-ddae-4dc6-ac74-1c2bc49c4ac4)
+   Customer: maxamad duulane
+   Agreement: $35000
+   Advance Paid: $20000
+   Remaining: $15000
+   INCOME Transactions: 1
+     1. Advance Payment for Project: maxamed duulane  - $20000 - 2025-12-31
+
+35. Project: Saylada Yucub (b531edb0-87ad-4054-952a-b2914cfbc8ee)
+   Customer: Ma'amiin Gcc
+   Agreement: $210000
+   Advance Paid: $210000
+   Remaining: $0
+   INCOME Transactions: 2
+     1. Advance Payment for Project: Saylada Yucub - $210000 - 2025-11-21
+     2. lacag qabasho saylada yucub - $60000 - 2026-01-06
+
+36. Project: Saylada Dalaad (66e26432-1e49-4a8d-bf2c-5411fed53188)
+   Customer: Ma'amiin Gcc
+   Agreement: $210000
+   Advance Paid: $210000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Saylada Dalaad - $210000 - 2025-11-21
+
+37. Project: Hayat hotel janjarta (13901964-79f5-4d2f-b0c4-f2a6c03282a7)
+   Customer: hayaat hotell
+   Agreement: $150000
+   Advance Paid: $150000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Hayat hotel janjarta - $105000 - 2025-10-28
+
+38. Project: C yare Cilmi site (da19cd1f-e0e5-4a9b-b1ac-0c1f2ee41d82)
+   Customer: C yare Cilmi
+   Agreement: $100000
+   Advance Paid: $100000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: C yare Cilmi site - $100000 - 2025-10-28
+
+39. Project: Xasan Abdi Mursal Ganjel (f9dc647d-5a0d-47eb-b407-956108904ae8)
+   Customer: Xasan C Mursal
+   Agreement: $100000
+   Advance Paid: $38000
+   Remaining: $62000
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Xasan Abdi Mursal Ganjel - $20000 - 2025-11-05
+
+40. Project: New Sh/ abdulahi kuras site (38293965-7898-425a-8288-8a8f1801e98d)
+   Customer: sh abdulahi kuraas
+   Agreement: $72000
+   Advance Paid: $72000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: New Sh/ abdulahi kuras site - $50000 - 2025-10-10
+
+41. Project: New Xasan C Mursal (fb32d630-716e-4302-ac53-afad457dca6b)
+   Customer: Xasan C Mursal
+   Agreement: $130000
+   Advance Paid: $40000
+   Remaining: $90000
+   INCOME Transactions: 1
+     1. Advance Payment for Project: New Xasan C Mursal - $40000 - 2026-01-31
+
+42. Project: Qolaji Site  (536f054c-501f-4d53-8d8a-35a79450c0d3)
+   Customer: UNSEF
+   Agreement: $1700000
+   Advance Paid: $300000
+   Remaining: $1400000
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Qolaji Site  - $300000 - 2026-01-21
+
+43. Project: ahmed abdule site (94fbe85c-c694-411e-bf6a-a558bcfa92e6)
+   Customer: Ahmed abdule
+   Agreement: $1074000
+   Advance Paid: $1074000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: ahmed abdule site - $1074000 - 2026-01-22
+
+44. Project: Nuur Moalin Site (2970784b-8a6f-415e-a0cd-a6d3e1177801)
+   Customer: Eng nuur moalin
+   Agreement: $0.1
+   Advance Paid: $173000
+   Remaining: $0
+   INCOME Transactions: 0
+
+45. Project: masjid hoob kutubsar (5f4ec73b-02f9-4d0a-be05-34019a1d6d83)
+   Customer: masjid hoob 
+   Agreement: $80000
+   Advance Paid: $80000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: masjid hoob kutubsar - $80000 - 2026-01-25
+
+46. Project: Ahmed abdule ganjel (35a1ea4e-3e67-40b4-9edc-7411482ba453)
+   Customer: Ahmed abdule
+   Agreement: $100000
+   Advance Paid: $70000
+   Remaining: $30000
+   INCOME Transactions: 2
+     1. day kasoo xarootay - $30000 - 2025-12-30
+     2. Advance Payment for Project: Ahmed abdule ganjel - $70000 - 2025-12-22
+
+47. Project: Sh c laahi bakhaar (042a7e03-5e99-4cd2-b4c9-9c20ebd6f888)
+   Customer: sh abdulahi site
+   Agreement: $142500
+   Advance Paid: $142500
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Sh c laahi bakhaar - $100000 - 2025-12-11
+
+48. Project: Eng Ahmed Site (982fc1b7-9c04-4824-a977-d43901611696)
+   Customer: Eng Ahmed
+   Agreement: $130000
+   Advance Paid: $130000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Eng Ahmed Site - $130000 - 2025-12-10
+
+49. Project: masjid Hoob (1e14537e-778d-412e-8e52-58f67a15108c)
+   Customer: masjid hoob 
+   Agreement: $600000
+   Advance Paid: $600000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: masjid Hoob - $420000 - 2025-12-07
+
+50. Project: maxamed xasan sit (587cfedb-5343-4733-b878-7cbce042882b)
+   Customer: maxamed xasan sit
+   Agreement: $105000
+   Advance Paid: $105000
+   Remaining: $0
+   INCOME Transactions: 0
+
+51. Project: mohamed sh mahdi (9a10546f-c462-4fd1-9600-17408e63460b)
+   Customer: Mohamed Sh Mahdi 
+   Agreement: $95000
+   Advance Paid: $95000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: mohamed sh mahdi - $95000 - 2025-11-28
+
+52. Project: Dhoobawayn site birta (9453f3cb-e93a-4396-becb-4de72bb9c31a)
+   Customer: Maxamed Nur Xaji
+   Agreement: $260637
+   Advance Paid: $250000
+   Remaining: $10637
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Dhoobawayn site birta - $250000 - 2025-10-28
+
+53. Project: Maxamad quresh site (d6addfb6-fa88-4495-a767-c01040747dc2)
+   Customer: Maxamad quresh
+   Agreement: $733000
+   Advance Paid: $300000
+   Remaining: $433000
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Maxamad quresh site - $300000 - 2026-02-03
+
+54. Project: Dhobawayn albabada loxa (9ce24df7-6d85-48b4-a5e1-fd97c278910e)
+   Customer: Maxamed Nur Xaji
+   Agreement: $1000000
+   Advance Paid: $1000000
+   Remaining: $0
+   INCOME Transactions: 1
+     1. Advance Payment for Project: Dhobawayn albabada loxa - $1000000 - 2026-02-19

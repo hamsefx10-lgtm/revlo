@@ -3,7 +3,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Layout from '../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import {
   ArrowLeft, LineChart, DollarSign, Warehouse, Scale, CreditCard, Banknote, CalendarCheck, FileText, Plus, ArrowRight,

@@ -49,7 +49,10 @@ export async function GET(req: NextRequest) {
             where,
             include: {
                 account: { select: { name: true, type: true } },
-                user: { select: { fullName: true } }
+                user: { select: { fullName: true } },
+                project: { select: { name: true } },
+                customer: { select: { name: true } },
+                vendor: { select: { name: true } }
             },
             orderBy: { transactionDate: 'desc' },
             take: limit

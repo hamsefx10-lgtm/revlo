@@ -1,0 +1,11 @@
+{
+  "ledgerRunningScore": 216209.15000000037,
+  "realDbBalance": 216209.14999999994,
+  "dashboardExpected": 216209.15000000037,
+  "discrepancy": 0,
+  "breakdowns": {
+    "sumAutoAdvancesTxn": 13195649,
+    "sumProjectAdvances": 13195649,
+    "autoAdvanceDiff": 0
+  }
+}

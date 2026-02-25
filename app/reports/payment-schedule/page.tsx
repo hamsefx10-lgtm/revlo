@@ -3,13 +3,13 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { 
   ArrowLeft, CreditCard, Plus, Search, Filter, Calendar, List, LayoutGrid, 
   DollarSign, Briefcase, Users, CheckCircle, XCircle, ChevronRight, 
   TrendingUp, TrendingDown, Eye, Edit, Send, MessageSquare, Clock as ClockIcon, Info, Bell, Trash2, Download
 } from 'lucide-react';
-import Toast from '../../../components/common/Toast'; // Reuse Toast component
+import Toast from '@/components/common/Toast'; // Reuse Toast component
 
 
 import { useEffect, useState } from 'react';

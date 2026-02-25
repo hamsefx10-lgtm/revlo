@@ -37,6 +37,9 @@ interface Transaction {
     user: {
         fullName: string;
     } | null;
+    project?: { name: string } | null;
+    customer?: { name: string } | null;
+    vendor?: { name: string } | null;
 }
 
 interface Account {
@@ -124,17 +127,23 @@ export default function TransactionsPage() {
 
     // --- Helpers ---
 
-    const getAmountColor = (type: string) => {
-        const t = type.toUpperCase();
-        if (t === 'INCOME' || t === 'TRANSFER_IN' || t === 'DEPOSIT') return 'text-green-500';
-        if (t === 'EXPENSE' || t === 'TRANSFER_OUT' || t === 'WITHDRAWAL') return 'text-red-500';
-        return 'text-gray-900 dark:text-white';
+    const getAmountColor = (t: Transaction) => {
+        const type = t.type.toUpperCase();
+        const isIncome = type === 'INCOME' ||
+            type === 'TRANSFER_IN' ||
+            type === 'DEPOSIT' ||
+            type === 'DEBT_TAKEN' ||
+            (type === 'DEBT_REPAID' && (t.customer || t.project));
+
+        if (isIncome) return 'text-green-500';
+        return 'text-red-500';
     };
 
     const getTypeIcon = (type: string) => {
         const t = type.toUpperCase();
-        if (t === 'INCOME' || t === 'DEPOSIT') return <ArrowDownLeft size={18} className="text-green-500" />;
+        if (t === 'INCOME' || t === 'DEPOSIT' || t === 'DEBT_TAKEN') return <ArrowDownLeft size={18} className="text-green-500" />;
         if (t === 'EXPENSE' || t === 'WITHDRAWAL') return <ArrowUpRight size={18} className="text-red-500" />;
+        if (t === 'DEBT_REPAID') return <RefreshCw size={18} className="text-blue-500" />;
         if (t.includes('TRANSFER')) return <RefreshCw size={18} className="text-blue-500" />;
         return <Wallet size={18} className="text-gray-400" />;
     };
@@ -142,13 +151,22 @@ export default function TransactionsPage() {
     // Calculate Summary Stats from current view
     const stats = transactions.reduce((acc, curr) => {
         const t = curr.type.toUpperCase();
-        const isIncome = ['INCOME', 'TRANSFER_IN', 'DEPOSIT'].includes(t);
-        const isExpense = ['EXPENSE', 'TRANSFER_OUT', 'WITHDRAWAL'].includes(t);
+        const isIncome = t === 'INCOME' ||
+            t === 'TRANSFER_IN' ||
+            t === 'DEPOSIT' ||
+            t === 'DEBT_TAKEN' ||
+            (t === 'DEBT_REPAID' && (curr.customer || curr.project));
+
+        const isExpense = (t === 'EXPENSE' || t === 'TRANSFER_OUT' || t === 'WITHDRAWAL' || (t === 'DEBT_REPAID' && curr.vendor))
+            && curr.category !== 'FIXED_ASSET_PURCHASE';
+
+        const isAsset = curr.category === 'FIXED_ASSET_PURCHASE';
 
         if (isIncome) acc.income += Number(curr.amount);
         if (isExpense) acc.expense += Number(curr.amount);
+        if (isAsset) acc.assets += Number(curr.amount);
         return acc;
-    }, { income: 0, expense: 0 });
+    }, { income: 0, expense: 0, assets: 0 });
 
     const filteredTransactions = transactions.filter(t =>
         t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -235,12 +253,19 @@ export default function TransactionsPage() {
                             <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-500"><TrendingDown size={18} /></div>
                         </div>
                     </div>
-                    <div className="col-span-2 bg-gradient-to-r from-blue-600 to-indigo-600 p-5 rounded-2xl text-white shadow-lg shadow-blue-500/20 flex flex-col justify-between relative overflow-hidden">
+                    <div className="bg-white dark:bg-[#151C2C] p-5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col justify-between hidden md:flex">
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Asset Expenses</p>
+                        <div className="flex items-end justify-between mt-2">
+                            <p className="text-xl md:text-2xl font-black text-purple-500">ETB {stats.assets.toLocaleString()}</p>
+                            <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-purple-500"><Wallet size={18} /></div>
+                        </div>
+                    </div>
+                    <div className="col-span-2 md:col-span-1 bg-gradient-to-r from-blue-600 to-indigo-600 p-5 rounded-2xl text-white shadow-lg shadow-blue-500/20 flex flex-col justify-between relative overflow-hidden">
                         <div className="relative z-10">
                             <p className="text-xs font-bold text-blue-100 uppercase tracking-wider">Net Cash Flow</p>
-                            <p className="text-2xl md:text-3xl font-black mt-1">ETB {(stats.income - stats.expense).toLocaleString()}</p>
+                            <p className="text-2xl md:text-3xl font-black mt-1">ETB {(stats.income - stats.expense - stats.assets).toLocaleString()}</p>
                         </div>
-                        <Wallet className="absolute right-4 top-1/2 -translate-y-1/2 text-white opacity-10" size={60} />
+                        <Wallet className="absolute right-2 bottom-2 text-white opacity-10" size={40} />
                     </div>
                 </div>
 
@@ -359,8 +384,8 @@ export default function TransactionsPage() {
                                                 <span className="text-sm font-medium text-gray-500">{t.category || '-'}</span>
                                             </td>
                                             <td className="px-6 py-4 text-right">
-                                                <span className={`font-black text-sm block ${getAmountColor(t.type)}`}>
-                                                    {['EXPENSE', 'WITHDRAWAL', 'TRANSFER_OUT'].includes(t.type.toUpperCase()) ? '-' : '+'}
+                                                <span className={`font-black text-sm block ${getAmountColor(t)}`}>
+                                                    {getAmountColor(t).includes('green') ? '+' : '-'}
                                                     ETB {t.amount.toLocaleString()}
                                                 </span>
                                                 <span className="text-[10px] text-gray-400">by {t.user?.fullName ? t.user.fullName.split(' ')[0] : 'System'}</span>
@@ -392,8 +417,8 @@ export default function TransactionsPage() {
                                             <p className="text-xs text-gray-500">{t.category} • {new Date(t.transactionDate).toLocaleDateString()}</p>
                                         </div>
                                     </div>
-                                    <span className={`font-black text-sm ${getAmountColor(t.type)}`}>
-                                        {['EXPENSE', 'WITHDRAWAL', 'TRANSFER_OUT'].includes(t.type.toUpperCase()) ? '-' : '+'}
+                                    <span className={`font-black text-sm ${getAmountColor(t)}`}>
+                                        {getAmountColor(t).includes('green') ? '+' : '-'}
                                         {Number(t.amount).toLocaleString()}
                                     </span>
                                 </div>

@@ -1,0 +1,905 @@
+﻿
+============================================================
+COMPANY: birshiil work shop
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+new masjid                          |       50,000 |       40,000 |            0 |            0
+mohamed site                        |      500,000 |       50,000 |            0 |            0
+abdi site                           |       60,000 |       50,000 |            0 |            0
+jkdtg                               |      700,000 |       50,000 |            0 |            0
+gsd                                 |    5,353,452 |       42,342 |            0 |       42,342
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for birshiil work shop:
+============================================================
+Total Agreement Amounts (all projects):  ETB 6,663,452
+Total advancePaid field (DB):            ETB 232,342
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 42,342
+Total via DebtRepaid (customers):        ETB 2,998
+---
+REAL Income (Payments + DebtRepaid):     ETB 2,998
+Recorded Income (Txns + DebtRepaid):     ETB 45,340
+GAP (Payments - IncomeTxns):             ETB -42,342
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: farxan Grg
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+new masjid decore                   |       50,000 |       40,000 |            0 |       40,000
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for farxan Grg:
+============================================================
+Total Agreement Amounts (all projects):  ETB 50,000
+Total advancePaid field (DB):            ETB 40,000
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 40,000
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 40,000
+GAP (Payments - IncomeTxns):             ETB -40,000
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: farxaa
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for farxaa:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: BIRSHIIL
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+5fkh                                |      150,000 |      100,000 |            0 |      100,000
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for BIRSHIIL:
+============================================================
+Total Agreement Amounts (all projects):  ETB 150,000
+Total advancePaid field (DB):            ETB 100,000
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 100,000
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 100,000
+GAP (Payments - IncomeTxns):             ETB -100,000
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: BIRSHIIL.
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for BIRSHIIL.:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: jasldk
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for jasldk:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: Yuusuf work shop
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for Yuusuf work shop:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: Birshiil Work Shop
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+Bakharka C/rashid yusuf             |      500,000 |      500,000 |            0 |      500,000
+new project                         |       30,000 |       20,000 |            0 |       20,000
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for Birshiil Work Shop:
+============================================================
+Total Agreement Amounts (all projects):  ETB 530,000
+Total advancePaid field (DB):            ETB 520,000
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 520,000
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 520,000
+GAP (Payments - IncomeTxns):             ETB -520,000
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: DARMI BIlding 
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for DARMI BIlding :
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: Ma'alin Amiin Gcc
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for Ma'alin Amiin Gcc:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: Fffsa
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for Fffsa:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: chatgpt
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for chatgpt:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: test12
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+jj                                  |       70,000 |       70,000 |            0 |       70,000
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for test12:
+============================================================
+Total Agreement Amounts (all projects):  ETB 70,000
+Total advancePaid field (DB):            ETB 70,000
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 70,000
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 70,000
+GAP (Payments - IncomeTxns):             ETB -70,000
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: Birshiil
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+New Masjid Decore                   |      500,000 |      400,000 |            0 |      400,000
+New Ganjel                          |       55,000 |       55,000 |            0 |       55,000
+Masjid Garab Case                   |      944,000 |      944,000 |            0 |      944,000
+Bakhaarka Abdirashid Yusuf          |      500,000 |      500,000 |            0 |      500,000
+Abdi Wali Moalin Site               |      432,221 |      400,000 |            0 |      400,000
+Dhobawayn Almuniam Site             |    3,000,000 |    3,000,000 |            0 |    3,000,000
+Siciid SIte                         |       63,000 |       63,000 |            0 |       63,000
+Mamo Trik                           |       48,000 |       48,000 |            0 |       48,000
+Wajahada Dukaanka Dool              |       39,000 |       39,000 |            0 |       39,000
+Sh Abdulahi SIte                    |      200,000 |      200,000 |            0 |      200,000
+Mahamed Daud SIte                   |       45,000 |       45,000 |            0 |       45,000
+Hayat Hotel                         |       50,000 |       50,000 |            0 |       50,000
+Masjid Hagarlaawe                   |       50,000 |       30,000 |            0 |       30,000
+Nasra SIte                          |      326,850 |      233,850 |            0 |      233,850
+Xasan C Mursal                      |      143,000 |      143,000 |            0 |      143,000
+Ganjelka Ugaas Ibrahim              |      120,000 |       90,000 |            0 |       90,000
+Nimco SIte                          |       38,000 |       38,000 |            0 |       38,000
+Shugri Mohamed SIte                 |       79,000 |       50,000 |            0 |       50,000
+Sh Abdulahi Kuras SIte              |      120,000 |      120,000 |            0 |      120,000
+Dhagaxbur Masjid Yusuf              |    1,819,000 |    1,322,299 |            0 |    1,322,299
+Nasra Mohamed miis site             |       18,000 |       18,000 |            0 |       18,000
+Xasan Sulub Site                    |       45,000 |       45,000 |            0 |       45,000
+New Sh/ abdulahi kuras site         |       72,000 |       72,000 |            0 |       50,000
+Dhoobawayn site birta               |      260,637 |      250,000 |            0 |      250,000
+C yare Cilmi site                   |      100,000 |      100,000 |            0 |      100,000
+Hayat hotel janjarta                |      150,000 |      150,000 |            0 |      105,000
+Xasan Abdi Mursal Ganjel            |      100,000 |       38,000 |            0 |       20,000
+Saylada Yucub                       |      210,000 |      210,000 |            0 |      270,000
+Saylada Dalaad                      |      210,000 |      210,000 |            0 |      210,000
+mohamed sh mahdi                    |       95,000 |       95,000 |            0 |       95,000
+maxamed xasan sit                   |      105,000 |      105,000 |            0 |            0
+masjid Hoob                         |      600,000 |      600,000 |            0 |      420,000
+Eng Ahmed Site                      |      130,000 |      130,000 |            0 |      130,000
+Sh c laahi bakhaar                  |      142,500 |      142,500 |            0 |      100,000
+Ahmed abdule ganjel                 |      100,000 |       70,000 |            0 |      100,000
+maxamed duulane                     |       35,000 |       20,000 |            0 |       20,000
+fadumo sharif site                  |       12,000 |       12,000 |            0 |       12,000
+Qolaji Site                         |    1,700,000 |      300,000 |            0 |      300,000
+ahmed abdule site                   |    1,074,000 |    1,074,000 |            0 |    1,074,000
+Nuur Moalin Site                    |          0.1 |      173,000 |            0 |            0
+masjid hoob kutubsar                |       80,000 |       80,000 |            0 |       80,000
+New Xasan C Mursal                  |      130,000 |       40,000 |            0 |       40,000
+Maxamad quresh site                 |      733,000 |      300,000 |            0 |      300,000
+Dhobawayn albabada loxa             |    1,000,000 |    1,000,000 |            0 |    1,000,000
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for Birshiil:
+============================================================
+Total Agreement Amounts (all projects):  ETB 15,674,208.1
+Total advancePaid field (DB):            ETB 13,005,649
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 12,821,149
+Total via DebtRepaid (customers):        ETB 668,383
+---
+REAL Income (Payments + DebtRepaid):     ETB 668,383
+Recorded Income (Txns + DebtRepaid):     ETB 13,489,532
+GAP (Payments - IncomeTxns):             ETB -12,821,149
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: Ma'Alin Amiin Gcc
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for Ma'Alin Amiin Gcc:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: AN INDUSTURY
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for AN INDUSTURY:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: An test
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for An test:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: test1
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for test1:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: moalin amin shop
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for moalin amin shop:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: shop1
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for shop1:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: hanasho
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for hanasho:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: Buuxa shop
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for Buuxa shop:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: birshil
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for birshil:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 467,169.1
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 467,169.1
+GAP (Payments - IncomeTxns):             ETB -467,169.1
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: Mahad Design
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for Mahad Design:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: An
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for An:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: Al-barak
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for Al-barak:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: abdifitaah 
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for abdifitaah :
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: Test Projects Company
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for Test Projects Company:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: Kkk
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for Kkk:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: Hh
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for Hh:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: UnitedJet Gabiley
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for UnitedJet Gabiley:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: Telesom
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for Telesom:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: Xiis company
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for Xiis company:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: Al barako metal trade
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for Al barako metal trade:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 5,175
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 5,175
+GAP (Payments - IncomeTxns):             ETB -5,175
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: al-barako
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for al-barako:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: admin
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for admin:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0
+
+============================================================
+COMPANY: hamse
+============================================================
+
+≡ƒôï PROJECTS BREAKDOWN:
+Name                                |    Agreement |  AdvancePaid |     Payments |  Income Txns
+----------------------------------- | ------------ | ------------ | ------------ | ------------
+
+============================================================
+≡ƒôè FINAL AUDIT SUMMARY for hamse:
+============================================================
+Total Agreement Amounts (all projects):  ETB 0
+Total advancePaid field (DB):            ETB 0
+Total via Payment model (actual cash):   ETB 0
+Total via Income Transactions:           ETB 0
+Total via DebtRepaid (customers):        ETB 0
+---
+REAL Income (Payments + DebtRepaid):     ETB 0
+Recorded Income (Txns + DebtRepaid):     ETB 0
+GAP (Payments - IncomeTxns):             ETB 0
+
+ΓÜá∩╕Å  Projects with Payment but NO Income Txn: 0

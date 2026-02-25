@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import {
   Download, Printer, Loader2, TrendingUp, TrendingDown, DollarSign,
   Receipt, FileText, XCircle, Wallet, Calendar, HelpCircle, X,
@@ -57,6 +57,8 @@ interface DailyReport {
     amount: number;
     paidFrom?: string;
     note?: string | null;
+    employeeName?: string | null;
+    vendorName?: string | null;
   }>;
   companyExpenses: Array<{
     id: string;
@@ -74,6 +76,7 @@ interface DailyReport {
     expenseType?: string;
     note?: string | null;
     paidFrom?: string;
+    vendorName?: string | null;
   }>;
   totalProjectExpenses: number;
   totalCompanyExpenses: number;
@@ -684,19 +687,31 @@ export default function DailyReportPage() {
               ) : (
                 <div className="divide-y divide-gray-100 dark:divide-gray-700">
                   {report.projectExpenses.map((ex, idx) => (
-                    <div key={`p-${idx}`} className="p-4 flex justify-between items-start hover:bg-gray-50 dark:hover:bg-gray-700/50 transition group">
-                      <div>
-                        <p className="font-semibold text-gray-900 dark:text-white group-hover:text-purple-700 transition-colors">{ex.description || ex.category}</p>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          <span className="text-xs text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-100 font-medium">{ex.project}</span>
-                          <span className="text-xs text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">{ex.category}</span>
+                    <Link href={`/expenses/${ex.id}`} key={`p-${idx}`}>
+                      <div className="p-4 flex justify-between items-start hover:bg-gray-50 dark:hover:bg-gray-700/50 transition group cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0">
+                        <div>
+                          <p className="font-semibold text-gray-900 dark:text-white group-hover:text-purple-700 transition-colors">
+                            {ex.description || ex.category}
+                          </p>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            <span className="text-xs text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-100 font-medium">{ex.project}</span>
+                            <span className="text-xs text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">{ex.category}</span>
+                            {ex.employeeName && (
+                              <span className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 font-medium">Shaqaale: {ex.employeeName}</span>
+                            )}
+                            {ex.vendorName && (
+                              <span className="text-xs text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100 font-medium">Iibiyo: {ex.vendorName}</span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-bold text-gray-900 group-hover:text-red-600 transition-colors">-{ex.amount.toLocaleString()}</span>
+                          <div className="flex gap-2 mt-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="text-[10px] text-blue-500 font-bold uppercase tracking-tighter">View</span>
+                          </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <span className="font-bold text-gray-900 group-hover:text-red-600 transition-colors">-{ex.amount.toLocaleString()}</span>
-                        <Link href={`/expenses/edit/${ex.id}`} className="block text-xs text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity text-right mt-1">Edit</Link>
-                      </div>
-                    </div>
+                    </Link>
                   ))}
                   <div className="p-4 bg-gray-50 border-t border-gray-100 mt-auto">
                     <div className="flex justify-between items-center text-sm font-bold">
@@ -725,19 +740,31 @@ export default function DailyReportPage() {
               ) : (
                 <div className="divide-y divide-gray-100 dark:divide-gray-700">
                   {report.companyExpenses.map((ex, idx) => (
-                    <div key={`c-${idx}`} className="p-4 flex justify-between items-start hover:bg-gray-50 dark:hover:bg-gray-700/50 transition group">
-                      <div>
-                        <p className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-700 transition-colors">{ex.description || ex.category}</p>
-                        <div className="flex items-center gap-1 mt-1">
-                          <span className="text-xs text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">{ex.category}</span>
-                          {ex.details && <span className="text-xs text-gray-400">• {ex.details}</span>}
+                    <Link href={`/expenses/${ex.id}`} key={`c-${idx}`}>
+                      <div className="p-4 flex justify-between items-start hover:bg-gray-50 dark:hover:bg-gray-700/50 transition group cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0">
+                        <div>
+                          <p className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-700 transition-colors">
+                            {ex.description || ex.category}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-1 mt-1">
+                            <span className="text-xs text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">{ex.category}</span>
+                            {ex.employeeName && (
+                              <span className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 font-medium">Shaqaale: {ex.employeeName}</span>
+                            )}
+                            {ex.vendorName && (
+                              <span className="text-xs text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100 font-medium">Iibiyo: {ex.vendorName}</span>
+                            )}
+                            {ex.details && <span className="text-xs text-gray-400 font-medium">| {ex.details}</span>}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-bold text-gray-900 group-hover:text-red-600 transition-colors">-{ex.amount.toLocaleString()}</span>
+                          <div className="flex gap-2 mt-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="text-[10px] text-blue-500 font-bold uppercase tracking-tighter">View</span>
+                          </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <span className="font-bold text-gray-900 group-hover:text-red-600 transition-colors">-{ex.amount.toLocaleString()}</span>
-                        <Link href={`/expenses/edit/${ex.id}`} className="block text-xs text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity text-right mt-1">Edit</Link>
-                      </div>
-                    </div>
+                    </Link>
                   ))}
                   <div className="p-4 bg-gray-50 border-t border-gray-100 mt-auto">
                     <div className="flex justify-between items-center text-sm font-bold">

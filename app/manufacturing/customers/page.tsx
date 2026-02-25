@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {
     Plus, Search, Users, MapPin, Phone, Mail, MoreVertical, Loader2, RefreshCcw, Briefcase, Building
 } from 'lucide-react';
+import Layout from '@/components/layouts/Layout';
 
 export default function FactoryCustomersPage() {
     const [searchTerm, setSearchTerm] = useState('');

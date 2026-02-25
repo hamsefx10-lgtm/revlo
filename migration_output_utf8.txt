@@ -1,0 +1,86 @@
+﻿node.exe : (node:31440) [M
+ODULE_TYPELESS_PACKAGE_JSO
+N] Warning: Module type 
+of file:///C:/Users/OMEN/p
+rojects/revlo-vr/scripts/m
+igrate-products-company.ts
+ is not specified and it 
+doesn't parse as CommonJS.
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: ((  
+  node:31440) [M...se a   
+ s CommonJS.:String) [    
+], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+Reparsing as ES module 
+because module syntax was 
+detected. This incurs a 
+performance overhead.
+To eliminate this 
+warning, add "type": 
+"module" to C:\Users\OMEN\
+projects\revlo-vr\package.
+json.
+(Use `node 
+--trace-warnings ...` to 
+show where the warning 
+was created)
+Starting Product companyId migration...
+Found 45 products to migrate.
+Updated product 651f3e89-d275-4182-848d-a6e209a57e4b with company c035cc81-b2ef-48d8-b15f-688d277cf349
+Updated product 38965406-d5cc-4879-9ea8-b6eab006cb22 with company c035cc81-b2ef-48d8-b15f-688d277cf349
+Updated product 73353214-9fd0-4a9d-bd6f-7dd30c69daf7 with company c035cc81-b2ef-48d8-b15f-688d277cf349
+Updated product 0581e659-7689-4839-b97b-48a103c81cfe with company 582c2ab0-ca90-4fc3-8401-1795fe49d5f0
+Updated product 0386052f-9d40-44b3-a413-6f5dc24dd2ff with company c035cc81-b2ef-48d8-b15f-688d277cf349
+Updated product baa13b13-964e-42ca-ac79-a4f6a44985b4 with company 582c2ab0-ca90-4fc3-8401-1795fe49d5f0
+Updated product 2228cc53-e1db-4c57-8fb0-613ca1f2d8f6 with company 65673dad-141e-42e1-bd6c-f8cd433c7de4
+Updated product a11dc14b-099c-43d3-852a-531628cebe1f with company 65673dad-141e-42e1-bd6c-f8cd433c7de4
+Updated product d7e07197-fcca-4a84-a22c-cd3a7495e6c1 with company 65673dad-141e-42e1-bd6c-f8cd433c7de4
+Updated product 3fa499f2-e898-4e94-8615-386b93825107 with company 65673dad-141e-42e1-bd6c-f8cd433c7de4
+Updated product ce7f0fa7-0b9c-47b9-851a-8a59a9f19ab7 with company c035cc81-b2ef-48d8-b15f-688d277cf349
+Updated product 6406c769-9c3b-4760-b998-5a797bc79ec9 with company c035cc81-b2ef-48d8-b15f-688d277cf349
+Updated product 1c091f41-af9d-45a2-9f6c-00a9000e07d4 with company c035cc81-b2ef-48d8-b15f-688d277cf349
+Updated product 0251cd82-06ff-4a87-8a87-dd2ace37c90e with company c035cc81-b2ef-48d8-b15f-688d277cf349
+Updated product 607adcf7-f1b1-497b-af91-3ddd13edfba7 with company 65673dad-141e-42e1-bd6c-f8cd433c7de4
+Updated product 823375c5-14e4-4356-bba8-f98277f1c7a4 with company c035cc81-b2ef-48d8-b15f-688d277cf349
+Updated product 27bf004d-76b2-4045-b970-31e0379ca248 with company e4256be5-daa1-479c-a81f-633fb4ad5799
+Updated product 101569d2-e3a6-4a2f-bdfb-2cc82b8785c6 with company 65673dad-141e-42e1-bd6c-f8cd433c7de4
+Updated product 44e4c81f-3094-4f92-af73-bfa87883ea22 with company 81dd82b5-4bb3-4365-b083-65e68c75ab17
+Updated product 54a80783-96ad-4876-9313-4b1bd0958510 with company e8b1c008-7621-4c94-bfc1-049d1bc3d6a3
+Updated product 279873a5-3fb0-4943-8d8e-e2ff2af4b4c9 with company 65673dad-141e-42e1-bd6c-f8cd433c7de4
+Updated product 5d206524-f470-41fa-9e75-047d8a24be80 with company c035cc81-b2ef-48d8-b15f-688d277cf349
+Updated product 935df8f8-75d3-44a9-bcdc-7c8ac8283d3a with company c035cc81-b2ef-48d8-b15f-688d277cf349
+Updated product 070b7aee-19db-4e4d-81a8-95de6e9f8dad with company 582c2ab0-ca90-4fc3-8401-1795fe49d5f0
+Updated product 201a8fc0-b96c-4f8f-9957-b42876349947 with company 65673dad-141e-42e1-bd6c-f8cd433c7de4
+Updated product 0fd1e8f8-3d90-4f11-b1fc-6f6575d62af2 with company c035cc81-b2ef-48d8-b15f-688d277cf349
+Updated product c24b3113-a98f-4980-b8a3-2d7b4aa1138f with company c035cc81-b2ef-48d8-b15f-688d277cf349
+Updated product 9f591fd5-d893-4bc7-a912-bbdb92343272 with company c035cc81-b2ef-48d8-b15f-688d277cf349
+Updated product 264e4164-7d8c-4ce7-97b4-f5c41307b4f9 with company c035cc81-b2ef-48d8-b15f-688d277cf349
+Updated product f473a27e-9de9-442a-bc3d-fe6950b5759a with company c035cc81-b2ef-48d8-b15f-688d277cf349
+Updated product 68c1c1d4-d7e4-4f25-b10e-fa5c3ed273fa with company 582c2ab0-ca90-4fc3-8401-1795fe49d5f0
+Updated product 8e96814a-bc8a-4b66-aef7-3249722f8adf with company 582c2ab0-ca90-4fc3-8401-1795fe49d5f0
+Updated product dbdb856e-547a-4a3e-8759-5e77936e1f89 with company 582c2ab0-ca90-4fc3-8401-1795fe49d5f0
+Updated product 4bc42aca-c13d-45c0-8fe2-a46aeb090e65 with company 582c2ab0-ca90-4fc3-8401-1795fe49d5f0
+Updated product 6bfc092c-7e34-4a75-9a84-c610cd4c52b3 with company 582c2ab0-ca90-4fc3-8401-1795fe49d5f0
+Updated product 5c329770-48fa-4f79-a7b1-e33c518dc658 with company 582c2ab0-ca90-4fc3-8401-1795fe49d5f0
+Updated product 8080d47b-17b6-4db5-844e-6c1fa0a11c2e with company 582c2ab0-ca90-4fc3-8401-1795fe49d5f0
+Updated product f8094ed5-adeb-41f1-8aae-2fb1465c0b45 with company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+Updated product 67e6ec0a-0aac-49ea-b5a0-08c18f551d70 with company c035cc81-b2ef-48d8-b15f-688d277cf349
+Updated product 85fce19a-bdde-4784-87d8-272112ef6f84 with company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+Updated product e9f93aec-3e36-4dd1-9b7a-009037aa2d5e with company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+Updated product 8bbd026a-bddf-4bb5-acdf-b1f747348f27 with company 60d5a3be-8c77-43fa-b17b-66c10c0ec5a1
+Updated product e36a66e4-da97-41fe-99f0-1742b5f814f3 with company 60d5a3be-8c77-43fa-b17b-66c10c0ec5a1
+Updated product 777d974e-712c-4995-bb45-b79d7d2487b5 with company c035cc81-b2ef-48d8-b15f-688d277cf349
+Updated product 54279c0f-6863-4c8b-a232-9c46b5fae1ce with company 60d5a3be-8c77-43fa-b17b-66c10c0ec5a1
+Migration finished.

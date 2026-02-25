@@ -6,7 +6,7 @@ import prisma from '@/lib/db';
 
 export async function getSessionCompanyId(): Promise<string> {
   const session = (await getServerSession(authOptions)) as Session | null;
-  
+
   if (!session?.user?.id) {
     throw new Error('Unauthorized: No active session found');
   }
@@ -26,7 +26,7 @@ export async function getSessionCompanyId(): Promise<string> {
 
 export async function requireManufacturingAccess(): Promise<{ userId: string; companyId: string }> {
   const session = (await getServerSession(authOptions)) as Session | null;
-  
+
   if (!session?.user?.id) {
     throw new Error('Unauthorized: No active session found');
   }

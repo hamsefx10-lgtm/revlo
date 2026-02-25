@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Layout from '../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import {
   Settings, Banknote, Tag, Landmark, Users, Building, Database, Palette, User, HardDrive, Bell, Key, Info, Globe, Trash2
 } from 'lucide-react';

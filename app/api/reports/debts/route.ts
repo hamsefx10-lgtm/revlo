@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { getSessionCompanyUser } from '../../expenses/auth';
+import { getSessionCompanyUser } from '@/app/api/projects/expenses/auth';
 
 // Enhanced Debts report: Aggregates company debts and receivables with detailed information
 export async function GET(req: Request) {
@@ -14,11 +14,13 @@ export async function GET(req: Request) {
         companyId,
         OR: [
           { type: 'DEBT_TAKEN' },
-          { type: 'DEBT_REPAID' }
+          { type: 'DEBT_REPAID' },
+          { type: 'DEBT_RECEIVED' },
+          { type: 'DEBT_GIVEN' }
         ]
       },
       include: {
-        // vendor: true,
+        vendor: true,
         customer: true,
         account: true,
         project: true,
@@ -38,7 +40,9 @@ export async function GET(req: Request) {
           where: {
             OR: [
               { type: 'DEBT_TAKEN' },
-              { type: 'DEBT_REPAID' }
+              { type: 'DEBT_REPAID' },
+              { type: 'DEBT_RECEIVED' },
+              { type: 'DEBT_GIVEN' }
             ]
           }
         }
@@ -68,7 +72,7 @@ export async function GET(req: Request) {
         ]
       },
       include: {
-        // vendor: true,
+        vendor: true,
         customer: true,
         project: true,
         company: true,
@@ -92,15 +96,25 @@ export async function GET(req: Request) {
 
     // Process transactions (only for the current company)
     allTransactions.forEach((transaction: any) => {
-      const amount = Number(transaction.amount) || 0;
+      const amount = Math.abs(Number(transaction.amount) || 0);
 
-      if (transaction.vendorId /* && transaction.vendor */ && transaction.companyId === companyId) {
-        const vendorKey = `${transaction.vendorId}_${transaction.companyId}`;
-        if (!vendorDebtMap[vendorKey]) {
-          vendorDebtMap[vendorKey] = {
-            id: transaction.vendorId,
-            lender: /* transaction.vendor.name || */ 'Unknown Vendor',
-            lenderId: transaction.vendorId,
+      // 1. Process Debts (Payables / Liability)
+      // Includes anyone we OWE money to: Vendors by default, or Customers we took DEBT_RECEIVED from.
+      const isLiabilityTransaction =
+        (transaction.vendorId) ||
+        (transaction.customerId && (transaction.type === 'DEBT_RECEIVED' || (transaction.type === 'DEBT_REPAID' && transaction.description?.toLowerCase().includes('amaah'))));
+
+      if (isLiabilityTransaction && transaction.companyId === companyId) {
+        const entityId = transaction.vendorId || transaction.customerId;
+        const entityKey = `${entityId}_${transaction.companyId}`;
+
+        if (!vendorDebtMap[entityKey]) {
+          const isCustomer = !!transaction.customerId;
+          vendorDebtMap[entityKey] = {
+            id: entityId,
+            lender: isCustomer ? (transaction.customer?.name || 'Unknown Client') : (transaction.vendor?.name || 'Unknown Vendor'),
+            lenderId: entityId,
+            isCustomerLender: isCustomer, // Track if lender is actually a customer
             companyId: transaction.companyId,
             companyName: transaction.company?.name || 'Unknown Company',
             type: transaction.description?.toLowerCase().includes('loan') ? 'Loan' :
@@ -119,9 +133,11 @@ export async function GET(req: Request) {
             projectId: transaction.projectId || '',
             description: transaction.description || '',
             account: transaction.account?.name || '',
-            phoneNumber: /* transaction.vendor.phoneNumber || */ '',
-            email: /* transaction.vendor.email || */ '',
-            address: /* transaction.vendor.address || */ '',
+            phoneNumber: (isCustomer ? transaction.customer?.phoneNumber : transaction.vendor?.phoneNumber) || '',
+            email: (isCustomer ? transaction.customer?.email : transaction.vendor?.userId) || '',
+            address: isCustomer ? (transaction.customer?.address || '') : '',
+            isLiability: true,
+            isReceivable: false,
             lastPaymentDate: null,
             interestRate: null,
             paymentTerms: 'Standard',
@@ -130,16 +146,22 @@ export async function GET(req: Request) {
           };
         }
 
-        if (transaction.type === 'DEBT_TAKEN') {
-          vendorDebtMap[vendorKey].amount += amount;
+        if (transaction.type === 'DEBT_TAKEN' || transaction.type === 'DEBT_RECEIVED') {
+          vendorDebtMap[entityKey].amount += amount;
         } else if (transaction.type === 'DEBT_REPAID') {
-          vendorDebtMap[vendorKey].paid += amount;
-          vendorDebtMap[vendorKey].lastPaymentDate = transaction.transactionDate;
+          vendorDebtMap[entityKey].paid += amount;
+          vendorDebtMap[entityKey].lastPaymentDate = transaction.transactionDate;
         }
 
-        vendorDebtMap[vendorKey].transactions.push(transaction);
+        vendorDebtMap[entityKey].transactions.push(transaction);
+
+        // If this was a Customer lending us money, we've handled it in vendorDebtMap (Liability).
+        // We should skip it in the customerReceivableMap to avoid double counting or confusing categorization.
+        if (transaction.customerId && transaction.type === 'DEBT_RECEIVED') return;
       }
 
+      // 2. Process Receivables (Assets)
+      // Includes money OWDED TO US by Customers.
       if (transaction.customerId && transaction.customer && transaction.companyId === companyId) {
         const customerKey = `${transaction.customerId}_${transaction.companyId}`;
         const transactionDate = new Date(transaction.transactionDate);
@@ -156,6 +178,8 @@ export async function GET(req: Request) {
             amount: 0,
             received: 0,
             remaining: 0,
+            isLiability: false,
+            isReceivable: true,
             issueDate: transactionDate,
             dueDate: new Date(transactionDate.getTime() + (30 * 24 * 60 * 60 * 1000)).toISOString(), // 30 days from transaction date
             status: 'Upcoming',
@@ -179,7 +203,7 @@ export async function GET(req: Request) {
           customerReceivableMap[customerKey].dueDate = new Date(transactionDate.getTime() + (30 * 24 * 60 * 60 * 1000)).toISOString();
         }
 
-        if (transaction.type === 'DEBT_TAKEN') {
+        if (transaction.type === 'DEBT_TAKEN' || transaction.type === 'DEBT_GIVEN') {
           customerReceivableMap[customerKey].amount += amount;
         } else if (transaction.type === 'DEBT_REPAID') {
           customerReceivableMap[customerKey].received += amount;
@@ -192,7 +216,10 @@ export async function GET(req: Request) {
 
     // Process expenses that might contain debt information
     allExpenses.forEach((expense: any) => {
-      const amount = Number(expense.amount) || 0;
+      // Deduplicate: If this expense already has a matching transaction that was processed above, skip it.
+      if (expenseTransactionMap.has(expense.id)) return;
+
+      const amount = Math.abs(Number(expense.amount) || 0);
 
       // Check if this expense is related to debts
       const isDebtRelated = expense.category === 'Debt' ||
@@ -205,12 +232,12 @@ export async function GET(req: Request) {
         expense.description?.toLowerCase().includes('dayn') ||
         expense.description?.toLowerCase().includes('qardh');
 
-      if (isDebtRelated && expense.vendorId /* && expense.vendor */ && expense.companyId === companyId) {
+      if (isDebtRelated && expense.vendorId && expense.companyId === companyId) {
         const vendorKey = `${expense.vendorId}_${expense.companyId}`;
         if (!vendorDebtMap[vendorKey]) {
           vendorDebtMap[vendorKey] = {
             id: expense.vendorId,
-            lender: /* expense.vendor.name || */ 'Unknown Vendor',
+            lender: expense.vendor?.name || 'Unknown Vendor',
             lenderId: expense.vendorId,
             companyId: expense.companyId,
             companyName: expense.company?.name || 'Unknown Company',
@@ -225,9 +252,9 @@ export async function GET(req: Request) {
             projectId: expense.projectId || '',
             description: expense.description || '',
             account: 'Expense Account',
-            phoneNumber: /* expense.vendor.phoneNumber || */ '',
-            email: /* expense.vendor.email || */ '',
-            address: /* expense.vendor.address || */ '',
+            phoneNumber: expense.vendor?.phoneNumber || '',
+            email: '',
+            address: '',
             lastPaymentDate: expense.category === 'Debt Repayment' ? expense.createdAt : null,
             interestRate: null,
             paymentTerms: 'Standard',
@@ -344,6 +371,11 @@ export async function GET(req: Request) {
 
     // Calculate remaining amounts and status for debts
     const debts = Object.values(vendorDebtMap).map((debt: any) => {
+      // If payment exceeds recorded debt (e.g., historical unrecorded expenses), 
+      // bump up the total amount to match the payment to avoid negative remaining debts.
+      if (debt.paid > debt.amount) {
+        debt.amount = debt.paid;
+      }
       debt.remaining = debt.amount - debt.paid;
 
       // Determine status
@@ -387,8 +419,8 @@ export async function GET(req: Request) {
 
     // Process project debts - projects that owe money
     const projectDebts = allProjects.map((project: any) => {
-      const agreementAmount = Number(project.agreementAmount || 0);
-      const advancePaid = Number(project.advancePaid || 0);
+      const agreementAmount = Math.abs(Number(project.agreementAmount || 0));
+      const advancePaid = Math.abs(Number(project.advancePaid || 0));
 
       // Calculate debt transactions for this project
       const projectDebtTransactions = project.transactions.filter((trx: any) => trx.type === 'DEBT_TAKEN');
@@ -409,8 +441,8 @@ export async function GET(req: Request) {
         (trx.type === 'DEBT_REPAID' || trx.type === 'INCOME') && trx.id !== advanceTransaction?.id
       );
 
-      const totalDebtAmount = projectDebtTransactions.reduce((sum: number, trx: any) => sum + Number(trx.amount), 0);
-      const totalRepaidAmount = projectRepaymentTransactions.reduce((sum: number, trx: any) => sum + Number(trx.amount), 0);
+      const totalDebtAmount = projectDebtTransactions.reduce((sum: number, trx: any) => sum + Math.abs(Number(trx.amount)), 0);
+      const totalRepaidAmount = projectRepaymentTransactions.reduce((sum: number, trx: any) => sum + Math.abs(Number(trx.amount)), 0);
 
       // Total Paid = Initial Advance (Static Field) + Other Transactions
       const totalPaid = advancePaid + totalRepaidAmount;
@@ -456,14 +488,17 @@ export async function GET(req: Request) {
       };
     }); // Return all projects, even fully paid or overpaid
 
-    // Add project debts to main debts array
+    // For the UI Summary "Wadarta Payables" (Total Debts Owed by Company), it must ONLY include Vendor Debts
+    // Project Debts represent money owed TO the company (by customers), not BY the company.
+    // The "allDebts" concatenated array continues to serve other unified views if needed, 
+    // but the summary relies STRICTLY on 'debts'.
     const allDebts = [...debts, ...projectDebts];
 
-    // Calculate summary statistics
-    const totalDebtsOwed = allDebts.reduce((sum: number, debt: any) => sum + debt.amount, 0);
-    const totalDebtsPaid = allDebts.reduce((sum: number, debt: any) => sum + debt.paid, 0);
-    const totalDebtsRemaining = allDebts.reduce((sum: number, debt: any) => sum + debt.remaining, 0);
-    const overdueDebts = allDebts.filter((debt: any) => debt.status === 'Overdue').reduce((sum: number, debt: any) => sum + debt.remaining, 0);
+    // Calculate summary statistics purely off vendor debts for "Wadarta Payables"
+    const totalDebtsOwed = debts.reduce((sum: number, debt: any) => sum + debt.amount, 0);
+    const totalDebtsPaid = debts.reduce((sum: number, debt: any) => sum + debt.paid, 0);
+    const totalDebtsRemaining = debts.reduce((sum: number, debt: any) => sum + debt.remaining, 0);
+    const overdueDebts = debts.filter((debt: any) => debt.status === 'Overdue').reduce((sum: number, debt: any) => sum + debt.remaining, 0);
 
     const totalReceivablesAmount = receivables.reduce((sum: number, rec: any) => sum + rec.amount, 0);
     const totalReceivablesReceived = receivables.reduce((sum: number, rec: any) => sum + rec.received, 0);

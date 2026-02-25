@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { 
   AlertTriangle, 
   CheckCircle, 
@@ -15,7 +15,7 @@ import {
   Eye,
   XCircle
 } from 'lucide-react';
-import Toast from '../../../components/common/Toast';
+import Toast from '@/components/common/Toast';
 
 interface TransactionData {
   id: string;

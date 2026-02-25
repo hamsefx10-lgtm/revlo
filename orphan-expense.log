@@ -1,0 +1,63 @@
+{
+  "id": "45a630e5-23ea-4a12-86e3-0735c68c9cee",
+  "description": "xafiiska cusub",
+  "amount": "54700",
+  "subCategory": null,
+  "paidFrom": "3c156507-ea0a-4974-8a54-92f1e9dd519a",
+  "expenseDate": "2026-02-07T00:00:00.000Z",
+  "note": "xafiiska cusub",
+  "approved": false,
+  "createdAt": "2026-02-13T14:48:04.921Z",
+  "updatedAt": "2026-02-15T15:19:43.689Z",
+  "companyId": "081fb675-b41e-4cea-92f7-50a5eb3e6f1e",
+  "projectId": null,
+  "userId": "14a1010e-6621-4163-bfb7-095755e5150e",
+  "categoryId": null,
+  "vendorId": "7a106acd-7659-4d8f-8289-3f3e683e89a0",
+  "category": "Material",
+  "employeeId": null,
+  "materials": [
+    {
+      "qty": 5,
+      "name": "Kalaychu wh",
+      "unit": "pcs",
+      "price": 7500
+    },
+    {
+      "qty": 2,
+      "name": "Kalaychu Bije",
+      "unit": "pcs",
+      "price": 7500
+    },
+    {
+      "qty": 1,
+      "name": "Anglu 30",
+      "unit": "pcs",
+      "price": 1100
+    },
+    {
+      "qty": 1,
+      "name": "30x30",
+      "unit": "pcs",
+      "price": 1100
+    }
+  ],
+  "customerId": null,
+  "transportType": null,
+  "consultancyFee": null,
+  "consultancyType": null,
+  "consultantName": null,
+  "bankAccountId": null,
+  "equipmentName": null,
+  "rentalFee": null,
+  "rentalPeriod": null,
+  "supplierName": null,
+  "accountId": null,
+  "fiscalYearId": null,
+  "receiptUrl": "/uploads/receipts/receipt-1770994084915-f2wfrx.jpg",
+  "paymentStatus": "PAID",
+  "invoiceNumber": null,
+  "paymentDate": "2026-02-15T15:19:42.037Z",
+  "materialDate": null,
+  "purchaseOrderId": null
+}

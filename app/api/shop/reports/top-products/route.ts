@@ -10,6 +10,15 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        const currentUser = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { companyId: true }
+        });
+
+        if (!currentUser?.companyId) {
+            return NextResponse.json({ error: 'User does not belong to a company' }, { status: 400 });
+        }
+
         const { searchParams } = new URL(req.url);
         const limit = parseInt(searchParams.get('limit') || '10');
 
@@ -21,7 +30,7 @@ export async function GET(req: NextRequest) {
         // We might need to fetch Sales then Items, or use raw query.
         // Or findMany SaleItems where Sale.userId = ...
 
-        // Easier: FindMany SaleItems with include Product, where Sale.userId = session.user.id
+        // Easier: FindMany SaleItems with include Product, where Sale.companyId = currentUser.companyId
         // Then aggregate in JS (if data size allows). For Top 10 lists typically fine.
 
         // Better: Use groupBy on Sale table? No, we need Product.
@@ -29,7 +38,7 @@ export async function GET(req: NextRequest) {
         // Let's use Raw Query for performance if possible, OR just JS aggregation for MVP stability.
         // "Agent Mode" prefers stability.
 
-        // Fetch all sale items for this user (could be heavy).
+        // Fetch all sale items for this company (could be heavy).
         // Let's date limit it? Last 30 days default?
         // Or Top All Time?
 
@@ -40,7 +49,7 @@ export async function GET(req: NextRequest) {
         const items = await prisma.saleItem.findMany({
             where: {
                 sale: {
-                    userId: session.user.id,
+                    companyId: currentUser.companyId,
                     createdAt: { gte: dateFrom }
                 }
             },

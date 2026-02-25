@@ -1,7 +1,7 @@
 // app/api/vehicles/route.ts - Vehicles API Route
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { getSessionCompanyUser } from '../expenses/auth';
+import { getSessionCompanyUser } from '@/app/api/projects/expenses/auth';
 
 // GET /api/vehicles - Get all vehicles for the company
 export async function GET(request: Request) {

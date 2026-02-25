@@ -3,14 +3,14 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { 
   ArrowLeft, Bell, Plus, Search, Filter, Edit, Trash2, X, Loader2, Info, 
   Mail, Smartphone, MessageSquare, CheckCircle, XCircle, ChevronRight, Volume2, 
   Tag, Clock, Briefcase, Package, User, CheckSquare, RefreshCw,
   List, LayoutGrid // Added for view toggle
 } from 'lucide-react';
-import Toast from '../../../components/common/Toast'; // Reuse Toast component
+import Toast from '@/components/common/Toast'; // Reuse Toast component
 
 // --- Types ---
 interface Notification {

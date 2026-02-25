@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import {
   ArrowLeft, Building, Edit, Save, X, Loader2, Info,
   Mail, Phone, MapPin, Globe, ClipboardList, CheckCircle, Calendar, FileText
 } from 'lucide-react';
-import Toast from '../../../components/common/Toast';
+import Toast from '@/components/common/Toast';
 
 export default function CompanyProfileSettingsPage() {
   const [profile, setProfile] = useState<any>(null);

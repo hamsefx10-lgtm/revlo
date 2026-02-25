@@ -11,12 +11,22 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        // Fetch user's company ID
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { companyId: true }
+        });
+
+        if (!user?.companyId) {
+            return NextResponse.json({ error: 'User setup incomplete: No Company ID' }, { status: 400 });
+        }
+
         const { searchParams } = new URL(req.url);
         const search = searchParams.get('search') || '';
         const status = searchParams.get('status') || 'All';
 
         const where: any = {
-            userId: session.user.id,
+            companyId: user.companyId,
         };
 
         if (status !== 'All') {
@@ -52,6 +62,16 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        // Fetch user's company ID
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { companyId: true }
+        });
+
+        if (!user?.companyId) {
+            return NextResponse.json({ error: 'User setup incomplete: No Company ID' }, { status: 400 });
+        }
+
         const body = await req.json();
         const { name, sku, category, costPrice, sellingPrice, stock, minStock, description } = body;
 
@@ -60,13 +80,16 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        // Check for duplicate SKU
-        const existingProduct = await prisma.product.findUnique({
-            where: { sku },
+        // Check for duplicate SKU within company
+        const existingProduct = await prisma.product.findFirst({
+            where: {
+                sku,
+                companyId: user.companyId
+            },
         });
 
         if (existingProduct) {
-            return NextResponse.json({ error: 'Product with this SKU already exists' }, { status: 400 });
+            return NextResponse.json({ error: 'Product with this SKU already exists in your company' }, { status: 400 });
         }
 
         // Determine status
@@ -84,6 +107,7 @@ export async function POST(req: NextRequest) {
                 description,
                 status,
                 userId: session.user.id,
+                companyId: user.companyId,
                 supplierId: body.supplierId || null,
             },
         });
@@ -96,6 +120,7 @@ export async function POST(req: NextRequest) {
                     type: 'Adjustment', // Initial stock
                     quantity: parseInt(stock),
                     userId: session.user.id,
+                    companyId: user.companyId,
                     reference: 'Initial stock',
                 },
             });

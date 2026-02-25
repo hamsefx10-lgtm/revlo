@@ -1,0 +1,4 @@
+﻿Getting accounts for Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+ACCOUNTS FOUND:
+- E-Birr | ID: 3c156507-ea0a-4974-8a54-92f1e9dd519a
+- CBE | ID: c8306c05-5279-4b05-b5fc-dda41c793a77

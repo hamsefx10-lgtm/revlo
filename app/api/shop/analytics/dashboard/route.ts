@@ -11,23 +11,32 @@ export async function GET() {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const userId = session.user.id;
+        const currentUser = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { companyId: true }
+        });
+
+        if (!currentUser?.companyId) {
+            return NextResponse.json({ error: 'User does not belong to a company' }, { status: 400 });
+        }
+
+        const companyId = currentUser.companyId;
 
         // 1. Total Revenue & Orders
         const salesAggregate = await prisma.sale.aggregate({
-            where: { userId },
+            where: { companyId },
             _sum: { total: true },
             _count: { id: true },
         });
 
         // 2. Active Products & Stock
         const productsCount = await prisma.product.count({
-            where: { userId },
+            where: { companyId },
         });
 
         const lowStockCount = await prisma.product.count({
             where: {
-                userId,
+                companyId,
                 status: 'Low Stock'
             },
         });
@@ -35,7 +44,7 @@ export async function GET() {
         // 3. Low Stock Items (Top 5)
         const lowStockItems = await prisma.product.findMany({
             where: {
-                userId,
+                companyId,
                 stock: { lte: 10 } // Assuming 10 is generic threshold, or use status
             },
             take: 5,
@@ -57,7 +66,7 @@ export async function GET() {
 
         const recentSales = await prisma.sale.findMany({
             where: {
-                userId,
+                companyId,
                 createdAt: { gte: startDate }
             },
             select: {
@@ -78,7 +87,11 @@ export async function GET() {
         // 5. Unpaid Purchase Orders (Pending)
         const unpaidOrders = await prisma.purchaseOrder.findMany({
             where: {
-                userId,
+                // Assuming PurchaseOrder has companyId, otherwise we need to rely on vendor.companyId or update schema
+                // Let's use companyId if it exists, otherwise we'll filter by user or fetch vendors first.
+                // Looking at purchase route, we noticed it also needs companyId check.
+                // Assuming schema has companyId for PurchaseOrder based on previous fixes
+                companyId,
                 paymentStatus: { not: 'Paid' }
             },
             include: {

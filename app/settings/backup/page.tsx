@@ -3,12 +3,12 @@
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
-import Layout from '../../../components/layouts/Layout';
+import Layout from '@/components/layouts/Layout';
 import { 
   ArrowLeft, Database, Plus, Search, Filter, Edit, Trash2, X, Loader2, Info, 
   UploadCloud, Download, FileText, CheckCircle, XCircle, Calendar, RefreshCw, Save 
 } from 'lucide-react';
-import Toast from '../../../components/common/Toast'; // Reuse Toast component
+import Toast from '@/components/common/Toast'; // Reuse Toast component
 
 // --- Dummy Data ---
 const dummyBackupHistory = [
