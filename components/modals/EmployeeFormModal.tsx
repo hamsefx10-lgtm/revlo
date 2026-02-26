@@ -137,7 +137,7 @@ export function EmployeeFormModal({ isOpen, onClose, onSuccess, initialCategory 
 
             console.log('[EmployeeFormModal] Sending payload:', { ...payload, category: payload.category });
 
-            const response = await fetch('/api/employees', {
+            const response = await fetch('/api/projects/employees', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),

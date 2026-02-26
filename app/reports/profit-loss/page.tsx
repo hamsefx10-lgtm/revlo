@@ -4,9 +4,9 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Layout from '@/components/layouts/Layout';
-import { 
-  ArrowLeft, LineChart, DollarSign, Plus, Search, Filter, Calendar, 
-  Download, Upload, Printer, Mail, MessageSquare, Send, 
+import {
+  ArrowLeft, LineChart, DollarSign, Plus, Search, Filter, Calendar,
+  Download, Upload, Printer, Mail, MessageSquare, Send,
   TrendingUp, TrendingDown, CheckCircle, XCircle, Info,
   Tag, Briefcase, CreditCard, Eye, Edit, Trash2,
   List, LayoutGrid, BarChart, PieChart, Clock as ClockIcon,
@@ -86,7 +86,7 @@ export default function ProfitLossReportPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch('/api/accounting/reports/profit-loss');
+        const res = await fetch('/api/projects/accounting/reports/profit-loss');
         if (!res.ok) throw new Error('Failed to fetch profit & loss data');
         const data = await res.json();
         setMonthlySummary(data.monthlySummary || []);
@@ -225,7 +225,7 @@ export default function ProfitLossReportPage() {
         ...directProjectCostItems.map(item => ['Direct Project Cost', new Date(item.date).toLocaleDateString(), item.description, -item.amount, item.projectName || 'N/A']),
         ...operatingExpensesItems.map(item => ['Operating Expense', new Date(item.date).toLocaleDateString(), item.description, -item.amount, item.projectName || 'N/A'])
       ];
-      
+
       const csvContent = csvData.map(row => row.join(',')).join('\n');
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
@@ -236,7 +236,7 @@ export default function ProfitLossReportPage() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       setToastMessage({ message: 'CSV file-ka si guul leh ayaa la soo saaray!', type: 'success' });
     } catch (error) {
       console.error('CSV Export Error:', error);
@@ -288,7 +288,7 @@ export default function ProfitLossReportPage() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       setToastMessage({ message: 'Excel file-ka si guul leh ayaa la soo saaray!', type: 'success' });
     } catch (error) {
       console.error('Excel Export Error:', error);
@@ -369,14 +369,14 @@ export default function ProfitLossReportPage() {
       </div>
     </Layout>
   );
-  
+
   if (error) return (
     <Layout>
       <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
         <XCircle size={48} className="mb-4 text-redError" />
         <div className="text-redError text-xl font-bold mb-4 text-center">{error}</div>
-        <button 
-          onClick={() => window.location.reload()} 
+        <button
+          onClick={() => window.location.reload()}
           className="bg-primary text-white px-6 py-3 rounded-lg font-semibold text-lg hover:bg-blue-700 transition duration-200 shadow-md"
         >
           Reload
@@ -393,26 +393,26 @@ export default function ProfitLossReportPage() {
           <div className="flex items-center">
             <Link href="/reports" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-2">
               <ArrowLeft size={20} />
-          </Link>
+            </Link>
             <h1 className="text-lg font-bold text-darkGray dark:text-gray-100">
               P&L Report
-        </h1>
+            </h1>
           </div>
           <div className="flex space-x-1">
-          <button 
-              onClick={handleExportPDF} 
+            <button
+              onClick={handleExportPDF}
               className="bg-primary text-white p-2 rounded-lg text-xs hover:bg-blue-700 transition duration-200"
               title="PDF"
             >
               <Download size={14} />
-          </button>
-          <button 
+            </button>
+            <button
               onClick={handleExportCSV}
               className="bg-secondary text-white p-2 rounded-lg text-xs hover:bg-green-600 transition duration-200"
               title="CSV"
             >
               <Share2 size={14} />
-          </button>
+            </button>
           </div>
         </div>
       </div>
@@ -423,31 +423,31 @@ export default function ProfitLossReportPage() {
           <div className="flex items-center justify-center mb-1">
             <TrendingUp size={16} className="text-secondary mr-1" />
             <h4 className="text-xs font-semibold text-darkGray dark:text-gray-100">Dakhli</h4>
-        </div>
+          </div>
           <p className="text-lg font-bold text-secondary">${currentProjectIncome.toLocaleString()}</p>
         </div>
-        
+
         <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm text-center">
           <div className="flex items-center justify-center mb-1">
             <TrendingDown size={16} className="text-redError mr-1" />
             <h4 className="text-xs font-semibold text-darkGray dark:text-gray-100">Kharash</h4>
-        </div>
+          </div>
           <p className="text-lg font-bold text-redError">${currentDirectProjectCosts.toLocaleString()}</p>
         </div>
-        
+
         <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm text-center">
           <div className="flex items-center justify-center mb-1">
             <DollarSign size={16} className="text-primary mr-1" />
             <h4 className="text-xs font-semibold text-darkGray dark:text-gray-100">Faa'iido</h4>
           </div>
           <p className="text-lg font-bold text-primary">${currentGrossProfit.toLocaleString()}</p>
-      </div>
+        </div>
 
         <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm text-center">
           <div className="flex items-center justify-center mb-1">
             <CheckCircle size={16} className={`mr-1 ${currentNetProfit >= 0 ? 'text-secondary' : 'text-redError'}`} />
             <h4 className="text-xs font-semibold text-darkGray dark:text-gray-100">Net</h4>
-        </div>
+          </div>
           <p className={`text-lg font-bold ${currentNetProfit >= 0 ? 'text-secondary' : 'text-redError'}`}>${currentNetProfit.toLocaleString()}</p>
         </div>
       </div>
@@ -456,15 +456,15 @@ export default function ProfitLossReportPage() {
       <div className="grid grid-cols-2 gap-2 mb-3">
         <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm text-center">
           <div className="flex items-center justify-center mb-1">
-            <CheckSquare size={16} className="text-secondary mr-1"/>
+            <CheckSquare size={16} className="text-secondary mr-1" />
             <h4 className="text-xs font-semibold text-darkGray dark:text-gray-100">Dhabta ah</h4>
           </div>
           <p className="text-lg font-bold text-secondary">${realizedProjectProfit.toLocaleString()}</p>
         </div>
-        
+
         <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm text-center">
           <div className="flex items-center justify-center mb-1">
-            <Coins size={16} className="text-primary mr-1"/>
+            <Coins size={16} className="text-primary mr-1" />
             <h4 className="text-xs font-semibold text-darkGray dark:text-gray-100">Suurtagal</h4>
           </div>
           <p className="text-lg font-bold text-primary">${potentialProjectProfit.toLocaleString()}</p>
@@ -483,28 +483,28 @@ export default function ProfitLossReportPage() {
           >
             {dateRanges.map(range => <option key={range} value={range}>{range}</option>)}
           </select>
-          
-          <button 
-            onClick={() => setActiveChartType('line')} 
-            className={`p-2 rounded-lg transition-colors duration-200 ${activeChartType === 'line' ? 'bg-primary text-white' : 'bg-lightGray dark:bg-gray-700 text-mediumGray dark:text-gray-400'}`} 
+
+          <button
+            onClick={() => setActiveChartType('line')}
+            className={`p-2 rounded-lg transition-colors duration-200 ${activeChartType === 'line' ? 'bg-primary text-white' : 'bg-lightGray dark:bg-gray-700 text-mediumGray dark:text-gray-400'}`}
             title="Line Chart"
           >
             <LineChart size={14} />
-            </button>
-          <button 
-            onClick={() => setActiveChartType('bar')} 
-            className={`p-2 rounded-lg transition-colors duration-200 ${activeChartType === 'bar' ? 'bg-primary text-white' : 'bg-lightGray dark:bg-gray-700 text-mediumGray dark:text-gray-400'}`} 
+          </button>
+          <button
+            onClick={() => setActiveChartType('bar')}
+            className={`p-2 rounded-lg transition-colors duration-200 ${activeChartType === 'bar' ? 'bg-primary text-white' : 'bg-lightGray dark:bg-gray-700 text-mediumGray dark:text-gray-400'}`}
             title="Bar Chart"
           >
             <BarChart size={14} />
-            </button>
-          <button 
-            onClick={() => setShowChartSection(!showChartSection)} 
+          </button>
+          <button
+            onClick={() => setShowChartSection(!showChartSection)}
             className="p-2 rounded-lg text-mediumGray dark:text-gray-400 hover:bg-lightGray dark:hover:bg-gray-700 transition-colors duration-200"
             title={showChartSection ? 'Hide Charts' : 'Show Charts'}
           >
             {showChartSection ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-            </button>
+          </button>
         </div>
       </div>
 
@@ -524,15 +524,15 @@ export default function ProfitLossReportPage() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" className="dark:stroke-gray-700" vertical={false} />
                     <XAxis dataKey="month" stroke="#7F8C8D" className="dark:text-gray-400 text-xs" />
                     <YAxis stroke="#7F8C8D" className="dark:text-gray-400 text-xs" />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'white', 
-                        border: '1px solid #ddd', 
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'white',
+                        border: '1px solid #ddd',
                         borderRadius: '8px',
                         fontSize: '10px'
-                      }} 
-                      labelStyle={{ color: '#2C3E50', fontWeight: 'bold' }} 
-                      itemStyle={{ color: '#2C3E50' }} 
+                      }}
+                      labelStyle={{ color: '#2C3E50', fontWeight: 'bold' }}
+                      itemStyle={{ color: '#2C3E50' }}
                     />
                     <Legend />
                     <Line type="monotone" dataKey="projectIncome" stroke={CHART_COLORS[1]} name="Dakhli" strokeWidth={2} />
@@ -544,15 +544,15 @@ export default function ProfitLossReportPage() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" className="dark:stroke-gray-700" vertical={false} />
                     <XAxis dataKey="month" stroke="#7F8C8D" className="dark:text-gray-400 text-xs" />
                     <YAxis stroke="#7F8C8D" className="dark:text-gray-400 text-xs" />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'white', 
-                        border: '1px solid #ddd', 
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'white',
+                        border: '1px solid #ddd',
                         borderRadius: '8px',
                         fontSize: '10px'
-                      }} 
-                      labelStyle={{ color: '#2C3E50', fontWeight: 'bold' }} 
-                      itemStyle={{ color: '#2C3E50' }} 
+                      }}
+                      labelStyle={{ color: '#2C3E50', fontWeight: 'bold' }}
+                      itemStyle={{ color: '#2C3E50' }}
                     />
                     <Legend />
                     <Bar dataKey="projectIncome" fill={CHART_COLORS[1]} name="Dakhli" radius={[2, 2, 0, 0]} />
@@ -586,10 +586,10 @@ export default function ProfitLossReportPage() {
                       <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'white', 
-                      border: '1px solid #ddd', 
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #ddd',
                       borderRadius: '8px',
                       fontSize: '10px'
                     }}
@@ -608,7 +608,7 @@ export default function ProfitLossReportPage() {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden mb-3">
         <div className="flex items-center justify-between p-3 border-b border-lightGray dark:border-gray-700">
           <div className="flex items-center">
-            <Briefcase size={16} className="text-primary mr-1"/>
+            <Briefcase size={16} className="text-primary mr-1" />
             <h3 className="text-xs font-semibold text-darkGray dark:text-gray-100">Mashruuca</h3>
           </div>
           <div className="text-xs text-mediumGray dark:text-gray-400 bg-lightGray dark:bg-gray-700 px-2 py-1 rounded-full">
@@ -633,12 +633,11 @@ export default function ProfitLossReportPage() {
                     <td className="px-2 py-2 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0">
-                          <div className={`w-2 h-2 rounded-full ${
-                            project.projectStatus === 'Completed' ? 'bg-green-500' :
-                            project.projectStatus === 'Active' ? 'bg-blue-500' :
-                            project.projectStatus === 'On Hold' ? 'bg-yellow-500' :
-                            'bg-gray-500'
-                          }`}></div>
+                          <div className={`w-2 h-2 rounded-full ${project.projectStatus === 'Completed' ? 'bg-green-500' :
+                              project.projectStatus === 'Active' ? 'bg-blue-500' :
+                                project.projectStatus === 'On Hold' ? 'bg-yellow-500' :
+                                  'bg-gray-500'
+                            }`}></div>
                         </div>
                         <div className="ml-2">
                           <div className="text-xs font-medium text-darkGray dark:text-gray-100 truncate max-w-[120px]">
@@ -668,7 +667,7 @@ export default function ProfitLossReportPage() {
                       </button>
                     </td>
                   </tr>
-                  
+
                   {/* Compact Expanded Transaction Details */}
                   {expandedProjects.has(project.projectId) && (
                     <tr>
@@ -693,10 +692,9 @@ export default function ProfitLossReportPage() {
                                       {new Date(transaction.date).toLocaleDateString()}
                                     </td>
                                     <td className="px-1 py-1 whitespace-nowrap text-xs text-mediumGray dark:text-gray-300">
-                                      <span className={`px-1 py-0.5 rounded-full text-xs ${
-                                        transaction.type === 'INCOME' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200' :
-                                        'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200'
-                                      }`}>
+                                      <span className={`px-1 py-0.5 rounded-full text-xs ${transaction.type === 'INCOME' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200' :
+                                          'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200'
+                                        }`}>
                                         {transaction.type}
                                       </span>
                                     </td>
@@ -725,7 +723,7 @@ export default function ProfitLossReportPage() {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden mb-3">
         <div className="flex items-center justify-between p-3 border-b border-lightGray dark:border-gray-700">
           <div className="flex items-center">
-            <Building size={16} className="text-accent mr-1"/>
+            <Building size={16} className="text-accent mr-1" />
             <h3 className="text-xs font-semibold text-darkGray dark:text-gray-100">Kharashyada Shirkadda</h3>
           </div>
           <div className="text-xs text-mediumGray dark:text-gray-400 bg-lightGray dark:bg-gray-700 px-2 py-1 rounded-full">
@@ -751,14 +749,13 @@ export default function ProfitLossReportPage() {
                       <td className="px-2 py-2 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0">
-                            <div className={`w-2 h-2 rounded-full ${
-                              expenseGroup.category === 'Salary' ? 'bg-blue-500' :
-                              expenseGroup.category === 'Material' ? 'bg-green-500' :
-                              expenseGroup.category === 'Labor' ? 'bg-yellow-500' :
-                              expenseGroup.category === 'Debt' ? 'bg-red-500' :
-                              expenseGroup.category === 'Fixed Asset' ? 'bg-purple-500' :
-                              'bg-gray-500'
-                            }`}></div>
+                            <div className={`w-2 h-2 rounded-full ${expenseGroup.category === 'Salary' ? 'bg-blue-500' :
+                                expenseGroup.category === 'Material' ? 'bg-green-500' :
+                                  expenseGroup.category === 'Labor' ? 'bg-yellow-500' :
+                                    expenseGroup.category === 'Debt' ? 'bg-red-500' :
+                                      expenseGroup.category === 'Fixed Asset' ? 'bg-purple-500' :
+                                        'bg-gray-500'
+                              }`}></div>
                           </div>
                           <div className="ml-2">
                             <div className="text-xs font-medium text-darkGray dark:text-gray-100">
@@ -783,7 +780,7 @@ export default function ProfitLossReportPage() {
                         </button>
                       </td>
                     </tr>
-                    
+
                     {/* Compact Expanded Transaction Details */}
                     {expandedCompanyExpenses.has(expenseKey) && (
                       <tr>
@@ -809,7 +806,7 @@ export default function ProfitLossReportPage() {
                                       </td>
                                       <td className="px-1 py-1 whitespace-nowrap text-xs text-mediumGray dark:text-gray-300">
                                         <div className="truncate max-w-[120px]">
-                                        {transaction.description}
+                                          {transaction.description}
                                         </div>
                                       </td>
                                       <td className="px-1 py-1 whitespace-nowrap text-right text-xs font-semibold text-redError">
@@ -838,10 +835,10 @@ export default function ProfitLossReportPage() {
           <h3 className="text-sm font-semibold text-darkGray dark:text-gray-100">Faahfaahinta P&L</h3>
           <div className="flex space-x-2">
             <button className="bg-lightGray dark:bg-gray-700 text-mediumGray dark:text-gray-100 py-1.5 px-3 rounded-lg font-semibold flex items-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200 shadow-sm text-xs">
-                <Download size={14} className="mr-1"/> CSV
+              <Download size={14} className="mr-1" /> CSV
             </button>
             <button className="bg-lightGray dark:bg-gray-700 text-mediumGray dark:text-gray-100 py-1.5 px-3 rounded-lg font-semibold flex items-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200 shadow-sm text-xs">
-                <Printer size={14} className="mr-1"/> Print
+              <Printer size={14} className="mr-1" /> Print
             </button>
           </div>
         </div>
@@ -909,7 +906,7 @@ export default function ProfitLossReportPage() {
                   <td className="p-2 whitespace-nowrap text-right font-semibold text-redError text-xs">-${item.amount.toLocaleString()}</td>
                 </tr>
               ))}
-              <tr>    
+              <tr>
                 <td colSpan={3} className="p-2 text-right font-bold text-darkGray dark:text-gray-100 text-xs">Wadarta Kharashyada Shaqada:</td>
                 <td className="p-2 whitespace-nowrap text-right font-bold text-redError text-xs">-${currentOperatingExpenses.toLocaleString()}</td>
               </tr>
@@ -927,7 +924,7 @@ export default function ProfitLossReportPage() {
       {/* Compact Export/Share Section */}
       <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm mb-3">
         <h3 className="text-xs font-semibold text-darkGray dark:text-gray-100 mb-2 flex items-center space-x-1">
-          <Download size={16} className="text-primary"/> 
+          <Download size={16} className="text-primary" />
           <span>Soo Deji & Wadaag</span>
         </h3>
         <div className="grid grid-cols-3 gap-2">
@@ -961,32 +958,32 @@ export default function ProfitLossReportPage() {
       {/* Compact Accounting Closure Section */}
       <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm">
         <h3 className="text-xs font-bold text-darkGray dark:text-gray-100 mb-2 flex items-center space-x-1">
-          <CheckSquare size={16} className="text-secondary"/> 
+          <CheckSquare size={16} className="text-secondary" />
           <span>Xisaab Xidhka</span>
         </h3>
         <p className="text-xs text-mediumGray dark:text-gray-400 mb-2">
           Xisaab xidhku waa habka lagu xiro xisaabaadkaaga dhamaadka bil ama sanad.
         </p>
         <div className="space-y-2">
-            <div>
-                <label htmlFor="closurePeriod" className="block text-xs font-medium text-darkGray dark:text-gray-300 mb-1">Dooro Muddada Xisaab Xidhka</label>
-                <select id="closurePeriod" className="w-full p-2 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary appearance-none text-xs">
-                    <option value="">-- Dooro Muddada --</option>
-                    <option value="monthly">Bishii</option>
-                    <option value="quarterly">Saddexdii Biloodba</option>
-                    <option value="yearly">Sannadkii</option>
-                </select>
-            </div>
-            <div>
-                <label htmlFor="closureDate" className="block text-xs font-medium text-darkGray dark:text-gray-300 mb-1">Taariikhda Xisaab Xidhka</label>
-                <input type="date" id="closureDate" defaultValue={new Date().toISOString().split('T')[0]} className="w-full p-2 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary text-xs"/>
-            </div>
+          <div>
+            <label htmlFor="closurePeriod" className="block text-xs font-medium text-darkGray dark:text-gray-300 mb-1">Dooro Muddada Xisaab Xidhka</label>
+            <select id="closurePeriod" className="w-full p-2 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary appearance-none text-xs">
+              <option value="">-- Dooro Muddada --</option>
+              <option value="monthly">Bishii</option>
+              <option value="quarterly">Saddexdii Biloodba</option>
+              <option value="yearly">Sannadkii</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="closureDate" className="block text-xs font-medium text-darkGray dark:text-gray-300 mb-1">Taariikhda Xisaab Xidhka</label>
+            <input type="date" id="closureDate" defaultValue={new Date().toISOString().split('T')[0]} className="w-full p-2 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary text-xs" />
+          </div>
         </div>
         <button className="mt-2 bg-primary text-white py-2 px-3 rounded-lg font-bold text-xs hover:bg-blue-700 transition duration-200 shadow-sm flex items-center justify-center w-full">
-            <CheckSquare size={14} className="mr-1"/> Samee Xisaab Xidh
+          <CheckSquare size={14} className="mr-1" /> Samee Xisaab Xidh
         </button>
         <p className="text-xs text-mediumGray dark:text-gray-500 mt-2">
-            <Info size={12} className="inline mr-1 text-primary"/> Fadlan ogow in xisaab xidhka uu xiri doono xisaabaadkaaga muddadaas.
+          <Info size={12} className="inline mr-1 text-primary" /> Fadlan ogow in xisaab xidhka uu xiri doono xisaabaadkaaga muddadaas.
         </p>
       </div>
 

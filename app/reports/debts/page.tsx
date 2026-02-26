@@ -564,7 +564,10 @@ export default function DebtsOverviewReportPage() {
 
   return (
     <Layout>
-      <div className="mb-6">
+      <div className="mb-6 flex items-center">
+        <Link href="/projects/accounting" className="mr-4 text-mediumGray hover:text-primary transition-colors">
+          <ArrowLeft size={28} />
+        </Link>
         <h1 className="text-2xl font-bold text-darkGray dark:text-gray-100">{t.reports.debtsOverview}</h1>
       </div>
 

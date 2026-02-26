@@ -24,7 +24,7 @@ export default function ReportsPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch("/api/accounting/reports");
+        const res = await fetch("/api/projects/accounting/reports");
         if (!res.ok) throw new Error("Server error");
         const json = await res.json();
         setData(json);

@@ -1,10 +1,10 @@
-// app/api/accounting/reports/inventory/route.ts - Inventory Report API Route
+// app/api/projects/accounting/reports/inventory/route.ts - Inventory Report API Route
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db'; // Import Prisma Client
 import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 
-// GET /api/accounting/reports/inventory - Soo deji xogta warbixinta inventory-ga
+// GET /api/projects/accounting/reports/inventory - Soo deji xogta warbixinta inventory-ga
 export async function GET(request: Request) {
   try {
     // Mustaqbalka, halkan waxaad ku dari doontaa authentication iyo authorization
@@ -72,9 +72,9 @@ export async function GET(request: Request) {
         categoryDistribution: categoryDistributionData,
         topUsedMaterials: topUsedMaterialsData,
         items: filteredItems.map((item: any) => ({ // Return original items with converted Decimal to Number
-            ...item,
-            purchasePrice: item.purchasePrice.toNumber(),
-            sellingPrice: item.sellingPrice.toNumber(),
+          ...item,
+          purchasePrice: item.purchasePrice.toNumber(),
+          sellingPrice: item.sellingPrice.toNumber(),
         })),
       },
       { status: 200 }

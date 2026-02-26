@@ -31,7 +31,7 @@ export default function AddFixedAssetPage() {
     async function fetchData() {
       try {
         const [accRes, venRes] = await Promise.all([
-          fetch('/api/accounting/accounts'),
+          fetch('/api/projects/accounting/accounts'),
           fetch('/api/vendors'),
         ]);
         const accData = await accRes.json();
@@ -115,7 +115,7 @@ export default function AddFixedAssetPage() {
               <TagIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-mediumGray" size={18} />
               <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Tusaale: Mashiinka CNC" className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 ${errors.name ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} />
             </div>
-            {errors.name && <p className="text-redError text-xs mt-1 flex items-center"><InfoIcon size={14} className="mr-1"/>{errors.name}</p>}
+            {errors.name && <p className="text-redError text-xs mt-1 flex items-center"><InfoIcon size={14} className="mr-1" />{errors.name}</p>}
           </div>
 
           <div>
@@ -136,7 +136,7 @@ export default function AddFixedAssetPage() {
               <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-mediumGray" size={18} />
               <input type="number" value={value} onChange={(e) => setValue(e.target.value === '' ? '' : Number(e.target.value))} placeholder="10000" className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 ${errors.value ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} />
             </div>
-            {errors.value && <p className="text-redError text-xs mt-1 flex items-center"><InfoIcon size={14} className="mr-1"/>{errors.value}</p>}
+            {errors.value && <p className="text-redError text-xs mt-1 flex items-center"><InfoIcon size={14} className="mr-1" />{errors.value}</p>}
           </div>
 
           <div>
@@ -145,7 +145,7 @@ export default function AddFixedAssetPage() {
               <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-mediumGray" size={18} />
               <input type="date" value={purchaseDate} onChange={(e) => setPurchaseDate(e.target.value)} className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 ${errors.purchaseDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} />
             </div>
-            {errors.purchaseDate && <p className="text-redError text-xs mt-1 flex items-center"><InfoIcon size={14} className="mr-1"/>{errors.purchaseDate}</p>}
+            {errors.purchaseDate && <p className="text-redError text-xs mt-1 flex items-center"><InfoIcon size={14} className="mr-1" />{errors.purchaseDate}</p>}
           </div>
 
           <div>
@@ -193,7 +193,7 @@ export default function AddFixedAssetPage() {
 
         <div className="flex justify-end">
           <button type="submit" disabled={loading} className="bg-primary text-white px-5 py-3 rounded-lg font-semibold flex items-center disabled:opacity-50">
-            {loading ? <Loader2 className="animate-spin mr-2" size={18}/> : <Save className="mr-2" size={18}/>} Kaydi Hantida
+            {loading ? <Loader2 className="animate-spin mr-2" size={18} /> : <Save className="mr-2" size={18} />} Kaydi Hantida
           </button>
         </div>
       </form>

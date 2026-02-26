@@ -46,7 +46,7 @@ const TransactionDetailsPage: React.FC = () => {
   const fetchTransactionDetails = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/accounting/transactions/${id}`);
+      const response = await fetch(`/api/projects/accounting/transactions/${id}`);
       if (!response.ok) throw new Error('Failed to fetch transaction details');
       const data = await response.json();
 
@@ -60,7 +60,7 @@ const TransactionDetailsPage: React.FC = () => {
       console.error('Error fetching transaction details:', error);
       setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka faahfaahinta dhaqdhaqaaqa la soo gelinayay.', type: 'error' });
       setTransaction(null); // Set transaction to null on error
-      router.push('/accounting/transactions'); // Redirect if not found or error
+      router.push('/projects/accounting/transactions'); // Redirect if not found or error
     } finally {
       setLoading(false);
     }
@@ -69,14 +69,14 @@ const TransactionDetailsPage: React.FC = () => {
   const handleDeleteTransaction = async () => {
     if (window.confirm('Ma hubtaa inaad tirtirto dhaqdhaqaaqan lacagta ah? Tan lama soo celin karo!')) {
       try {
-        const response = await fetch(`/api/accounting/transactions/${id}`, {
+        const response = await fetch(`/api/projects/accounting/transactions/${id}`, {
           method: 'DELETE',
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || 'Failed to delete transaction');
 
         setToastMessage({ message: data.message || 'Dhaqdhaqaaqa lacagta si guul leh ayaa loo tirtiray!', type: 'success' });
-        router.push('/accounting/transactions'); // Redirect to transactions list after successful delete
+        router.push('/projects/accounting/transactions'); // Redirect to transactions list after successful delete
       } catch (error: any) {
         console.error('Error deleting transaction:', error);
         setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka dhaqdhaqaaqa lacagta la tirtirayay.', type: 'error' });
@@ -106,7 +106,7 @@ const TransactionDetailsPage: React.FC = () => {
         <div className="text-center p-8 text-redError bg-white dark:bg-gray-800 rounded-xl shadow-md">
           <InfoIcon size={32} className="inline-block mb-4 text-redError" />
           <p className="text-xl font-bold">Dhaqdhaqaaqa ID "{id}" lama helin.</p>
-          <Link href="/accounting/transactions" className="mt-4 inline-block text-primary hover:underline">Ku Noqo Dhaqdhaqaaqa Lacagta &rarr;</Link>
+          <Link href="/projects/accounting/transactions" className="mt-4 inline-block text-primary hover:underline">Ku Noqo Dhaqdhaqaaqa Lacagta &rarr;</Link>
         </div>
         {toastMessage && (
           <Toast message={toastMessage.message} type={toastMessage.type} onClose={() => setToastMessage(null)} />
@@ -122,17 +122,17 @@ const TransactionDetailsPage: React.FC = () => {
     <Layout>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">
-          <Link href="/accounting/transactions" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
+          <Link href="/projects/accounting/transactions" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
             <ArrowLeft size={28} className="inline-block" />
           </Link>
           Dhaqdhaqaaqa: {transaction.description}
         </h1>
         <div className="flex space-x-3">
           {/* Link to add similar transaction (if applicable) */}
-          <Link href="/accounting/transactions/add" className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center">
+          <Link href="/projects/accounting/transactions/add" className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center">
             <Plus size={20} className="mr-2" /> Diiwaan Geli Dhaqdhaqaaq
           </Link>
-          <Link href={`/accounting/transactions/edit/${transaction.id}`} className="bg-accent text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-orange-600 transition duration-200 shadow-md flex items-center">
+          <Link href={`/projects/accounting/transactions/edit/${transaction.id}`} className="bg-accent text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-orange-600 transition duration-200 shadow-md flex items-center">
             <Edit size={20} className="mr-2" /> Edit Dhaqdhaqaaq
           </Link>
           <button onClick={handleDeleteTransaction} className="bg-redError text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-red-700 transition duration-200 shadow-md flex items-center">

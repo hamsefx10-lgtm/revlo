@@ -22,7 +22,7 @@ export default function TransactionReceiptPage() {
     useEffect(() => {
         const fetchTransaction = async () => {
             try {
-                const response = await fetch(`/api/accounting/transactions?id=${id}`);
+                const response = await fetch(`/api/projects/accounting/transactions?id=${id}`);
                 if (!response.ok) throw new Error('Failed to fetch transaction');
                 const data = await response.json();
                 if (data.transactions && data.transactions.length > 0) {
@@ -84,7 +84,7 @@ export default function TransactionReceiptPage() {
             <Layout>
                 <div className="text-center py-20">
                     <h2 className="text-2xl font-bold text-gray-700">Transaction Not Found</h2>
-                    <Link href="/accounting/transactions" className="text-primary hover:underline mt-4 inline-block">
+                    <Link href="/projects/accounting/transactions" className="text-primary hover:underline mt-4 inline-block">
                         Back to Transactions
                     </Link>
                 </div>

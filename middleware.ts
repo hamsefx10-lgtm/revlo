@@ -35,23 +35,45 @@ export default withAuth(
         // --- 2. Role-Based Access Control (RBAC) within modules ---
 
         // Shop Reports: Only ADMIN and MANAGER
-        if (path.startsWith('/shop/reports') && role !== 'ADMIN' && role !== 'MANAGER') {
+        if (path.startsWith('/shop/reports') && role !== 'ADMIN' && role !== 'MANAGER' && role !== 'SHOP_ADMIN') {
             return NextResponse.redirect(new URL('/shop/dashboard?error=Unauthorized', req.url));
         }
 
         // Shop Settings: Only ADMIN
-        if (path.startsWith('/shop/settings') && role !== 'ADMIN') {
+        if (path.startsWith('/shop/settings') && role !== 'ADMIN' && role !== 'SHOP_ADMIN') {
             return NextResponse.redirect(new URL('/shop/dashboard?error=Unauthorized', req.url));
         }
 
         // Project Reports: Only ADMIN and MANAGER
-        if (path.startsWith('/projects/reports') && role !== 'ADMIN' && role !== 'MANAGER') {
+        if (path.startsWith('/projects/reports') && role !== 'ADMIN' && role !== 'MANAGER' && role !== 'PROJECTS_ADMIN') {
             return NextResponse.redirect(new URL('/dashboard?error=Unauthorized', req.url));
         }
 
         // Manufacturing Reports: Only ADMIN and MANAGER
-        if (path.startsWith('/manufacturing/reports') && role !== 'ADMIN' && role !== 'MANAGER') {
+        if (path.startsWith('/manufacturing/reports') && role !== 'ADMIN' && role !== 'MANAGER' && role !== 'MANUFACTURING_ADMIN') {
             return NextResponse.redirect(new URL('/manufacturing/dashboard?error=Unauthorized', req.url));
+        }
+
+        // --- 3. Module-Scoped Admin Protection (new roles) ---
+        // PROJECTS_ADMIN / SHOP_ADMIN / MANUFACTURING_ADMIN can only access their own module.
+        // Existing roles (ADMIN, SUPER_ADMIN, MANAGER, MEMBER, VIEWER) are NOT affected.
+
+        const moduleAllowedPaths: Record<string, string[]> = {
+            PROJECTS_ADMIN: ['/dashboard', '/projects', '/reports', '/settings'],
+            SHOP_ADMIN: ['/dashboard', '/shop', '/reports', '/settings'],
+            MANUFACTURING_ADMIN: ['/dashboard', '/manufacturing', '/reports', '/settings'],
+        };
+
+        const modulePaths = moduleAllowedPaths[role ?? ''];
+        if (modulePaths) {
+            const allowed = modulePaths.some(p => path.startsWith(p));
+            if (!allowed) {
+                const home =
+                    role === 'SHOP_ADMIN' ? '/shop' :
+                        role === 'MANUFACTURING_ADMIN' ? '/manufacturing' :
+                            '/dashboard';
+                return NextResponse.redirect(new URL(home, req.url));
+            }
         }
 
         return NextResponse.next();

@@ -1,10 +1,10 @@
-// app/api/accounting/accounts/[id]/route.ts - Single Accounting Account Management API Route
+// app/api/projects/accounting/accounts/[id]/route.ts - Single Accounting Account Management API Route
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db'; // Import Prisma Client
 import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 
-// GET /api/accounting/accounts/[id] - Soo deji account gaar ah
+// GET /api/projects/accounting/accounts/[id] - Soo deji account gaar ah
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
@@ -97,7 +97,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-// PUT /api/accounting/accounts/[id] - Cusboonaysii account gaar ah
+// PUT /api/projects/accounting/accounts/[id] - Cusboonaysii account gaar ah
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
@@ -153,7 +153,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-// DELETE /api/accounting/accounts/[id] - Tirtir account gaar ah
+// DELETE /api/projects/accounting/accounts/[id] - Tirtir account gaar ah
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;

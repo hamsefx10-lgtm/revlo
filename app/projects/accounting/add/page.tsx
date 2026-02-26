@@ -57,7 +57,7 @@ export default function AddAccountPage() {
     };
 
     try {
-      const response = await fetch('/api/accounting/accounts', {
+      const response = await fetch('/api/projects/accounting/accounts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(accountData),
@@ -76,7 +76,7 @@ export default function AddAccountPage() {
       setValidationErrors({});
 
       setTimeout(() => {
-        router.push('/accounting/accounts'); // Redirect to accounts list
+        router.push('/projects/accounting/accounts'); // Redirect to accounts list
       }, 1200);
     } catch (error: any) {
       console.error('Account Add API error:', error);
@@ -90,7 +90,7 @@ export default function AddAccountPage() {
     <Layout>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">
-          <Link href="/accounting/accounts" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
+          <Link href="/projects/accounting/accounts" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
             <ArrowLeft size={28} className="inline-block" />
           </Link>
           Ku Dar Account Cusub

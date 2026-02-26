@@ -1,10 +1,10 @@
-// app/api/accounting/transactions/route.ts - Accounting Transactions API Route
+// app/api/projects/accounting/transactions/route.ts - Accounting Transactions API Route
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db'; // Import Prisma Client
 import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 
-// GET /api/accounting/transactions - Soo deji dhammaan dhaqdhaqaaqa lacagta
+// GET /api/projects/accounting/transactions - Soo deji dhammaan dhaqdhaqaaqa lacagta
 export async function GET(request: Request) {
   try {
     const { getServerSession } = await import('next-auth/next');
@@ -157,7 +157,7 @@ export async function GET(request: Request) {
   }
 }
 
-// POST /api/accounting/transactions - Ku dar dhaqdhaqaaq cusub
+// POST /api/projects/accounting/transactions - Ku dar dhaqdhaqaaq cusub
 export async function POST(request: Request) {
   try {
     const { getServerSession } = await import('next-auth/next');

@@ -229,7 +229,7 @@ export default function CompanyReportPage() {
     const fetchReport = async () => {
         setLoading(true);
         try {
-            let url = '/api/accounting/reports/company-comprehensive';
+            let url = '/api/projects/accounting/reports/company-comprehensive';
             const params = new URLSearchParams();
             if (startDate) params.append('startDate', startDate);
             if (endDate) params.append('endDate', endDate);

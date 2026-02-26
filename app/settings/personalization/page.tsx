@@ -4,8 +4,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Layout from '@/components/layouts/Layout';
-import { 
-  ArrowLeft, Palette, Save, X, Loader2, Info, 
+import {
+  ArrowLeft, Palette, Save, X, Loader2, Info,
   Sun, Moon, Monitor, Globe, Home, Bell, DollarSign, Calendar, Rows, User, CheckCircle, XCircle,
   Type, Volume2, Image as ImageIcon, Accessibility, Download, Upload, UploadCloud // New icons for new features
 } from 'lucide-react';
@@ -152,7 +152,7 @@ export default function PersonalizationSettingsPage() {
           Personalization
         </h1>
         <button onClick={handleSave} className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center" disabled={loading}>
-          {loading ? <Loader2 className="animate-spin mr-2" size={20} /> : <Save size={20} className="mr-2"/>} Badbaadi Dejinta
+          {loading ? <Loader2 className="animate-spin mr-2" size={20} /> : <Save size={20} className="mr-2" />} Badbaadi Dejinta
         </button>
       </div>
 
@@ -161,7 +161,7 @@ export default function PersonalizationSettingsPage() {
         {/* Appearance & Feel */}
         <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md animate-fade-in-up">
           <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-6 flex items-center space-x-3">
-            <Palette size={28} className="text-primary"/> <span>Muuqaalka App-ka & Dareenka</span>
+            <Palette size={28} className="text-primary" /> <span>Muuqaalka App-ka & Dareenka</span>
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Theme Selector */}
@@ -169,13 +169,13 @@ export default function PersonalizationSettingsPage() {
               <label htmlFor="theme" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Mawduuca App-ka</label>
               <div className="flex space-x-3">
                 <button onClick={() => setEditTheme('light')} className={`flex items-center space-x-2 p-3 rounded-lg border transition-all duration-200 ${editTheme === 'light' ? 'bg-primary text-white border-primary' : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 border-lightGray dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
-                  <Sun size={20}/> <span>Iftiin</span>
+                  <Sun size={20} /> <span>Iftiin</span>
                 </button>
                 <button onClick={() => setEditTheme('dark')} className={`flex items-center space-x-2 p-3 rounded-lg border transition-all duration-200 ${editTheme === 'dark' ? 'bg-primary text-white border-primary' : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 border-lightGray dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
-                  <Moon size={20}/> <span>Mugdi</span>
+                  <Moon size={20} /> <span>Mugdi</span>
                 </button>
                 <button onClick={() => setEditTheme('system')} className={`flex items-center space-x-2 p-3 rounded-lg border transition-all duration-200 ${editTheme === 'system' ? 'bg-primary text-white border-primary' : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 border-lightGray dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
-                  <Monitor size={20}/> <span>Nidaam</span>
+                  <Monitor size={20} /> <span>Nidaam</span>
                 </button>
               </div>
             </div>
@@ -194,13 +194,13 @@ export default function PersonalizationSettingsPage() {
                 <option value="/dashboard">Dashboard</option>
                 <option value="/projects">Projects</option>
                 <option value="/expenses">Expenses</option>
-                <option value="/accounting">Accounting</option>
+                <option value="/projects/accounting">Accounting</option>
               </select>
             </div>
             {/* Avatar Color Selector */}
             <div>
               <label htmlFor="avatarColor" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Midabka Avatar-kaaga</label>
-              <input type="color" id="avatarColor" value={editAvatarColor} onChange={(e) => setEditAvatarColor(e.target.value)} className="w-full h-10 p-1 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 cursor-pointer"/>
+              <input type="color" id="avatarColor" value={editAvatarColor} onChange={(e) => setEditAvatarColor(e.target.value)} className="w-full h-10 p-1 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 cursor-pointer" />
             </div>
             {/* Custom Font Selector */}
             <div>
@@ -218,14 +218,14 @@ export default function PersonalizationSettingsPage() {
               <div className="flex items-center space-x-3">
                 <div className="w-16 h-16 rounded-full bg-lightGray dark:bg-gray-700 flex items-center justify-center overflow-hidden border border-lightGray dark:border-gray-600">
                   {editProfilePicture ? (
-                    <img src={editProfilePicture} alt="Profile" className="w-full h-full object-cover"/>
+                    <img src={editProfilePicture} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
-                    <User size={32} className="text-mediumGray dark:text-gray-400"/>
+                    <User size={32} className="text-mediumGray dark:text-gray-400" />
                   )}
                 </div>
-                <input type="file" id="profilePicture" accept="image/*" onChange={handleProfilePictureUpload} className="hidden"/>
+                <input type="file" id="profilePicture" accept="image/*" onChange={handleProfilePictureUpload} className="hidden" />
                 <label htmlFor="profilePicture" className="bg-primary text-white py-2 px-4 rounded-lg text-sm font-semibold hover:bg-blue-700 cursor-pointer transition-colors duration-200">
-                  <UploadCloud size={18} className="inline mr-1"/> Shub Sawir
+                  <UploadCloud size={18} className="inline mr-1" /> Shub Sawir
                 </label>
               </div>
             </div>
@@ -235,7 +235,7 @@ export default function PersonalizationSettingsPage() {
         {/* Data Display Preferences */}
         <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md animate-fade-in-up">
           <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-6 flex items-center space-x-3">
-            <Info size={28} className="text-secondary"/> <span>Dejinta Muujinta Xogta</span>
+            <Info size={28} className="text-secondary" /> <span>Dejinta Muujinta Xogta</span>
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Default Currency */}
@@ -261,10 +261,10 @@ export default function PersonalizationSettingsPage() {
               <label htmlFor="tableDensity" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Cufnaanta Miiska</label>
               <div className="flex space-x-3">
                 <button onClick={() => setEditTableDensity('compact')} className={`flex items-center space-x-2 p-3 rounded-lg border transition-all duration-200 ${editTableDensity === 'compact' ? 'bg-primary text-white border-primary' : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 border-lightGray dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
-                  <Rows size={20}/> <span>Yar</span>
+                  <Rows size={20} /> <span>Yar</span>
                 </button>
                 <button onClick={() => setEditTableDensity('comfortable')} className={`flex items-center space-x-2 p-3 rounded-lg border transition-all duration-200 ${editTableDensity === 'comfortable' ? 'bg-primary text-white border-primary' : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 border-lightGray dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
-                  <Rows size={20} className="transform rotate-90"/> <span>Caadi</span>
+                  <Rows size={20} className="transform rotate-90" /> <span>Caadi</span>
                 </button>
               </div>
             </div>
@@ -283,28 +283,28 @@ export default function PersonalizationSettingsPage() {
         {/* Notification Preferences */}
         <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md mb-8 animate-fade-in-up">
           <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-6 flex items-center space-x-3">
-            <Bell size={28} className="text-accent"/> <span>Dejinta Digniinaha</span>
+            <Bell size={28} className="text-accent" /> <span>Dejinta Digniinaha</span>
           </h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <label htmlFor="notifEmail" className="text-darkGray dark:text-gray-300 text-md font-medium">Digniin Email ah</label>
-              <input type="checkbox" id="notifEmail" checked={editNotifications.email} onChange={(e) => setEditNotifications(prev => ({ ...prev, email: e.target.checked }))} className="h-5 w-5 text-primary rounded border-mediumGray dark:border-gray-600 focus:ring-primary"/>
+              <input type="checkbox" id="notifEmail" checked={editNotifications.email} onChange={(e) => setEditNotifications(prev => ({ ...prev, email: e.target.checked }))} className="h-5 w-5 text-primary rounded border-mediumGray dark:border-gray-600 focus:ring-primary" />
             </div>
             <div className="flex items-center justify-between">
               <label htmlFor="notifInApp" className="text-darkGray dark:text-gray-300 text-md font-medium">Digniin App-ka Gudihiisa ah</label>
-              <input type="checkbox" id="notifInApp" checked={editNotifications.inApp} onChange={(e) => setEditNotifications(prev => ({ ...prev, inApp: e.target.checked }))} className="h-5 w-5 text-primary rounded border-mediumGray dark:border-gray-600 focus:ring-primary"/>
+              <input type="checkbox" id="notifInApp" checked={editNotifications.inApp} onChange={(e) => setEditNotifications(prev => ({ ...prev, inApp: e.target.checked }))} className="h-5 w-5 text-primary rounded border-mediumGray dark:border-gray-600 focus:ring-primary" />
             </div>
             <div className="flex items-center justify-between">
               <label htmlFor="notifSMS" className="text-darkGray dark:text-gray-300 text-md font-medium">Digniin SMS ah (Lacag dheeraad ah)</label>
-              <input type="checkbox" id="notifSMS" checked={editNotifications.sms} onChange={(e) => setEditNotifications(prev => ({ ...prev, sms: e.target.checked }))} className="h-5 w-5 text-primary rounded border-mediumGray dark:border-gray-600 focus:ring-primary"/>
+              <input type="checkbox" id="notifSMS" checked={editNotifications.sms} onChange={(e) => setEditNotifications(prev => ({ ...prev, sms: e.target.checked }))} className="h-5 w-5 text-primary rounded border-mediumGray dark:border-gray-600 focus:ring-primary" />
             </div>
             <div className="flex items-center justify-between">
               <label htmlFor="notifLowStock" className="text-darkGray dark:text-gray-300 text-md font-medium">Digniin Alaab Yar</label>
-              <input type="checkbox" id="notifLowStock" checked={editNotifications.lowStock} onChange={(e) => setEditNotifications(prev => ({ ...prev, lowStock: e.target.checked }))} className="h-5 w-5 text-primary rounded border-mediumGray dark:border-gray-600 focus:ring-primary"/>
+              <input type="checkbox" id="notifLowStock" checked={editNotifications.lowStock} onChange={(e) => setEditNotifications(prev => ({ ...prev, lowStock: e.target.checked }))} className="h-5 w-5 text-primary rounded border-mediumGray dark:border-gray-600 focus:ring-primary" />
             </div>
             <div className="flex items-center justify-between">
               <label htmlFor="notifOverdueProjects" className="text-darkGray dark:text-gray-300 text-md font-medium">Digniin Mashaariic Dib U Dhacday</label>
-              <input type="checkbox" id="notifOverdueProjects" checked={editNotifications.overdueProjects} onChange={(e) => setEditNotifications(prev => ({ ...prev, overdueProjects: e.target.checked }))} className="h-5 w-5 text-primary rounded border-mediumGray dark:border-gray-600 focus:ring-primary"/>
+              <input type="checkbox" id="notifOverdueProjects" checked={editNotifications.overdueProjects} onChange={(e) => setEditNotifications(prev => ({ ...prev, overdueProjects: e.target.checked }))} className="h-5 w-5 text-primary rounded border-mediumGray dark:border-gray-600 focus:ring-primary" />
             </div>
             {/* Notification Sound Selector */}
             <div>
@@ -321,12 +321,12 @@ export default function PersonalizationSettingsPage() {
         {/* Accessibility Preferences */}
         <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md mb-8 animate-fade-in-up">
           <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-6 flex items-center space-x-3">
-            <Accessibility size={28} className="text-primary"/> <span>Dejinta Helitaanka</span>
+            <Accessibility size={28} className="text-primary" /> <span>Dejinta Helitaanka</span>
           </h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <label htmlFor="highContrast" className="text-darkGray dark:text-gray-300 text-md font-medium">Qaabka Contrast Sare</label>
-              <input type="checkbox" id="highContrast" checked={editHighContrast} onChange={(e) => setEditHighContrast(e.target.checked)} className="h-5 w-5 text-primary rounded border-mediumGray dark:border-gray-600 focus:ring-primary"/>
+              <input type="checkbox" id="highContrast" checked={editHighContrast} onChange={(e) => setEditHighContrast(e.target.checked)} className="h-5 w-5 text-primary rounded border-mediumGray dark:border-gray-600 focus:ring-primary" />
             </div>
             <div>
               <label htmlFor="textSize" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Size-ka Qoraalka</label>

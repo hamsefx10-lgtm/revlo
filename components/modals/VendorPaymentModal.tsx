@@ -61,7 +61,7 @@ const VendorPaymentModal: React.FC<VendorPaymentModalProps> = ({
 
     const fetchAccounts = async () => {
         try {
-            const response = await fetch('/api/accounts');
+            const response = await fetch('/api/projects/accounting/accounts');
             if (response.ok) {
                 const data = await response.json();
                 setAccounts(data.accounts || []);
@@ -94,7 +94,7 @@ const VendorPaymentModal: React.FC<VendorPaymentModalProps> = ({
                 type: 'DEBT_REPAID' // Explicitly setting type to DEBT_REPAID for vendor payments
             };
 
-            const response = await fetch('/api/accounting/transactions', {
+            const response = await fetch('/api/projects/accounting/transactions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

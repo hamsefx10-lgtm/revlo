@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Layout from '@/components/layouts/Layout';
-import { 
+import {
   Plus, X, Loader2, Info, CheckCircle, User as UserIcon, Building, Mail, Phone, MapPin, MessageSquare,
   ArrowLeft, Tag // Added Tag for customer type buttons
 } from 'lucide-react';
@@ -58,7 +58,7 @@ export default function AddCustomerPage() {
         notes: notes || null,
       };
 
-      const response = await fetch('/api/customers', {
+      const response = await fetch('/api/projects/customers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(customerData),
@@ -68,7 +68,7 @@ export default function AddCustomerPage() {
 
       if (response.ok) {
         setToastMessage({ message: data.message || 'Macmiilka si guul leh ayaa loo daray!', type: 'success' });
-        router.push('/customers'); // Redirect to customers list on success
+        router.push('/projects/customers'); // Redirect to customers list on success
       } else {
         setToastMessage({ message: data.message || 'Cilad ayaa dhacday marka macmiilka la darayay.', type: 'error' });
       }
@@ -84,7 +84,7 @@ export default function AddCustomerPage() {
     <Layout>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">
-          <Link href="/customers" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
+          <Link href="/projects/customers" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
             <ArrowLeft size={28} className="inline-block" />
           </Link>
           Ku Dar Macmiil Cusub
@@ -97,22 +97,22 @@ export default function AddCustomerPage() {
           <div>
             <label htmlFor="type" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Nooca Macmiilka <span className="text-redError">*</span></label>
             <div className="flex space-x-3">
-              <button 
+              <button
                 type="button" // Important for buttons inside a form
-                onClick={() => setType('Individual')} 
+                onClick={() => setType('Individual')}
                 className={`flex items-center space-x-2 p-3 rounded-lg border transition-all duration-200 ${type === 'Individual' ? 'bg-primary text-white border-primary' : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 border-lightGray dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
               >
-                <UserIcon size={20}/> <span>Shakhsi</span>
+                <UserIcon size={20} /> <span>Shakhsi</span>
               </button>
-              <button 
+              <button
                 type="button" // Important for buttons inside a form
-                onClick={() => setType('Company')} 
+                onClick={() => setType('Company')}
                 className={`flex items-center space-x-2 p-3 rounded-lg border transition-all duration-200 ${type === 'Company' ? 'bg-primary text-white border-primary' : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 border-lightGray dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
               >
-                <Building size={20}/> <span>Shirkad</span>
+                <Building size={20} /> <span>Shirkad</span>
               </button>
             </div>
-            {validationErrors.type && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.type}</p>}
+            {validationErrors.type && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.type}</p>}
           </div>
 
           {/* Customer Name */}
@@ -129,7 +129,7 @@ export default function AddCustomerPage() {
                 className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.name ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
               />
             </div>
-            {validationErrors.name && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.name}</p>}
+            {validationErrors.name && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.name}</p>}
           </div>
 
           {/* Company Name (Conditional) */}
@@ -147,7 +147,7 @@ export default function AddCustomerPage() {
                   className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.companyName ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 />
               </div>
-              {validationErrors.companyName && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.companyName}</p>}
+              {validationErrors.companyName && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.companyName}</p>}
             </div>
           )}
 
@@ -166,7 +166,7 @@ export default function AddCustomerPage() {
                   className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.email ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 />
               </div>
-              {validationErrors.email && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.email}</p>}
+              {validationErrors.email && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.email}</p>}
             </div>
             <div>
               <label htmlFor="phone" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taleefan (Optional)</label>

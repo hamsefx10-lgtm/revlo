@@ -112,7 +112,7 @@ model Company {
   id                      String                   @id @default(uuid()) @map("_id")
   name                    String                   @unique
   industry                String?
-  planType                String?                  @default("COMBINED") // PROJECTS_ONLY, FACTORIES_ONLY, SHOPS_ONLY, COMBINED
+  planType                String?                  @default("PROJECTS_ONLY") // PROJECTS_ONLY, FACTORIES_ONLY, SHOPS_ONLY
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
   address                 String?
@@ -975,6 +975,9 @@ enum Role {
   MEMBER
   VIEWER
   SUPER_ADMIN
+  PROJECTS_ADMIN
+  SHOP_ADMIN
+  MANUFACTURING_ADMIN
 }
 
 enum TransactionType {

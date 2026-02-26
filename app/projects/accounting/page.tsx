@@ -185,7 +185,7 @@ export default function AccountingPage() {
       setRecentTransactions(transactionsData.transactions); // Data already converted to Number in API
 
       // NEW: Fetch debts report (true aggregation)
-      const debtsReportRes = await fetch('/api/reports/debts');
+      const debtsReportRes = await fetch('/api/projects/accounting/reports/debts');
       const debtsReport = await debtsReportRes.json();
       const allDebts = debtsReport.debts || [];
 
@@ -986,7 +986,7 @@ export default function AccountingPage() {
                     Wali ma jiraan dhaqdhaqaaq lacag ah oo dhawaan la sameeyay.
                   </p>
                   <Link
-                    href="/accounting/transactions/add"
+                    href="/projects/accounting/transactions/add"
                     className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
                   >
                     <Plus size={18} className="mr-2" />
@@ -1030,7 +1030,7 @@ export default function AccountingPage() {
 
               <div className="mt-6 lg:mt-8 text-center">
                 <Link
-                  href="/accounting/transactions"
+                  href="/projects/accounting/transactions"
                   className="inline-flex items-center px-6 py-3 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg font-medium transition-all duration-200"
                 >
                   Fiiri Dhammaan Dhaqdhaqaaqa
@@ -1188,7 +1188,7 @@ export default function AccountingPage() {
                     Wali ma jiraan accounts lacag ah oo la helay.
                   </p>
                   <Link
-                    href="/accounting/accounts/add"
+                    href="/projects/accounting/accounts/add"
                     className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
                   >
                     <Plus size={18} className="mr-2" />
@@ -1265,7 +1265,7 @@ export default function AccountingPage() {
 
               <div className="mt-6 lg:mt-8 text-center">
                 <Link
-                  href="/accounting/accounts/add"
+                  href="/projects/accounting/accounts/add"
                   className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
                 >
                   <Plus size={18} className="mr-2" />
@@ -1441,7 +1441,7 @@ export default function AccountingPage() {
                     Wali ma jiraan dhaqdhaqaaq lacag ah oo dhawaan la sameeyay.
                   </p>
                   <Link
-                    href="/accounting/transactions/add"
+                    href="/projects/accounting/transactions/add"
                     className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
                   >
                     <Plus size={18} className="mr-2" />
@@ -1478,7 +1478,7 @@ export default function AccountingPage() {
 
               <div className="mt-8 text-center">
                 <Link
-                  href="/accounting/transactions"
+                  href="/projects/accounting/transactions"
                   className="inline-flex items-center px-6 py-3 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg font-medium transition-all duration-200"
                 >
                   Fiiri Dhammaan Dhaqdhaqaaqa
@@ -1561,7 +1561,7 @@ export default function AccountingPage() {
                     Wali ma jiraan accounts lacag ah oo la helay.
                   </p>
                   <Link
-                    href="/accounting/accounts/add"
+                    href="/projects/accounting/accounts/add"
                     className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
                   >
                     <Plus size={18} className="mr-2" />
@@ -1596,7 +1596,7 @@ export default function AccountingPage() {
 
               <div className="mt-8 text-center">
                 <Link
-                  href="/accounting/accounts/add"
+                  href="/projects/accounting/accounts/add"
                   className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
                 >
                   <Plus size={18} className="mr-2" />
@@ -1694,7 +1694,7 @@ export default function AccountingPage() {
                     Deynta dhammaan mashaariicdu waa la bixiyay ama lama helin wax deyn mashruuc ah.
                   </p>
                   <Link
-                    href="/accounting/transactions/add"
+                    href="/projects/accounting/transactions/add"
                     className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
                   >
                     <Plus size={18} className="mr-2" />

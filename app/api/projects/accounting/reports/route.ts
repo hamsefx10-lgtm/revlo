@@ -1,11 +1,11 @@
-// app/api/accounting/reports/route.ts - Accounting Reports API Route
+// app/api/projects/accounting/reports/route.ts - Accounting Reports API Route
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db'; // Import Prisma Client
 import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 import { getSessionCompanyId } from './auth';
 
-// GET /api/accounting/reports - Soo deji xogta guud ee warbixinada accounting-ga
+// GET /api/projects/accounting/reports - Soo deji xogta guud ee warbixinada accounting-ga
 export async function GET(request: Request) {
   try {
     const companyId = await getSessionCompanyId();

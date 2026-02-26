@@ -4,9 +4,9 @@
 import React from 'react';
 import Link from 'next/link';
 import Layout from '@/components/layouts/Layout';
-import { 
-  ArrowLeft, CreditCard, Plus, Search, Filter, Calendar, List, LayoutGrid, 
-  DollarSign, Briefcase, Users, CheckCircle, XCircle, ChevronRight, 
+import {
+  ArrowLeft, CreditCard, Plus, Search, Filter, Calendar, List, LayoutGrid,
+  DollarSign, Briefcase, Users, CheckCircle, XCircle, ChevronRight,
   TrendingUp, TrendingDown, Eye, Edit, Send, MessageSquare, Clock as ClockIcon, Info, Bell, Trash2, Download
 } from 'lucide-react';
 import Toast from '@/components/common/Toast'; // Reuse Toast component
@@ -111,7 +111,7 @@ export default function PaymentScheduleReportPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch('/api/accounting/reports/payment-schedule');
+        const res = await fetch('/api/projects/accounting/reports/payment-schedule');
         if (!res.ok) throw new Error('Failed to fetch payment schedule');
         const data = await res.json();
         setPayments(data.payments || data);
@@ -131,7 +131,7 @@ export default function PaymentScheduleReportPage() {
 
   const filteredPayments = payments.filter(payment => {
     const matchesSearch = payment.project.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          payment.client.toLowerCase().includes(searchTerm.toLowerCase());
+      payment.client.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesProject = filterProject === 'All' || payment.project === filterProject;
     const matchesClient = filterClient === 'All' || payment.client === filterClient;
     const matchesStatus = filterStatus === 'All' || payment.status === filterStatus;
@@ -318,11 +318,11 @@ export default function PaymentScheduleReportPage() {
             <tbody className="divide-y divide-lightGray dark:divide-gray-700">
               {filteredPayments.length > 0 ? (
                 filteredPayments.map(payment => (
-                  <PaymentRow 
-                    key={payment.id} 
-                    payment={payment} 
-                    onRecordPayment={handleRecordPayment} 
-                    onSendReminder={handleSendReminder} 
+                  <PaymentRow
+                    key={payment.id}
+                    payment={payment}
+                    onRecordPayment={handleRecordPayment}
+                    onSendReminder={handleSendReminder}
                     onDelete={handleDeletePayment}
                   />
                 ))
@@ -336,9 +336,9 @@ export default function PaymentScheduleReportPage() {
         </div>
         {/* Pagination Placeholder */}
         <div className="p-4 flex justify-between items-center border-t border-lightGray dark:border-gray-700">
-            <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Hore</button>
-            <span className="text-sm text-darkGray dark:text-gray-100">Bogga 1 ee {Math.ceil(filteredPayments.length / 10) || 1}</span>
-            <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Xiga</button>
+          <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Hore</button>
+          <span className="text-sm text-darkGray dark:text-gray-100">Bogga 1 ee {Math.ceil(filteredPayments.length / 10) || 1}</span>
+          <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Xiga</button>
         </div>
       </div>
 

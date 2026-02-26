@@ -48,7 +48,7 @@ export default function EditSalePage() {
             const [saleRes, customersRes, accountsRes] = await Promise.all([
                 fetch(`/api/sales/${id}`),
                 fetch('/api/customers'),
-                fetch('/api/accounting/accounts'),
+                fetch('/api/projects/accounting/accounts'),
             ]);
 
             if (!saleRes.ok) throw new Error('Failed to fetch sale details');

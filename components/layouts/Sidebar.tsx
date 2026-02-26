@@ -83,26 +83,27 @@ const menuConfig = {
       { name: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard />, group: 'Main' },
       { name: 'Super Admin', href: '/admin', icon: <Shield />, group: 'Main', badge: 1 },
     ],
-    business: [
-      { name: 'Projects', href: '/projects/main', icon: <Briefcase />, group: 'Business' },
-      { name: 'Workshop', href: '/workshop', icon: <Hammer />, group: 'Business' },
-      { name: 'Manufacturing', href: '/manufacturing', icon: <Factory />, group: 'Business' },
-      { name: 'Retail Shop', href: '/shop', icon: <ShoppingCart />, group: 'Business' },
-      { name: 'Project Vendors', href: '/projects/vendors', icon: <Truck />, group: 'Business' },
-      { name: 'Project Customers', href: '/projects/customers', icon: <Users />, group: 'Business' },
-      { name: 'Factory Vendors', href: '/manufacturing/vendors', icon: <Truck />, group: 'Business' },
-      { name: 'Factory Customers', href: '/manufacturing/customers', icon: <Users />, group: 'Business' },
-      { name: 'Employees', href: '/projects/employees', icon: <UserCogIcon />, group: 'Business' },
+    projects: [
+      { name: 'Projects', href: '/projects/main', icon: <Briefcase />, group: 'Projects' },
+      { name: 'Employees', href: '/projects/employees', icon: <UserCogIcon />, group: 'Projects' },
+      { name: 'Project Vendors', href: '/projects/vendors', icon: <Truck />, group: 'Projects' },
+      { name: 'Project Customers', href: '/projects/customers', icon: <Users />, group: 'Projects' },
+      { name: 'Project Expenses', href: '/projects/expenses', icon: <DollarSign />, group: 'Projects' },
+      { name: 'Accounting', href: '/projects/accounting', icon: <Landmark />, group: 'Projects' },
+      { name: 'Project Store', href: '/projects/inventory', icon: <Warehouse />, group: 'Projects' },
+      { name: 'Workshop', href: '/workshop', icon: <Hammer />, group: 'Projects' },
     ],
-    financial: [
-      { name: 'Project Expenses', href: '/projects/expenses', icon: <DollarSign />, group: 'Financial' },
-      { name: 'Shop Expenses', href: '/shop/expenses', icon: <DollarSign />, group: 'Financial' },
-      { name: 'Factory Expenses', href: '/manufacturing/expenses', icon: <DollarSign />, group: 'Financial' },
-      { name: 'Accounting', href: '/projects/accounting', icon: <Landmark />, group: 'Financial' },
-      { name: 'Shop Inventory', href: '/shop/inventory', icon: <Package />, group: 'Financial' },
-      { name: 'Project Store', href: '/projects/inventory', icon: <Warehouse />, group: 'Financial' },
-      { name: 'Factory Materials', href: '/manufacturing/inventory', icon: <Factory />, group: 'Financial' },
-      { name: 'Factories List', href: '/manufacturing/factories', icon: <Factory />, group: 'Financial' },
+    shop: [
+      { name: 'Retail Shop', href: '/shop', icon: <ShoppingCart />, group: 'Shop' },
+      { name: 'Shop Inventory', href: '/shop/inventory', icon: <Package />, group: 'Shop' },
+    ],
+    manufacturing: [
+      { name: 'Manufacturing', href: '/manufacturing', icon: <Factory />, group: 'Manufacturing' },
+      { name: 'Factory Vendors', href: '/manufacturing/vendors', icon: <Truck />, group: 'Manufacturing' },
+      { name: 'Factory Customers', href: '/manufacturing/customers', icon: <Users />, group: 'Manufacturing' },
+      { name: 'Factory Expenses', href: '/manufacturing/expenses', icon: <DollarSign />, group: 'Manufacturing' },
+      { name: 'Factory Materials', href: '/manufacturing/inventory', icon: <Factory />, group: 'Manufacturing' },
+      { name: 'Factories List', href: '/manufacturing/factories', icon: <Factory />, group: 'Manufacturing' },
     ],
     reports: [
       { name: 'Reports', href: '/reports', icon: <BarChart3 />, group: 'Reports' },
@@ -118,59 +119,62 @@ const menuConfig = {
     main: [
       { name: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard />, group: 'Main' },
     ],
-    business: [
-      { name: 'Projects', href: '/projects/main', icon: <Briefcase />, group: 'Business' },
-      { name: 'Workshop', href: '/workshop', icon: <Hammer />, group: 'Business' },
-      { name: 'Manufacturing', href: '/manufacturing', icon: <Factory />, group: 'Business' },
-      { name: 'Retail Shop', href: '/shop', icon: <ShoppingCart />, group: 'Business' },
-      { name: 'Project Vendors', href: '/projects/vendors', icon: <Truck />, group: 'Business' },
-      { name: 'Project Customers', href: '/projects/customers', icon: <Users />, group: 'Business' },
-      { name: 'Factory Vendors', href: '/manufacturing/vendors', icon: <Truck />, group: 'Business' },
-      { name: 'Factory Customers', href: '/manufacturing/customers', icon: <Users />, group: 'Business' },
-      { name: 'Employees', href: '/projects/employees', icon: <UserCogIcon />, group: 'Business' },
+    projects: [
+      { name: 'Projects', href: '/projects/main', icon: <Briefcase />, group: 'Projects' },
+      { name: 'Employees', href: '/projects/employees', icon: <UserCogIcon />, group: 'Projects' },
+      { name: 'Project Vendors', href: '/projects/vendors', icon: <Truck />, group: 'Projects' },
+      { name: 'Project Customers', href: '/projects/customers', icon: <Users />, group: 'Projects' },
+      { name: 'Project Expenses', href: '/projects/expenses', icon: <DollarSign />, group: 'Projects', badge: 3 },
+      { name: 'Accounting', href: '/projects/accounting', icon: <Landmark />, group: 'Projects' },
+      { name: 'Project Store', href: '/projects/inventory', icon: <Warehouse />, group: 'Projects' },
+      { name: 'Workshop', href: '/workshop', icon: <Hammer />, group: 'Projects' },
     ],
-    financial: [
-      { name: 'Project Expenses', href: '/projects/expenses', icon: <DollarSign />, group: 'Financial', badge: 3 },
-      { name: 'Accounting', href: '/projects/accounting', icon: <Landmark />, group: 'Financial' },
-      { name: 'Shop Inventory', href: '/shop/inventory', icon: <Package />, group: 'Financial' },
-      { name: 'Project Store', href: '/projects/inventory', icon: <Warehouse />, group: 'Financial' },
-      { name: 'Factory Materials', href: '/manufacturing/inventory', icon: <Factory />, group: 'Financial' },
-      { name: 'Factories List', href: '/manufacturing/factories', icon: <Factory />, group: 'Financial' },
+    shop: [
+      { name: 'Retail Shop', href: '/shop', icon: <ShoppingCart />, group: 'Shop' },
+      { name: 'Shop Inventory', href: '/shop/inventory', icon: <Package />, group: 'Shop' },
+    ],
+    manufacturing: [
+      { name: 'Manufacturing', href: '/manufacturing', icon: <Factory />, group: 'Manufacturing' },
+      { name: 'Factory Vendors', href: '/manufacturing/vendors', icon: <Truck />, group: 'Manufacturing' },
+      { name: 'Factory Customers', href: '/manufacturing/customers', icon: <Users />, group: 'Manufacturing' },
+      { name: 'Factory Expenses', href: '/manufacturing/expenses', icon: <DollarSign />, group: 'Manufacturing' },
+      { name: 'Factory Materials', href: '/manufacturing/inventory', icon: <Factory />, group: 'Manufacturing' },
+      { name: 'Factories List', href: '/manufacturing/factories', icon: <Factory />, group: 'Manufacturing' },
     ],
     reports: [
       { name: 'Reports', href: '/reports', icon: <BarChart3 />, group: 'Reports' },
     ],
     admin: [
       { name: 'Users', href: '/settings/users', icon: <Shield />, group: 'Administration' },
-      // Fiscal Years and Platform Admin REMOVED for regular Admin
     ]
   },
   MANAGER: {
     main: [
       { name: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard />, group: 'Main' },
     ],
-    business: [
-      { name: 'Projects', href: '/projects/main', icon: <Briefcase />, group: 'Business' },
-      { name: 'Workshop', href: '/workshop', icon: <Hammer />, group: 'Business' },
-      { name: 'Manufacturing', href: '/manufacturing', icon: <Factory />, group: 'Business' },
-      { name: 'Retail Shop', href: '/shop', icon: <ShoppingCart />, group: 'Business' },
-      { name: 'Project Vendors', href: '/projects/vendors', icon: <Truck />, group: 'Business' },
-      { name: 'Project Customers', href: '/projects/customers', icon: <Users />, group: 'Business' },
-      { name: 'Employees', href: '/projects/employees', icon: <UserCogIcon />, group: 'Business' },
+    projects: [
+      { name: 'Projects', href: '/projects/main', icon: <Briefcase />, group: 'Projects' },
+      { name: 'Employees', href: '/projects/employees', icon: <UserCogIcon />, group: 'Projects' },
+      { name: 'Project Vendors', href: '/projects/vendors', icon: <Truck />, group: 'Projects' },
+      { name: 'Project Customers', href: '/projects/customers', icon: <Users />, group: 'Projects' },
+      { name: 'Project Expenses', href: '/projects/expenses', icon: <DollarSign />, group: 'Projects' },
+      { name: 'Accounting', href: '/projects/accounting', icon: <Landmark />, group: 'Projects' },
+      { name: 'Project Store', href: '/projects/inventory', icon: <Warehouse />, group: 'Projects' },
+      { name: 'Workshop', href: '/workshop', icon: <Hammer />, group: 'Projects' },
     ],
-    financial: [
-      { name: 'Project Expenses', href: '/projects/expenses', icon: <DollarSign />, group: 'Financial' },
-      { name: 'Accounting', href: '/projects/accounting', icon: <Landmark />, group: 'Financial' },
-      { name: 'Shop Inventory', href: '/shop/inventory', icon: <Package />, group: 'Financial' },
-      { name: 'Project Store', href: '/projects/inventory', icon: <Warehouse />, group: 'Financial' },
-      { name: 'Factory Materials', href: '/manufacturing/inventory', icon: <Factory />, group: 'Financial' },
+    shop: [
+      { name: 'Retail Shop', href: '/shop', icon: <ShoppingCart />, group: 'Shop' },
+      { name: 'Shop Inventory', href: '/shop/inventory', icon: <Package />, group: 'Shop' },
+    ],
+    manufacturing: [
+      { name: 'Manufacturing', href: '/manufacturing', icon: <Factory />, group: 'Manufacturing' },
+      { name: 'Factory Materials', href: '/manufacturing/inventory', icon: <Factory />, group: 'Manufacturing' },
     ],
     reports: [
       { name: 'Reports', href: '/reports', icon: <BarChart3 />, group: 'Reports' },
     ],
     admin: [
       { name: 'Fiscal Years', href: '/admin/fiscal-years', icon: <Calendar />, group: 'Administration' },
-      { name: 'Admin', href: '/admin', icon: <Wrench />, group: 'Administration' },
     ]
   },
   MEMBER: {
@@ -194,6 +198,65 @@ const menuConfig = {
     ],
     business: [
       { name: 'Projects', href: '/projects/main', icon: <Briefcase />, group: 'Business' },
+    ]
+  },
+  PROJECTS_ADMIN: {
+    main: [
+      { name: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard />, group: 'Main' },
+    ],
+    business: [
+      { name: 'Projects', href: '/projects/main', icon: <Briefcase />, group: 'Business' },
+      { name: 'Project Vendors', href: '/projects/vendors', icon: <Truck />, group: 'Business' },
+      { name: 'Project Customers', href: '/projects/customers', icon: <Users />, group: 'Business' },
+      { name: 'Employees', href: '/projects/employees', icon: <UserCogIcon />, group: 'Business' },
+    ],
+    financial: [
+      { name: 'Project Expenses', href: '/projects/expenses', icon: <DollarSign />, group: 'Financial' },
+      { name: 'Accounting', href: '/projects/accounting', icon: <Landmark />, group: 'Financial' },
+      { name: 'Project Store', href: '/projects/inventory', icon: <Warehouse />, group: 'Financial' },
+    ],
+    reports: [
+      { name: 'Reports', href: '/reports', icon: <BarChart3 />, group: 'Reports' },
+    ],
+    admin: [
+      { name: 'Settings', href: '/settings', icon: <Wrench />, group: 'Administration' },
+    ]
+  },
+  SHOP_ADMIN: {
+    main: [
+      { name: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard />, group: 'Main' },
+    ],
+    business: [
+      { name: 'Retail Shop', href: '/shop', icon: <ShoppingCart />, group: 'Business' },
+    ],
+    financial: [
+      { name: 'Shop Inventory', href: '/shop/inventory', icon: <Package />, group: 'Financial' },
+    ],
+    reports: [
+      { name: 'Reports', href: '/reports', icon: <BarChart3 />, group: 'Reports' },
+    ],
+    admin: [
+      { name: 'Settings', href: '/settings', icon: <Wrench />, group: 'Administration' },
+    ]
+  },
+  MANUFACTURING_ADMIN: {
+    main: [
+      { name: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard />, group: 'Main' },
+    ],
+    business: [
+      { name: 'Manufacturing', href: '/manufacturing', icon: <Factory />, group: 'Business' },
+      { name: 'Factory Vendors', href: '/manufacturing/vendors', icon: <Truck />, group: 'Business' },
+      { name: 'Factory Customers', href: '/manufacturing/customers', icon: <Users />, group: 'Business' },
+    ],
+    financial: [
+      { name: 'Factory Materials', href: '/manufacturing/inventory', icon: <Factory />, group: 'Financial' },
+      { name: 'Factories List', href: '/manufacturing/factories', icon: <Factory />, group: 'Financial' },
+    ],
+    reports: [
+      { name: 'Reports', href: '/reports', icon: <BarChart3 />, group: 'Reports' },
+    ],
+    admin: [
+      { name: 'Settings', href: '/settings', icon: <Wrench />, group: 'Administration' },
     ]
   }
 };
@@ -274,26 +337,51 @@ const Sidebar: React.FC<SidebarProps> = ({
         admin: menu.admin || [] // Keep admin if they have it
       };
     } else if (planType === 'PROJECTS_ONLY') {
-      // Hide Manufacturing, Products, Sales, Factories - show only Projects
+      // Structured like FACTORIES_ONLY — separate operations vs financial
       return {
-        ...menu,
-        business: menu.business?.filter((item: any) =>
-          item.name !== 'Manufacturing' &&
-          item.name !== 'Products' &&
-          item.name !== 'Sales' &&
-          item.name !== 'Purchases' &&
-          item.name !== 'Factories' &&
-          !item.href?.startsWith('/manufacturing') &&
-          !item.href?.startsWith('/sales') &&
-          !item.href?.startsWith('/manufacturing/factories')
-        ) || [],
-        reports: menu.reports?.filter((item: any) =>
-          !item.href?.includes('manufacturing')
-        ) || [],
+        main: [
+          { name: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard />, group: 'Main' },
+        ],
+        business: [
+          { name: 'Projects', href: '/projects/main', icon: <Briefcase />, group: 'Operations' },
+          { name: 'Employees', href: '/projects/employees', icon: <UserCogIcon />, group: 'Operations' },
+          { name: 'Vendors', href: '/projects/vendors', icon: <Truck />, group: 'Operations' },
+          { name: 'Customers', href: '/projects/customers', icon: <Users />, group: 'Operations' },
+          { name: 'Workshop', href: '/workshop', icon: <Hammer />, group: 'Operations' },
+        ],
+        financial: [
+          { name: 'Expenses', href: '/projects/expenses', icon: <DollarSign />, group: 'Finance' },
+          { name: 'Accounting', href: '/projects/accounting', icon: <Landmark />, group: 'Finance' },
+          { name: 'Inventory', href: '/projects/inventory', icon: <Warehouse />, group: 'Finance' },
+        ],
+        reports: [
+          { name: 'Reports', href: '/reports', icon: <BarChart3 />, group: 'Analytics' },
+        ],
+        admin: menu.admin || [],
       };
     }
-    // COMBINED - show everything
-    return menu;
+    // Default fallback (old COMBINED or unrecognized) → same as PROJECTS_ONLY
+    return {
+      main: [
+        { name: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard />, group: 'Main' },
+      ],
+      business: [
+        { name: 'Projects', href: '/projects/main', icon: <Briefcase />, group: 'Operations' },
+        { name: 'Employees', href: '/projects/employees', icon: <UserCogIcon />, group: 'Operations' },
+        { name: 'Project Vendors', href: '/projects/vendors', icon: <Truck />, group: 'Operations' },
+        { name: 'Project Customers', href: '/projects/customers', icon: <Users />, group: 'Operations' },
+        { name: 'Workshop', href: '/workshop', icon: <Hammer />, group: 'Operations' },
+      ],
+      financial: [
+        { name: 'Project Expenses', href: '/projects/expenses', icon: <DollarSign />, group: 'Finance' },
+        { name: 'Accounting', href: '/projects/accounting', icon: <Landmark />, group: 'Finance' },
+        { name: 'Project Store', href: '/projects/inventory', icon: <Warehouse />, group: 'Finance' },
+      ],
+      reports: [
+        { name: 'Reports', href: '/reports', icon: <BarChart3 />, group: 'Analytics' },
+      ],
+      admin: menu.admin || [],
+    };
   };
 
   menuStructure = filterMenuByPlan(menuStructure);

@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import Layout from '@/components/layouts/Layout';
-import { 
-  ArrowLeft, Save, Package, Truck, Calendar, DollarSign, FileText, 
+import {
+  ArrowLeft, Save, Package, Truck, Calendar, DollarSign, FileText,
   Loader2, CheckCircle, AlertCircle, User, Building, Clock, Tag
 } from 'lucide-react';
 import Toast from '@/components/common/Toast';
@@ -60,12 +60,12 @@ export default function EditMaterialPurchasePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
-  
+
   // Data states
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [productionOrders, setProductionOrders] = useState<ProductionOrder[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
-  
+
   // Form states
   const [formData, setFormData] = useState({
     materialName: '',
@@ -111,16 +111,16 @@ export default function EditMaterialPurchasePage() {
           accountId: purchase.accountId || ''
         });
       } else {
-        setToastMessage({ 
-          message: 'Failed to fetch purchase details', 
-          type: 'error' 
+        setToastMessage({
+          message: 'Failed to fetch purchase details',
+          type: 'error'
         });
       }
     } catch (error) {
       console.error('Error fetching purchase:', error);
-      setToastMessage({ 
-        message: 'Failed to fetch purchase details', 
-        type: 'error' 
+      setToastMessage({
+        message: 'Failed to fetch purchase details',
+        type: 'error'
       });
     } finally {
       setLoading(false);
@@ -153,7 +153,7 @@ export default function EditMaterialPurchasePage() {
 
   const fetchAccounts = async () => {
     try {
-      const response = await fetch('/api/accounts');
+      const response = await fetch('/api/projects/accounting/accounts');
       if (response.ok) {
         const data = await response.json();
         setAccounts(data.accounts || []);
@@ -166,12 +166,12 @@ export default function EditMaterialPurchasePage() {
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => {
       const updated = { ...prev, [field]: value };
-      
+
       // Auto-calculate total price
       if (field === 'quantity' || field === 'unitPrice') {
         updated.totalPrice = updated.quantity * updated.unitPrice;
       }
-      
+
       return updated;
     });
   };
@@ -183,18 +183,18 @@ export default function EditMaterialPurchasePage() {
 
     // Validation
     if (!formData.materialName || !formData.quantity || !formData.unitPrice || !formData.vendorId || !formData.accountId) {
-      setToastMessage({ 
-        message: 'Please fill all required fields', 
-        type: 'error' 
+      setToastMessage({
+        message: 'Please fill all required fields',
+        type: 'error'
       });
       setSaving(false);
       return;
     }
 
     if (formData.quantity <= 0 || formData.unitPrice <= 0) {
-      setToastMessage({ 
-        message: 'Quantity and unit price must be greater than 0', 
-        type: 'error' 
+      setToastMessage({
+        message: 'Quantity and unit price must be greater than 0',
+        type: 'error'
       });
       setSaving(false);
       return;
@@ -218,25 +218,25 @@ export default function EditMaterialPurchasePage() {
       });
 
       if (response.ok) {
-        setToastMessage({ 
-          message: 'Purchase updated successfully!', 
-          type: 'success' 
+        setToastMessage({
+          message: 'Purchase updated successfully!',
+          type: 'success'
         });
         setTimeout(() => {
           router.push(`/manufacturing/material-purchases/${params.id}`);
         }, 1500);
       } else {
         const errorData = await response.json();
-        setToastMessage({ 
-          message: errorData.error || 'Failed to update purchase', 
-          type: 'error' 
+        setToastMessage({
+          message: errorData.error || 'Failed to update purchase',
+          type: 'error'
         });
       }
     } catch (error) {
       console.error('Error updating purchase:', error);
-      setToastMessage({ 
-        message: 'Failed to update purchase', 
-        type: 'error' 
+      setToastMessage({
+        message: 'Failed to update purchase',
+        type: 'error'
       });
     } finally {
       setSaving(false);
@@ -298,7 +298,7 @@ export default function EditMaterialPurchasePage() {
                       required
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -315,7 +315,7 @@ export default function EditMaterialPurchasePage() {
                         required
                       />
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Unit
@@ -336,7 +336,7 @@ export default function EditMaterialPurchasePage() {
                       </select>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -356,7 +356,7 @@ export default function EditMaterialPurchasePage() {
                         />
                       </div>
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Total Price
@@ -402,7 +402,7 @@ export default function EditMaterialPurchasePage() {
                       ))}
                     </select>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Purchase Date *
@@ -415,7 +415,7 @@ export default function EditMaterialPurchasePage() {
                       required
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Payment Account *
@@ -434,7 +434,7 @@ export default function EditMaterialPurchasePage() {
                       ))}
                     </select>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Invoice Number

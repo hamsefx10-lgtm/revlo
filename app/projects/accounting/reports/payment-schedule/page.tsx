@@ -5,8 +5,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Layout from '@/components/layouts/Layout';
-import { 
-  ArrowLeft, Plus, Search, Filter, Calendar, List, LayoutGrid, 
+import {
+  ArrowLeft, Plus, Search, Filter, Calendar, List, LayoutGrid,
   DollarSign, CreditCard, Banknote, RefreshCw, Eye, Edit, Trash2,
   TrendingUp, TrendingDown, Info as InfoIcon, CheckCircle, XCircle, Clock as ClockIcon,
   User as UserIcon, Briefcase as BriefcaseIcon, Tag as TagIcon,
@@ -60,10 +60,10 @@ const PaymentScheduleRow: React.FC<{ item: PaymentScheduleItem; onRecordPayment:
       <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100">{new Date(item.dueDate).toLocaleDateString()}</td>
       <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">{item.description}</td>
       <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300 flex items-center space-x-2">
-          {item.relatedEntity.type === 'Project' ? <BriefcaseIcon size={16}/> : item.relatedEntity.type === 'Customer' ? <UserIcon size={16}/> : <TagIcon size={16}/>}
-          <Link href={`/${item.relatedEntity.type.toLowerCase()}s/${item.relatedEntity.id}`} className="text-primary hover:underline">
-            {item.relatedEntity.name}
-          </Link>
+        {item.relatedEntity.type === 'Project' ? <BriefcaseIcon size={16} /> : item.relatedEntity.type === 'Customer' ? <UserIcon size={16} /> : <TagIcon size={16} />}
+        <Link href={`/${item.relatedEntity.type.toLowerCase()}s/${item.relatedEntity.id}`} className="text-primary hover:underline">
+          {item.relatedEntity.name}
+        </Link>
       </td>
       <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-semibold text-right">${item.amount.toLocaleString()}</td>
       <td className={`p-4 whitespace-nowrap font-semibold text-right ${item.remainingAmount && item.remainingAmount > 0 ? 'text-redError' : 'text-secondary'}`}>
@@ -95,82 +95,82 @@ const PaymentScheduleRow: React.FC<{ item: PaymentScheduleItem; onRecordPayment:
 
 // --- Payment Schedule Card Component (for Mobile View) ---
 const PaymentScheduleCard: React.FC<{ item: PaymentScheduleItem; onRecordPayment: (id: string) => void; onEdit: (id: string) => void; onDelete: (id: string) => void }> = ({ item, onRecordPayment, onEdit, onDelete }) => {
-    let borderColor = 'border-lightGray dark:border-gray-700';
-    let statusIcon: React.ReactNode;
-    let statusBgClass = ''; // Add this line
+  let borderColor = 'border-lightGray dark:border-gray-700';
+  let statusIcon: React.ReactNode;
+  let statusBgClass = ''; // Add this line
 
-    if (item.status === 'Overdue') {
-        borderColor = 'border-redError';
-        statusIcon = <XCircle size={16} />;
-        statusBgClass = 'bg-redError/10'; // Define background class
-    } else if (item.status === 'Upcoming') {
-        borderColor = 'border-primary';
-        statusIcon = <ClockIcon size={16} />;
-        statusBgClass = 'bg-primary/10'; // Define background class
-    } else if (item.status === 'Paid') {
-        borderColor = 'border-secondary';
-        statusIcon = <CheckCircle size={16} />;
-        statusBgClass = 'bg-secondary/10'; // Define background class
-    } else {
-        statusIcon = <InfoIcon size={16} />;
-        statusBgClass = 'bg-mediumGray/10'; // Define background class
-    }
+  if (item.status === 'Overdue') {
+    borderColor = 'border-redError';
+    statusIcon = <XCircle size={16} />;
+    statusBgClass = 'bg-redError/10'; // Define background class
+  } else if (item.status === 'Upcoming') {
+    borderColor = 'border-primary';
+    statusIcon = <ClockIcon size={16} />;
+    statusBgClass = 'bg-primary/10'; // Define background class
+  } else if (item.status === 'Paid') {
+    borderColor = 'border-secondary';
+    statusIcon = <CheckCircle size={16} />;
+    statusBgClass = 'bg-secondary/10'; // Define background class
+  } else {
+    statusIcon = <InfoIcon size={16} />;
+    statusBgClass = 'bg-mediumGray/10'; // Define background class
+  }
 
-    if (item.status === 'Overdue') {
-        borderColor = 'border-redError';
-        statusIcon = <XCircle size={16} />;
-    } else if (item.status === 'Upcoming') {
-        borderColor = 'border-primary';
-        statusIcon = <ClockIcon size={16} />;
-    } else if (item.status === 'Paid') {
-        borderColor = 'border-secondary';
-        statusIcon = <CheckCircle size={16} />;
-    } else {
-        statusIcon = <InfoIcon size={16} />;
-    }
+  if (item.status === 'Overdue') {
+    borderColor = 'border-redError';
+    statusIcon = <XCircle size={16} />;
+  } else if (item.status === 'Upcoming') {
+    borderColor = 'border-primary';
+    statusIcon = <ClockIcon size={16} />;
+  } else if (item.status === 'Paid') {
+    borderColor = 'border-secondary';
+    statusIcon = <CheckCircle size={16} />;
+  } else {
+    statusIcon = <InfoIcon size={16} />;
+  }
 
-    return (
-        <div className={`bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md animate-fade-in-up border-l-4 ${borderColor} relative`}>
-            <div className="flex justify-between items-start mb-3">
-                <h4 className="font-semibold text-darkGray dark:text-gray-100 text-lg flex items-center space-x-2">
-                    <DollarSign size={20} className="text-primary"/> <span>{item.description}</span>
-                </h4>
-                <div className="flex space-x-2 flex-shrink-0">
-                    {item.status !== 'Paid' && (
-                        <button onClick={() => onRecordPayment(item.id)} className="p-1 rounded-full bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition-colors duration-200" title="Record Payment">
-                            <Coins size={16} />
-                        </button>
-                    )}
-                    <button onClick={() => onEdit(item.id)} className="p-1 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit">
-                        <Edit size={16} />
-                    </button>
-                    <button onClick={() => onDelete(item.id)} className="p-1 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-colors duration-200" title="Delete">
-                        <Trash2 size={16} />
-                    </button>
-                </div>
-            </div>
-            <p className="text-sm text-mediumGray dark:text-gray-400 mb-1 flex items-center space-x-2">
-                <Calendar size={14}/> <span>Due Date: {new Date(item.dueDate).toLocaleDateString()}</span>
-            </p>
-            <p className="text-sm text-mediumGray dark:text-gray-400 mb-1 flex items-center space-x-2">
-                {item.relatedEntity.type === 'Project' ? <BriefcaseIcon size={14}/> : item.relatedEntity.type === 'Customer' ? <UserIcon size={14}/> : <TagIcon size={14}/>}
-                <span>La Xiriira: 
-                    <Link href={`/${item.relatedEntity.type.toLowerCase()}s/${item.relatedEntity.id}`} className="text-primary hover:underline ml-1">
-                        {item.relatedEntity.name}
-                    </Link>
-                </span>
-            </p>
-            <div className={`mt-3 text-2xl font-bold ${item.status === 'Overdue' ? 'text-redError' : 'text-primary'}`}>
-                ${item.amount.toLocaleString()}
-            </div>
-            {item.remainingAmount && item.remainingAmount > 0 && (
-                <p className="text-sm text-redError mt-1">Hadhay: ${item.remainingAmount.toLocaleString()}</p>
-            )}
-            <span className={`mt-2 px-2 py-1 rounded-full text-xs font-semibold inline-flex items-center space-x-1 ${statusBgClass}`}>
-                {statusIcon} <span>{item.status}</span>
-            </span>
+  return (
+    <div className={`bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md animate-fade-in-up border-l-4 ${borderColor} relative`}>
+      <div className="flex justify-between items-start mb-3">
+        <h4 className="font-semibold text-darkGray dark:text-gray-100 text-lg flex items-center space-x-2">
+          <DollarSign size={20} className="text-primary" /> <span>{item.description}</span>
+        </h4>
+        <div className="flex space-x-2 flex-shrink-0">
+          {item.status !== 'Paid' && (
+            <button onClick={() => onRecordPayment(item.id)} className="p-1 rounded-full bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition-colors duration-200" title="Record Payment">
+              <Coins size={16} />
+            </button>
+          )}
+          <button onClick={() => onEdit(item.id)} className="p-1 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit">
+            <Edit size={16} />
+          </button>
+          <button onClick={() => onDelete(item.id)} className="p-1 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-colors duration-200" title="Delete">
+            <Trash2 size={16} />
+          </button>
         </div>
-    );
+      </div>
+      <p className="text-sm text-mediumGray dark:text-gray-400 mb-1 flex items-center space-x-2">
+        <Calendar size={14} /> <span>Due Date: {new Date(item.dueDate).toLocaleDateString()}</span>
+      </p>
+      <p className="text-sm text-mediumGray dark:text-gray-400 mb-1 flex items-center space-x-2">
+        {item.relatedEntity.type === 'Project' ? <BriefcaseIcon size={14} /> : item.relatedEntity.type === 'Customer' ? <UserIcon size={14} /> : <TagIcon size={14} />}
+        <span>La Xiriira:
+          <Link href={`/${item.relatedEntity.type.toLowerCase()}s/${item.relatedEntity.id}`} className="text-primary hover:underline ml-1">
+            {item.relatedEntity.name}
+          </Link>
+        </span>
+      </p>
+      <div className={`mt-3 text-2xl font-bold ${item.status === 'Overdue' ? 'text-redError' : 'text-primary'}`}>
+        ${item.amount.toLocaleString()}
+      </div>
+      {item.remainingAmount && item.remainingAmount > 0 && (
+        <p className="text-sm text-redError mt-1">Hadhay: ${item.remainingAmount.toLocaleString()}</p>
+      )}
+      <span className={`mt-2 px-2 py-1 rounded-full text-xs font-semibold inline-flex items-center space-x-1 ${statusBgClass}`}>
+        {statusIcon} <span>{item.status}</span>
+      </span>
+    </div>
+  );
 };
 
 
@@ -197,7 +197,7 @@ export default function PaymentSchedulePage() {
   const fetchPaymentSchedule = async () => {
     setPageLoading(true);
     try {
-      const response = await fetch('/api/accounting/reports/payment-schedule'); // Assuming this API exists
+      const response = await fetch('/api/projects/accounting/reports/payment-schedule');
       if (!response.ok) throw new Error('Failed to fetch payment schedule');
       const data = await response.json();
       setPaymentSchedule(data.schedule.map((item: any) => ({ ...item, amount: parseFloat(item.amount), paidAmount: parseFloat(item.paidAmount || 0), remainingAmount: parseFloat(item.remainingAmount || 0) })));
@@ -211,7 +211,7 @@ export default function PaymentSchedulePage() {
   };
 
   const handleRecordPayment = (id: string) => {
-    router.push(`/accounting/transactions/add?type=INCOME&relatedPaymentId=${id}`); // Navigate to add transaction for payment
+    router.push(`/projects/accounting/transactions/add?type=INCOME&relatedPaymentId=${id}`); // Navigate to add transaction for payment
     setToastMessage({ message: `Simulating record payment for ID: ${id}.`, type: 'info' });
   };
 
@@ -219,13 +219,13 @@ export default function PaymentSchedulePage() {
     // This would depend on the type of payment schedule item (e.g., project payment, loan repayment)
     // For simplicity, we'll navigate to a generic edit page or show a toast.
     setToastMessage({ message: `Simulating edit for payment schedule item ID: ${id}.`, type: 'info' });
-    router.push(`/accounting/transactions/edit/${id}`); // Example: edit the transaction itself
+    router.push(`/projects/accounting/transactions/edit/${id}`); // Example: edit the transaction itself
   };
 
   const handleDeleteItem = async (id: string) => {
     if (window.confirm('Ma hubtaa inaad tirtirto diiwaankan? Tan lama soo celin karo!')) {
       try {
-        // This would require a DELETE /api/accounting/reports/payment-schedule/[id] or related API
+        // This would require a DELETE /api/projects/accounting/reports/payment-schedule/[id] or related API
         // For now, simulate deletion
         setPaymentSchedule(prev => prev.filter(item => item.id !== id));
         setToastMessage({ message: 'Diiwaanka si guul leh ayaa loo tirtiray!', type: 'success' });
@@ -259,13 +259,13 @@ export default function PaymentSchedulePage() {
     <Layout>
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 md:gap-0">
         <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100 flex items-center">
-          <Link href="/accounting" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
+          <Link href="/projects/accounting" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
             <ArrowLeft size={28} className="inline-block" />
           </Link>
           Payment Schedule
         </h1>
         <div className="flex space-x-3">
-          <Link href="/accounting/transactions/add?type=INCOME" className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center" title="Diiwaan Geli Lacag">
+          <Link href="/projects/accounting/transactions/add?type=INCOME" className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center" title="Diiwaan Geli Lacag">
             <Plus size={20} className="mr-2" /> Diiwaan Geli Lacag
           </Link>
           <button onClick={fetchPaymentSchedule} className="bg-secondary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-green-600 transition duration-200 shadow-md flex items-center" title="Cusboonaysii Jadwalka">
@@ -357,12 +357,12 @@ export default function PaymentSchedulePage() {
         </div>
         {/* View Mode Toggle */}
         <div className="flex space-x-2 w-full md:w-auto justify-center">
-            <button onClick={() => setViewMode('list')} className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-primary text-white' : 'bg-lightGray dark:bg-gray-700 text-mediumGray dark:text-gray-400'} hover:bg-primary/80 dark:hover:bg-gray-600 transition-colors duration-200`} title="List View">
-                <List size={20} />
-            </button>
-            <button onClick={() => setViewMode('cards')} className={`p-2 rounded-lg ${viewMode === 'cards' ? 'bg-primary text-white' : 'bg-lightGray dark:bg-gray-700 text-mediumGray dark:text-gray-400'} hover:bg-primary/80 dark:hover:bg-gray-600 transition-colors duration-200`} title="Cards View">
-                <LayoutGrid size={20} />
-            </button>
+          <button onClick={() => setViewMode('list')} className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-primary text-white' : 'bg-lightGray dark:bg-gray-700 text-mediumGray dark:text-gray-400'} hover:bg-primary/80 dark:hover:bg-gray-600 transition-colors duration-200`} title="List View">
+            <List size={20} />
+          </button>
+          <button onClick={() => setViewMode('cards')} className={`p-2 rounded-lg ${viewMode === 'cards' ? 'bg-primary text-white' : 'bg-lightGray dark:bg-gray-700 text-mediumGray dark:text-gray-400'} hover:bg-primary/80 dark:hover:bg-gray-600 transition-colors duration-200`} title="Cards View">
+            <LayoutGrid size={20} />
+          </button>
         </div>
       </div>
 
@@ -399,16 +399,16 @@ export default function PaymentSchedulePage() {
           </div>
           {/* Pagination Placeholder */}
           <div className="p-4 flex justify-between items-center border-t border-lightGray dark:border-gray-700">
-              <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Hore</button>
-              <span className="text-sm text-darkGray dark:text-gray-100">Page 1 of {Math.ceil(filteredSchedule.length / 10) || 1}</span>
-              <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Next</button>
+            <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Hore</button>
+            <span className="text-sm text-darkGray dark:text-gray-100">Page 1 of {Math.ceil(filteredSchedule.length / 10) || 1}</span>
+            <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Next</button>
           </div>
         </div>
       ) : ( /* Cards View */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
-            {filteredSchedule.map(item => (
-                <PaymentScheduleCard key={item.id} item={item} onRecordPayment={handleRecordPayment} onEdit={handleEditItem} onDelete={handleDeleteItem} />
-            ))}
+          {filteredSchedule.map(item => (
+            <PaymentScheduleCard key={item.id} item={item} onRecordPayment={handleRecordPayment} onEdit={handleEditItem} onDelete={handleDeleteItem} />
+          ))}
         </div>
       )}
 

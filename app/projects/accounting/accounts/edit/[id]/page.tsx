@@ -47,7 +47,7 @@ export default function EditAccountPage() {
 
       setLoading(true);
       try {
-        const response = await fetch(`/api/accounting/accounts/${id}`);
+        const response = await fetch(`/api/projects/accounting/accounts/${id}`);
         if (!response.ok) throw new Error('Failed to fetch account details');
         const data = await response.json();
 
@@ -61,7 +61,7 @@ export default function EditAccountPage() {
       } catch (error: any) {
         console.error('Error fetching account details for edit:', error);
         setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka faahfaahinta account-ka la soo gelinayay.', type: 'error' });
-        router.push('/accounting/accounts');
+        router.push('/projects/accounting/accounts');
       } finally {
         setLoading(false);
       }
@@ -102,7 +102,7 @@ export default function EditAccountPage() {
         currency,
       };
 
-      const response = await fetch(`/api/accounting/accounts/${id}`, { // Use PUT method for update
+      const response = await fetch(`/api/projects/accounting/accounts/${id}`, { // Use PUT method for update
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(accountData),
@@ -115,7 +115,7 @@ export default function EditAccountPage() {
       }
 
       setToastMessage({ message: data.message || 'Account-ka si guul leh ayaa loo cusboonaysiiyay!', type: 'success' });
-      router.push('/accounting/accounts'); // Redirect to accounts list on success
+      router.push('/projects/accounting/accounts'); // Redirect to accounts list on success
     } catch (error: any) {
       console.error('Account Edit API error:', error);
       setToastMessage({ message: 'Cilad shabakadeed ayaa dhacday. Fadlan isku day mar kale.', type: 'error' });
@@ -138,7 +138,7 @@ export default function EditAccountPage() {
     <Layout>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">
-          <Link href="/accounting/accounts" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
+          <Link href="/projects/accounting/accounts" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
             <ArrowLeft size={28} className="inline-block" />
           </Link>
           Edit Account: {name}

@@ -1,11 +1,11 @@
-// app/api/accounting/transactions/transfer/route.ts - Accounting Transfer API Route
+// app/api/projects/accounting/transactions/transfer/route.ts - Accounting Transfer API Route
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db'; // Import Prisma Client
 import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 import { getSessionCompanyUser } from '@/lib/auth';
 
-// POST /api/accounting/transactions/transfer - Wareeji lacag u dhexeysa accounts-ka
+// POST /api/projects/accounting/transactions/transfer - Wareeji lacag u dhexeysa accounts-ka
 export async function POST(request: Request) {
   try {
     const sessionData = await getSessionCompanyUser();

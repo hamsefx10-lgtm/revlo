@@ -60,7 +60,7 @@ export function CustomerSelect({
     const fetchCustomers = async () => {
         setLoading(true);
         try {
-            const res = await fetch('/api/customers');
+            const res = await fetch('/api/projects/customers');
             if (res.ok) {
                 const data = await res.json();
                 setCustomers(data.customers || []);
@@ -76,7 +76,7 @@ export function CustomerSelect({
         if (!newCustomerName.trim()) return;
         setCreatingLoader(true);
         try {
-            const res = await fetch('/api/customers', {
+            const res = await fetch('/api/projects/customers', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

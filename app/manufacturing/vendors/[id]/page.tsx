@@ -100,7 +100,7 @@ export default function VendorDetailsPage() {
   const fetchVendorDetails = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/vendors/${id}`);
+      const response = await fetch(`/api/manufacturing/vendors/${id}`);
       if (!response.ok) throw new Error('Failed to fetch vendor details');
       const data = await response.json();
       setVendor(data.vendor);
@@ -115,9 +115,9 @@ export default function VendorDetailsPage() {
   const handleDeleteVendor = async () => {
     if (window.confirm('Ma hubtaa inaad tirtirto iibiyahan?')) {
       try {
-        const response = await fetch(`/api/vendors/${id}`, { method: 'DELETE' });
+        const response = await fetch(`/api/manufacturing/vendors/${id}`, { method: 'DELETE' });
         if (!response.ok) throw new Error('Failed to delete vendor');
-        router.push('/vendors');
+        router.push('/manufacturing/vendors');
       } catch (error: any) {
         setToastMessage({ message: 'Cilad ayaa dhacday.', type: 'error' });
       }
@@ -146,7 +146,7 @@ export default function VendorDetailsPage() {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
-            <Link href="/vendors" className="text-mediumGray hover:text-primary mb-2 inline-flex items-center gap-1">
+            <Link href="/manufacturing/vendors" className="text-mediumGray hover:text-primary mb-2 inline-flex items-center gap-1">
               <ArrowLeft size={16} /> Dib u noqo
             </Link>
             <h1 className="text-3xl font-bold text-darkGray dark:text-white flex items-center gap-3">
@@ -160,7 +160,7 @@ export default function VendorDetailsPage() {
             <Link href={`/purchases/add?vendorId=${vendor.id}`} className="bg-primary text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
               <ShoppingCart size={18} /> Purchase Order
             </Link>
-            <Link href={`/vendors/edit/${vendor.id}`} className="bg-white border border-gray-300 text-darkGray py-2 px-4 rounded-lg hover:bg-gray-50 transition flex items-center gap-2">
+            <Link href={`/manufacturing/vendors/edit/${vendor.id}`} className="bg-white border border-gray-300 text-darkGray py-2 px-4 rounded-lg hover:bg-gray-50 transition flex items-center gap-2">
               <Edit size={18} /> Edit
             </Link>
             <button onClick={handleDeleteVendor} className="bg-redError/10 text-redError py-2 px-4 rounded-lg hover:bg-redError hover:text-white transition flex items-center gap-2">

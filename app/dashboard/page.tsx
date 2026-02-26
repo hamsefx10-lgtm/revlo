@@ -581,7 +581,7 @@ export default function DashboardPage() {
               </div>
               <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">{formatCurrency(outstandingDebts || 0)}</div> {/* Using outstandingDebts as proxy based on current API logic till refined */}
               <p className="text-sm text-gray-500">Macaamiisha iyo Mashaariicda deynta lagu leeyahay</p>
-              <Link href="/accounting?tab=Debts" className="text-primary text-sm font-medium hover:underline mt-3 block">Fiiri Liiska &rarr;</Link>
+              <Link href="/projects/accounting?tab=Debts" className="text-primary text-sm font-medium hover:underline mt-3 block">Fiiri Liiska &rarr;</Link>
             </div>
 
             {/* Payables (Money OUT) */}
@@ -595,7 +595,7 @@ export default function DashboardPage() {
               </div>
               <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">{formatCurrency(0)}</div> {/* Logic for Payables is pending in API, defaulting to 0 or manual calc */}
               <p className="text-sm text-gray-500">Iibiyayaasha iyo Kharashyada aan la bixin</p>
-              <Link href="/accounting?tab=Debts" className="text-primary text-sm font-medium hover:underline mt-3 block">Bixi Hadda &rarr;</Link>
+              <Link href="/projects/accounting?tab=Debts" className="text-primary text-sm font-medium hover:underline mt-3 block">Bixi Hadda &rarr;</Link>
             </div>
           </div>
 
@@ -675,7 +675,7 @@ export default function DashboardPage() {
                     </div>
                   ))}
                 </div>
-                <Link href="/accounting/accounts" className="mt-4 block text-sm text-primary hover:underline text-center">
+                <Link href="/projects/accounting/accounts" className="mt-4 block text-sm text-primary hover:underline text-center">
                   Fiiri Dhammaan Accounts-ka →
                 </Link>
               </div>
@@ -768,7 +768,7 @@ export default function DashboardPage() {
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <Link
-                href="/expenses/add"
+                href="/projects/expenses/add"
                 className="bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/30 dark:to-emerald-800/30 p-4 rounded-lg border border-green-200 dark:border-green-700 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
               >
                 <div className="bg-green-500/20 dark:bg-green-500/30 p-3 rounded-lg w-fit mb-3 group-hover:scale-110 transition-transform">
@@ -779,7 +779,7 @@ export default function DashboardPage() {
               </Link>
 
               <Link
-                href="/projects/add"
+                href="/projects/main/add"
                 className="bg-gradient-to-br from-blue-50 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-800/30 p-4 rounded-lg border border-blue-200 dark:border-blue-700 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
               >
                 <div className="bg-blue-500/20 dark:bg-blue-500/30 p-3 rounded-lg w-fit mb-3 group-hover:scale-110 transition-transform">
@@ -790,7 +790,7 @@ export default function DashboardPage() {
               </Link>
 
               <Link
-                href="/inventory/store"
+                href="/projects/inventory/store"
                 className="bg-gradient-to-br from-orange-50 to-amber-100 dark:from-orange-900/30 dark:to-amber-800/30 p-4 rounded-lg border border-orange-200 dark:border-orange-700 hover:shadow-lg transition-all duration-300 hover:scale-105 group"
               >
                 <div className="bg-orange-500/20 dark:bg-orange-500/30 p-3 rounded-lg w-fit mb-3 group-hover:scale-110 transition-transform">
@@ -951,7 +951,7 @@ export default function DashboardPage() {
                 <li className="text-mediumGray dark:text-gray-400">Ma jiraan dhaqdhaqaaq dhawaan ah.</li>
               )}
             </ul>
-            <Link href="/accounting" className="mt-4 block text-primary hover:underline text-sm font-medium">Fiiri Dhammaan Dhaqdhaqaaqa &rarr;</Link>
+            <Link href="/projects/accounting" className="mt-4 block text-primary hover:underline text-sm font-medium">Fiiri Dhammaan Dhaqdhaqaaqa &rarr;</Link>
           </div>
 
           {/* Summary Cards Section - Matching Reports Design */}

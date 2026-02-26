@@ -301,7 +301,7 @@ export async function POST(request: Request) {
                     rentalFee: category === 'Equipment Rental' ? rentalFee ? Number(rentalFee) : undefined : undefined,
                     supplierName: category === 'Equipment Rental' ? supplierName : undefined,
                     bankAccountId: category === 'Equipment Rental' ? bankAccountId : undefined,
-                    materialDate,
+                    materialDate: materialDate ? new Date(materialDate) : undefined,
                     invoiceNumber, // NEW: Invoice Number
                     paymentStatus: finalPaymentStatus, // UPDATED: Use fallback
                     paymentDate: finalPaymentDate ? new Date(finalPaymentDate as any) : undefined, // NEW: Include payment date

@@ -187,8 +187,8 @@ export default function FactoryDetailsPage() {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`flex items-center gap-2 whitespace-nowrap py-3 px-3 text-sm font-semibold transition-colors duration-200 ${activeTab === tab
-                    ? 'border-b-2 border-primary text-primary'
-                    : 'border-b-2 border-transparent text-mediumGray hover:text-darkGray'
+                  ? 'border-b-2 border-primary text-primary'
+                  : 'border-b-2 border-transparent text-mediumGray hover:text-darkGray'
                   }`}
               >
                 {tab}

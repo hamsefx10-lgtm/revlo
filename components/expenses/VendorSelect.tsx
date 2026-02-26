@@ -15,9 +15,10 @@ interface VendorSelectProps {
     onChange: (value: string) => void;
     onVendorCreated?: (newVendor: Vendor) => void;
     error?: string;
+    vendorType?: 'project' | 'company'; // NEW: which vendor list to use
 }
 
-export function VendorSelect({ value, onChange, onVendorCreated, error }: VendorSelectProps) {
+export function VendorSelect({ value, onChange, onVendorCreated, error, vendorType = 'company' }: VendorSelectProps) {
     const [open, setOpen] = useState(false);
     const [vendors, setVendors] = useState<Vendor[]>([]);
     const [loading, setLoading] = useState(false);
@@ -47,7 +48,8 @@ export function VendorSelect({ value, onChange, onVendorCreated, error }: Vendor
     const fetchVendors = async () => {
         setLoading(true);
         try {
-            const res = await fetch('/api/vendors');
+            const apiUrl = vendorType === 'project' ? '/api/projects/vendors' : '/api/projects/vendors';
+            const res = await fetch(apiUrl);
             if (res.ok) {
                 const data = await res.json();
                 setVendors(data.vendors || []);
@@ -63,7 +65,8 @@ export function VendorSelect({ value, onChange, onVendorCreated, error }: Vendor
         if (!newVendorName.trim()) return;
         setCreatingLoader(true);
         try {
-            const res = await fetch('/api/vendors', {
+            const apiUrl = vendorType === 'project' ? '/api/projects/vendors' : '/api/projects/vendors';
+            const res = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name: newVendorName, type: 'Material' }),
@@ -71,10 +74,11 @@ export function VendorSelect({ value, onChange, onVendorCreated, error }: Vendor
 
             if (res.ok) {
                 const data = await res.json();
-                if (data.vendor) {
-                    setVendors(prev => [...prev, data.vendor]);
-                    onChange(data.vendor.id);
-                    if (onVendorCreated) onVendorCreated(data.vendor);
+                const newVendor = data.vendor;
+                if (newVendor) {
+                    setVendors(prev => [...prev, newVendor]);
+                    onChange(newVendor.id);
+                    if (onVendorCreated) onVendorCreated(newVendor);
                     setIsCreating(false);
                     setNewVendorName('');
                     setOpen(false);

@@ -889,7 +889,7 @@ const CustomerDetailsPage: React.FC = () => {
                   <FileX2 className="mx-auto text-gray-400 dark:text-gray-500" size={48} />
                   <p className="text-gray-700 dark:text-gray-200 mt-2">Ma jiraan dhaqdhaqaaq lacag ah oo la xiriira macmiilkan.</p>
                   <Link
-                    href="/accounting/transactions/add"
+                    href="/projects/accounting/transactions/add"
                     className="mt-4 inline-flex items-center gap-2 bg-primary text-white py-2 px-4 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
                   >
                     <Plus size={18} />

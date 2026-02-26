@@ -78,7 +78,7 @@ const EmployeeDetailsPage: React.FC = () => {
   // Fetch salary summary for this employee (define only once, at the top)
   const fetchSalarySummary = async () => {
     try {
-      const response = await fetch('/api/employees/salary-summary');
+      const response = await fetch('/api/projects/employees/salary-summary');
       if (!response.ok) throw new Error('Failed to fetch salary summary');
       const data = await response.json();
       if (data.summary) {
@@ -225,7 +225,7 @@ const EmployeeDetailsPage: React.FC = () => {
         if (!response.ok) throw new Error(data.message || 'Failed to delete employee');
 
         setToastMessage({ message: data.message || 'Shaqaalaha si guul leh ayaa loo tirtiray!', type: 'success' });
-        router.push('/employees'); // Redirect to employees list after successful delete
+        router.push('/projects/employees'); // Redirect to employees list after successful delete
       } catch (error: any) {
         console.error('Error deleting employee:', error);
         setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka shaqaalaha la tirtirayay.', type: 'error' });
@@ -515,7 +515,7 @@ const EmployeeDetailsPage: React.FC = () => {
         <div className="text-center p-8 text-redError bg-white dark:bg-gray-800 rounded-xl shadow-md">
           <InfoIcon size={32} className="inline-block mb-4 text-redError" />
           <p className="text-xl font-bold">Shaqaalaha ID "{id}" lama helin.</p>
-          <Link href="/employees" className="mt-4 inline-block text-primary hover:underline">Ku Noqo Shaqaalaha &rarr;</Link>
+          <Link href="/projects/employees" className="mt-4 inline-block text-primary hover:underline">Ku Noqo Shaqaalaha &rarr;</Link>
         </div>
         {toastMessage && (
           <Toast message={toastMessage.message} type={toastMessage.type} onClose={() => setToastMessage(null)} />
@@ -611,7 +611,7 @@ const EmployeeDetailsPage: React.FC = () => {
         {/* Mobile Header - Enhanced */}
         <div className="block md:hidden mb-6">
           <div className="flex items-center justify-between mb-4">
-            <Link href="/employees" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200">
+            <Link href="/projects/employees" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200">
               <ArrowLeft size={24} className="inline-block" />
             </Link>
             <button
@@ -660,7 +660,7 @@ const EmployeeDetailsPage: React.FC = () => {
         {/* Desktop Header */}
         <div className="hidden md:flex justify-between items-center mb-8">
           <div className="flex items-center space-x-4">
-            <Link href="/employees" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200">
+            <Link href="/projects/employees" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200">
               <ArrowLeft size={28} className="inline-block" />
             </Link>
             <div>

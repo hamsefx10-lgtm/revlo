@@ -147,7 +147,7 @@ const ProjectDetailsPage: React.FC = () => {
 
   // --- RENDER LOGIC ---
   if (loading) return <Layout><div className="flex items-center justify-center min-h-screen"><Loader2 className="animate-spin text-primary" size={48} /></div></Layout>;
-  if (!project) return <Layout><div className="text-center p-8 mt-10 max-w-lg mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg"><AlertTriangle size={48} className="text-redError mx-auto" /><h2 className="text-2xl font-bold mt-4">Mashruucaan Lama Helin</h2><p className="text-mediumGray dark:text-gray-400 mt-2">Lama helin mashruuca ID-giisu yahay "{id}".</p><Link href="/projects" className="mt-6 inline-flex items-center gap-2 bg-primary text-white py-2 px-4 rounded-lg font-semibold"><ArrowLeft size={18} /> Ku noqo Liiska Mashaariicda</Link></div>{toastMessage && <Toast message={toastMessage.message} type={toastMessage.type} onClose={() => setToastMessage(null)} />}</Layout>;
+  if (!project) return <Layout><div className="text-center p-8 mt-10 max-w-lg mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg"><AlertTriangle size={48} className="text-redError mx-auto" /><h2 className="text-2xl font-bold mt-4">Mashruucaan Lama Helin</h2><p className="text-mediumGray dark:text-gray-400 mt-2">Lama helin mashruuca ID-giisu yahay "{id}".</p><Link href="/projects/main" className="mt-6 inline-flex items-center gap-2 bg-primary text-white py-2 px-4 rounded-lg font-semibold"><ArrowLeft size={18} /> Ku noqo Liiska Mashaariicda</Link></div>{toastMessage && <Toast message={toastMessage.message} type={toastMessage.type} onClose={() => setToastMessage(null)} />}</Layout>;
 
   // Always calculate remainingAmount from agreementAmount - advancePaid, always use numbers
   const totalValue = typeof project.agreementAmount === 'number' ? project.agreementAmount : parseFloat(project.agreementAmount as any) || 0;
@@ -228,12 +228,12 @@ const ProjectDetailsPage: React.FC = () => {
       {/* [NEW DESIGN] Header with small, iconic buttons */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div className="flex-1 min-w-0">
-          <Link href="/projects" className="inline-flex items-center gap-2 text-primary hover:underline font-semibold mb-2 text-sm"><ArrowLeft size={18} /> Ku noqo Mashaariicda</Link>
+          <Link href="/projects/main" className="inline-flex items-center gap-2 text-primary hover:underline font-semibold mb-2 text-sm"><ArrowLeft size={18} /> Ku noqo Mashaariicda</Link>
           <h1 className="text-2xl md:text-3xl font-bold text-darkGray dark:text-gray-100 truncate" title={project.name}>{project.name}</h1>
         </div>
         <div className="flex items-center space-x-2 self-start sm:self-center">
           <Link href={`/expenses/add?projectId=${project.id}`} title="Ku Dar Kharash" className="p-2 rounded-lg bg-lightGray/80 hover:bg-lightGray dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"><Plus className="text-primary" size={20} /></Link>
-          <Link href={`/projects/edit/${project.id}`} title="Beddel Mashruuc" className="p-2 rounded-lg bg-lightGray/80 hover:bg-lightGray dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"><Edit className="text-accent" size={20} /></Link>
+          <Link href={`/projects/main/edit/${project.id}`} title="Beddel Mashruuc" className="p-2 rounded-lg bg-lightGray/80 hover:bg-lightGray dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"><Edit className="text-accent" size={20} /></Link>
           <button onClick={handleDeleteProject} title="Tirtir Mashruuca" className="p-2 rounded-lg bg-lightGray/80 hover:bg-lightGray dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors"><Trash2 className="text-redError" size={20} /></button>
         </div>
       </div>

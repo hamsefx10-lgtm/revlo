@@ -59,7 +59,7 @@ export function EmployeeSelect({
         setLoading(true);
         try {
             console.log('[EmployeeSelect] Fetching employees from API...');
-            const res = await fetch('/api/employees');
+            const res = await fetch('/api/projects/employees');
             console.log('[EmployeeSelect] API response status:', res.status);
 
             if (res.ok) {

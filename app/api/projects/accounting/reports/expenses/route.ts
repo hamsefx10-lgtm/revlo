@@ -1,10 +1,10 @@
-// app/api/accounting/reports/expenses/route.ts - Expenses Report API Route
+// app/api/projects/accounting/reports/expenses/route.ts - Expenses Report API Route
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db'; // Import Prisma Client
 import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 
-// GET /api/accounting/reports/expenses - Soo deji xogta warbixinta kharashyada
+// GET /api/projects/accounting/reports/expenses - Soo deji xogta warbixinta kharashyada
 export async function GET(request: Request) {
   try {
     // Mustaqbalka, halkan waxaad ku dari doontaa authentication iyo authorization
@@ -35,8 +35,8 @@ export async function GET(request: Request) {
         // companyId: companyId // Mustaqbalka, ku dar filter-kan
       },
       include: {
-          project: { select: { name: true } },
-          user: { select: { fullName: true } },
+        project: { select: { name: true } },
+        user: { select: { fullName: true } },
       },
       orderBy: {
         expenseDate: 'desc',
@@ -75,16 +75,16 @@ export async function GET(request: Request) {
     const averageExpense = expenses.length > 0 ? totalExpensesAmount / expenses.length : 0;
 
     const sortedMonthlyExpenses = Object.values(monthlyExpensesTrend).sort((a, b) => {
-        const [monthA, yearA] = a.month.split(' ');
-        const [monthB, yearB] = b.month.split(' ');
-        const dateA = new Date(`1 ${monthA} 20${yearA}`);
-        const dateB = new Date(`1 ${monthB} 20${yearB}`);
-        return dateA.getTime() - dateB.getTime();
+      const [monthA, yearA] = a.month.split(' ');
+      const [monthB, yearB] = b.month.split(' ');
+      const dateA = new Date(`1 ${monthA} 20${yearA}`);
+      const dateB = new Date(`1 ${monthB} 20${yearB}`);
+      return dateA.getTime() - dateB.getTime();
     });
 
     const categoryBreakdownData = Object.keys(expenseCategoryBreakdown).map((key: string) => ({
-        name: key,
-        value: expenseCategoryBreakdown[key],
+      name: key,
+      value: expenseCategoryBreakdown[key],
     }));
 
 
@@ -97,8 +97,8 @@ export async function GET(request: Request) {
         expenseCategoryBreakdown: categoryBreakdownData,
         monthlyExpensesTrend: sortedMonthlyExpenses,
         expenses: expenses.map((exp: any) => ({ // Return original expenses with converted amount
-            ...exp,
-            amount: (typeof exp.amount === 'object' && 'toNumber' in exp.amount) ? exp.amount.toNumber() : Number(exp.amount),
+          ...exp,
+          amount: (typeof exp.amount === 'object' && 'toNumber' in exp.amount) ? exp.amount.toNumber() : Number(exp.amount),
         })),
       },
       { status: 200 }

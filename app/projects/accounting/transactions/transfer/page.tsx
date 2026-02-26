@@ -44,7 +44,7 @@ function TransferPageContent() {
     const fetchAccounts = async () => {
       setPageLoading(true);
       try {
-        const response = await fetch('/api/accounting/accounts');
+        const response = await fetch('/api/projects/accounting/accounts');
         if (!response.ok) throw new Error('Failed to fetch accounts');
         const data = await response.json();
         setAccounts(data.accounts || []);
@@ -96,7 +96,7 @@ function TransferPageContent() {
 
     setLoading(true);
     try {
-      const response = await fetch('/api/accounting/transactions/transfer', {
+      const response = await fetch('/api/projects/accounting/transactions/transfer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -130,7 +130,7 @@ function TransferPageContent() {
 
       // Redirect after 1.5 seconds
       setTimeout(() => {
-        router.push('/accounting/transactions');
+        router.push('/projects/accounting/transactions');
       }, 1500);
     } catch (error: any) {
       console.error('Transfer API error:', error);
@@ -154,7 +154,7 @@ function TransferPageContent() {
     <Layout>
       <div className="flex justify-between items-center mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-darkGray dark:text-gray-100">
-          <Link href="/accounting/transactions" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-3 sm:mr-4">
+          <Link href="/projects/accounting/transactions" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-3 sm:mr-4">
             <ArrowLeft size={24} className="inline-block sm:w-7 sm:h-7" />
           </Link>
           Wareejin: Account to Account
@@ -398,7 +398,7 @@ function TransferPageContent() {
           {/* Submit Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
             <Link
-              href="/accounting/transactions"
+              href="/projects/accounting/transactions"
               className="flex-1 sm:flex-initial px-6 py-3 bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 rounded-lg font-semibold hover:bg-mediumGray dark:hover:bg-gray-600 transition-colors duration-200 text-center"
             >
               Jooji

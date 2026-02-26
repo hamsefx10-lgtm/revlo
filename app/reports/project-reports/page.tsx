@@ -405,7 +405,7 @@ function ProjectReportsContent() {
       setError('');
       try {
         const { startDate, endDate } = getDateRange(dateFilter);
-        const url = `/api/accounting/reports/projects?${startDate ? `startDate=${startDate}&` : ''}${endDate ? `endDate=${endDate}` : ''}`;
+        const url = `/api/projects/accounting/reports/projects?${startDate ? `startDate=${startDate}&` : ''}${endDate ? `endDate=${endDate}` : ''}`;
 
         const res = await fetch(url, {
           cache: 'no-cache',

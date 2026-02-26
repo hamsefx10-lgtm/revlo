@@ -170,11 +170,11 @@ export default function ReportsOverviewPage() {
       setLoading(true);
       setError(null);
       try {
-        const projectReportsUrl = `/api/accounting/reports/projects?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`;
+        const projectReportsUrl = `/api/projects/accounting/reports/projects?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`;
         const [statsRes, perfRes, dailyRes, projectRes] = await Promise.all([
-          fetch('/api/accounting/reports/overview'),
-          fetch('/api/accounting/reports/project-performance'),
-          fetch('/api/accounting/reports/daily'),
+          fetch('/api/projects/accounting/reports/overview'),
+          fetch('/api/projects/accounting/reports/project-performance'),
+          fetch('/api/projects/accounting/reports/daily'),
           fetch(projectReportsUrl),
         ]);
         if (!statsRes.ok) throw new Error('Failed to fetch overview stats');
@@ -229,7 +229,7 @@ export default function ReportsOverviewPage() {
         <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center md:space-y-0">
           {/* Title Section */}
           <div className="flex items-center">
-            <Link href="/dashboard" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-3 md:mr-4">
+            <Link href="/projects/main" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-3 md:mr-4">
               <ArrowLeft size={24} className="md:w-7 md:h-7" />
             </Link>
             <h1 className="text-2xl md:text-4xl font-bold text-darkGray dark:text-gray-100">
@@ -706,7 +706,7 @@ export default function ReportsOverviewPage() {
           <ArrowRight size={20} className="md:w-6 md:h-6 text-mediumGray dark:text-gray-400 group-hover:translate-x-2 transition-transform duration-200" />
         </Link>
 
-        <Link href="/reports/debts" className="bg-white dark:bg-gray-800 p-4 md:p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6 group">
+        <Link href="/projects/accounting" className="bg-white dark:bg-gray-800 p-4 md:p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6 group">
           <div className="bg-redError/10 text-redError p-3 md:p-4 rounded-full group-hover:bg-redError group-hover:text-white transition-colors duration-200">
             <Scale size={32} className="md:w-10 md:h-10" />
           </div>
@@ -772,18 +772,20 @@ export default function ReportsOverviewPage() {
           <ArrowRight size={20} className="md:w-6 md:h-6 text-mediumGray dark:text-gray-400 group-hover:translate-x-2 transition-transform duration-200" />
         </Link>
 
-        {planType !== 'FACTORIES_ONLY' && (
-          <Link href="/reports/project-reports" className="bg-indigo-50 dark:bg-indigo-900/20 p-4 md:p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6 group border border-indigo-200 dark:border-indigo-800">
-            <div className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 p-3 md:p-4 rounded-full group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-200">
-              <Briefcase size={32} className="md:w-10 md:h-10" />
-            </div>
-            <div className="text-center md:text-left flex-1">
-              <h3 className="text-lg md:text-2xl font-bold text-darkGray dark:text-gray-100 mb-2">Project Reports</h3>
-              <p className="text-sm md:text-base text-mediumGray dark:text-gray-400">Warbixin mashaariicda oo faahfaahsan, filter-ka taariikhda, PDF/print.</p>
-            </div>
-            <ArrowRight size={20} className="md:w-6 md:h-6 text-mediumGray dark:text-gray-400 group-hover:translate-x-2 transition-transform duration-200" />
-          </Link>
-        )}
+        {
+          planType !== 'FACTORIES_ONLY' && (
+            <Link href="/reports/project-reports" className="bg-indigo-50 dark:bg-indigo-900/20 p-4 md:p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6 group border border-indigo-200 dark:border-indigo-800">
+              <div className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 p-3 md:p-4 rounded-full group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-200">
+                <Briefcase size={32} className="md:w-10 md:h-10" />
+              </div>
+              <div className="text-center md:text-left flex-1">
+                <h3 className="text-lg md:text-2xl font-bold text-darkGray dark:text-gray-100 mb-2">Project Reports</h3>
+                <p className="text-sm md:text-base text-mediumGray dark:text-gray-400">Warbixin mashaariicda oo faahfaahsan, filter-ka taariikhda, PDF/print.</p>
+              </div>
+              <ArrowRight size={20} className="md:w-6 md:h-6 text-mediumGray dark:text-gray-400 group-hover:translate-x-2 transition-transform duration-200" />
+            </Link>
+          )
+        }
 
         {/* NEW: Company Report Card */}
         <Link href="/reports/company-report" className="bg-emerald-50 dark:bg-emerald-900/20 p-4 md:p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6 group border border-emerald-200 dark:border-emerald-800">
@@ -796,10 +798,10 @@ export default function ReportsOverviewPage() {
           </div>
           <ArrowRight size={20} className="md:w-6 md:h-6 text-mediumGray dark:text-gray-400 group-hover:translate-x-2 transition-transform duration-200" />
         </Link>
-      </div>
+      </div >
 
       {/* Mobile-Optimized Export/Share Buttons */}
-      <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md mb-6 md:mb-8 animate-fade-in-up">
+      < div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md mb-6 md:mb-8 animate-fade-in-up" >
         <h3 className="text-lg md:text-xl font-semibold text-darkGray dark:text-gray-100 mb-4 flex items-center space-x-2">
           <Download size={20} className="md:w-6 md:h-6 text-primary" />
           <span className="text-sm md:text-base">Soo Deji & Wadaag</span>
@@ -841,8 +843,8 @@ export default function ReportsOverviewPage() {
             <span className="sm:hidden">Telegram</span>
           </button>
         </div>
-      </div>
+      </div >
 
-    </Layout>
+    </Layout >
   );
 }

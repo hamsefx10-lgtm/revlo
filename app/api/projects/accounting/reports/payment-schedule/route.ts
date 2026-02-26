@@ -1,10 +1,10 @@
-// app/api/accounting/reports/payment-schedule/route.ts - Payment Schedule Report API Route
+// app/api/projects/accounting/reports/payment-schedule/route.ts - Payment Schedule Report API Route
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db'; // Import Prisma Client
 import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 
-// GET /api/accounting/reports/payment-schedule - Soo deji xogta warbixinta deynaha iyo lacagaha la sugayo
+// GET /api/projects/accounting/reports/payment-schedule - Soo deji xogta warbixinta deynaha iyo lacagaha la sugayo
 export async function GET(request: Request) {
   try {
     // Mustaqbalka, halkan waxaad ku dari doontaa authentication iyo authorization

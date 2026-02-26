@@ -354,8 +354,8 @@ export default function EditExpensePage() {
       try {
         const [projectsRes, accountsRes, employeesRes, customersRes, vendorsRes, companyLaborsRes] = await Promise.all([
           fetch('/api/projects'),
-          fetch('/api/accounting/accounts'),
-          fetch('/api/employees'),
+          fetch('/api/projects/accounting/accounts'),
+          fetch('/api/projects/employees'),
           fetch('/api/projects/customers'),
           fetch('/api/projects/vendors'),
           fetch('/api/projects/expenses/company-labors')

@@ -66,13 +66,13 @@ export default function EditTransactionPage({ params }: { params: { id: string }
                     employeesRes,
                     debtsRes
                 ] = await Promise.all([
-                    fetch(`/api/accounting/transactions/${id}`),
-                    fetch('/api/accounting/accounts'),
+                    fetch(`/api/projects/accounting/transactions/${id}`),
+                    fetch('/api/projects/accounting/accounts'),
                     fetch('/api/projects'),
-                    fetch('/api/customers'),
-                    fetch('/api/vendors'),
-                    fetch('/api/employees'),
-                    fetch('/api/reports/debts'),
+                    fetch('/api/projects/customers'),
+                    fetch('/api/projects/vendors'),
+                    fetch('/api/projects/employees'),
+                    fetch('/api/projects/accounting/reports/debts'),
                 ]);
 
                 if (!transactionRes.ok) throw new Error('Failed to fetch transaction details');
@@ -174,7 +174,7 @@ export default function EditTransactionPage({ params }: { params: { id: string }
         };
 
         try {
-            const response = await fetch(`/api/accounting/transactions/${id}`, {
+            const response = await fetch(`/api/projects/accounting/transactions/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(transactionData),
@@ -198,7 +198,7 @@ export default function EditTransactionPage({ params }: { params: { id: string }
 
             // Short delay then redirect
             setTimeout(() => {
-                router.push('/accounting/transactions');
+                router.push('/projects/accounting/transactions');
             }, 1500);
 
         } catch (error: any) {
@@ -223,7 +223,7 @@ export default function EditTransactionPage({ params }: { params: { id: string }
         <Layout>
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">
-                    <Link href="/accounting/transactions" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
+                    <Link href="/projects/accounting/transactions" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
                         <ArrowLeft size={28} className="inline-block" />
                     </Link>
                     Wax Ka Beddel Dhaqdhaqaaqa

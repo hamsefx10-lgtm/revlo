@@ -55,26 +55,24 @@ const UserRow = ({
       </td>
       <td className="p-4 whitespace-nowrap">
         <span
-          className={`px-2 py-1 rounded-full text-xs font-semibold ${
-            user.role === USER_ROLES.ADMIN
+          className={`px-2 py-1 rounded-full text-xs font-semibold ${user.role === USER_ROLES.ADMIN
               ? 'bg-redError/10 text-redError'
               : user.role === USER_ROLES.MANAGER
-              ? 'bg-accent/10 text-accent'
-              : user.role === USER_ROLES.MEMBER
-              ? 'bg-primary/10 text-primary'
-              : 'bg-mediumGray/10 text-mediumGray'
-          }`}
+                ? 'bg-accent/10 text-accent'
+                : user.role === USER_ROLES.MEMBER
+                  ? 'bg-primary/10 text-primary'
+                  : 'bg-mediumGray/10 text-mediumGray'
+            }`}
         >
           {user.role}
         </span>
       </td>
       <td className="p-4 whitespace-nowrap">
         <span
-          className={`px-2 py-1 rounded-full text-xs font-semibold ${
-            user.status === 'Active'
+          className={`px-2 py-1 rounded-full text-xs font-semibold ${user.status === 'Active'
               ? 'bg-secondary/10 text-secondary'
               : 'bg-mediumGray/10 text-mediumGray'
-          }`}
+            }`}
         >
           {user.status}
         </span>
@@ -86,36 +84,36 @@ const UserRow = ({
       </td>
       <td className="p-4 whitespace-nowrap text-right">
         <div className="flex items-center justify-end space-x-2">
-        <button
-          onClick={() => onEdit(user.id)}
-          className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200"
-          title="Edit User"
-          disabled={!canEdit}
-        >
-          <Edit size={18} />
-        </button>
-        <button
-          onClick={() => onDelete(user.id)}
-          className="p-2 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-colors duration-200"
-          title="Delete User"
-          disabled={!canDelete}
-        >
-          <Trash2 size={18} />
-        </button>
-        <button
-          onClick={() => onChangeStatus(
-            user.id,
-            user.status === 'Active' ? 'Inactive' : 'Active'
-          )}
-          className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200"
-          title="Toggle Status"
-          disabled={!canChangeStatus}
-        >
-          {user.status === 'Active' ? <UserX size={18} /> : <UserCheck size={18} />}
-        </button>
+          <button
+            onClick={() => onEdit(user.id)}
+            className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200"
+            title="Edit User"
+            disabled={!canEdit}
+          >
+            <Edit size={18} />
+          </button>
+          <button
+            onClick={() => onDelete(user.id)}
+            className="p-2 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-colors duration-200"
+            title="Delete User"
+            disabled={!canDelete}
+          >
+            <Trash2 size={18} />
+          </button>
+          <button
+            onClick={() => onChangeStatus(
+              user.id,
+              user.status === 'Active' ? 'Inactive' : 'Active'
+            )}
+            className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200"
+            title="Toggle Status"
+            disabled={!canChangeStatus}
+          >
+            {user.status === 'Active' ? <UserX size={18} /> : <UserCheck size={18} />}
+          </button>
         </div>
       </td>
-                title="Add new user"
+      title="Add new user"
     </tr>
   );
 };
@@ -195,7 +193,15 @@ const UserForm = ({
     setLoading(false);
   };
 
-  const roles = [USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.MEMBER, USER_ROLES.VIEWER];
+  const roles = [
+    USER_ROLES.ADMIN,
+    USER_ROLES.MANAGER,
+    USER_ROLES.MEMBER,
+    USER_ROLES.VIEWER,
+    'PROJECTS_ADMIN',
+    'SHOP_ADMIN',
+    'MANUFACTURING_ADMIN',
+  ];
   const statuses = ['Active', 'Inactive'];
 
   // Dummy Permissions based on Role (Advanced Feature Placeholder)
@@ -245,9 +251,8 @@ const UserForm = ({
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
           placeholder="Tusaale: Axmed Cali"
-          className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${
-            errors.fullName ? 'border-redError' : 'border-lightGray dark:border-gray-700'
-          }`}
+          className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.fullName ? 'border-redError' : 'border-lightGray dark:border-gray-700'
+            }`}
         />
         {errors.fullName && (
           <p className="text-redError text-sm mt-1 flex items-center">
@@ -266,9 +271,8 @@ const UserForm = ({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="tusaale@ganacsi.com"
-          className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${
-            errors.email ? 'border-redError' : 'border-lightGray dark:border-gray-700'
-          }`}
+          className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.email ? 'border-redError' : 'border-lightGray dark:border-gray-700'
+            }`}
         />
         {errors.email && (
           <p className="text-redError text-sm mt-1 flex items-center">
@@ -291,9 +295,8 @@ const UserForm = ({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="********"
-                className={`w-full p-3 pr-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${
-                  errors.password ? 'border-redError' : 'border-lightGray dark:border-gray-700'
-                }`}
+                className={`w-full p-3 pr-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.password ? 'border-redError' : 'border-lightGray dark:border-gray-700'
+                  }`}
               />
               <button
                 type="button"
@@ -322,9 +325,8 @@ const UserForm = ({
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="********"
-                className={`w-full p-3 pr-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${
-                  errors.confirmPassword ? 'border-redError' : 'border-lightGray dark:border-gray-700'
-                }`}
+                className={`w-full p-3 pr-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.confirmPassword ? 'border-redError' : 'border-lightGray dark:border-gray-700'
+                  }`}
               />
               <button
                 type="button"
@@ -361,9 +363,8 @@ const UserForm = ({
             id="userRole"
             value={role}
             onChange={(e) => setRole(e.target.value)}
-            className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary appearance-none ${
-              errors.role ? 'border-redError' : 'border-lightGray dark:border-gray-700'
-            }`}
+            className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary appearance-none ${errors.role ? 'border-redError' : 'border-lightGray dark:border-gray-700'
+              }`}
             disabled={!canEditRole}
           >
             <option value="">-- Dooro Door --</option>
@@ -388,9 +389,8 @@ const UserForm = ({
             id="userStatus"
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary appearance-none ${
-              errors.status ? 'border-redError' : 'border-lightGray dark:border-gray-700'
-            }`}
+            className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary appearance-none ${errors.status ? 'border-redError' : 'border-lightGray dark:border-gray-700'
+              }`}
             disabled={!canEditStatus}
           >
             {statuses.map((statusOpt) => (
@@ -628,7 +628,7 @@ export default function UserManagementSettingsPage() {
 
   const filteredUsers = users.filter((user) => {
     // Step 3: Only show users with allowed roles for this company
-    const allowedRoles = [USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.MEMBER, USER_ROLES.VIEWER];
+    const allowedRoles = [USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.MEMBER, USER_ROLES.VIEWER, 'PROJECTS_ADMIN', 'SHOP_ADMIN', 'MANUFACTURING_ADMIN'];
     const matchesSearch =
       user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -639,7 +639,7 @@ export default function UserManagementSettingsPage() {
     return matchesSearch && matchesRole && matchesStatus && matchesCompany && allowed;
   });
 
-  const roles = ['All', USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.MEMBER, USER_ROLES.VIEWER];
+  const roles = ['All', USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.MEMBER, USER_ROLES.VIEWER, 'PROJECTS_ADMIN', 'SHOP_ADMIN', 'MANUFACTURING_ADMIN'];
   const statuses = ['All', 'Active', 'Inactive'];
 
   if (pageLoading) {

@@ -4,9 +4,9 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Layout from '@/components/layouts/Layout';
-import { 
-  ArrowLeft, Banknote, Plus, Search, Filter, Calendar, List, LayoutGrid, 
-  DollarSign, CreditCard, Landmark, CheckCircle, XCircle, ChevronRight, 
+import {
+  ArrowLeft, Banknote, Plus, Search, Filter, Calendar, List, LayoutGrid,
+  DollarSign, CreditCard, Landmark, CheckCircle, XCircle, ChevronRight,
   TrendingUp, TrendingDown, Eye, Edit, Trash2, Send, Upload, Download,
   RefreshCw, MessageSquare // For refresh and other icons
 } from 'lucide-react';
@@ -56,10 +56,10 @@ const aggregateMonthlyCashFlow = (transactions: Transaction[]) => {
 const TransactionRow: React.FC<{ transaction: Transaction }> = ({ transaction }) => {
   const isIncome = transaction.amount >= 0;
   const amountColorClass = isIncome ? 'text-secondary' : 'text-redError';
-  const typeBadgeClass = 
+  const typeBadgeClass =
     transaction.type === 'INCOME' || transaction.type === 'TRANSFER_IN' ? 'bg-secondary/10 text-secondary' :
-    transaction.type === 'EXPENSE' || transaction.type === 'TRANSFER_OUT' || transaction.type === 'DEBT_REPAID' ? 'bg-redError/10 text-redError' :
-    'bg-primary/10 text-primary';
+      transaction.type === 'EXPENSE' || transaction.type === 'TRANSFER_OUT' || transaction.type === 'DEBT_REPAID' ? 'bg-redError/10 text-redError' :
+        'bg-primary/10 text-primary';
 
   return (
     <tr className="hover:bg-lightGray dark:hover:bg-gray-700 transition-colors duration-150 border-b border-lightGray dark:border-gray-700 last:border-b-0">
@@ -98,14 +98,14 @@ export default function BankCashFlowReportPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/accounting/reports/bank');
+      const res = await fetch('/api/projects/accounting/reports/bank');
       if (!res.ok) throw new Error('Failed to fetch bank & cash flow data');
       const data = await res.json();
-      
+
       // Handle the correct data structure from API
       const accountsData = data.accounts || [];
       const transactionsData = data.transactions || [];
-      
+
       // Ensure accounts have the required structure
       const formattedAccounts = accountsData.map((acc: any) => ({
         id: acc.id || '',
@@ -114,7 +114,7 @@ export default function BankCashFlowReportPage() {
         balance: typeof acc.balance === 'number' ? acc.balance : 0,
         currency: acc.currency || 'USD'
       }));
-      
+
       // Ensure transactions have the required structure
       const formattedTransactions = transactionsData.map((trx: any) => ({
         id: trx.id || '',
@@ -124,7 +124,7 @@ export default function BankCashFlowReportPage() {
         type: trx.type || 'UNKNOWN',
         account: trx.account?.name || trx.account || 'Unknown Account'
       }));
-      
+
       setAccounts(formattedAccounts);
       setTransactions(formattedTransactions);
       setToastMessage({ message: 'Warbixinta si guul leh ayaa la soo geliyay!', type: 'success' });
@@ -158,9 +158,9 @@ export default function BankCashFlowReportPage() {
 
   // Chart data with safe handling
   const monthlyCashFlowData = transactions.length > 0 ? aggregateMonthlyCashFlow(filteredTransactions) : [];
-  const accountDistributionData = accounts.length > 0 ? accounts.map(acc => ({ 
-    name: acc.name || 'Unknown Account', 
-    value: acc.balance || 0 
+  const accountDistributionData = accounts.length > 0 ? accounts.map(acc => ({
+    name: acc.name || 'Unknown Account',
+    value: acc.balance || 0
   })).filter(item => item.value > 0) : [];
 
   const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }: any) => {
@@ -202,14 +202,14 @@ export default function BankCashFlowReportPage() {
           Bank & Cash Flow
         </h1>
         <div className="flex space-x-3">
-          <button 
-            onClick={() => window.print()} 
+          <button
+            onClick={() => window.print()}
             className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center"
             title="Print Report"
           >
             <Download size={20} className="mr-2" /> Soo Deji PDF
           </button>
-          <button 
+          <button
             onClick={() => {
               const csvData = transactions.map(trx => ({
                 Date: new Date(trx.date).toLocaleDateString(),
@@ -218,7 +218,7 @@ export default function BankCashFlowReportPage() {
                 Amount: trx.amount,
                 Account: trx.account
               }));
-              const csvContent = "data:text/csv;charset=utf-8," + 
+              const csvContent = "data:text/csv;charset=utf-8," +
                 "Date,Description,Type,Amount,Account\n" +
                 csvData.map(row => Object.values(row).join(",")).join("\n");
               const encodedUri = encodeURI(csvContent);
@@ -234,13 +234,13 @@ export default function BankCashFlowReportPage() {
           >
             <Upload size={20} className="mr-2" /> Dhoofi CSV
           </button>
-            <button 
-              onClick={fetchBankReport}
-              className="bg-accent text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-orange-600 transition duration-200 shadow-md flex items-center"
-              title="Refresh Data"
-            >
-              <RefreshCw size={20} className="mr-2" /> Cusboonaysii
-            </button>
+          <button
+            onClick={fetchBankReport}
+            className="bg-accent text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-orange-600 transition duration-200 shadow-md flex items-center"
+            title="Refresh Data"
+          >
+            <RefreshCw size={20} className="mr-2" /> Cusboonaysii
+          </button>
         </div>
       </div>
 
@@ -272,7 +272,7 @@ export default function BankCashFlowReportPage() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" className="dark:stroke-gray-700" vertical={false} />
                   <XAxis dataKey="month" stroke="#7F8C8D" className="dark:text-gray-400 text-sm" />
                   <YAxis stroke="#7F8C8D" className="dark:text-gray-400 text-sm" />
-                  <Tooltip 
+                  <Tooltip
                     contentStyle={{ backgroundColor: 'white', border: '1px solid #ddd', borderRadius: '8px' }}
                     labelStyle={{ color: '#2C3E50', fontWeight: 'bold' }}
                     itemStyle={{ color: '#2C3E50' }}
@@ -314,7 +314,7 @@ export default function BankCashFlowReportPage() {
                       <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip 
+                  <Tooltip
                     contentStyle={{ backgroundColor: 'white', border: '1px solid #ddd', borderRadius: '8px' }}
                     labelStyle={{ color: '#2C3E50', fontWeight: 'bold' }}
                     itemStyle={{ color: '#2C3E50' }}
@@ -340,10 +340,10 @@ export default function BankCashFlowReportPage() {
           <h3 className="text-xl font-semibold text-darkGray dark:text-gray-100">Diiwaanka Dhaqdhaqaaqa Lacagta</h3>
           <div className="flex space-x-3">
             <button className="bg-lightGray dark:bg-gray-700 text-mediumGray dark:text-gray-100 py-2 px-4 rounded-lg font-semibold flex items-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200 shadow-sm">
-              <Upload size={18} className="mr-2"/> Dhoofi CSV
+              <Upload size={18} className="mr-2" /> Dhoofi CSV
             </button>
             <button className="bg-lightGray dark:bg-gray-700 text-mediumGray dark:text-gray-100 py-2 px-4 rounded-lg font-semibold flex items-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200 shadow-sm">
-              <Download size={18} className="mr-2"/> Soo Deji PDF
+              <Download size={18} className="mr-2" /> Soo Deji PDF
             </button>
           </div>
         </div>
@@ -352,7 +352,7 @@ export default function BankCashFlowReportPage() {
         <div className="p-6 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 border-b border-lightGray dark:border-gray-700">
           <div className="relative w-full md:flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
-            <input type="text" placeholder="Search transactions..." className="w-full p-3 pl-10 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200"/>
+            <input type="text" placeholder="Search transactions..." className="w-full p-3 pl-10 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200" />
           </div>
           <div className="relative w-full md:w-48">
             <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
@@ -408,17 +408,15 @@ export default function BankCashFlowReportPage() {
                     <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100">{new Date(trx.date).toLocaleDateString()}</td>
                     <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">{trx.description}</td>
                     <td className="p-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        trx.type === 'INCOME' || trx.type === 'TRANSFER_IN' ? 'bg-secondary/10 text-secondary' :
-                        trx.type === 'EXPENSE' || trx.type === 'TRANSFER_OUT' || trx.type === 'DEBT_REPAID' ? 'bg-redError/10 text-redError' :
-                        'bg-primary/10 text-primary'
-                      }`}>
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${trx.type === 'INCOME' || trx.type === 'TRANSFER_IN' ? 'bg-secondary/10 text-secondary' :
+                          trx.type === 'EXPENSE' || trx.type === 'TRANSFER_OUT' || trx.type === 'DEBT_REPAID' ? 'bg-redError/10 text-redError' :
+                            'bg-primary/10 text-primary'
+                        }`}>
                         {trx.type}
                       </span>
                     </td>
-                    <td className={`p-4 whitespace-nowrap font-semibold ${
-                      trx.amount >= 0 ? 'text-secondary' : 'text-redError'
-                    }`}>
+                    <td className={`p-4 whitespace-nowrap font-semibold ${trx.amount >= 0 ? 'text-secondary' : 'text-redError'
+                      }`}>
                       {trx.amount >= 0 ? '+' : '-'}${Math.abs(trx.amount).toLocaleString()}
                     </td>
                     <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">{trx.account}</td>
@@ -439,9 +437,9 @@ export default function BankCashFlowReportPage() {
         </div>
         {/* Pagination Placeholder */}
         <div className="p-4 flex justify-between items-center border-t border-lightGray dark:border-gray-700">
-            <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Hore</button>
-            <span className="text-sm text-darkGray dark:text-gray-100">Bogga 1 ee {Math.ceil(filteredTransactions.length / 10) || 1}</span>
-            <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Xiga</button>
+          <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Hore</button>
+          <span className="text-sm text-darkGray dark:text-gray-100">Bogga 1 ee {Math.ceil(filteredTransactions.length / 10) || 1}</span>
+          <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Xiga</button>
         </div>
       </div>
 

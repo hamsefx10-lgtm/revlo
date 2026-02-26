@@ -4,8 +4,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Layout from '@/components/layouts/Layout';
-import { 
-  ArrowLeft, Banknote, Plus, Search, Filter, Edit, Trash2, X, Loader2, Info, 
+import {
+  ArrowLeft, Banknote, Plus, Search, Filter, Edit, Trash2, X, Loader2, Info,
   CreditCard, Landmark, DollarSign, CheckCircle, XCircle, ChevronRight, // MUHIIM: ChevronRight lagu daray!
   FileText, Download, Upload, Eye
 } from 'lucide-react';
@@ -27,8 +27,8 @@ type Account = {
 const BankAccountRow: React.FC<{ account: Account; onEdit: (id: string) => void; onDelete: (id: string) => void }> = ({ account, onEdit, onDelete }) => (
   <tr className="hover:bg-lightGray dark:hover:bg-gray-700 transition-colors duration-150 border-b border-lightGray dark:border-gray-700 last:border-b-0">
     <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-medium flex items-center space-x-2">
-        {account.type === 'BANK' ? <Landmark size={18} className="text-primary"/> : account.type === 'MOBILE_MONEY' ? <CreditCard size={18} className="text-secondary"/> : <DollarSign size={18} className="text-accent"/>}
-        <span>{account.name}</span>
+      {account.type === 'BANK' ? <Landmark size={18} className="text-primary" /> : account.type === 'MOBILE_MONEY' ? <CreditCard size={18} className="text-secondary" /> : <DollarSign size={18} className="text-accent" />}
+      <span>{account.name}</span>
     </td>
     <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">{account.type}</td>
     <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-semibold">${account.balance.toLocaleString()} {account.currency}</td>
@@ -42,7 +42,7 @@ const BankAccountRow: React.FC<{ account: Account; onEdit: (id: string) => void;
           <Trash2 size={18} />
         </button>
         <Link href={`/accounting?filterAccount=${encodeURIComponent(account.name)}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View Transactions">
-            <Eye size={18} />
+          <Eye size={18} />
         </Link>
       </div>
     </td>
@@ -115,8 +115,8 @@ const AccountForm: React.FC<AccountFormProps> = ({ onSubmit, onCancel, editingAc
     <form onSubmit={handleSubmit} className="space-y-4 mt-4">
       <div>
         <label htmlFor="accountName" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Magaca Account-ka <span className="text-redError">*</span></label>
-        <input type="text" id="accountName" value={name} onChange={(e) => setName(e.target.value)} placeholder="Tusaale: CBE Main Account" className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.name ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}/>
-        {errors.name && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.name}</p>}
+        <input type="text" id="accountName" value={name} onChange={(e) => setName(e.target.value)} placeholder="Tusaale: CBE Main Account" className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.name ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} />
+        {errors.name && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.name}</p>}
       </div>
       <div>
         <label htmlFor="accountType" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Nooca Account-ka <span className="text-redError">*</span></label>
@@ -124,25 +124,25 @@ const AccountForm: React.FC<AccountFormProps> = ({ onSubmit, onCancel, editingAc
           <option value="">-- Dooro Nooca --</option>
           {accountTypes.map(typeOpt => <option key={typeOpt} value={typeOpt}>{typeOpt}</option>)}
         </select>
-        {errors.type && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.type}</p>}
+        {errors.type && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.type}</p>}
       </div>
       <div>
         <label htmlFor="accountBalance" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Hada Ku Jira ($) <span className="text-redError">*</span></label>
-        <input type="number" id="accountBalance" value={balance} onChange={(e) => setBalance(parseFloat(e.target.value) || '')} placeholder="Tusaale: 10000.00" className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.balance ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}/>
-        {errors.balance && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.balance}</p>}
+        <input type="number" id="accountBalance" value={balance} onChange={(e) => setBalance(parseFloat(e.target.value) || '')} placeholder="Tusaale: 10000.00" className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.balance ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} />
+        {errors.balance && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.balance}</p>}
       </div>
       <div>
         <label htmlFor="accountCurrency" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Lacagta <span className="text-redError">*</span></label>
         <select id="accountCurrency" value={currency} onChange={(e) => setCurrency(e.target.value)} className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary appearance-none ${errors.currency ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}>
           {currencies.map(curr => <option key={curr} value={curr}>{curr}</option>)}
         </select>
-        {errors.currency && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.currency}</p>}
+        {errors.currency && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.currency}</p>}
       </div>
-      {apiError && <div className="text-redError text-sm flex items-center"><Info size={16} className="mr-1"/>{apiError}</div>}
+      {apiError && <div className="text-redError text-sm flex items-center"><Info size={16} className="mr-1" />{apiError}</div>}
       <div className="flex justify-end space-x-3 mt-6">
         <button type="button" onClick={onCancel} className="bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 py-2 px-4 rounded-lg font-bold hover:bg-gray-200 dark:hover:bg-gray-600 transition">Jooji</button>
         <button type="submit" className="bg-primary text-white py-2 px-4 rounded-lg font-bold hover:bg-blue-700 flex items-center justify-center" disabled={loading}>
-          {loading ? <Loader2 className="animate-spin mr-2" size={20} /> : <Plus size={20} className="mr-2"/>} {editingAccount ? 'Cusboonaysii Account' : 'Ku Dar Account'}
+          {loading ? <Loader2 className="animate-spin mr-2" size={20} /> : <Plus size={20} className="mr-2" />} {editingAccount ? 'Cusboonaysii Account' : 'Ku Dar Account'}
         </button>
       </div>
     </form>
@@ -166,7 +166,7 @@ export default function BankAccountsSettingsPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/accounting/accounts');
+      const res = await fetch('/api/projects/accounting/accounts');
       if (!res.ok) throw new Error((await res.json()).message || 'Cilad ayaa dhacday.');
       const data = await res.json();
       setAccounts(data.accounts || []);
@@ -211,7 +211,7 @@ export default function BankAccountsSettingsPage() {
   // --- CRUD Handlers ---
   const handleAddAccount = async (newAccountData: any) => {
     try {
-      const res = await fetch('/api/accounting/accounts', {
+      const res = await fetch('/api/projects/accounting/accounts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newAccountData),
@@ -229,7 +229,7 @@ export default function BankAccountsSettingsPage() {
 
   const handleEditAccount = async (updatedAccountData: any) => {
     try {
-      const res = await fetch(`/api/accounting/accounts/${updatedAccountData.id}`, {
+      const res = await fetch(`/api/projects/accounting/accounts/${updatedAccountData.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedAccountData),
@@ -249,7 +249,7 @@ export default function BankAccountsSettingsPage() {
   const handleDeleteAccount = async (id: string) => {
     if (!window.confirm('Ma hubtaa inaad doonayso inaad tirtirto account-kan?')) return;
     try {
-      const res = await fetch(`/api/accounting/accounts/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/projects/accounting/accounts/${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Cilad ayaa dhacday.');
       setToastMessage({ message: data.message || 'Account-ka si guul leh ayaa loo tirtiray!', type: 'success' });
@@ -349,11 +349,11 @@ export default function BankAccountsSettingsPage() {
             <tbody className="divide-y divide-lightGray dark:divide-gray-700">
               {filteredAccounts.length > 0 ? (
                 filteredAccounts.map(account => (
-                  <BankAccountRow 
-                    key={account.id} 
-                    account={account} 
-                    onEdit={openEditModal} 
-                    onDelete={handleDeleteAccount} 
+                  <BankAccountRow
+                    key={account.id}
+                    account={account}
+                    onEdit={openEditModal}
+                    onDelete={handleDeleteAccount}
                   />
                 ))
               ) : (
@@ -366,18 +366,18 @@ export default function BankAccountsSettingsPage() {
         </div>
         {/* Pagination Placeholder */}
         <div className="p-4 flex justify-between items-center border-t border-lightGray dark:border-gray-700">
-            <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Hore</button>
-            <span className="text-sm text-darkGray dark:text-gray-100">Bogga 1 ee {Math.ceil(filteredAccounts.length / 10) || 1}</span>
-            <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Xiga</button>
+          <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Hore</button>
+          <span className="text-sm text-darkGray dark:text-gray-100">Bogga 1 ee {Math.ceil(filteredAccounts.length / 10) || 1}</span>
+          <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Xiga</button>
         </div>
       </div>
 
       {/* Add/Edit Account Modal */}
       {showAddEditModal && (
         <Modal title={editingAccount ? "Cusboonaysii Account" : "Ku Dar Account Cusub"} onClose={() => { setShowAddEditModal(false); setEditingAccount(null); }}>
-          <AccountForm 
-            onSubmit={editingAccount ? handleEditAccount : handleAddAccount} 
-            onCancel={() => { setShowAddEditModal(false); setEditingAccount(null); }} 
+          <AccountForm
+            onSubmit={editingAccount ? handleEditAccount : handleAddAccount}
+            onCancel={() => { setShowAddEditModal(false); setEditingAccount(null); }}
             editingAccount={editingAccount}
           />
         </Modal>

@@ -49,7 +49,7 @@ export default function AddVendorPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/vendors', {
+      const response = await fetch('/api/manufacturing/vendors', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -63,7 +63,7 @@ export default function AddVendorPage() {
           type: 'success'
         });
         setTimeout(() => {
-          router.push('/vendors');
+          router.push('/manufacturing/vendors');
         }, 1500);
       } else {
         const errorData = await response.json();

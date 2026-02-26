@@ -29,7 +29,7 @@ export default function FinancialSummaryPage() {
     const fetchSummary = async () => {
         setLoading(true);
         try {
-            const res = await fetch('/api/accounting/reports/financial-summary');
+            const res = await fetch('/api/projects/accounting/reports/financial-summary');
             if (res.ok) {
                 const result = await res.json();
                 setData(result);

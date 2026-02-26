@@ -299,10 +299,10 @@ function AddExpenseContent() {
     fetch('/api/projects')
       .then(res => res.json())
       .then(data => setProjects(data.projects || []));
-    fetch('/api/accounting/accounts')
+    fetch('/api/projects/accounting/accounts')
       .then(res => res.json())
       .then(data => setAccounts(data.accounts || []));
-    fetch('/api/employees')
+    fetch('/api/projects/employees')
       .then(res => res.json())
       .then(data => setEmployees(data.employees || []));
     // Fetch all customers for Debt
@@ -1481,6 +1481,7 @@ function AddExpenseContent() {
                 setTotalAmount={(val) => setAmount(val)}
                 setReceiptImage={setReceiptImage}
                 errors={validationErrors}
+                vendorType={expenseType}
               />
 
               {/* Note field */}
@@ -1817,7 +1818,7 @@ function AddExpenseContent() {
                       onChange={(value) => setSelectedEmployeeForSalary(value)}
                       onEmployeeCreated={(newEmployee) => {
                         // Refresh employees list
-                        fetch('/api/employees')
+                        fetch('/api/projects/employees')
                           .then(res => res.json())
                           .then(data => setEmployees(data.employees || []))
                           .catch(err => console.error('Error refreshing employees:', err));
@@ -2140,7 +2141,7 @@ function AddExpenseContent() {
                       onChange={(value) => setSelectedEmployeeForSalary(value)}
                       onEmployeeCreated={(newEmployee) => {
                         // Refresh employees list
-                        fetch('/api/employees')
+                        fetch('/api/projects/employees')
                           .then(res => res.json())
                           .then(data => setEmployees(data.employees || []))
                           .catch(err => console.error('Error refreshing employees:', err));
@@ -2252,7 +2253,7 @@ function AddExpenseContent() {
                       onChange={(value) => setSelectedEmployeeForSalary(value)}
                       onEmployeeCreated={(newEmployee) => {
                         // Refresh employees list
-                        fetch('/api/employees')
+                        fetch('/api/projects/employees')
                           .then(res => res.json())
                           .then(data => setEmployees(data.employees || []))
                           .catch(err => console.error('Error refreshing employees:', err));

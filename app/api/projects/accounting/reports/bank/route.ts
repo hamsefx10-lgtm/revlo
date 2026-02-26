@@ -1,11 +1,11 @@
-// app/api/accounting/reports/bank/route.ts - Bank & Cash Flow Report API Route
+// app/api/projects/accounting/reports/bank/route.ts - Bank & Cash Flow Report API Route
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db'; // Import Prisma Client
 import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 import { getSessionCompanyUser } from '@/lib/auth';
 
-// GET /api/accounting/reports/bank - Soo deji xogta warbixinta bangiga iyo dhaqdhaqaaqa lacagta
+// GET /api/projects/accounting/reports/bank - Soo deji xogta warbixinta bangiga iyo dhaqdhaqaaqa lacagta
 export async function GET(request: Request) {
   try {
     // Mustaqbalka, halkan waxaad ku dari doontaa authentication iyo authorization
@@ -47,7 +47,7 @@ export async function GET(request: Request) {
         companyId: companyId
       },
       include: {
-          account: { select: { name: true } },
+        account: { select: { name: true } },
       },
       orderBy: {
         transactionDate: 'desc',
@@ -88,12 +88,12 @@ export async function GET(request: Request) {
         monthlyCashFlow: monthlyCashFlowData,
         accountDistribution: accountDistributionData,
         transactions: transactions.map((trx: any) => ({ // Return original transactions with converted Decimal to Number
-            ...trx,
-            amount: trx.amount.toNumber(),
+          ...trx,
+          amount: trx.amount.toNumber(),
         })),
         accounts: accounts.map((acc: any) => ({ // Return original accounts with converted Decimal to Number
-            ...acc,
-            balance: acc.balance.toNumber(),
+          ...acc,
+          balance: acc.balance.toNumber(),
         })),
       },
       { status: 200 }

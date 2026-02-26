@@ -1,10 +1,10 @@
-// app/api/accounting/transactions/[id]/route.ts - Single Accounting Transaction Management API Route
+// app/api/projects/accounting/transactions/[id]/route.ts - Single Accounting Transaction Management API Route
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db'; // Import Prisma Client
 import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 
-// GET /api/accounting/transactions/[id] - Soo deji dhaqdhaqaaq gaar ah
+// GET /api/projects/accounting/transactions/[id] - Soo deji dhaqdhaqaaq gaar ah
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
@@ -50,7 +50,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-// PUT /api/accounting/transactions/[id] - Cusboonaysii dhaqdhaqaaq gaar ah
+// PUT /api/projects/accounting/transactions/[id] - Cusboonaysii dhaqdhaqaaq gaar ah
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
@@ -181,7 +181,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-// DELETE /api/accounting/transactions/[id] - Tirtir dhaqdhaqaaq gaar ah
+// DELETE /api/projects/accounting/transactions/[id] - Tirtir dhaqdhaqaaq gaar ah
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;

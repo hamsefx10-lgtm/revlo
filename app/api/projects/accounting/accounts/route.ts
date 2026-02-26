@@ -3,7 +3,7 @@ import prisma from '@/lib/db';
 import { Decimal } from '@prisma/client/runtime/library';
 import { getSessionCompanyUser } from '@/lib/auth';
 
-// GET /api/accounting/accounts - Soo deji dhammaan accounts-ka shirkadda user-ka
+// GET /api/projects/accounting/accounts - Soo deji dhammaan accounts-ka shirkadda user-ka
 export async function GET(request: Request) {
   try {
     const sessionData = await getSessionCompanyUser();
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
   }
 }
 
-// POST /api/accounting/accounts - Ku dar account cusub shirkadda user-ka
+// POST /api/projects/accounting/accounts - Ku dar account cusub shirkadda user-ka
 export async function POST(request: Request) {
   // ...existing code...
   try {
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     const { name, type, balance, currency } = body;
 
     // Get companyId from session (dynamic)
-  // REMOVED: session logic and duplicate companyId declaration
+    // REMOVED: session logic and duplicate companyId declaration
 
     // 1. Xaqiijinta Input-ka
     if (!name || !type || !currency) {

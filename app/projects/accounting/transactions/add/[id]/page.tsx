@@ -5,8 +5,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import Layout from '@/components/layouts/Layout';
-import { 
-  ArrowLeft, Plus, Search, Filter, Calendar, List, LayoutGrid, 
+import {
+  ArrowLeft, Plus, Search, Filter, Calendar, List, LayoutGrid,
   DollarSign, CreditCard, Banknote, RefreshCw, Eye, Edit, Trash2, MessageSquare,
   TrendingUp, TrendingDown, Info as InfoIcon, CheckCircle, XCircle, Clock as ClockIcon,
   User as UserIcon, Briefcase as BriefcaseIcon, Tag as TagIcon,
@@ -36,13 +36,13 @@ interface Transaction {
 export default function EditTransactionPage() {
   const router = useRouter();
   const { id } = useParams(); // Get transaction ID from URL
-  
+
   const [transactionType, setTransactionType] = useState('');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState<number | ''>('');
   const [transactionDate, setTransactionDate] = useState(new Date().toISOString().split('T')[0]);
   const [note, setNote] = useState('');
-  
+
   // Account fields
   const [selectedAccount, setSelectedAccount] = useState(''); // Primary account
   const [fromAccount, setFromAccount] = useState(''); // For transfers
@@ -78,11 +78,11 @@ export default function EditTransactionPage() {
     const fetchInitialData = async () => {
       try {
         const [accountsRes, projectsRes, customersRes, vendorsRes, employeesRes] = await Promise.all([
-          fetch('/api/accounting/accounts'),
+          fetch('/api/projects/accounting/accounts'),
           fetch('/api/projects'),
-          fetch('/api/customers'),
-          fetch('/api/vendors'),
-          fetch('/api/employees'),
+          fetch('/api/projects/customers'),
+          fetch('/api/projects/vendors'),
+          fetch('/api/projects/employees'),
         ]);
         if (!accountsRes.ok) throw new Error('Accounts fetch failed');
         if (!projectsRes.ok) throw new Error('Projects fetch failed');
@@ -116,10 +116,10 @@ export default function EditTransactionPage() {
 
       setLoading(true);
       try {
-        const response = await fetch(`/api/accounting/transactions/${id}`);
+        const response = await fetch(`/api/projects/accounting/transactions/${id}`);
         if (!response.ok) throw new Error('Failed to fetch transaction details');
         const data = await response.json();
-        
+
         // Populate form fields with fetched data
         const trx = data.transaction;
         setDescription(trx.description);
@@ -142,18 +142,18 @@ export default function EditTransactionPage() {
 
         // Set debt-specific fields
         if (trx.type === 'DEBT_TAKEN') {
-            // This would require fetching debt details to get lenderName/loanDate
-            // For now, these are not directly stored on transaction, so they'd be derived or re-entered
-            setLenderName(''); // Placeholder
-            setLoanDate(''); // Placeholder
+          // This would require fetching debt details to get lenderName/loanDate
+          // For now, these are not directly stored on transaction, so they'd be derived or re-entered
+          setLenderName(''); // Placeholder
+          setLoanDate(''); // Placeholder
         } else if (trx.type === 'DEBT_REPAID') {
-            setSelectedDebtToRepay(trx.expenseId || ''); // Assuming expenseId links to debt for repayment
+          setSelectedDebtToRepay(trx.expenseId || ''); // Assuming expenseId links to debt for repayment
         }
 
       } catch (error: any) {
         console.error('Error fetching transaction details for edit:', error);
         setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka faahfaahinta dhaqdhaqaaqa la soo gelinayay.', type: 'error' });
-        router.push('/accounting/transactions'); 
+        router.push('/projects/accounting/transactions');
       } finally {
         setLoading(false);
       }
@@ -220,7 +220,7 @@ export default function EditTransactionPage() {
     };
 
     try {
-      const response = await fetch(`/api/accounting/transactions/${id}`, { // Use PUT method for update
+      const response = await fetch(`/api/projects/accounting/transactions/${id}`, { // Use PUT method for update
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(transactionData),
@@ -233,7 +233,7 @@ export default function EditTransactionPage() {
       }
 
       setToastMessage({ message: data.message || 'Dhaqdhaqaaqa lacagta si guul leh ayaa loo cusboonaysiiyay!', type: 'success' });
-      router.push(`/accounting/transactions/${id}`); // Redirect to transaction details page
+      router.push(`/projects/accounting/transactions/${id}`); // Redirect to transaction details page
     } catch (error: any) {
       console.error('Transaction Edit API error:', error);
       setToastMessage({ message: error.message || 'Cilad shabakadeed ayaa dhacday. Fadlan isku day mar kale.', type: 'error' });
@@ -256,7 +256,7 @@ export default function EditTransactionPage() {
     <Layout>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">
-          <Link href={`/accounting/transactions/${id}`} className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
+          <Link href={`/projects/accounting/transactions/${id}`} className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
             <ArrowLeft size={28} className="inline-block" />
           </Link>
           Edit Dhaqdhaqaaqa: {description}
@@ -296,7 +296,7 @@ export default function EditTransactionPage() {
                     className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.description ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                   />
                 </div>
-                {validationErrors.description && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1"/>{validationErrors.description}</p>}
+                {validationErrors.description && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.description}</p>}
               </div>
               <div>
                 <label htmlFor="amount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Qiimaha ($) <span className="text-redError">*</span></label>
@@ -311,7 +311,7 @@ export default function EditTransactionPage() {
                     className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.amount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                   />
                 </div>
-                {validationErrors.amount && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1"/>{validationErrors.amount}</p>}
+                {validationErrors.amount && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.amount}</p>}
               </div>
             </div>
           )}
@@ -333,49 +333,49 @@ export default function EditTransactionPage() {
                 </select>
                 <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
               </div>
-              {validationErrors.selectedAccount && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1"/>{validationErrors.selectedAccount}</p>}
+              {validationErrors.selectedAccount && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.selectedAccount}</p>}
             </div>
           )}
 
           {/* Transfer Accounts (Specific for TRANSFER_IN/OUT) */}
           {(transactionType === 'TRANSFER_IN' || transactionType === 'TRANSFER_OUT') && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border border-primary/20 rounded-lg bg-primary/5 animate-fade-in">
-                <h3 className="col-span-full text-lg font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Wareejinta</h3>
-                <div>
-                    <label htmlFor="fromAccount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Laga Wareejiyay <span className="text-redError">*</span></label>
-                    <div className="relative">
-                        <Banknote className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
-                        <select
-                            id="fromAccount"
-                            value={fromAccount}
-                            onChange={(e) => setFromAccount(e.target.value)}
-                            className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.fromAccount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                        >
-                            <option value="">-- Dooro Account --</option>
-                            {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
-                        </select>
-                        <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
-                    </div>
-                    {validationErrors.fromAccount && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1"/>{validationErrors.fromAccount}</p>}
+              <h3 className="col-span-full text-lg font-bold text-primary dark:text-blue-300 mb-2">Faahfaahinta Wareejinta</h3>
+              <div>
+                <label htmlFor="fromAccount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Laga Wareejiyay <span className="text-redError">*</span></label>
+                <div className="relative">
+                  <Banknote className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
+                  <select
+                    id="fromAccount"
+                    value={fromAccount}
+                    onChange={(e) => setFromAccount(e.target.value)}
+                    className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.fromAccount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                  >
+                    <option value="">-- Dooro Account --</option>
+                    {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
+                  </select>
+                  <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
                 </div>
-                <div>
-                    <label htmlFor="toAccount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Loo Wareejiyay <span className="text-redError">*</span></label>
-                    <div className="relative">
-                        <Banknote className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
-                        <select
-                            id="toAccount"
-                            value={toAccount}
-                            onChange={(e) => setToAccount(e.target.value)}
-                            className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.toAccount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                        >
-                            <option value="">-- Dooro Account --</option>
-                            {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
-                        </select>
-                        <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
-                    </div>
-                    {validationErrors.toAccount && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1"/>{validationErrors.toAccount}</p>}
+                {validationErrors.fromAccount && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.fromAccount}</p>}
+              </div>
+              <div>
+                <label htmlFor="toAccount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Loo Wareejiyay <span className="text-redError">*</span></label>
+                <div className="relative">
+                  <Banknote className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
+                  <select
+                    id="toAccount"
+                    value={toAccount}
+                    onChange={(e) => setToAccount(e.target.value)}
+                    className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.toAccount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                  >
+                    <option value="">-- Dooro Account --</option>
+                    {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
+                  </select>
+                  <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
                 </div>
-                {validationErrors.transferAccounts && <p className="text-redError text-sm mt-1 col-span-full flex items-center"><InfoIcon size={16} className="mr-1"/>{validationErrors.transferAccounts}</p>}
+                {validationErrors.toAccount && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.toAccount}</p>}
+              </div>
+              {validationErrors.transferAccounts && <p className="text-redError text-sm mt-1 col-span-full flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.transferAccounts}</p>}
             </div>
           )}
 
@@ -396,7 +396,7 @@ export default function EditTransactionPage() {
                     className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.lenderName ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                   />
                 </div>
-                {validationErrors.lenderName && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1"/>{validationErrors.lenderName}</p>}
+                {validationErrors.lenderName && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.lenderName}</p>}
               </div>
               <div>
                 <label htmlFor="loanDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Deynta <span className="text-redError">*</span></label>
@@ -410,7 +410,7 @@ export default function EditTransactionPage() {
                     className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.loanDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                   />
                 </div>
-                {validationErrors.loanDate && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1"/>{validationErrors.loanDate}</p>}
+                {validationErrors.loanDate && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.loanDate}</p>}
               </div>
             </div>
           )}
@@ -434,7 +434,7 @@ export default function EditTransactionPage() {
                   </select>
                   <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
                 </div>
-                {validationErrors.selectedDebtToRepay && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1"/>{validationErrors.selectedDebtToRepay}</p>}
+                {validationErrors.selectedDebtToRepay && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.selectedDebtToRepay}</p>}
               </div>
             </div>
           )}
@@ -453,7 +453,7 @@ export default function EditTransactionPage() {
                   className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.transactionDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 />
               </div>
-              {validationErrors.transactionDate && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1"/>{validationErrors.transactionDate}</p>}
+              {validationErrors.transactionDate && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.transactionDate}</p>}
             </div>
             <div>
               <label htmlFor="note" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Fiiro Gaar Ah (Optional)</label>

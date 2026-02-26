@@ -26,7 +26,7 @@ export default function BankbookReportPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch('/api/accounting/reports/bankbook');
+        const res = await fetch('/api/projects/accounting/reports/bankbook');
         if (!res.ok) throw new Error('Failed to fetch bankbook data');
         const data = await res.json();
         setEntries(data.entries || data);

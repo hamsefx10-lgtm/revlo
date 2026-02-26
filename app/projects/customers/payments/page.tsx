@@ -3,8 +3,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Layout from '@/components/layouts/Layout';
-import { 
-  Plus, Search, Eye, Edit, Trash2, DollarSign, User, Calendar, 
+import {
+  Plus, Search, Eye, Edit, Trash2, DollarSign, User, Calendar,
   CheckCircle, Clock, AlertTriangle, Building, Briefcase
 } from 'lucide-react';
 import Toast from '@/components/common/Toast';
@@ -81,7 +81,7 @@ export default function CustomerPaymentsPage() {
 
   const fetchCustomers = async () => {
     try {
-      const res = await fetch('/api/customers');
+      const res = await fetch('/api/projects/customers');
       if (res.ok) {
         const data = await res.json();
         setCustomers(data.customers || []);
@@ -93,7 +93,7 @@ export default function CustomerPaymentsPage() {
 
   const fetchAccounts = async () => {
     try {
-      const res = await fetch('/api/accounting/accounts');
+      const res = await fetch('/api/projects/accounting/accounts');
       if (res.ok) {
         const data = await res.json();
         setAccounts(data.accounts || []);
@@ -105,7 +105,7 @@ export default function CustomerPaymentsPage() {
 
   const fetchProjectsForCustomer = async () => {
     if (!selectedCustomer) return;
-    
+
     try {
       const res = await fetch(`/api/projects?customerId=${selectedCustomer}`);
       if (res.ok) {
@@ -119,7 +119,7 @@ export default function CustomerPaymentsPage() {
 
   const fetchCustomerPayments = async () => {
     if (!selectedCustomer) return;
-    
+
     setLoading(true);
     try {
       const url = `/api/customers/payments?customerId=${selectedCustomer}${selectedProject ? `&projectId=${selectedProject}` : ''}`;
@@ -138,21 +138,21 @@ export default function CustomerPaymentsPage() {
 
   const handlePaymentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!paymentForm.customerId || !paymentForm.amount || !paymentForm.accountId) {
       setToastMessage({ message: 'Fadlan buuxi dhammaan beeraha waajibka ah.', type: 'error' });
       return;
     }
 
     try {
-      const res = await fetch('/api/customers/payments', {
+      const res = await fetch('/api/projects/customers/payments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(paymentForm)
       });
 
       const data = await res.json();
-      
+
       if (res.ok) {
         setToastMessage({ message: data.message, type: 'success' });
         setShowPaymentForm(false);
@@ -166,7 +166,7 @@ export default function CustomerPaymentsPage() {
           paymentDate: new Date().toISOString().split('T')[0]
         });
         fetchCustomerPayments();
-        
+
         // Notify customer pages about payment creation for real-time updates
         if (paymentForm.customerId) {
           localStorage.setItem('transactionCreated', JSON.stringify({
@@ -304,7 +304,7 @@ export default function CustomerPaymentsPage() {
               ))}
             </select>
           </div>
-          
+
           {selectedCustomer && (
             <div>
               <label className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-2">
@@ -341,7 +341,7 @@ export default function CustomerPaymentsPage() {
               <AlertTriangle className="text-redError" size={24} />
             </div>
           </div>
-          
+
           <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border-l-4 border-secondary">
             <div className="flex items-center justify-between">
               <div>
@@ -353,7 +353,7 @@ export default function CustomerPaymentsPage() {
               <CheckCircle className="text-secondary" size={24} />
             </div>
           </div>
-          
+
           <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border-l-4 border-primary">
             <div className="flex items-center justify-between">
               <div>
@@ -377,7 +377,7 @@ export default function CustomerPaymentsPage() {
               {selectedProjectData && ` - ${selectedProjectData.name}`}
             </h3>
           </div>
-          
+
           {loading ? (
             <div className="p-8 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
@@ -475,7 +475,7 @@ export default function CustomerPaymentsPage() {
               <h3 className="text-xl font-semibold text-darkGray dark:text-gray-100 mb-4">
                 Ku Dar Lacag Cusub
               </h3>
-              
+
               <form onSubmit={handlePaymentSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-darkGray dark:text-gray-300 mb-2">
@@ -483,7 +483,7 @@ export default function CustomerPaymentsPage() {
                   </label>
                   <select
                     value={paymentForm.customerId}
-                    onChange={(e) => setPaymentForm({...paymentForm, customerId: e.target.value})}
+                    onChange={(e) => setPaymentForm({ ...paymentForm, customerId: e.target.value })}
                     required
                     className="w-full p-3 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
                   >
@@ -502,7 +502,7 @@ export default function CustomerPaymentsPage() {
                   </label>
                   <select
                     value={paymentForm.projectId}
-                    onChange={(e) => setPaymentForm({...paymentForm, projectId: e.target.value})}
+                    onChange={(e) => setPaymentForm({ ...paymentForm, projectId: e.target.value })}
                     className="w-full p-3 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="">Dooro mashruuc...</option>
@@ -522,7 +522,7 @@ export default function CustomerPaymentsPage() {
                     type="number"
                     step="0.01"
                     value={paymentForm.amount}
-                    onChange={(e) => setPaymentForm({...paymentForm, amount: e.target.value})}
+                    onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })}
                     required
                     className="w-full p-3 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
                     placeholder="0.00"
@@ -535,7 +535,7 @@ export default function CustomerPaymentsPage() {
                   </label>
                   <select
                     value={paymentForm.accountId}
-                    onChange={(e) => setPaymentForm({...paymentForm, accountId: e.target.value})}
+                    onChange={(e) => setPaymentForm({ ...paymentForm, accountId: e.target.value })}
                     required
                     className="w-full p-3 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
                   >
@@ -555,7 +555,7 @@ export default function CustomerPaymentsPage() {
                   <input
                     type="date"
                     value={paymentForm.paymentDate}
-                    onChange={(e) => setPaymentForm({...paymentForm, paymentDate: e.target.value})}
+                    onChange={(e) => setPaymentForm({ ...paymentForm, paymentDate: e.target.value })}
                     className="w-full p-3 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
@@ -566,7 +566,7 @@ export default function CustomerPaymentsPage() {
                   </label>
                   <textarea
                     value={paymentForm.notes}
-                    onChange={(e) => setPaymentForm({...paymentForm, notes: e.target.value})}
+                    onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })}
                     rows={3}
                     className="w-full p-3 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
                     placeholder="Qoraal dheeraad ah..."
@@ -596,10 +596,10 @@ export default function CustomerPaymentsPage() {
 
       {/* Toast Notification */}
       {toastMessage && (
-        <Toast 
-          message={toastMessage.message} 
-          type={toastMessage.type} 
-          onClose={() => setToastMessage(null)} 
+        <Toast
+          message={toastMessage.message}
+          type={toastMessage.type}
+          onClose={() => setToastMessage(null)}
         />
       )}
     </Layout>

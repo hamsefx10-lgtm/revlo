@@ -61,13 +61,13 @@ export default function BulkImportExpensesPage() {
     }
 
     // Fetch customers for Debt expenses
-    fetch('/api/customers')
+    fetch('/api/projects/customers')
       .then(res => res.json())
       .then(data => setCustomers(data.customers || []))
       .catch(err => console.error('Error fetching customers:', err));
 
     // Fetch accounts for PaidFrom dropdown
-    fetch('/api/accounts')
+    fetch('/api/projects/accounting/accounts')
       .then(res => res.json())
       .then(data => setAccounts(data.accounts || []))
       .catch(err => console.error('Error fetching accounts:', err));
@@ -400,14 +400,14 @@ export default function BulkImportExpensesPage() {
       // Smart date parsing - handles Excel date formats
       const parseDate = (dateValue: string): string => {
         if (!dateValue || dateValue.trim() === '') return '';
-        
+
         const trimmed = dateValue.trim();
-        
+
         // If already in YYYY-MM-DD format, return as is
         if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
           return trimmed;
         }
-        
+
         // Handle Excel serial date numbers (days since 1900-01-01)
         if (/^\d+\.?\d*$/.test(trimmed) && !trimmed.includes('/') && !trimmed.includes('-')) {
           const excelSerial = parseFloat(trimmed);
@@ -420,7 +420,7 @@ export default function BulkImportExpensesPage() {
             return jsDate.toISOString().split('T')[0];
           }
         }
-        
+
         // Handle various date formats
         // MM/DD/YYYY or DD/MM/YYYY
         if (trimmed.includes('/')) {
@@ -449,7 +449,7 @@ export default function BulkImportExpensesPage() {
             }
           }
         }
-        
+
         // Handle DD-MM-YYYY or YYYY-MM-DD
         if (trimmed.includes('-')) {
           const parts = trimmed.split('-');
@@ -467,13 +467,13 @@ export default function BulkImportExpensesPage() {
             }
           }
         }
-        
+
         // Try parsing as standard date string
         const parsedDate = new Date(trimmed);
         if (!isNaN(parsedDate.getTime())) {
           return parsedDate.toISOString().split('T')[0];
         }
-        
+
         // Return original if can't parse
         return trimmed;
       };
@@ -506,7 +506,7 @@ export default function BulkImportExpensesPage() {
           if (header === 'PaidFrom') {
             value = normalizePaidFrom(value);
           }
-          
+
           // Parse dates from Excel format
           if (header === 'ExpenseDate' || header === 'LoanDate' || header === 'MaterialDate') {
             value = parseDate(value);
@@ -852,7 +852,7 @@ export default function BulkImportExpensesPage() {
             <h2 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-6">
               Dib u eeg Kharashyada ({parsedData.length} kharash)
             </h2>
-            
+
             {/* Category Info Box - Helpful for cashiers */}
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
               <div className="flex items-start">
@@ -863,7 +863,7 @@ export default function BulkImportExpensesPage() {
                     {subCategory === 'Material' && 'Fadlan hubi in Name, Quantity, Price, iyo Unit ay sax yihiin.'}
                     {subCategory === 'Labor' && 'Fadlan hubi in EmployeeName, Wage, iyo WorkDescription ay sax yihiin.'}
                     {subCategory === 'Debt' && 'Fadlan hubi in Description, Amount, LenderName, iyo LoanDate ay sax yihiin.'}
-                    {(subCategory === 'Transport' || subCategory === 'Rental' || subCategory === 'Consultancy' || subCategory === 'Fuel' || subCategory === 'Other') && 
+                    {(subCategory === 'Transport' || subCategory === 'Rental' || subCategory === 'Consultancy' || subCategory === 'Fuel' || subCategory === 'Other') &&
                       'Fadlan hubi in Description, Amount, iyo ExpenseDate ay sax yihiin.'}
                   </p>
                 </div>
@@ -898,14 +898,14 @@ export default function BulkImportExpensesPage() {
                   <tr>
                     {Object.keys(parsedData[0] || {}).map((key) => {
                       // Determine if field is required
-                      const isRequired = 
+                      const isRequired =
                         (subCategory === 'Material' && ['Name', 'Quantity', 'Price', 'Unit'].includes(key)) ||
                         ((subCategory === 'Labor' || subCategory === 'Company Labor') && ['EmployeeName', 'Wage', 'WorkDescription'].includes(key)) ||
                         (subCategory === 'Debt' && ['Description', 'Amount', 'LenderName', 'LoanDate'].includes(key)) ||
-                        ((subCategory === 'Transport' || subCategory === 'Rental' || subCategory === 'Consultancy' || subCategory === 'Fuel' || subCategory === 'Other') && 
-                         ['Description', 'Amount', 'ExpenseDate'].includes(key)) ||
+                        ((subCategory === 'Transport' || subCategory === 'Rental' || subCategory === 'Consultancy' || subCategory === 'Fuel' || subCategory === 'Other') &&
+                          ['Description', 'Amount', 'ExpenseDate'].includes(key)) ||
                         key === 'PaidFrom';
-                      
+
                       return (
                         <th key={key} className="px-4 py-3 text-left text-sm font-semibold text-darkGray dark:text-gray-100">
                           {key} {isRequired && <span className="text-redError">*</span>}

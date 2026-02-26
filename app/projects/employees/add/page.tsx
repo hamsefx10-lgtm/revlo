@@ -112,7 +112,7 @@ export default function AddEmployeePage() {
     if (employeeType === 'Company') {
       // API call for adding a new company employee
       try {
-        const response = await fetch('/api/employees', {
+        const response = await fetch('/api/projects/employees', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -151,7 +151,7 @@ export default function AddEmployeePage() {
 
         // Redirect after a short delay to show success message
         setTimeout(() => {
-          router.push('/employees');
+          router.push('/projects/employees');
         }, 1500);
       } catch (error: any) {
         setToastMessage({ message: error.message || 'Cilad shabakadeed ayaa dhacday. Fadlan isku day mar kale.', type: 'error' });
@@ -164,7 +164,7 @@ export default function AddEmployeePage() {
     // Submit for project employee
     if (employeeType === 'Project') {
       try {
-        const response = await fetch('/api/employees', {
+        const response = await fetch('/api/projects/employees', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -203,7 +203,7 @@ export default function AddEmployeePage() {
 
         // Redirect after a short delay to show success message
         setTimeout(() => {
-          router.push('/employees');
+          router.push('/projects/employees');
         }, 1500);
       } catch (error: any) {
         setToastMessage({ message: error.message || 'Cilad shabakadeed ayaa dhacday. Fadlan isku day mar kale.', type: 'error' });
@@ -218,7 +218,7 @@ export default function AddEmployeePage() {
     <Layout>
       {/* Mobile Header */}
       <div className="block md:hidden mb-6">
-        <Link href="/employees" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 inline-block mb-4">
+        <Link href="/projects/employees" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 inline-block mb-4">
           <ArrowLeft size={24} />
         </Link>
         <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border-l-4 border-primary">
@@ -229,7 +229,7 @@ export default function AddEmployeePage() {
       {/* Desktop Header */}
       <div className="hidden md:block mb-8">
         <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">
-          <Link href="/employees" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
+          <Link href="/projects/employees" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
             <ArrowLeft size={28} className="inline-block" />
           </Link>
           Ku Dar Shaqaale Cusub

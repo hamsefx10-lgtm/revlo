@@ -69,26 +69,27 @@ export default function AddTransactionPage() {
       setPageLoading(true);
       try {
         const [accountsRes, projectsRes, customersRes, vendorsRes, employeesRes, debtsRes] = await Promise.all([
-          fetch('/api/accounting/accounts'),
+          fetch('/api/projects/accounting/accounts'),
           fetch('/api/projects'),
-          fetch('/api/customers'),
-          fetch('/api/vendors'),
-          fetch('/api/employees'),
-          fetch('/api/reports/debts'),
+          fetch('/api/projects/customers'),
+          fetch('/api/projects/vendors'),
+          fetch('/api/projects/employees'),
+          fetch('/api/projects/accounting/reports/debts'),
         ]);
         if (!accountsRes.ok) throw new Error('Accounts fetch failed');
         if (!projectsRes.ok) throw new Error('Projects fetch failed');
         if (!customersRes.ok) throw new Error('Customers fetch failed');
         if (!vendorsRes.ok) throw new Error('Vendors fetch failed');
         if (!employeesRes.ok) throw new Error('Employees fetch failed');
-        if (!debtsRes.ok) throw new Error('Debts fetch failed');
+        // debts is optional — don't throw if it fails
 
-        const accountsData = await accountsRes.json();
-        const projectsData = await projectsRes.json();
-        const customersData = await customersRes.json();
-        const vendorsData = await vendorsRes.json();
-        const employeesData = await employeesRes.json();
-        const debtsData = await debtsRes.json();
+        const [accountsData, projectsData, customersData, vendorsData, employeesData] = await Promise.all([
+          accountsRes.json(),
+          projectsRes.json(),
+          customersRes.json(),
+          vendorsRes.json(),
+          employeesRes.json(),
+        ]);
 
         setAccounts(accountsData.accounts || []);
         setProjects(projectsData.projects || []);
@@ -96,6 +97,7 @@ export default function AddTransactionPage() {
         setVendors(vendorsData.vendors || []);
         setEmployees(employeesData.employees || []);
         // Combine debts (vendors/projects) and receivables (customers) for the dropdown
+        const debtsData = debtsRes.ok ? await debtsRes.json().catch(() => ({})) : {};
         const allDebts = [
           ...(debtsData.debts || []),
           ...(debtsData.receivables || [])
@@ -228,7 +230,7 @@ export default function AddTransactionPage() {
     }
 
     try {
-      const response = await fetch('/api/accounting/transactions', {
+      const response = await fetch('/api/projects/accounting/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(transactionData),
@@ -293,7 +295,7 @@ export default function AddTransactionPage() {
       setLenderName(''); setLoanDate(''); setSelectedDebtToRepay('');
       setValidationErrors({});
 
-      router.push('/accounting/transactions'); // Redirect to transactions list
+      router.push('/projects/accounting/transactions'); // Redirect to transactions list
     } catch (error: any) {
       console.error('Transaction Add API error:', error);
       setToastMessage({ message: error.message || 'Cilad shabakadeed ayaa dhacday. Fadlan isku day mar kale.', type: 'error' });
@@ -311,7 +313,7 @@ export default function AddTransactionPage() {
 
     setQuickAddLoading(true);
     try {
-      const response = await fetch('/api/customers', {
+      const response = await fetch('/api/projects/customers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -345,7 +347,7 @@ export default function AddTransactionPage() {
 
     setQuickAddVendorLoading(true);
     try {
-      const response = await fetch('/api/vendors', {
+      const response = await fetch('/api/projects/vendors', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -384,7 +386,7 @@ export default function AddTransactionPage() {
     <Layout>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">
-          <Link href="/accounting/transactions" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
+          <Link href="/projects/accounting/transactions" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
             <ArrowLeft size={28} className="inline-block" />
           </Link>
           Diiwaan Geli Dhaqdhaqaaq Cusub

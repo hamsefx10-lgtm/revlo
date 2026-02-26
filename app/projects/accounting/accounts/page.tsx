@@ -35,10 +35,10 @@ const AccountRow: React.FC<{ account: Account; onEdit: (id: string) => void; onD
     <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-semibold text-right">${account.balance.toLocaleString()}</td>
     <td className="p-4 whitespace-nowrap text-right">
       <div className="flex items-center justify-end space-x-2">
-        <Link href={`/accounting/transactions/transfer?fromAccount=${account.id}`} className="p-2 rounded-full bg-green-500/10 text-green-600 hover:bg-green-500 hover:text-white transition-colors duration-200" title="Transfer Money" aria-label="Transfer Money">
+        <Link href={`/projects/accounting/transactions/transfer?fromAccount=${account.id}`} className="p-2 rounded-full bg-green-500/10 text-green-600 hover:bg-green-500 hover:text-white transition-colors duration-200" title="Transfer Money" aria-label="Transfer Money">
           <Repeat size={18} />
         </Link>
-        <Link href={`/accounting/accounts/${account.id}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View Details">
+        <Link href={`/projects/accounting/accounts/${account.id}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View Details">
           <Eye size={18} />
         </Link>
         <button onClick={() => onEdit(account.id)} className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit Account" aria-label="Edit Account">
@@ -77,7 +77,7 @@ const AccountCard: React.FC<{ account: Account; onEdit: (id: string) => void; on
     <p className="text-sm text-mediumGray dark:text-gray-400 mb-1 flex items-center space-x-2">
       <DollarSign size={14} /> <span>Balance: ${account.balance.toLocaleString()}</span>
     </p>
-    <Link href={`/accounting/accounts/${account.id}`} className="mt-3 inline-block text-primary hover:underline text-sm font-medium">
+    <Link href={`/projects/accounting/accounts/${account.id}`} className="mt-3 inline-block text-primary hover:underline text-sm font-medium">
       Fiiri Faahfaahin &rarr;
     </Link>
   </div>
@@ -102,7 +102,7 @@ export default function AccountsPage() {
   const fetchAccounts = async () => {
     setPageLoading(true);
     try {
-      const response = await fetch('/api/accounting/accounts');
+      const response = await fetch('/api/projects/accounting/accounts');
       if (!response.ok) throw new Error('Failed to fetch accounts');
       const data = await response.json();
       setAccounts(data.accounts.map((acc: any) => ({ ...acc, balance: parseFloat(acc.balance) }))); // Convert Decimal to Number
@@ -118,7 +118,7 @@ export default function AccountsPage() {
   const handleDeleteAccount = async (id: string) => {
     if (window.confirm('Ma hubtaa inaad tirtirto account-kan? Tan lama soo celin karo!')) {
       try {
-        const response = await fetch(`/api/accounting/accounts/${id}`, {
+        const response = await fetch(`/api/projects/accounting/accounts/${id}`, {
           method: 'DELETE',
         });
         const data = await response.json();
@@ -134,7 +134,7 @@ export default function AccountsPage() {
   };
 
   const handleEditAccount = (id: string) => {
-    router.push(`/accounting/accounts/edit/${id}`); // Navigate to edit account page
+    router.push(`/projects/accounting/accounts/edit/${id}`); // Navigate to edit account page
   };
 
   useEffect(() => {
@@ -176,13 +176,13 @@ export default function AccountsPage() {
     <Layout>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">
-          <Link href="/accounting" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
+          <Link href="/projects/accounting" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
             <ArrowLeft size={28} className="inline-block" />
           </Link>
           Accounts
         </h1>
         <div className="flex space-x-3">
-          <Link href="/accounting/accounts/add" className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center">
+          <Link href="/projects/accounting/accounts/add" className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center">
             <Plus size={20} className="mr-2" /> Ku Dar Account
           </Link>
           <button onClick={fetchAccounts} className="bg-secondary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-green-600 transition duration-200 shadow-md flex items-center">

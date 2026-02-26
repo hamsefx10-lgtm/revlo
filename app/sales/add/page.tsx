@@ -31,7 +31,7 @@ export default function AddSalePage() {
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
-  
+
   const [products, setProducts] = useState<Product[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -57,7 +57,7 @@ export default function AddSalePage() {
       const [productsRes, customersRes, accountsRes] = await Promise.all([
         fetch('/api/manufacturing/products'),
         fetch('/api/customers'),
-        fetch('/api/accounting/accounts'),
+        fetch('/api/projects/accounting/accounts'),
       ]);
 
       if (!productsRes.ok) throw new Error('Failed to fetch products');

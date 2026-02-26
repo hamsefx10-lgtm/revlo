@@ -3,7 +3,7 @@ import prisma from '@/lib/db';
 import { getSessionCompanyUser } from '@/lib/auth';
 import { Decimal } from '@prisma/client/runtime/library';
 
-// GET /api/accounting/reports/profit-loss - Soo deji xogta warbixinta faa'iidada & khasaaraha
+// GET /api/projects/accounting/reports/profit-loss - Soo deji xogta warbixinta faa'iidada & khasaaraha
 export async function GET(request: Request) {
   try {
     const sessionData = await getSessionCompanyUser();

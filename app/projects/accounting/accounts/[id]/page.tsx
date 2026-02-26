@@ -67,7 +67,7 @@ function Page() {
   const fetchAccountDetails = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/accounting/accounts/${id}`);
+      const response = await fetch(`/api/projects/accounting/accounts/${id}`);
       if (!response.ok) throw new Error('Failed to fetch account details');
       const data = await response.json();
       const processedAccount = {
@@ -82,7 +82,7 @@ function Page() {
       console.error('Error fetching account details:', error);
       setToastMessage({ id: Date.now().toString(), message: error.message || 'Cilad ayaa dhacday marka faahfaahinta account-ka la soo gelinayay.', type: 'error' });
       setAccount(null);
-      router.push('/accounting/accounts');
+      router.push('/projects/accounting/accounts');
     } finally {
       setLoading(false);
     }
@@ -91,13 +91,13 @@ function Page() {
   const handleDeleteAccount = async () => {
     if (window.confirm('Ma hubtaa inaad tirtirto account-kan? Tan lama soo celin karo!')) {
       try {
-        const response = await fetch(`/api/accounting/accounts/${id}`, {
+        const response = await fetch(`/api/projects/accounting/accounts/${id}`, {
           method: 'DELETE',
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || 'Failed to delete account');
         setToastMessage({ id: Date.now().toString(), message: data.message || 'Account-ka si guul leh ayaa loo tirtiray!', type: 'success' });
-        router.push('/accounting/accounts');
+        router.push('/projects/accounting/accounts');
       } catch (error: any) {
         console.error('Error deleting account:', error);
         setToastMessage({ id: Date.now().toString(), message: error.message || 'Cilad ayaa dhacday marka account-ka la tirtirayay.', type: 'error' });
@@ -161,7 +161,7 @@ function Page() {
         <div className="text-center p-8 text-redError bg-white dark:bg-gray-800 rounded-xl shadow-md">
           <InfoIcon size={32} className="inline-block mb-4 text-redError" />
           <p className="text-xl font-bold">Account-ka ID "{id}" lama helin.</p>
-          <Link href="/accounting/accounts" className="mt-4 inline-block text-primary hover:underline">Ku Noqo Accounts-ka &rarr;</Link>
+          <Link href="/projects/accounting/accounts" className="mt-4 inline-block text-primary hover:underline">Ku Noqo Accounts-ka &rarr;</Link>
         </div>
         {toastMessage && (
           <Toast id={toastMessage.id} message={toastMessage.message} type={toastMessage.type} onClose={(id) => setToastMessage(null)} />
@@ -175,7 +175,7 @@ function Page() {
       {/* Header - Mobile Optimized */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 lg:mb-8 gap-4">
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-darkGray dark:text-gray-100">
-          <Link href="/accounting/accounts" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-3 sm:mr-4">
+          <Link href="/projects/accounting/accounts" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-3 sm:mr-4">
             <ArrowLeft size={24} className="inline-block sm:w-7 sm:h-7" />
           </Link>
           Account: {account.name}
@@ -191,7 +191,7 @@ function Page() {
             <span className="sr-only">Export to Excel</span>
           </button>
           <button
-            onClick={() => router.push(`/accounting/transactions/transfer?fromAccount=${account.id}`)}
+            onClick={() => router.push(`/projects/accounting/transactions/transfer?fromAccount=${account.id}`)}
             aria-label="Transfer Money"
             title="Transfer Money"
             className="bg-[#E3F2FD] hover:bg-[#2196F3]/90 hover:ring-2 hover:ring-[#2196F3] p-4 rounded-xl flex items-center justify-center cursor-pointer transition duration-150 text-[#2196F3]"
@@ -199,7 +199,7 @@ function Page() {
             <Repeat className="" size={30} />
             <span className="sr-only">Transfer Money</span>
           </button>
-          <Link href={`/accounting/accounts/edit/${account.id}`} aria-label="Edit Account" title="Edit Account">
+          <Link href={`/projects/accounting/accounts/edit/${account.id}`} aria-label="Edit Account" title="Edit Account">
             <div className="bg-[#FFF4DF] hover:bg-[#F7A400]/90 hover:ring-2 hover:ring-[#F7A400] p-4 rounded-xl flex items-center justify-center cursor-pointer transition duration-150 text-[#F7A400]">
               <Edit className="" size={30} />
               <span className="sr-only">Edit Account</span>
@@ -338,7 +338,7 @@ function Page() {
                                 ${runningBalance.toLocaleString()}
                               </td>
                               <td className="px-4 py-3 whitespace-nowrap text-right">
-                                <Link href={`/accounting/transactions/${trx.id}`} className="text-primary hover:underline text-xs font-medium">
+                                <Link href={`/projects/accounting/transactions/${trx.id}`} className="text-primary hover:underline text-xs font-medium">
                                   Fiiri →
                                 </Link>
                               </td>
@@ -411,7 +411,7 @@ function Page() {
                               </div>
                             )}
                           </div>
-                          <Link href={`/accounting/transactions/${trx.id}`} className="mt-2 text-primary hover:underline text-xs font-medium block">
+                          <Link href={`/projects/accounting/transactions/${trx.id}`} className="mt-2 text-primary hover:underline text-xs font-medium block">
                             Fiiri Faahfaahinta →
                           </Link>
                         </div>
@@ -420,7 +420,7 @@ function Page() {
                   </div>
                 </>
               )}
-              <Link href="/accounting/transactions/add" className="mt-5 bg-primary text-white py-2 px-4 rounded-lg flex items-center justify-center hover:bg-blue-700 transition w-full sm:w-fit text-sm font-bold">
+              <Link href="/projects/accounting/transactions/add" className="mt-5 bg-primary text-white py-2 px-4 rounded-lg flex items-center justify-center hover:bg-blue-700 transition w-full sm:w-fit text-sm font-bold">
                 <Plus size={16} className="mr-2" /> Diiwaan Geli Dhaqdhaqaaq
               </Link>
             </div>
@@ -443,7 +443,7 @@ function Page() {
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
                           <span className="text-redError font-bold text-sm sm:text-base">-${trx.amount.toLocaleString()}</span>
                           <span className="text-xs sm:text-sm text-mediumGray dark:text-gray-400">Loo wareejiyay: {trx.toAccount?.name}</span>
-                          <Link href={`/accounting/transactions/${trx.id}`} className="text-primary hover:underline text-xs sm:text-sm font-medium">Fiiri &rarr;</Link>
+                          <Link href={`/projects/accounting/transactions/${trx.id}`} className="text-primary hover:underline text-xs sm:text-sm font-medium">Fiiri &rarr;</Link>
                         </div>
                       </div>
                     </li>
@@ -458,14 +458,14 @@ function Page() {
                         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
                           <span className="text-secondary font-bold text-sm sm:text-base">+${trx.amount.toLocaleString()}</span>
                           <span className="text-xs sm:text-sm text-mediumGray dark:text-gray-400">Laga wareejiyay: {trx.fromAccount?.name}</span>
-                          <Link href={`/accounting/transactions/${trx.id}`} className="text-primary hover:underline text-xs sm:text-sm font-medium">Fiiri &rarr;</Link>
+                          <Link href={`/projects/accounting/transactions/${trx.id}`} className="text-primary hover:underline text-xs sm:text-sm font-medium">Fiiri &rarr;</Link>
                         </div>
                       </div>
                     </li>
                   ))}
                 </ul>
               )}
-              <Link href="/accounting/transactions/add?type=TRANSFER_OUT" className="mt-3 sm:mt-4 bg-primary text-white py-2 px-4 rounded-lg flex items-center hover:bg-blue-700 transition duration-200 w-fit text-sm sm:text-base">
+              <Link href="/projects/accounting/transactions/add?type=TRANSFER_OUT" className="mt-3 sm:mt-4 bg-primary text-white py-2 px-4 rounded-lg flex items-center hover:bg-blue-700 transition duration-200 w-fit text-sm sm:text-base">
                 <Plus size={16} className="mr-2" /> Samee Wareejin Cusub
               </Link>
             </div>

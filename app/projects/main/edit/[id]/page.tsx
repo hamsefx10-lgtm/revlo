@@ -107,7 +107,7 @@ const EditProjectPage: React.FC = () => {
   // Fetch customers
   const fetchCustomers = async () => {
     try {
-      const response = await fetch('/api/customers');
+      const response = await fetch('/api/projects/customers');
       if (!response.ok) throw new Error('Failed to fetch customers');
       const data = await response.json();
       setCustomers(data.customers || []);
@@ -119,7 +119,7 @@ const EditProjectPage: React.FC = () => {
   // Fetch accounts
   const fetchAccounts = async () => {
     try {
-      const response = await fetch('/api/accounting/accounts');
+      const response = await fetch('/api/projects/accounting/accounts');
       if (!response.ok) throw new Error('Failed to fetch accounts');
       const data = await response.json();
       setAccounts(data.accounts || []);
@@ -161,7 +161,7 @@ const EditProjectPage: React.FC = () => {
     if (!newAccountName.trim()) return;
     setAddingAccount(true);
     try {
-      const res = await fetch('/api/accounts', {
+      const res = await fetch('/api/projects/accounting/accounts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newAccountName }),
@@ -188,7 +188,7 @@ const EditProjectPage: React.FC = () => {
     if (!newCustomerName.trim()) return;
     setAddingCustomer(true);
     try {
-      const res = await fetch('/api/customers', {
+      const res = await fetch('/api/projects/customers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newCustomerName }),
@@ -285,7 +285,7 @@ const EditProjectPage: React.FC = () => {
           localStorage.setItem('accountsShouldRefresh', Date.now().toString());
         }
         setTimeout(() => {
-          router.push(`/projects/${id}`);
+          router.push(`/projects/main/${id}`);
         }, 1500);
       } else {
         setToastMessage({ message: data.message || 'Cilad ayaa dhacday marka mashruuca la cusbooneysiinayay.', type: 'error' });
@@ -314,7 +314,7 @@ const EditProjectPage: React.FC = () => {
         <div className="max-w-2xl mx-auto text-center p-8 mt-10 bg-white dark:bg-gray-800 rounded-xl shadow-lg flex flex-col items-center gap-4">
           <Info size={48} className="text-redError" />
           <h2 className="text-2xl font-bold text-redError">Mashruucaan Lama Helin</h2>
-          <Link href="/projects" className="mt-4 inline-flex items-center gap-2 bg-primary text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition">
+          <Link href="/projects/main" className="mt-4 inline-flex items-center gap-2 bg-primary text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition">
             <ArrowLeft size={18} /> Ku noqo Liiska Mashaariicda
           </Link>
         </div>
@@ -326,7 +326,7 @@ const EditProjectPage: React.FC = () => {
     <Layout>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">
-          <Link href={`/projects/${id}`} className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
+          <Link href={`/projects/main/${id}`} className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
             <ArrowLeft size={28} className="inline-block" />
           </Link>
           Beddel Mashruuc
@@ -555,7 +555,7 @@ const EditProjectPage: React.FC = () => {
           {/* Submit Button */}
           <div className="flex gap-4">
             <Link
-              href={`/projects/${id}`}
+              href={`/projects/main/${id}`}
               className="flex-1 text-center px-6 py-3 rounded-lg font-bold text-mediumGray dark:text-gray-400 hover:bg-lightGray dark:hover:bg-gray-700 transition duration-200"
             >
               Iska Daa

@@ -4,16 +4,16 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Layout from '@/components/layouts/Layout';
-import { 
-  ArrowLeft, DollarSign, Plus, Search, Filter, Calendar, 
-  Download, Upload, Printer, Mail, MessageSquare, Send, 
+import {
+  ArrowLeft, DollarSign, Plus, Search, Filter, Calendar,
+  Download, Upload, Printer, Mail, MessageSquare, Send,
   TrendingUp, TrendingDown, CheckCircle, XCircle, Info,
   Tag, Briefcase, CreditCard, Eye, Edit, Trash2,
   List, LayoutGrid, BarChart, PieChart, LineChart as LineChartIcon,
   CheckSquare, Clock as ClockIcon, FileText, ChevronRight, ChevronUp, ChevronDown, Building // Added Building icon
 } from 'lucide-react';
-import { 
-  ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, Tooltip, Legend, 
+import {
+  ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, Tooltip, Legend,
   BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart as RechartsLineChart, Line
 } from 'recharts';
 import Toast from '@/components/common/Toast'; // Reuse Toast component
@@ -56,8 +56,8 @@ const dummyExpenses = [
 ];
 
 const dummyRecurringExpenses = [
-    { id: 'rec001', name: 'Office Rent', amount: 1000, frequency: 'Monthly', nextDueDate: '2025-08-15' },
-    { id: 'rec002', name: 'Internet Bill', amount: 150, frequency: 'Monthly', nextDueDate: '2025-08-05' },
+  { id: 'rec001', name: 'Office Rent', amount: 1000, frequency: 'Monthly', nextDueDate: '2025-08-15' },
+  { id: 'rec002', name: 'Internet Bill', amount: 150, frequency: 'Monthly', nextDueDate: '2025-08-05' },
 ];
 
 // Helper for chart colors
@@ -80,14 +80,14 @@ function aggregateExpensesByMonth(expenses: Expense[], categories: string[]) {
   type MonthlyData = { month: string; total: number } & { [key: string]: number | string };
   const monthlyDataMap: { [key: string]: MonthlyData } = {};
   expenses.forEach((exp: Expense) => {
-      const monthYear = new Date(exp.date).toLocaleString('en-US', { month: 'short', year: 'numeric' });
-      if (!monthlyDataMap[monthYear]) {
-          // Assign month and total, and initialize each category to 0
-          monthlyDataMap[monthYear] = { month: monthYear, total: 0 };
-          categories.forEach((c: string) => { monthlyDataMap[monthYear][c] = 0; });
-      }
-      monthlyDataMap[monthYear].total = (monthlyDataMap[monthYear].total as number) + exp.amount;
-      monthlyDataMap[monthYear][exp.category] = (monthlyDataMap[monthYear][exp.category] as number) + exp.amount;
+    const monthYear = new Date(exp.date).toLocaleString('en-US', { month: 'short', year: 'numeric' });
+    if (!monthlyDataMap[monthYear]) {
+      // Assign month and total, and initialize each category to 0
+      monthlyDataMap[monthYear] = { month: monthYear, total: 0 };
+      categories.forEach((c: string) => { monthlyDataMap[monthYear][c] = 0; });
+    }
+    monthlyDataMap[monthYear].total = (monthlyDataMap[monthYear].total as number) + exp.amount;
+    monthlyDataMap[monthYear][exp.category] = (monthlyDataMap[monthYear][exp.category] as number) + exp.amount;
   });
   // Sort by date ascending
   return Object.values(monthlyDataMap).sort((a, b) => {
@@ -106,9 +106,9 @@ export default function ExpensesPage() {
   const [filterPaidFrom, setFilterPaidFrom] = useState('All');
   const [filterDateRange, setFilterDateRange] = useState('All');
   const [filterApprovalStatus, setFilterApprovalStatus] = useState<'all' | 'pending' | 'approved'>('all'); // Updated: use specific values
-  const [viewMode, setViewMode] = useState<'list' | 'cards'>('list'); 
-  const [showChartSection, setShowChartSection] = useState(true); 
-  const [activeChartType, setActiveChartType] = useState<'line' | 'bar' | 'pie'>('line'); 
+  const [viewMode, setViewMode] = useState<'list' | 'cards'>('list');
+  const [showChartSection, setShowChartSection] = useState(true);
+  const [activeChartType, setActiveChartType] = useState<'line' | 'bar' | 'pie'>('line');
 
   // --- API Data States ---
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -123,7 +123,7 @@ export default function ExpensesPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch('/api/accounting/reports/expenses');
+        const res = await fetch('/api/projects/accounting/reports/expenses');
         if (!res.ok) throw new Error('Failed to fetch expenses data');
         const data = await res.json();
         setExpenses(data.expenses || []);
@@ -141,25 +141,25 @@ export default function ExpensesPage() {
 
   const filteredExpenses = expenses.filter(expense => {
     const matchesSearch = expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (expense.project && expense.project.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                          (expense.note && expense.note.toLowerCase().includes(searchTerm.toLowerCase()));
+      (expense.project && expense.project.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (expense.note && expense.note.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory = filterCategory === 'All' || expense.category === filterCategory;
-    const matchesProject = filterProject === 'All' 
-                           ? true 
-                           : filterProject === 'Internal' 
-                             ? !expense.project || expense.project === 'Internal' 
-                             : expense.project === filterProject; 
+    const matchesProject = filterProject === 'All'
+      ? true
+      : filterProject === 'Internal'
+        ? !expense.project || expense.project === 'Internal'
+        : expense.project === filterProject;
     const matchesPaidFrom = filterPaidFrom === 'All' || expense.paidFrom === filterPaidFrom;
     const matchesDate = filterDateRange === 'All' ? true : true;
     // Filter by expense type (Company vs Project)
-    const matchesExpenseType = filterExpenseType === 'all' 
-      ? true 
-      : filterExpenseType === 'company' 
-        ? !expense.project || expense.project === 'Internal' 
+    const matchesExpenseType = filterExpenseType === 'all'
+      ? true
+      : filterExpenseType === 'company'
+        ? !expense.project || expense.project === 'Internal'
         : expense.project && expense.project !== 'Internal';
-    const matchesApproval = filterApprovalStatus === 'all' || 
-                            (filterApprovalStatus === 'approved' && expense.approved) || 
-                            (filterApprovalStatus === 'pending' && !expense.approved);
+    const matchesApproval = filterApprovalStatus === 'all' ||
+      (filterApprovalStatus === 'approved' && expense.approved) ||
+      (filterApprovalStatus === 'pending' && !expense.approved);
 
     return matchesSearch && matchesCategory && matchesProject && matchesPaidFrom && matchesDate && matchesExpenseType && matchesApproval;
   });
@@ -192,14 +192,14 @@ export default function ExpensesPage() {
     type MonthlyData = { month: string; total: number } & { [key: string]: number | string };
     const monthlyDataMap: { [key: string]: MonthlyData } = {};
     expenses.forEach((exp: Expense) => {
-        const monthYear = new Date(exp.date).toLocaleString('en-US', { month: 'short', year: 'numeric' });
-        if (!monthlyDataMap[monthYear]) {
-            // Assign month and total, and initialize each category to 0
-            monthlyDataMap[monthYear] = { month: monthYear, total: 0 };
-            categories.forEach((c: string) => { monthlyDataMap[monthYear][c] = 0; });
-        }
-        monthlyDataMap[monthYear].total = (monthlyDataMap[monthYear].total as number) + exp.amount;
-        monthlyDataMap[monthYear][exp.category] = (monthlyDataMap[monthYear][exp.category] as number) + exp.amount;
+      const monthYear = new Date(exp.date).toLocaleString('en-US', { month: 'short', year: 'numeric' });
+      if (!monthlyDataMap[monthYear]) {
+        // Assign month and total, and initialize each category to 0
+        monthlyDataMap[monthYear] = { month: monthYear, total: 0 };
+        categories.forEach((c: string) => { monthlyDataMap[monthYear][c] = 0; });
+      }
+      monthlyDataMap[monthYear].total = (monthlyDataMap[monthYear].total as number) + exp.amount;
+      monthlyDataMap[monthYear][exp.category] = (monthlyDataMap[monthYear][exp.category] as number) + exp.amount;
     });
     // Sort by date ascending
     return Object.values(monthlyDataMap).sort((a, b) => {
@@ -210,9 +210,9 @@ export default function ExpensesPage() {
   };
 
   // Data for Monthly Trend Chart (Line/Bar)
-  const monthlyExpensesData = aggregateExpensesByMonth(filteredExpenses, categories); 
+  const monthlyExpensesData = aggregateExpensesByMonth(filteredExpenses, categories);
 
-  const PIE_COLORS = ['#3498DB', '#2ECC71', '#F39C12', '#E74C3C', '#9B59B6', '#1ABC9C', '#34495E', '#A0A0A0', '#FFD700', '#FF6347', '#4682B4']; 
+  const PIE_COLORS = ['#3498DB', '#2ECC71', '#F39C12', '#E74C3C', '#9B59B6', '#1ABC9C', '#34495E', '#A0A0A0', '#FFD700', '#FF6347', '#4682B4'];
 
   const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }: any) => {
     const RADIAN = Math.PI / 180;
@@ -225,79 +225,78 @@ export default function ExpensesPage() {
       </text>
     );
   };
-  const RADIAN = Math.PI / 180; 
+  const RADIAN = Math.PI / 180;
 
-// --- Expense Table Row Component ---
-const ExpenseRow: React.FC<{ expense: typeof dummyExpenses[0]; onEdit: (id: string) => void; onDelete: (id: string) => void }> = ({ expense, onEdit, onDelete }) => (
-  <tr className="hover:bg-lightGray dark:hover:bg-gray-700 transition-colors duration-150 border-b border-lightGray dark:border-gray-700 last:border-b-0">
-    <td className="p-2 lg:p-4 whitespace-nowrap text-darkGray dark:text-gray-100 text-sm lg:text-base">{new Date(expense.date).toLocaleDateString()}</td>
-    <td className="p-2 lg:p-4 whitespace-nowrap text-mediumGray dark:text-gray-300 text-sm lg:text-base">{expense.project || 'Internal'}</td>
-    <td className="p-2 lg:p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-medium flex items-center space-x-2">
-      <Tag size={16} className="text-primary"/> <span className="text-sm lg:text-base">{String(expense.category)}</span>
-    </td>
-    <td className="p-2 lg:p-4 whitespace-nowrap text-redError font-semibold text-sm lg:text-base">-${expense.amount.toLocaleString()}</td>
-    <td className="p-2 lg:p-4 whitespace-nowrap text-mediumGray dark:text-gray-300 text-sm lg:text-base">{expense.paidFrom}</td>
-    <td className="p-2 lg:p-4 text-mediumGray dark:text-gray-300 truncate max-w-xs text-sm lg:text-base">{expense.note || 'N/A'}</td>
-    <td className="p-2 lg:p-4 whitespace-nowrap text-center">
-        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-            expense.approved ? 'bg-secondary/10 text-secondary' : 'bg-accent/10 text-accent'
-        }`}>
-            {expense.approved ? 'Approved' : 'Pending'}
+  // --- Expense Table Row Component ---
+  const ExpenseRow: React.FC<{ expense: typeof dummyExpenses[0]; onEdit: (id: string) => void; onDelete: (id: string) => void }> = ({ expense, onEdit, onDelete }) => (
+    <tr className="hover:bg-lightGray dark:hover:bg-gray-700 transition-colors duration-150 border-b border-lightGray dark:border-gray-700 last:border-b-0">
+      <td className="p-2 lg:p-4 whitespace-nowrap text-darkGray dark:text-gray-100 text-sm lg:text-base">{new Date(expense.date).toLocaleDateString()}</td>
+      <td className="p-2 lg:p-4 whitespace-nowrap text-mediumGray dark:text-gray-300 text-sm lg:text-base">{expense.project || 'Internal'}</td>
+      <td className="p-2 lg:p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-medium flex items-center space-x-2">
+        <Tag size={16} className="text-primary" /> <span className="text-sm lg:text-base">{String(expense.category)}</span>
+      </td>
+      <td className="p-2 lg:p-4 whitespace-nowrap text-redError font-semibold text-sm lg:text-base">-${expense.amount.toLocaleString()}</td>
+      <td className="p-2 lg:p-4 whitespace-nowrap text-mediumGray dark:text-gray-300 text-sm lg:text-base">{expense.paidFrom}</td>
+      <td className="p-2 lg:p-4 text-mediumGray dark:text-gray-300 truncate max-w-xs text-sm lg:text-base">{expense.note || 'N/A'}</td>
+      <td className="p-2 lg:p-4 whitespace-nowrap text-center">
+        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${expense.approved ? 'bg-secondary/10 text-secondary' : 'bg-accent/10 text-accent'
+          }`}>
+          {expense.approved ? 'Approved' : 'Pending'}
         </span>
-    </td>
-    <td className="p-2 lg:p-4 whitespace-nowrap text-right">
-      <div className="flex items-center justify-end space-x-1 lg:space-x-2">
-        <button className="p-1 lg:p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View Details">
+      </td>
+      <td className="p-2 lg:p-4 whitespace-nowrap text-right">
+        <div className="flex items-center justify-end space-x-1 lg:space-x-2">
+          <button className="p-1 lg:p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View Details">
+            <Eye size={16} />
+          </button>
+          <button className="p-1 lg:p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit Expense">
+            <Edit size={16} />
+          </button>
+          <button className="p-1 lg:p-2 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-colors duration-200" title="Delete Expense">
+            <Trash2 size={16} />
+          </button>
+        </div>
+      </td>
+    </tr>
+  );
+
+  // --- Expense Card Component (for Mobile View) ---
+  const ExpenseCard: React.FC<{ expense: typeof dummyExpenses[0]; onEdit: (id: string) => void; onDelete: (id: string) => void }> = ({ expense, onEdit, onDelete }) => (
+    <div className={`bg-white dark:bg-gray-800 p-4 lg:p-5 rounded-xl shadow-md animate-fade-in-up border-l-4 border-redError relative`}>
+      <div className="flex justify-between items-start mb-3">
+        <h4 className="font-semibold text-darkGray dark:text-gray-100 text-base lg:text-lg flex items-center space-x-2">
+          <DollarSign size={18} className="text-redError" /> <span>{expense.description}</span>
+        </h4>
+        <span className="text-redError font-bold text-base lg:text-lg">-${expense.amount.toLocaleString()}</span>
+      </div>
+      <p className="text-xs lg:text-sm text-mediumGray dark:text-gray-400 mb-1 flex items-center space-x-2">
+        <Briefcase size={14} /> <span>Mashruuc: {expense.project || 'Internal'}</span>
+      </p>
+      <p className="text-xs lg:text-sm text-mediumGray dark:text-gray-400 mb-1 flex items-center space-x-2">
+        <Tag size={14} className="text-secondary" /> <span>Nooca: {String(expense.category)}</span>
+      </p>
+      <p className="text-xs lg:text-sm text-mediumGray dark:text-gray-400 mb-1 flex items-center space-x-2">
+        <Calendar size={14} /> <span>Taariikhda: {new Date(expense.date).toLocaleDateString()}</span>
+      </p>
+      <p className="text-xs lg:text-sm text-mediumGray dark:text-gray-400 mb-1 flex items-center space-x-2">
+        <CreditCard size={14} /> <span>Laga Bixiyay: {expense.paidFrom}</span>
+      </p>
+      <p className="text-xs lg:text-sm text-mediumGray dark:text-gray-400 mt-2 p-2 bg-lightGray dark:bg-gray-700 rounded-lg border border-lightGray dark:border-gray-600">
+        <Info size={14} className="inline mr-1 text-primary" /> {expense.note || 'Ma jiraan fiiro gaar ah.'}
+      </p>
+      <div className="flex justify-end space-x-2 mt-3">
+        <button className="p-1 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View Details">
           <Eye size={16} />
         </button>
-        <button className="p-1 lg:p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit Expense">
+        <button className="p-1 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit Expense">
           <Edit size={16} />
         </button>
-        <button className="p-1 lg:p-2 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-colors duration-200" title="Delete Expense">
+        <button className="p-1 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-colors duration-200" title="Delete Expense">
           <Trash2 size={16} />
         </button>
       </div>
-    </td>
-  </tr>
-);
-
-// --- Expense Card Component (for Mobile View) ---
-const ExpenseCard: React.FC<{ expense: typeof dummyExpenses[0]; onEdit: (id: string) => void; onDelete: (id: string) => void }> = ({ expense, onEdit, onDelete }) => (
-    <div className={`bg-white dark:bg-gray-800 p-4 lg:p-5 rounded-xl shadow-md animate-fade-in-up border-l-4 border-redError relative`}>
-        <div className="flex justify-between items-start mb-3">
-            <h4 className="font-semibold text-darkGray dark:text-gray-100 text-base lg:text-lg flex items-center space-x-2">
-                <DollarSign size={18} className="text-redError"/> <span>{expense.description}</span>
-            </h4>
-            <span className="text-redError font-bold text-base lg:text-lg">-${expense.amount.toLocaleString()}</span>
-        </div>
-    <p className="text-xs lg:text-sm text-mediumGray dark:text-gray-400 mb-1 flex items-center space-x-2">
-      <Briefcase size={14}/> <span>Mashruuc: {expense.project || 'Internal'}</span>
-    </p>
-    <p className="text-xs lg:text-sm text-mediumGray dark:text-gray-400 mb-1 flex items-center space-x-2">
-      <Tag size={14} className="text-secondary"/> <span>Nooca: {String(expense.category)}</span>
-    </p>
-        <p className="text-xs lg:text-sm text-mediumGray dark:text-gray-400 mb-1 flex items-center space-x-2">
-            <Calendar size={14}/> <span>Taariikhda: {new Date(expense.date).toLocaleDateString()}</span>
-        </p>
-        <p className="text-xs lg:text-sm text-mediumGray dark:text-gray-400 mb-1 flex items-center space-x-2">
-            <CreditCard size={14}/> <span>Laga Bixiyay: {expense.paidFrom}</span>
-        </p>
-        <p className="text-xs lg:text-sm text-mediumGray dark:text-gray-400 mt-2 p-2 bg-lightGray dark:bg-gray-700 rounded-lg border border-lightGray dark:border-gray-600">
-            <Info size={14} className="inline mr-1 text-primary"/> {expense.note || 'Ma jiraan fiiro gaar ah.'}
-        </p>
-        <div className="flex justify-end space-x-2 mt-3">
-            <button className="p-1 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View Details">
-                <Eye size={16} />
-            </button>
-            <button className="p-1 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit Expense">
-                <Edit size={16} />
-            </button>
-            <button className="p-1 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-colors duration-200" title="Delete Expense">
-                <Trash2 size={16} />
-            </button>
-        </div>
     </div>
-);
+  );
 
   if (loading) return (
     <Layout>
@@ -322,40 +321,40 @@ const ExpenseCard: React.FC<{ expense: typeof dummyExpenses[0]; onEdit: (id: str
       <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6 gap-4">
         <h1 className="text-2xl lg:text-4xl font-bold text-darkGray dark:text-gray-100">Expenses</h1>
         <div className="flex flex-col sm:flex-row gap-3">
-            <Link href="/expenses/import" className="bg-primary text-white py-2 lg:py-2.5 px-4 lg:px-6 rounded-lg font-bold text-sm lg:text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center justify-center" title="Import Bulk Expenses">
-                <Upload className="mr-2" size={18} /> Import Bulk
-            </Link>
-            <Link href="/expenses/add" className="bg-secondary text-white py-2 lg:py-2.5 px-4 lg:px-6 rounded-lg font-bold text-sm lg:text-lg hover:bg-green-600 transition duration-200 shadow-md flex items-center justify-center" title="Add New Expense">
-                <Plus className="mr-2" size={18} /> Add New Expense
-            </Link>
-            <button 
-              onClick={() => window.print()} 
-              className="bg-accent text-white py-2 lg:py-2.5 px-4 lg:px-6 rounded-lg font-bold text-sm lg:text-lg hover:bg-orange-600 transition duration-200 shadow-md flex items-center justify-center"
-              title="Print Report"
-            >
-              <Printer className="mr-2" size={18} /> Print Report
-            </button>
+          <Link href="/expenses/import" className="bg-primary text-white py-2 lg:py-2.5 px-4 lg:px-6 rounded-lg font-bold text-sm lg:text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center justify-center" title="Import Bulk Expenses">
+            <Upload className="mr-2" size={18} /> Import Bulk
+          </Link>
+          <Link href="/expenses/add" className="bg-secondary text-white py-2 lg:py-2.5 px-4 lg:px-6 rounded-lg font-bold text-sm lg:text-lg hover:bg-green-600 transition duration-200 shadow-md flex items-center justify-center" title="Add New Expense">
+            <Plus className="mr-2" size={18} /> Add New Expense
+          </Link>
+          <button
+            onClick={() => window.print()}
+            className="bg-accent text-white py-2 lg:py-2.5 px-4 lg:px-6 rounded-lg font-bold text-sm lg:text-lg hover:bg-orange-600 transition duration-200 shadow-md flex items-center justify-center"
+            title="Print Report"
+          >
+            <Printer className="mr-2" size={18} /> Print Report
+          </button>
         </div>
       </div>
 
       {/* Expense Statistics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8 animate-fade-in-up">
-          <div className="bg-white dark:bg-gray-800 p-4 lg:p-6 rounded-xl shadow-md text-center">
-              <h4 className="text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400">Wadarta Kharashyada</h4>
-              <p className="text-2xl lg:text-3xl font-extrabold text-redError">-${totalExpensesAmount.toLocaleString()}</p>
-          </div>
-          <div className="bg-white dark:bg-gray-800 p-4 lg:p-6 rounded-xl shadow-md text-center">
-              <h4 className="text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400">Kharashyada La Ansixiyay</h4>
-              <p className="text-2xl lg:text-3xl font-extrabold text-secondary">-${approvedExpensesAmount.toLocaleString()}</p>
-          </div>
-          <div className="bg-white dark:bg-gray-800 p-4 lg:p-6 rounded-xl shadow-md text-center">
-              <h4 className="text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400">Sugaya Ansixinta</h4>
-              <p className="text-2xl lg:text-3xl font-extrabold text-accent">{pendingApprovalCount}</p>
-          </div>
-          <div className="bg-white dark:bg-gray-800 p-4 lg:p-6 rounded-xl shadow-md text-center">
-              <h4 className="text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400">Wadarta Diiwaanka</h4>
-              <p className="text-2xl lg:text-3xl font-extrabold text-primary">{expensesCount}</p>
-          </div>
+        <div className="bg-white dark:bg-gray-800 p-4 lg:p-6 rounded-xl shadow-md text-center">
+          <h4 className="text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400">Wadarta Kharashyada</h4>
+          <p className="text-2xl lg:text-3xl font-extrabold text-redError">-${totalExpensesAmount.toLocaleString()}</p>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-4 lg:p-6 rounded-xl shadow-md text-center">
+          <h4 className="text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400">Kharashyada La Ansixiyay</h4>
+          <p className="text-2xl lg:text-3xl font-extrabold text-secondary">-${approvedExpensesAmount.toLocaleString()}</p>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-4 lg:p-6 rounded-xl shadow-md text-center">
+          <h4 className="text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400">Sugaya Ansixinta</h4>
+          <p className="text-2xl lg:text-3xl font-extrabold text-accent">{pendingApprovalCount}</p>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-4 lg:p-6 rounded-xl shadow-md text-center">
+          <h4 className="text-sm lg:text-lg font-semibold text-mediumGray dark:text-gray-400">Wadarta Diiwaanka</h4>
+          <p className="text-2xl lg:text-3xl font-extrabold text-primary">{expensesCount}</p>
+        </div>
       </div>
 
       {/* Expense Type Filter Buttons - Similar to image design */}
@@ -363,72 +362,66 @@ const ExpenseCard: React.FC<{ expense: typeof dummyExpenses[0]; onEdit: (id: str
         <div className="flex flex-wrap items-center gap-3 mb-4">
           <button
             onClick={() => setFilterExpenseType('company')}
-            className={`px-4 py-2 rounded-lg font-medium text-sm lg:text-base flex items-center gap-2 transition-colors duration-200 ${
-              filterExpenseType === 'company'
+            className={`px-4 py-2 rounded-lg font-medium text-sm lg:text-base flex items-center gap-2 transition-colors duration-200 ${filterExpenseType === 'company'
                 ? 'bg-orange-500 text-white shadow-md'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-            }`}
+              }`}
           >
             <Building size={18} />
             Shirkadda
           </button>
-          
+
           <button
             onClick={() => setFilterExpenseType('project')}
-            className={`px-4 py-2 rounded-lg font-medium text-sm lg:text-base flex items-center gap-2 transition-colors duration-200 ${
-              filterExpenseType === 'project'
+            className={`px-4 py-2 rounded-lg font-medium text-sm lg:text-base flex items-center gap-2 transition-colors duration-200 ${filterExpenseType === 'project'
                 ? 'bg-orange-500 text-white shadow-md'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-            }`}
+              }`}
           >
             <Briefcase size={18} />
             Mashruucyada
           </button>
-          
+
           <button
             onClick={() => setFilterExpenseType('all')}
-            className={`px-4 py-2 rounded-lg font-medium text-sm lg:text-base flex items-center gap-2 transition-colors duration-200 ${
-              filterExpenseType === 'all'
+            className={`px-4 py-2 rounded-lg font-medium text-sm lg:text-base flex items-center gap-2 transition-colors duration-200 ${filterExpenseType === 'all'
                 ? 'bg-blue-500 text-white shadow-md'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-            }`}
+              }`}
           >
             Dhammaan
           </button>
-          
+
           <button
             onClick={() => setFilterApprovalStatus('pending')}
-            className={`px-4 py-2 rounded-lg font-medium text-sm lg:text-base flex items-center gap-2 transition-colors duration-200 ${
-              filterApprovalStatus === 'pending'
+            className={`px-4 py-2 rounded-lg font-medium text-sm lg:text-base flex items-center gap-2 transition-colors duration-200 ${filterApprovalStatus === 'pending'
                 ? 'bg-orange-500 text-white shadow-md'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-            }`}
+              }`}
           >
             Sugaya
           </button>
-          
+
           <button
             onClick={() => setFilterApprovalStatus('approved')}
-            className={`px-4 py-2 rounded-lg font-medium text-sm lg:text-base flex items-center gap-2 transition-colors duration-200 ${
-              filterApprovalStatus === 'approved'
+            className={`px-4 py-2 rounded-lg font-medium text-sm lg:text-base flex items-center gap-2 transition-colors duration-200 ${filterApprovalStatus === 'approved'
                 ? 'bg-orange-500 text-white shadow-md'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-            }`}
+              }`}
           >
             <CheckCircle size={18} />
             La Ansixiyay
           </button>
-          
+
           <button
             onClick={() => {
               setFilterExpenseType('all');
               setFilterApprovalStatus('all');
             }}
-            className={`px-4 py-2 rounded-lg font-medium text-sm lg:text-base flex items-center gap-2 transition-colors duration-200 ${
-              filterExpenseType === 'all' && filterApprovalStatus === 'all'
+            className={`px-4 py-2 rounded-lg font-medium text-sm lg:text-base flex items-center gap-2 transition-colors duration-200 ${filterExpenseType === 'all' && filterApprovalStatus === 'all'
                 ? 'bg-orange-500 text-white shadow-md'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-            }`}
+              }`}
           >
             <Filter size={18} />
             Filtarrada Dheeraadka Ah
@@ -529,104 +522,104 @@ const ExpenseCard: React.FC<{ expense: typeof dummyExpenses[0]; onEdit: (id: str
         </div>
         {/* View Mode Toggle */}
         <div className="flex space-x-2 w-full md:w-auto justify-center">
-            <button onClick={() => setViewMode('list')} className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-primary text-white' : 'bg-lightGray dark:bg-gray-700 text-mediumGray dark:text-gray-400'} hover:bg-primary/80 dark:hover:bg-gray-600 transition-colors duration-200`} title="List View">
-                <List size={20} />
-            </button>
-            <button onClick={() => setViewMode('cards')} className={`p-2 rounded-lg ${viewMode === 'cards' ? 'bg-primary text-white' : 'bg-lightGray dark:bg-gray-700 text-mediumGray dark:text-gray-400'} hover:bg-primary/80 dark:hover:bg-gray-600 transition-colors duration-200`} title="Cards View">
-                <LayoutGrid size={20} />
-            </button>
+          <button onClick={() => setViewMode('list')} className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-primary text-white' : 'bg-lightGray dark:bg-gray-700 text-mediumGray dark:text-gray-400'} hover:bg-primary/80 dark:hover:bg-gray-600 transition-colors duration-200`} title="List View">
+            <List size={20} />
+          </button>
+          <button onClick={() => setViewMode('cards')} className={`p-2 rounded-lg ${viewMode === 'cards' ? 'bg-primary text-white' : 'bg-lightGray dark:bg-gray-700 text-mediumGray dark:text-gray-400'} hover:bg-primary/80 dark:hover:bg-gray-600 transition-colors duration-200`} title="Cards View">
+            <LayoutGrid size={20} />
+          </button>
         </div>
       </div>
 
       {/* Expense Chart Section - Toggleable */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md mb-8 animate-fade-in">
-          <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold text-darkGray dark:text-gray-100">Expense Analysis</h3>
-              <div className="flex items-center space-x-2">
-                  {/* Chart Type Selectors (small, subtle icons) */}
-                  <button onClick={() => setActiveChartType('line')} className={`p-1 rounded-full ${activeChartType === 'line' ? 'bg-primary text-white' : 'text-mediumGray dark:text-gray-400 hover:bg-lightGray dark:hover:bg-gray-700'} transition-colors duration-200`} title="Line Chart">
-                      <LineChartIcon size={20} />
-                  </button>
-                  <button onClick={() => setActiveChartType('bar')} className={`p-1 rounded-full ${activeChartType === 'bar' ? 'bg-primary text-white' : 'text-mediumGray dark:text-gray-400'} hover:bg-primary/80 dark:hover:bg-gray-700'} transition-colors duration-200`} title="Bar Chart">
-                      <BarChart size={20} />
-                  </button>
-                  <button onClick={() => setActiveChartType('pie')} className={`p-1 rounded-full ${activeChartType === 'pie' ? 'bg-primary text-white' : 'text-mediumGray dark:text-gray-400'} hover:bg-lightGray dark:hover:bg-gray-700'} transition-colors duration-200`} title="Pie Chart">
-                      <PieChart size={20} />
-                  </button>
-                  {/* Toggle Chart Section Visibility */}
-                  <button onClick={() => setShowChartSection(!showChartSection)} className="p-1 rounded-full text-mediumGray dark:text-gray-400 hover:bg-lightGray dark:hover:bg-gray-700 transition-colors duration-200">
-                      {showChartSection ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
-                  </button>
-              </div>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-semibold text-darkGray dark:text-gray-100">Expense Analysis</h3>
+          <div className="flex items-center space-x-2">
+            {/* Chart Type Selectors (small, subtle icons) */}
+            <button onClick={() => setActiveChartType('line')} className={`p-1 rounded-full ${activeChartType === 'line' ? 'bg-primary text-white' : 'text-mediumGray dark:text-gray-400 hover:bg-lightGray dark:hover:bg-gray-700'} transition-colors duration-200`} title="Line Chart">
+              <LineChartIcon size={20} />
+            </button>
+            <button onClick={() => setActiveChartType('bar')} className={`p-1 rounded-full ${activeChartType === 'bar' ? 'bg-primary text-white' : 'text-mediumGray dark:text-gray-400'} hover:bg-primary/80 dark:hover:bg-gray-700'} transition-colors duration-200`} title="Bar Chart">
+              <BarChart size={20} />
+            </button>
+            <button onClick={() => setActiveChartType('pie')} className={`p-1 rounded-full ${activeChartType === 'pie' ? 'bg-primary text-white' : 'text-mediumGray dark:text-gray-400'} hover:bg-lightGray dark:hover:bg-gray-700'} transition-colors duration-200`} title="Pie Chart">
+              <PieChart size={20} />
+            </button>
+            {/* Toggle Chart Section Visibility */}
+            <button onClick={() => setShowChartSection(!showChartSection)} className="p-1 rounded-full text-mediumGray dark:text-gray-400 hover:bg-lightGray dark:hover:bg-gray-700 transition-colors duration-200">
+              {showChartSection ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+            </button>
           </div>
-          
-          {showChartSection && (
-              <div className="h-80 w-full animate-fade-in"> {/* Added height and fade-in */}
-                  <ResponsiveContainer width="100%" height="100%">
-                      <>
-                      {activeChartType === 'line' && (
-                          <RechartsLineChart data={monthlyExpensesData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" className="dark:stroke-gray-700" vertical={false} />
-                              <XAxis dataKey="month" stroke="#7F8C8D" className="dark:text-gray-400 text-sm" />
-                              <YAxis stroke="#7F8C8D" className="dark:text-gray-400 text-sm" />
-                              <Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #ddd', borderRadius: '8px' }} labelStyle={{ color: '#2C3E50', fontWeight: 'bold' }} itemStyle={{ color: '#2C3E50' }} />
-                              <Legend />
-                              {categories.filter(cat => cat !== 'All').map((cat, idx) => (
-                                <Line key={cat} type="monotone" dataKey={cat} stroke={PIE_COLORS[idx % PIE_COLORS.length]} name={cat} />
-                              ))}
-                          </RechartsLineChart>
-                      )}
-                      {activeChartType === 'bar' && (
-                          <RechartsBarChart data={monthlyExpensesData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" className="dark:stroke-gray-700" vertical={false} />
-                              <XAxis dataKey="month" stroke="#7F8C8D" className="dark:text-gray-400 text-sm" />
-                              <YAxis stroke="#7F8C8D" className="dark:text-gray-400 text-sm" />
-                              <Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #ddd', borderRadius: '8px' }} labelStyle={{ color: '#2C3E50', fontWeight: 'bold' }} itemStyle={{ color: '#2C3E50' }} />
-                              <Legend />
-                              {categories.filter(cat => cat !== 'All').map((cat, idx) => (
-                                <Bar key={cat} dataKey={cat} fill={PIE_COLORS[idx % PIE_COLORS.length]} name={cat} radius={[5, 5, 0, 0]} />
-                              ))}
-                          </RechartsBarChart>
-                      )}
-                    {activeChartType === 'pie' && categoryData.length > 0 && (
-                      <RechartsPieChart>
-                        <Pie
-                          data={categoryData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={renderCustomizedLabel}
-                          outerRadius={120}
-                          dataKey="value"
-                        >
-                          {categoryData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          contentStyle={{ backgroundColor: 'white', border: '1px solid #ddd', borderRadius: '8px' }}
-                          labelStyle={{ color: '#2C3E50', fontWeight: 'bold' }}
-                          itemStyle={{ color: '#2C3E50' }}
-                        />
-                        <Legend align="right" verticalAlign="middle" layout="vertical" wrapperStyle={{ paddingLeft: '20px' }} />
-                      </RechartsPieChart>
-                    )}
-                      {/* Handle no data for charts */}
-                    {activeChartType === 'pie' && categoryData.length === 0 && (
-                      <div className="flex items-center justify-center h-full text-mediumGray dark:text-gray-500">No data for Pie Chart.</div>
-                    )}
-                    {(activeChartType === 'line' || activeChartType === 'bar') && Array.isArray(monthlyExpensesData) && monthlyExpensesData.length === 0 && (
-                      <div className="flex items-center justify-center h-full text-mediumGray dark:text-gray-500">No data for this chart type.</div>
-                    )}
-                      </>
-                  </ResponsiveContainer>
-              </div>
-          )}
-          {!showChartSection && (
-              <div className="h-20 flex items-center justify-center text-mediumGray dark:text-gray-500 animate-fade-in">
-                  Charts section is collapsed.
-              </div>
-          )}
+        </div>
+
+        {showChartSection && (
+          <div className="h-80 w-full animate-fade-in"> {/* Added height and fade-in */}
+            <ResponsiveContainer width="100%" height="100%">
+              <>
+                {activeChartType === 'line' && (
+                  <RechartsLineChart data={monthlyExpensesData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" className="dark:stroke-gray-700" vertical={false} />
+                    <XAxis dataKey="month" stroke="#7F8C8D" className="dark:text-gray-400 text-sm" />
+                    <YAxis stroke="#7F8C8D" className="dark:text-gray-400 text-sm" />
+                    <Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #ddd', borderRadius: '8px' }} labelStyle={{ color: '#2C3E50', fontWeight: 'bold' }} itemStyle={{ color: '#2C3E50' }} />
+                    <Legend />
+                    {categories.filter(cat => cat !== 'All').map((cat, idx) => (
+                      <Line key={cat} type="monotone" dataKey={cat} stroke={PIE_COLORS[idx % PIE_COLORS.length]} name={cat} />
+                    ))}
+                  </RechartsLineChart>
+                )}
+                {activeChartType === 'bar' && (
+                  <RechartsBarChart data={monthlyExpensesData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" className="dark:stroke-gray-700" vertical={false} />
+                    <XAxis dataKey="month" stroke="#7F8C8D" className="dark:text-gray-400 text-sm" />
+                    <YAxis stroke="#7F8C8D" className="dark:text-gray-400 text-sm" />
+                    <Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #ddd', borderRadius: '8px' }} labelStyle={{ color: '#2C3E50', fontWeight: 'bold' }} itemStyle={{ color: '#2C3E50' }} />
+                    <Legend />
+                    {categories.filter(cat => cat !== 'All').map((cat, idx) => (
+                      <Bar key={cat} dataKey={cat} fill={PIE_COLORS[idx % PIE_COLORS.length]} name={cat} radius={[5, 5, 0, 0]} />
+                    ))}
+                  </RechartsBarChart>
+                )}
+                {activeChartType === 'pie' && categoryData.length > 0 && (
+                  <RechartsPieChart>
+                    <Pie
+                      data={categoryData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={renderCustomizedLabel}
+                      outerRadius={120}
+                      dataKey="value"
+                    >
+                      {categoryData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ backgroundColor: 'white', border: '1px solid #ddd', borderRadius: '8px' }}
+                      labelStyle={{ color: '#2C3E50', fontWeight: 'bold' }}
+                      itemStyle={{ color: '#2C3E50' }}
+                    />
+                    <Legend align="right" verticalAlign="middle" layout="vertical" wrapperStyle={{ paddingLeft: '20px' }} />
+                  </RechartsPieChart>
+                )}
+                {/* Handle no data for charts */}
+                {activeChartType === 'pie' && categoryData.length === 0 && (
+                  <div className="flex items-center justify-center h-full text-mediumGray dark:text-gray-500">No data for Pie Chart.</div>
+                )}
+                {(activeChartType === 'line' || activeChartType === 'bar') && Array.isArray(monthlyExpensesData) && monthlyExpensesData.length === 0 && (
+                  <div className="flex items-center justify-center h-full text-mediumGray dark:text-gray-500">No data for this chart type.</div>
+                )}
+              </>
+            </ResponsiveContainer>
+          </div>
+        )}
+        {!showChartSection && (
+          <div className="h-20 flex items-center justify-center text-mediumGray dark:text-gray-500 animate-fade-in">
+            Charts section is collapsed.
+          </div>
+        )}
       </div>
 
 
@@ -650,35 +643,35 @@ const ExpenseCard: React.FC<{ expense: typeof dummyExpenses[0]; onEdit: (id: str
                   <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-            <tbody className="divide-y divide-lightGray dark:divide-gray-700">
-              {filteredExpenses.map(expense => (
-                <ExpenseRow 
-                  key={expense.id} 
-                  expense={expense} 
-                  onEdit={(id) => console.log(`Edit expense with id: ${id}`)} 
-                  onDelete={(id) => console.log(`Delete expense with id: ${id}`)} 
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {/* Pagination Placeholder */}
-        <div className="p-4 flex justify-between items-center border-t border-lightGray dark:border-gray-700">
+              <tbody className="divide-y divide-lightGray dark:divide-gray-700">
+                {filteredExpenses.map(expense => (
+                  <ExpenseRow
+                    key={expense.id}
+                    expense={expense}
+                    onEdit={(id) => console.log(`Edit expense with id: ${id}`)}
+                    onDelete={(id) => console.log(`Delete expense with id: ${id}`)}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {/* Pagination Placeholder */}
+          <div className="p-4 flex justify-between items-center border-t border-lightGray dark:border-gray-700">
             <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Hore</button>
             <span className="text-sm text-darkGray dark:text-gray-100">Bogga 1 ee {Math.ceil(filteredExpenses.length / 10) || 1}</span>
             <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition">Xiga</button>
+          </div>
         </div>
-      </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
-            {filteredExpenses.map(expense => (
-                <ExpenseCard 
-                  key={expense.id} 
-                  expense={expense} 
-                  onEdit={(id) => console.log(`Edit expense with id: ${id}`)} 
-                  onDelete={(id) => console.log(`Delete expense with id: ${id}`)} 
-                />
-            ))}
+          {filteredExpenses.map(expense => (
+            <ExpenseCard
+              key={expense.id}
+              expense={expense}
+              onEdit={(id) => console.log(`Edit expense with id: ${id}`)}
+              onDelete={(id) => console.log(`Delete expense with id: ${id}`)}
+            />
+          ))}
         </div>
       )}
 

@@ -210,8 +210,8 @@ export default function TransactionsPage() {
     setPageLoading(true);
     try {
       const [trxResponse, statsResponse] = await Promise.all([
-        fetch('/api/accounting/transactions'),
-        fetch('/api/accounting/reports')
+        fetch('/api/projects/accounting/transactions'),
+        fetch('/api/projects/accounting/reports')
       ]);
 
       if (!trxResponse.ok) throw new Error('Failed to fetch transactions');
@@ -234,7 +234,7 @@ export default function TransactionsPage() {
   const handleDeleteTransaction = async (id: string) => {
     if (window.confirm('Ma hubtaa inaad tirtirto dhaqdhaqaaqan lacagta ah? Tan lama soo celin karo!')) {
       try {
-        const response = await fetch(`/api/accounting/transactions/${id}`, {
+        const response = await fetch(`/api/projects/accounting/transactions/${id}`, {
           method: 'DELETE',
         });
         const data = await response.json();
@@ -250,7 +250,7 @@ export default function TransactionsPage() {
   };
 
   const handleEditTransaction = (id: string) => {
-    router.push(`/accounting/transactions/edit/${id}`); // Navigate to edit transaction page
+    router.push(`/projects/accounting/transactions/edit/${id}`); // Navigate to edit transaction page
   };
 
   useEffect(() => {
@@ -338,16 +338,16 @@ export default function TransactionsPage() {
       {/* Header - Mobile Optimized */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 lg:mb-8 gap-4">
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-darkGray dark:text-gray-100">
-          <Link href="/accounting" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-3 sm:mr-4">
+          <Link href="/projects/accounting" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-3 sm:mr-4">
             <ArrowLeft size={24} className="inline-block sm:w-7 sm:h-7" />
           </Link>
           Dhaqdhaqaaqa Lacagta
         </h1>
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-          <Link href="/accounting/transactions/add" className="bg-primary text-white py-2.5 px-4 sm:px-6 rounded-lg font-bold text-sm sm:text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center justify-center">
+          <Link href="/projects/accounting/transactions/add" className="bg-primary text-white py-2.5 px-4 sm:px-6 rounded-lg font-bold text-sm sm:text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center justify-center">
             <Plus size={18} className="mr-2" /> Diiwaan Geli Dhaqdhaqaaq
           </Link>
-          <Link href="/accounting/transactions/transfer" className="bg-green-600 text-white py-2.5 px-4 sm:px-6 rounded-lg font-bold text-sm sm:text-lg hover:bg-green-700 transition duration-200 shadow-md flex items-center justify-center">
+          <Link href="/projects/accounting/transactions/transfer" className="bg-green-600 text-white py-2.5 px-4 sm:px-6 rounded-lg font-bold text-sm sm:text-lg hover:bg-green-700 transition duration-200 shadow-md flex items-center justify-center">
             <Repeat size={18} className="mr-2" /> Wareejin Account-ka
           </Link>
           <button onClick={fetchTransactions} className="bg-secondary text-white py-2.5 px-4 sm:px-6 rounded-lg font-bold text-sm sm:text-lg hover:bg-green-600 transition duration-200 shadow-md flex items-center justify-center">

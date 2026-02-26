@@ -1,10 +1,10 @@
-// app/api/accounting/reports/daily/route.ts - Daily Report API Route
+// app/api/projects/accounting/reports/daily/route.ts - Daily Report API Route
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db'; // Import Prisma Client
 import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 
-// GET /api/accounting/reports/daily - Soo deji xogta warbixinta maalinlaha ah
+// GET /api/projects/accounting/reports/daily - Soo deji xogta warbixinta maalinlaha ah
 export async function GET(request: Request) {
   try {
     // Mustaqbalka, halkan waxaad ku dari doontaa authentication iyo authorization

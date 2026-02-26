@@ -37,7 +37,7 @@ export default function EditVendorPage() {
 
       setLoading(true);
       try {
-        const response = await fetch(`/api/vendors/${id}`);
+        const response = await fetch(`/api/manufacturing/vendors/${id}`);
         if (!response.ok) throw new Error('Failed to fetch vendor details');
         const data = await response.json();
 
@@ -54,7 +54,7 @@ export default function EditVendorPage() {
         console.error('Error fetching vendor details for edit:', error);
         setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka faahfaahinta iibiyaha la soo gelinayay.', type: 'error' });
         // Redirect if vendor not found or error
-        router.push('/vendors');
+        router.push('/manufacturing/vendors');
       } finally {
         setLoading(false);
       }
@@ -94,7 +94,7 @@ export default function EditVendorPage() {
         notes: notes || null,
       };
 
-      const response = await fetch(`/api/vendors/${id}`, { // Use PUT method for update
+      const response = await fetch(`/api/manufacturing/vendors/${id}`, { // Use PUT method for update
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(vendorData),
@@ -104,7 +104,7 @@ export default function EditVendorPage() {
 
       if (response.ok) {
         setToastMessage({ message: data.message || 'Iibiyaha si guul leh ayaa loo cusboonaysiiyay!', type: 'success' });
-        router.push(`/vendors/${id}`); // Redirect to vendor details page after update
+        router.push(`/manufacturing/vendors/${id}`); // Redirect to vendor details page after update
       } else {
         setToastMessage({ message: data.message || 'Cilad ayaa dhacday marka iibiyaha la cusboonaysiinayay.', type: 'error' });
       }

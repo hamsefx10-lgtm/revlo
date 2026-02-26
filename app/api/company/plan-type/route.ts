@@ -8,7 +8,7 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions) as any;
     if (!session?.user?.companyId) {
-      return NextResponse.json({ planType: 'COMBINED' }, { status: 200 });
+      return NextResponse.json({ planType: 'PROJECTS_ONLY' }, { status: 200 });
     }
 
     const company = await prisma.company.findUnique({
@@ -16,11 +16,14 @@ export async function GET() {
       select: { planType: true },
     });
 
-    return NextResponse.json({ 
-      planType: company?.planType || 'COMBINED' 
-    });
+    // COMBINED is removed — default to PROJECTS_ONLY
+    const planType = company?.planType === 'PROJECTS_ONLY' || company?.planType === 'SHOPS_ONLY' || company?.planType === 'FACTORIES_ONLY'
+      ? company.planType
+      : 'PROJECTS_ONLY';
+
+    return NextResponse.json({ planType });
   } catch (error) {
-    return NextResponse.json({ planType: 'COMBINED' }, { status: 200 });
+    return NextResponse.json({ planType: 'PROJECTS_ONLY' }, { status: 200 });
   }
 }
 

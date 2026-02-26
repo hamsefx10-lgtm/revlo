@@ -30,6 +30,7 @@ interface MaterialExpenseFormProps {
     setTotalAmount: (amount: number) => void;
     setReceiptImage: (file: File | null) => void;
     errors?: { [key: string]: string };
+    vendorType?: 'project' | 'company'; // NEW: which vendor API to use
 }
 
 export function MaterialExpenseForm({
@@ -48,7 +49,8 @@ export function MaterialExpenseForm({
     totalAmount,
     setTotalAmount,
     setReceiptImage,
-    errors = {}
+    errors = {},
+    vendorType = 'company',
 }: MaterialExpenseFormProps) {
 
     const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -221,8 +223,8 @@ export function MaterialExpenseForm({
             {/* AI Receipt Upload Banner */}
             <div
                 className={`bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 animate-fade-in transition-all ${isDragging
-                        ? 'border-blue-500 dark:border-blue-400 border-2 bg-blue-100 dark:bg-blue-900/40'
-                        : 'border-blue-200 dark:border-blue-800'
+                    ? 'border-blue-500 dark:border-blue-400 border-2 bg-blue-100 dark:bg-blue-900/40'
+                    : 'border-blue-200 dark:border-blue-800'
                     }`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -274,6 +276,7 @@ export function MaterialExpenseForm({
                         value={selectedVendor}
                         onChange={setSelectedVendor}
                         error={errors.selectedVendor}
+                        vendorType={vendorType}
                     />
                 </div>
                 <div>

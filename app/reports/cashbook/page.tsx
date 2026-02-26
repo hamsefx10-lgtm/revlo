@@ -26,7 +26,7 @@ export default function CashbookReportPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch('/api/accounting/reports/cashbook');
+        const res = await fetch('/api/projects/accounting/reports/cashbook');
         if (!res.ok) throw new Error('Failed to fetch cashbook data');
         const data = await res.json();
         setEntries(data.entries || data);

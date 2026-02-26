@@ -41,7 +41,7 @@ export default function EditAccountPage() {
     const fetchAccount = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/accounting/accounts/${accountId}`);
+        const res = await fetch(`/api/projects/accounting/accounts/${accountId}`);
         if (!res.ok) throw new Error('Account lama helin');
         const data = await res.json();
         setAccount(data.account);
@@ -83,7 +83,7 @@ export default function EditAccountPage() {
     }
 
     try {
-      const response = await fetch(`/api/accounting/accounts/${accountId}`, {
+      const response = await fetch(`/api/projects/accounting/accounts/${accountId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -99,7 +99,7 @@ export default function EditAccountPage() {
       if (!response.ok) throw new Error(data.message || 'Failed to update account');
 
       setToastMessage({ message: data.message || 'Account-ka waa la cusboonaysiiyay!', type: 'success' });
-      router.push('/accounting/accounts');
+      router.push('/projects/accounting/accounts');
     } catch (error: any) {
       setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka account-ka la cusboonaysiinayay.', type: 'error' });
     } finally {
@@ -111,7 +111,7 @@ export default function EditAccountPage() {
     <Layout>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">
-          <Link href="/accounting/accounts" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
+          <Link href="/projects/accounting/accounts" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
             <ArrowLeft size={28} className="inline-block" />
           </Link>
           Edit Account

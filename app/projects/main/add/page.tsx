@@ -19,8 +19,8 @@ interface Customer {
 
 // --- Type Definition for Account ---
 interface Account {
-    id: string;
-    name: string;
+  id: string;
+  name: string;
 }
 
 const projectTypes = [
@@ -52,7 +52,7 @@ export default function AddProjectPage() {
     const fetchRequiredData = async () => {
       try {
         // Fetch Customers
-        const customerResponse = await fetch('/api/customers');
+        const customerResponse = await fetch('/api/projects/customers');
         if (!customerResponse.ok) {
           const errorData = await customerResponse.json();
           throw new Error(errorData.message || 'Failed to fetch customers');
@@ -60,8 +60,8 @@ export default function AddProjectPage() {
         const customerData = await customerResponse.json();
         setCustomers(customerData.customers || []);
 
-        // Fetch Accounts (Assuming an API endpoint like /api/accounts)
-        const accountResponse = await fetch('/api/accounts'); 
+        // Fetch Accounts (Assuming an API endpoint like /api/projects/accounting/accounts)
+        const accountResponse = await fetch('/api/projects/accounting/accounts');
         if (!accountResponse.ok) {
           const errorData = await accountResponse.json();
           throw new Error(errorData.message || 'Failed to fetch accounts');
@@ -164,7 +164,7 @@ export default function AddProjectPage() {
                 className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${errors.name ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
               />
             </div>
-            {errors.name && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.name}</p>}
+            {errors.name && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.name}</p>}
           </div>
 
           {/* Customer Selection */}
@@ -185,7 +185,7 @@ export default function AddProjectPage() {
               </select>
               <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
             </div>
-            {errors.customerId && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.customerId}</p>}
+            {errors.customerId && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.customerId}</p>}
           </div>
 
           {/* Account Selection (New Field) */}
@@ -206,7 +206,7 @@ export default function AddProjectPage() {
               </select>
               <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
             </div>
-            {errors.accountId && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.accountId}</p>}
+            {errors.accountId && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.accountId}</p>}
           </div>
 
           {/* Agreement Amount & Advance Paid */}
@@ -224,7 +224,7 @@ export default function AddProjectPage() {
                   className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${errors.agreementAmount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 />
               </div>
-              {errors.agreementAmount && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.agreementAmount}</p>}
+              {errors.agreementAmount && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.agreementAmount}</p>}
             </div>
             <div>
               <label htmlFor="advancePaid" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Lacagta Hore Loo Bixiyay ($)</label>
@@ -239,7 +239,7 @@ export default function AddProjectPage() {
                   className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${errors.advancePaid ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 />
               </div>
-              {errors.advancePaid && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.advancePaid}</p>}
+              {errors.advancePaid && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.advancePaid}</p>}
             </div>
           </div>
 
@@ -262,7 +262,7 @@ export default function AddProjectPage() {
                 </select>
                 <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
               </div>
-              {errors.projectType && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.projectType}</p>}
+              {errors.projectType && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.projectType}</p>}
             </div>
             <div>
               <label htmlFor="expectedCompletionDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Dhammaystirka La Filayo <span className="text-redError">*</span></label>
@@ -276,7 +276,7 @@ export default function AddProjectPage() {
                   className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${errors.expectedCompletionDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 />
               </div>
-              {errors.expectedCompletionDate && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{errors.expectedCompletionDate}</p>}
+              {errors.expectedCompletionDate && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.expectedCompletionDate}</p>}
             </div>
           </div>
 

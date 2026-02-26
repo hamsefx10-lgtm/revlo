@@ -1,11 +1,11 @@
-// app/api/accounting/fixed-assets/route.ts - Fixed Assets API Route
+// app/api/projects/accounting/fixed-assets/route.ts - Fixed Assets API Route
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db'; // Import Prisma Client
 import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 import { getSessionCompanyId } from './auth';
 
-// GET /api/accounting/fixed-assets - Soo deji dhammaan hantida go'an
+// GET /api/projects/accounting/fixed-assets - Soo deji dhammaan hantida go'an
 export async function GET(request: Request) {
   try {
     const companyId = await getSessionCompanyId();
@@ -30,11 +30,11 @@ export async function GET(request: Request) {
   }
 }
 
-// POST /api/accounting/fixed-assets - Ku dar hanti cusub
+// POST /api/projects/accounting/fixed-assets - Ku dar hanti cusub
 export async function POST(request: Request) {
   try {
     const companyId = await getSessionCompanyId();
-    const { 
+    const {
       name, type, value, purchaseDate, assignedTo, status, depreciationRate, accountId, vendorId, note
     } = await request.json();
     if (!name || !type || typeof value !== 'number' || value <= 0 || !purchaseDate || typeof depreciationRate !== 'number' || depreciationRate < 0 || depreciationRate > 1) {
@@ -79,10 +79,10 @@ export async function POST(request: Request) {
     let createdTransaction: any = null;
     if (accountId && Number(value) > 0) {
       // Verify account exists
-      const account = await prisma.account.findFirst({ 
-        where: { id: accountId, companyId } 
+      const account = await prisma.account.findFirst({
+        where: { id: accountId, companyId }
       });
-      
+
       if (!account) {
         return NextResponse.json(
           { message: 'Account-ka lama helin.' },
@@ -112,8 +112,8 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { 
-        message: 'Hantida si guul leh ayaa loo daray!', 
+      {
+        message: 'Hantida si guul leh ayaa loo daray!',
         asset: newAsset,
         transaction: createdTransaction
       },
