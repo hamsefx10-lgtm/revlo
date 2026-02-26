@@ -4,7 +4,7 @@ import prisma from '@/lib/db'; // Import Prisma Client
 import { isValidEmail } from '@/lib/utils'; // For email validation
 import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { Decimal } from '@prisma/client/runtime/library'; // MUHIIM: Import Decimal
-import { getSessionCompanyId } from '@/app/api/employees/auth';
+import { getSessionCompanyId } from '@/app/api/projects/employees/auth';
 
 // GET /api/employees/[id] - Soo deji shaqaale gaar ah
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {

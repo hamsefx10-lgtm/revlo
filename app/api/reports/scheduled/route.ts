@@ -1,25 +1,25 @@
 // app/api/reports/scheduled/route.ts - Scheduled Reports API
 import { NextResponse } from 'next/server';
 import { reportScheduler } from '@/lib/scheduler';
-import { getSessionCompanyId } from '@/app/api/accounting/reports/auth';
+import { getSessionCompanyId } from '@/app/api/projects/accounting/reports/auth';
 
 // GET /api/reports/scheduled - Get scheduled reports
 export async function GET(request: Request) {
   try {
     const companyId = await getSessionCompanyId();
     const scheduledReports = reportScheduler.getScheduledReports(companyId);
-    
+
     return NextResponse.json({ scheduledReports }, { status: 200 });
   } catch (error: any) {
     console.error('Scheduled reports API error:', error);
-    
+
     if (error.message?.includes('Unauthorized')) {
       return NextResponse.json(
         { message: 'Awood uma lihid. Fadlan dib u gal.' },
         { status: 401 }
       );
     }
-    
+
     return NextResponse.json(
       { message: 'Cilad server ayaa dhacday. Fadlan isku day mar kale.' },
       { status: 500 }
@@ -64,14 +64,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ scheduledReport }, { status: 201 });
   } catch (error: any) {
     console.error('Create scheduled report error:', error);
-    
+
     if (error.message?.includes('Unauthorized')) {
       return NextResponse.json(
         { message: 'Awood uma lihid. Fadlan dib u gal.' },
         { status: 401 }
       );
     }
-    
+
     return NextResponse.json(
       { message: 'Cilad server ayaa dhacday. Fadlan isku day mar kale.' },
       { status: 500 }
@@ -91,14 +91,14 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     return NextResponse.json({ message: 'Scheduled report updated successfully' }, { status: 200 });
   } catch (error: any) {
     console.error('Update scheduled report error:', error);
-    
+
     if (error.message?.includes('Unauthorized')) {
       return NextResponse.json(
         { message: 'Awood uma lihid. Fadlan dib u gal.' },
         { status: 401 }
       );
     }
-    
+
     return NextResponse.json(
       { message: 'Cilad server ayaa dhacday. Fadlan isku day mar kale.' },
       { status: 500 }
@@ -117,14 +117,14 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     return NextResponse.json({ message: 'Scheduled report deleted successfully' }, { status: 200 });
   } catch (error: any) {
     console.error('Delete scheduled report error:', error);
-    
+
     if (error.message?.includes('Unauthorized')) {
       return NextResponse.json(
         { message: 'Awood uma lihid. Fadlan dib u gal.' },
         { status: 401 }
       );
     }
-    
+
     return NextResponse.json(
       { message: 'Cilad server ayaa dhacday. Fadlan isku day mar kale.' },
       { status: 500 }

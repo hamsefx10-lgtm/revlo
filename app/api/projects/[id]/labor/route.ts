@@ -1,7 +1,7 @@
 // app/api/projects/[id]/labor/route.ts - Add Project Employee (ProjectLabor)
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { getSessionCompanyId } from '@/app/api/employees/auth';
+import { getSessionCompanyId } from '@/app/api/projects/employees/auth';
 
 export async function POST(request: Request, { params }: { params: { id: string } }) {
   try {

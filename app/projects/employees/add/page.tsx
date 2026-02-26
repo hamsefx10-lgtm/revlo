@@ -5,17 +5,17 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Layout from '@/components/layouts/Layout';
-import { 
+import {
   Plus, X, Loader2, Info, CheckCircle, User as UserIcon, Building, Mail, Phone, MapPin, MessageSquare,
   ArrowLeft, Tag, Briefcase as BriefcaseIcon, Clock as ClockIcon, Coins, Calendar, DollarSign, ClipboardList, ChevronRight
 } from 'lucide-react';
 import Toast from '@/components/common/Toast'; // Reuse Toast component
-import { calculateEmployeeSalary } from '../../../lib/utils';
+import { calculateEmployeeSalary } from '@/lib/utils';
 
 export default function AddEmployeePage() {
   const router = useRouter();
   const [employeeType, setEmployeeType] = useState<'Company' | 'Project'>('Company'); // NEW: Company or Project employee
-  
+
   // Common fields for all employee types
   const [isActive, setIsActive] = useState(true); // Default to active
 
@@ -61,7 +61,7 @@ export default function AddEmployeePage() {
   // --- Validation Logic ---
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-    
+
     if (employeeType === 'Company') {
       // Company employee validation
       if (!fullName.trim()) newErrors.fullName = 'Magaca buuxa waa waajib.';
@@ -79,7 +79,7 @@ export default function AddEmployeePage() {
       if (!projectStartDate) newErrors.projectStartDate = 'Taariikhda bilowga shaqada waa waajib.';
       // Project is optional for project employees
     }
-    
+
     setValidationErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -136,19 +136,19 @@ export default function AddEmployeePage() {
           }
           return;
         }
-        
+
         setToastMessage({ message: data.message || 'Shaqaalaha shirkadda si guul leh ayaa loo daray!', type: 'success' });
-        
+
         // Reset fields after successful submission
-        setFullName(''); 
-        setEmail(''); 
-        setPhone(''); 
-        setCompanyRole(''); 
-        setMonthlySalary(''); 
-        setSalaryStartDate(new Date().toISOString().split('T')[0]); 
+        setFullName('');
+        setEmail('');
+        setPhone('');
+        setCompanyRole('');
+        setMonthlySalary('');
+        setSalaryStartDate(new Date().toISOString().split('T')[0]);
         setIsActive(true);
         setValidationErrors({});
-        
+
         // Redirect after a short delay to show success message
         setTimeout(() => {
           router.push('/employees');
@@ -188,9 +188,9 @@ export default function AddEmployeePage() {
           }
           return;
         }
-        
+
         setToastMessage({ message: data.message || 'Shaqaalaha mashruuca si guul leh ayaa loo daray!', type: 'success' });
-        
+
         // Reset fields after successful submission
         setProjectEmployeeName('');
         setProjectEmployeeEmail('');
@@ -200,7 +200,7 @@ export default function AddEmployeePage() {
         setSelectedProject('');
         setIsActive(true);
         setValidationErrors({});
-        
+
         // Redirect after a short delay to show success message
         setTimeout(() => {
           router.push('/employees');
@@ -242,19 +242,19 @@ export default function AddEmployeePage() {
           <div>
             <label htmlFor="employeeType" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Nooca Shaqaalaha <span className="text-redError">*</span></label>
             <div className="flex space-x-3">
-              <button 
-                type="button" 
-                onClick={() => setEmployeeType('Company')} 
+              <button
+                type="button"
+                onClick={() => setEmployeeType('Company')}
                 className={`flex items-center space-x-2 p-3 rounded-lg border transition-all duration-200 ${employeeType === 'Company' ? 'bg-primary text-white border-primary' : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 border-lightGray dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
               >
-                <Building size={20}/> <span>Shaqaalaha Shirkadda</span>
+                <Building size={20} /> <span>Shaqaalaha Shirkadda</span>
               </button>
-              <button 
-                type="button" 
-                onClick={() => setEmployeeType('Project')} 
+              <button
+                type="button"
+                onClick={() => setEmployeeType('Project')}
                 className={`flex items-center space-x-2 p-3 rounded-lg border transition-all duration-200 ${employeeType === 'Project' ? 'bg-primary text-white border-primary' : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 border-lightGray dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
               >
-                <BriefcaseIcon size={20}/> <span>Shaqaalaha Mashruuca</span>
+                <BriefcaseIcon size={20} /> <span>Shaqaalaha Mashruuca</span>
               </button>
             </div>
           </div>
@@ -285,7 +285,7 @@ export default function AddEmployeePage() {
                     className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.fullName ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                   />
                 </div>
-                {validationErrors.fullName && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.fullName}</p>}
+                {validationErrors.fullName && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.fullName}</p>}
               </div>
               {/* Email */}
               <div>
@@ -301,7 +301,7 @@ export default function AddEmployeePage() {
                     className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.email ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                   />
                 </div>
-                {validationErrors.email && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.email}</p>}
+                {validationErrors.email && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.email}</p>}
               </div>
               {/* Phone */}
               <div>
@@ -334,7 +334,7 @@ export default function AddEmployeePage() {
                   </select>
                   <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
                 </div>
-                {validationErrors.companyRole && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.companyRole}</p>}
+                {validationErrors.companyRole && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.companyRole}</p>}
               </div>
               {/* Monthly Salary */}
               <div>
@@ -365,18 +365,18 @@ export default function AddEmployeePage() {
                     className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.salaryStartDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                   />
                 </div>
-                {validationErrors.salaryStartDate && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.salaryStartDate}</p>}
+                {validationErrors.salaryStartDate && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.salaryStartDate}</p>}
               </div>
               {/* Is Active */}
               <div>
                 <label htmlFor="isActive" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Xaaladda Shaqaalaha</label>
                 <div className="flex items-center justify-between p-3 bg-lightGray dark:bg-gray-700 rounded-lg border border-lightGray dark:border-gray-600">
                   <span className="text-darkGray dark:text-gray-300">Firfircoon</span>
-                  <input 
-                    type="checkbox" 
-                    id="isActive" 
-                    checked={isActive} 
-                    onChange={(e) => setIsActive(e.target.checked)} 
+                  <input
+                    type="checkbox"
+                    id="isActive"
+                    checked={isActive}
+                    onChange={(e) => setIsActive(e.target.checked)}
                     className="h-5 w-5 text-primary rounded border-mediumGray dark:border-gray-600 focus:ring-primary"
                   />
                 </div>
@@ -425,7 +425,7 @@ export default function AddEmployeePage() {
                   <p className="text-sm text-mediumGray dark:text-gray-400">Macluumaadka shaqaalaha mashruuca ee muddaha</p>
                 </div>
               </div>
-              
+
               {/* Project Selection (Optional) */}
               <div>
                 <label htmlFor="selectedProject" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Dooro Mashruuc <span className="text-gray-400">(Ikhtiyaari)</span></label>
@@ -458,7 +458,7 @@ export default function AddEmployeePage() {
                     className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition duration-200 ${validationErrors.projectEmployeeName ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                   />
                 </div>
-                {validationErrors.projectEmployeeName && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.projectEmployeeName}</p>}
+                {validationErrors.projectEmployeeName && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.projectEmployeeName}</p>}
               </div>
 
               {/* Email */}
@@ -475,7 +475,7 @@ export default function AddEmployeePage() {
                     className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition duration-200 ${validationErrors.projectEmployeeEmail ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                   />
                 </div>
-                {validationErrors.projectEmployeeEmail && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.projectEmployeeEmail}</p>}
+                {validationErrors.projectEmployeeEmail && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.projectEmployeeEmail}</p>}
               </div>
 
               {/* Phone */}
@@ -510,7 +510,7 @@ export default function AddEmployeePage() {
                   </select>
                   <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
                 </div>
-                {validationErrors.projectEmployeeRole && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.projectEmployeeRole}</p>}
+                {validationErrors.projectEmployeeRole && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.projectEmployeeRole}</p>}
               </div>
 
               {/* Start Date */}
@@ -526,7 +526,7 @@ export default function AddEmployeePage() {
                     className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition duration-200 ${validationErrors.projectStartDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                   />
                 </div>
-                {validationErrors.projectStartDate && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.projectStartDate}</p>}
+                {validationErrors.projectStartDate && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.projectStartDate}</p>}
               </div>
 
               {/* Is Active */}
@@ -534,11 +534,11 @@ export default function AddEmployeePage() {
                 <label htmlFor="isActive" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Xaaladda Shaqaalaha</label>
                 <div className="flex items-center justify-between p-3 bg-lightGray dark:bg-gray-700 rounded-lg border border-lightGray dark:border-gray-600">
                   <span className="text-darkGray dark:text-gray-300">Firfircoon</span>
-                  <input 
-                    type="checkbox" 
-                    id="isActive" 
-                    checked={isActive} 
-                    onChange={(e) => setIsActive(e.target.checked)} 
+                  <input
+                    type="checkbox"
+                    id="isActive"
+                    checked={isActive}
+                    onChange={(e) => setIsActive(e.target.checked)}
                     className="h-5 w-5 text-accent rounded border-mediumGray dark:border-gray-600 focus:ring-accent"
                   />
                 </div>

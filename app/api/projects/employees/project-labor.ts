@@ -1,7 +1,7 @@
 // app/api/employees/project-labor.ts - Returns all project employees (ProjectLabor) for the company
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { getSessionCompanyId } from '@/app/api/employees/auth';
+import { getSessionCompanyId } from '@/app/api/projects/employees/auth';
 
 export async function GET(request: Request) {
   try {
@@ -11,7 +11,7 @@ export async function GET(request: Request) {
       where: { companyId },
       select: { id: true, name: true },
     });
-  const projectIds = projects.map((p: any) => p.id);
+    const projectIds = projects.map((p: any) => p.id);
     // Get all ProjectLabor records for these projects
     const projectLabors = await prisma.projectLabor.findMany({
       where: { projectId: { in: projectIds } },
