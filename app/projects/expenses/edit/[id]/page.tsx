@@ -542,7 +542,7 @@ export default function EditExpensePage() {
       paymentDate: finalPaymentStatus === 'PAID' ? expenseDate : undefined,
       paidAmount: (companyExpenseType === 'Material' || category === 'Material') ?
         (finalPaymentStatus === 'PAID' ? totalMaterialCost : (finalPaymentStatus === 'PARTIAL' ? (partialPaidAmount ? parseFloat(partialPaidAmount.toString()) : 0) : 0))
-        : (category === 'Company Labor' || companyExpenseType === 'Company Labor' ? laborPaidAmount : amount),
+        : (category === 'Company Labor' || companyExpenseType === 'Company Labor' ? laborPaidAmount : (finalPaymentStatus === 'PAID' ? amount : (finalPaymentStatus === 'PARTIAL' ? Number(partialPaidAmount) : 0))),
     };
 
     try {
@@ -762,6 +762,55 @@ export default function EditExpensePage() {
                 </select>
                 {validationErrors.companyExpenseType && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.companyExpenseType}</p>}
               </div>
+
+              {/* Shared Payment Fields for Company Expenses (excluding Material/Labor/Salary which have their own) */}
+              {companyExpenseType && !['Material', 'Company Labor', 'Salary', 'Debt'].includes(companyExpenseType) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-3 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+                  <div>
+                    <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Xaallada Lacag Bixinta *</label>
+                    <select
+                      value={paymentStatus}
+                      onChange={e => setPaymentStatus(e.target.value)}
+                      className="w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100"
+                    >
+                      <option value="PAID">Waa la bixiyey (PAID)</option>
+                      <option value="PARTIAL">Qayb baa la bixiyey (PARTIAL)</option>
+                      <option value="UNPAID">Lama bixin (UNPAID)</option>
+                    </select>
+                  </div>
+
+                  {paymentStatus !== 'UNPAID' && (
+                    <div>
+                      <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Akoonka Laga Jarayo *</label>
+                      <select
+                        value={paidFrom}
+                        onChange={e => setPaidFrom(e.target.value)}
+                        className="w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100"
+                        required
+                      >
+                        <option value="">-- Dooro Akoonka --</option>
+                        {accounts.map(acc => (
+                          <option key={acc.id} value={acc.id}>{acc.name} (${Number(acc.balance || 0).toLocaleString()})</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {paymentStatus === 'PARTIAL' && (
+                    <div className="md:col-span-2">
+                      <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Lacagta Hadda La Bixiyay (ETB) *</label>
+                      <input
+                        type="number"
+                        value={partialPaidAmount}
+                        onChange={e => setPartialPaidAmount(e.target.value)}
+                        className="w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100"
+                        placeholder="Geli lacagta aad hadda bixisay"
+                        required
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Salary Specific Fields */}
               {companyExpenseType === 'Salary' && (

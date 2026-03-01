@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSessionCompanyId } from '../../../admin/auth';
+import { getSessionCompanyUser } from '@/lib/auth';
 import prisma from '@/lib/db';
 
 // PUT /api/settings/shareholders/[id] - Update shareholder
@@ -8,7 +8,8 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const companyId = await getSessionCompanyId();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
     if (!companyId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
@@ -23,9 +24,9 @@ export async function PUT(
     }
 
     const shareholder = await prisma.shareholder.update({
-      where: { 
+      where: {
         id: params.id,
-        companyId 
+        companyId
       },
       data: {
         name,
@@ -35,9 +36,9 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       shareholder,
-      message: 'Shareholder updated successfully' 
+      message: 'Shareholder updated successfully'
     });
   } catch (error) {
     console.error('Error updating shareholder:', error);
@@ -49,25 +50,23 @@ export async function PUT(
 }
 
 // DELETE /api/settings/shareholders/[id] - Delete shareholder
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-    const companyId = await getSessionCompanyId();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
     if (!companyId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     await prisma.shareholder.delete({
-      where: { 
+      where: {
         id: params.id,
-        companyId 
+        companyId
       },
     });
 
-    return NextResponse.json({ 
-      message: 'Shareholder deleted successfully' 
+    return NextResponse.json({
+      message: 'Shareholder deleted successfully'
     });
   } catch (error) {
     console.error('Error deleting shareholder:', error);

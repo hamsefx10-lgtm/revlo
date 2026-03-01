@@ -1,0 +1,11 @@
+=== TARGETED INVESTIGATION: CBE & E-BIRR ONLY ===
+
+--- Targeted Accounts ---
+- CBE (c8306c05-5279-4b05-b5fc-dda41c793a77): 143,148.69 ETB
+- E-Birr (3c156507-ea0a-4974-8a54-92f1e9dd519a): -106,870.54 ETB
+TOTAL TARGETED BALANCE: 36,278.15 ETB
+
+--- Targeted Transaction Summary ---
+Targeted Inflow: 14,447,830.21 ETB
+Targeted Outflow: 14,411,552.06 ETB
+Targeted NET FLOW: 36,278.15 ETB

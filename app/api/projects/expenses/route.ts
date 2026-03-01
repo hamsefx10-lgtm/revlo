@@ -3,12 +3,16 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/db'; // Import Prisma Client
 import { isValidEmail } from '@/lib/utils'; // For email validation if needed
 import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
-import { getSessionCompanyUser } from './auth';
+import { getSessionCompanyUser } from '@/lib/auth';
 
 // GET /api/expenses - Soo deji dhammaan kharashyada
 export async function GET(request: Request) {
   try {
-    const { companyId } = await getSessionCompanyUser();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
+    if (!companyId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     const { searchParams } = new URL(request.url);
     const employeeId = searchParams.get('employeeId');
     const subCategory = searchParams.get('subCategory');
@@ -134,7 +138,12 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
 
-    const { companyId, userId } = await getSessionCompanyUser();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
+    const userId = session?.userId;
+    if (!companyId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
 
     // Check if request contains FormData (file upload) or JSON
     const contentType = request.headers.get('content-type') || '';
@@ -351,216 +360,167 @@ export async function POST(request: Request) {
 
     // NOTE: Account balance updates are handled below using transactionType logic; avoid double-decrement here.
 
-    // 2. Create a corresponding transaction
-    let transactionType: 'INCOME' | 'EXPENSE' | 'TRANSFER_IN' | 'TRANSFER_OUT' | 'DEBT_TAKEN' | 'DEBT_REPAID' | 'OTHER' = 'EXPENSE';
-    let transactionAmount = Number(amount);
-    let transactionCustomerId = undefined;
-    let transactionVendorId = vendorId || undefined;
-    // FIX: Initialize with paidFrom as fallback - ensures account balance is always updated when paidFrom exists
-    let transactionAccountId = paidFrom || undefined;
+    // 2. Create corresponding transactions
+    const totalAmountNum = Number(amount);
+    const paidAmountNum = Number(paidAmount || 0);
+    const isPartial = paymentStatus === 'PARTIAL';
+    const isUnpaid = paymentStatus === 'UNPAID';
+
+    // We'll collect transactions to create
+    const transactionsToCreate = [];
+
     if (category === 'Debt' || (category === 'Company Expense' && subCategory === 'Debt')) {
       if (paymentStatus === 'REPAID') {
-        transactionType = 'DEBT_REPAID';
-        transactionCustomerId = customerId || null;
-        // When repaying debt, if paidFrom is selected, money goes into account (income)
-        transactionAccountId = paidFrom || undefined;
+        transactionsToCreate.push({
+          description: finalDescription,
+          amount: Math.abs(totalAmountNum),
+          type: 'DEBT_REPAID' as const,
+          transactionDate: new Date(expenseDate),
+          note: note || null,
+          accountId: paidFrom || null,
+          projectId: projectId || null,
+          expenseId: newExpense.id,
+          userId,
+          companyId,
+          customerId: customerId || undefined,
+        });
       } else {
-        transactionType = 'DEBT_TAKEN';
-        transactionCustomerId = customerId || null;
-        // When taking debt, if paidFrom is selected, deduct from that account
-        transactionAccountId = paidFrom || undefined;
+        transactionsToCreate.push({
+          description: finalDescription,
+          amount: Math.abs(totalAmountNum),
+          type: 'DEBT_TAKEN' as const,
+          transactionDate: new Date(expenseDate),
+          note: note || null,
+          accountId: paidFrom || null,
+          projectId: projectId || null,
+          expenseId: newExpense.id,
+          userId,
+          companyId,
+          customerId: customerId || undefined,
+        });
       }
-
-      // Safety check: ensure customerId is set for Debt transactions if passed in payload
-      if (customerId && !transactionCustomerId) {
-        transactionCustomerId = customerId;
-      }
-      console.log('Creating debt transaction:', {
-        category,
-        subCategory,
-        customerId,
-        amount,
-        description,
-        transactionType,
-        transactionAccountId
-      });
-    } else if (category === 'Material') {
-      if (paymentStatus === 'PAID') {
-        // If paid, create expense transaction and deduct from account
-        transactionType = 'EXPENSE';
-        transactionAccountId = paidFrom;
-      } else if (paymentStatus === 'PARTIAL') {
-        // If partial, create DEBT_REPAID transaction for the paid amount only
-        // This represents the initial payment towards the vendor debt
-        transactionType = 'DEBT_REPAID';
-        transactionAccountId = paidFrom;
-        // Use paidAmount for transaction instead of total amount
-        if (paidAmount) {
-          transactionAmount = Number(paidAmount);
+    } else if (category === 'Material' || (category === 'Company Expense' && (subCategory === 'Material' || vendorId))) {
+      // Logic for Vendor-related expenses (Material or other Company Expenses with vendorId)
+      if (isPartial) {
+        // 1. Record the full liability (No accountId)
+        transactionsToCreate.push({
+          description: `${finalDescription} (Total Debt)`,
+          amount: totalAmountNum, // Will be treated as StandardOut in report
+          type: 'DEBT_TAKEN' as const,
+          transactionDate: new Date(expenseDate),
+          note: note || null,
+          accountId: null, // Virtual record
+          projectId: projectId || null,
+          expenseId: newExpense.id,
+          userId,
+          companyId,
+          vendorId: vendorId || undefined,
+        });
+        // 2. Record the actual payment (With accountId)
+        if (paidAmountNum > 0) {
+          transactionsToCreate.push({
+            description: finalDescription,
+            amount: paidAmountNum,
+            type: 'DEBT_REPAID' as const,
+            transactionDate: new Date(expenseDate),
+            note: note || null,
+            accountId: paidFrom || null,
+            projectId: projectId || null,
+            expenseId: newExpense.id,
+            userId,
+            companyId,
+            vendorId: vendorId || undefined,
+          });
         }
-        transactionVendorId = vendorId;
-        // When repaying vendor debt, if paidFrom is selected, deduct from that account
-        transactionAccountId = paidFrom || undefined;
+      } else if (isUnpaid) {
+        // Record as full debt
+        transactionsToCreate.push({
+          description: finalDescription,
+          amount: totalAmountNum,
+          type: 'DEBT_TAKEN' as const,
+          transactionDate: new Date(expenseDate),
+          note: note || null,
+          accountId: null,
+          projectId: projectId || null,
+          expenseId: newExpense.id,
+          userId,
+          companyId,
+          vendorId: vendorId || undefined,
+        });
       } else {
-        // If unpaid, create debt transaction (vendor debt)
-        transactionType = 'DEBT_TAKEN';
-        transactionVendorId = vendorId; // Track vendor on transaction
-        // If paidFrom is provided even for unpaid, deduct from account (user is paying now)
-        transactionAccountId = paidFrom || undefined;
+        // Fully PAID
+        transactionsToCreate.push({
+          description: finalDescription,
+          amount: -Math.abs(totalAmountNum),
+          type: 'EXPENSE' as const,
+          transactionDate: new Date(expenseDate),
+          note: note || null,
+          accountId: paidFrom || null,
+          projectId: projectId || null,
+          expenseId: newExpense.id,
+          userId,
+          companyId,
+          vendorId: vendorId || undefined,
+        });
       }
-    } else if (category === 'Company Expense') {
-      // Check if this is money given to a customer (should be tracked as debt)
-      if (customerId && paidFrom && subCategory !== 'Debt') {
-        // Money given to customer from account = DEBT_TAKEN
-        transactionType = 'DEBT_TAKEN';
-        transactionCustomerId = customerId;
-        transactionAccountId = paidFrom;
-      } else if (vendorId) {
-        // NEW: Handle Vendor Expenses (Company Expenses related to a vendor)
-        // This mirrors the logic for Material expenses to support Partial/Unpaid statuses for vendors
-        if (paymentStatus === 'PAID') {
-          // Full payment made
-          transactionType = 'EXPENSE';
-          transactionAccountId = paidFrom;
-          transactionVendorId = vendorId;
-        } else if (paymentStatus === 'PARTIAL') {
-          // Partial payment made - create DEBT_REPAID for the paid amount
-          transactionType = 'DEBT_REPAID';
-          transactionAccountId = paidFrom;
-          if (paidAmount) {
-            transactionAmount = Number(paidAmount);
-          }
-          transactionVendorId = vendorId;
-        } else {
-          // Unpaid bill - create DEBT_TAKEN (Vendor Debt)
-          transactionType = 'DEBT_TAKEN';
-          transactionVendorId = vendorId;
-          // If paidFrom is strictly null/undefined for Unpaid, account balance won't change, which is correct
-          transactionAccountId = paidFrom || undefined;
-        }
-      } else {
-        // For ALL other company expenses without specific vendor/customer tracking
-        transactionType = 'EXPENSE';
-        transactionAccountId = paidFrom;
-      }
-    }
-    // FIX: If customerId is provided with paidFrom (money given to customer), create DEBT_TAKEN transaction
-    // This handles cases where expense has customerId but category is not explicitly "Debt"
-    if (customerId && paidFrom && !transactionCustomerId && transactionType === 'EXPENSE') {
-      // Check if this expense represents money given to customer
-      // If customerId exists and paidFrom exists, it means money was given to customer
-      transactionType = 'DEBT_TAKEN';
-      transactionCustomerId = customerId;
-      transactionAccountId = paidFrom;
-      console.log('Auto-detected customer debt transaction:', {
-        customerId,
-        amount,
-        description,
-        category,
-        subCategory
-      });
-    }
-    // For EXPENSE, always store as negative (money out)
-    if (transactionType === 'EXPENSE') {
-      transactionAmount = -Math.abs(transactionAmount);
-    }
-    // For DEBT_TAKEN, store as positive (money given to customer)
-    if (transactionType === 'DEBT_TAKEN') {
-      transactionAmount = Math.abs(transactionAmount);
-    }
-    // For DEBT_REPAID, store as positive (money received from customer - income)
-    if (transactionType === 'DEBT_REPAID') {
-      transactionAmount = Math.abs(transactionAmount);
-    }
-    await prisma.transaction.create({
-      data: {
+    } else {
+      // Default basic expense
+      transactionsToCreate.push({
         description: finalDescription,
-        amount: transactionAmount,
-        type: transactionType,
+        amount: -Math.abs(totalAmountNum),
+        type: 'EXPENSE' as const,
         transactionDate: new Date(expenseDate),
         note: note || null,
-        accountId: transactionAccountId || paidFrom || null,
+        accountId: paidFrom || null,
         projectId: projectId || null,
         expenseId: newExpense.id,
         userId,
         companyId,
-        customerId: transactionCustomerId,
-        vendorId: transactionVendorId,
-      },
-    });
+        customerId: customerId || undefined,
+      });
+    }
 
-    // 3. Update account balance based on transaction type
-    // FIX: Use transactionAccountId or paidFrom as fallback to ensure account balance is updated
-    const accountIdToUpdate = transactionAccountId || paidFrom;
+    // Bulk create transactions and update account balances
+    for (const trxData of transactionsToCreate) {
+      // Standardize signs for account movements:
+      // Positive = Inflow, Negative = Outflow
+      const type = trxData.type;
+      const amountValue = Math.abs(trxData.amount);
 
-    // Use the calculated transactionAmount (which handles partial payments correctly) 
-    // instead of the raw total 'amount'.
-    // We use Math.abs() because 'decrement' expects a positive number to subtract,
-    // and 'increment' expects a positive number to add.
-    const amountToAdjust = Math.abs(transactionAmount);
+      const isInflow = [
+        'INCOME',
+        'DEBT_RECEIVED',
+        'TRANSFER_IN',
+        'SHAREHOLDER_DEPOSIT'
+      ].includes(type) || (type === 'DEBT_REPAID' && !trxData.vendorId);
 
-    if (accountIdToUpdate && amountToAdjust > 0) {
-      if (transactionType === 'DEBT_REPAID') {
-        // DEBT_REPAID with customerId = customer repays us (money comes IN)
-        // DEBT_REPAID with vendorId = we repay vendor (money goes OUT)
-        if (transactionCustomerId) {
-          // Customer repaying us - add money to account (income)
-          await prisma.account.update({
-            where: { id: accountIdToUpdate },
-            data: {
-              balance: { increment: amountToAdjust },
-            },
-          });
-        } else if (transactionVendorId) {
-          // We repaying vendor - subtract money from account (expense)
-          await prisma.account.update({
-            where: { id: accountIdToUpdate },
-            data: {
-              balance: { decrement: amountToAdjust },
-            },
-          });
-        }
-      } else if (transactionType === 'DEBT_TAKEN') {
-        // DEBT_TAKEN with customerId = We give money to customer (Money OUT)
-        if (transactionCustomerId) {
-          await prisma.account.update({
-            where: { id: accountIdToUpdate },
-            data: {
-              balance: { decrement: amountToAdjust },
-            },
-          });
-        }
-        // DEBT_TAKEN with vendorId (We owe vendor) = No cash movement usually, 
-        // BUT if paidFrom is set, it might technically be a payment? 
-        // No, standard UNPAID expense doesn't hit account. 
-        // Logic check: if paidFrom is set on UNPAID, we already prevent it in validation or allow it as "paying now". 
-        // If transactionAccountId is set, we respect it.
-        else if (transactionAccountId) {
-          await prisma.account.update({
-            where: { id: accountIdToUpdate },
-            data: {
-              balance: { decrement: amountToAdjust },
-            },
-          });
-        }
-      } else {
-        // For EXPENSE (Standard payment), subtract money from account
+      const finalAmount = isInflow ? amountValue : -amountValue;
+
+      await prisma.transaction.create({
+        data: {
+          ...trxData,
+          amount: finalAmount
+        },
+      });
+
+      // Update account balance using the signed amount
+      if (trxData.accountId && finalAmount !== 0) {
         await prisma.account.update({
-          where: { id: accountIdToUpdate },
+          where: { id: trxData.accountId },
           data: {
-            balance: { decrement: amountToAdjust },
+            balance: { increment: finalAmount },
           },
         });
       }
     }
 
     // 4. Update project balance if this is a debt repayment for a project
-    if (transactionType === 'DEBT_REPAID' && projectId) {
+    if (projectId && (category === 'Debt' || (category === 'Company Expense' && subCategory === 'Debt')) && paymentStatus === 'REPAID') {
       await prisma.project.update({
         where: { id: projectId, companyId },
         data: {
-          advancePaid: { increment: Number(amount) },
-          remainingAmount: { decrement: Number(amount) }
+          advancePaid: { increment: totalAmountNum },
+          remainingAmount: { decrement: totalAmountNum }
         }
       });
 
@@ -575,11 +535,6 @@ export async function POST(request: Request) {
           data: { status: 'Completed' }
         });
       }
-    }
-
-    // Trigger real-time update for customer pages if this is a debt transaction
-    if (transactionType === 'DEBT_TAKEN' && transactionCustomerId) {
-      console.log(`DEBT_TAKEN transaction created for customer ${transactionCustomerId}, amount: ${transactionAmount}`);
     }
 
     return NextResponse.json(

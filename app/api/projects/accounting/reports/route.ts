@@ -1,14 +1,16 @@
-// app/api/projects/accounting/reports/route.ts - Accounting Reports API Route
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db'; // Import Prisma Client
-import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
-import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
-import { getSessionCompanyId } from './auth';
+import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type from runtime library
+import { getSessionCompanyUser } from '@/lib/auth'; // Use central auth helper
 
 // GET /api/projects/accounting/reports - Soo deji xogta guud ee warbixinada accounting-ga
 export async function GET(request: Request) {
   try {
-    const companyId = await getSessionCompanyId();
+    const sessionData = await getSessionCompanyUser();
+    if (!sessionData) {
+      return NextResponse.json({ message: 'Awood uma lihid. Fadlan soo gal.' }, { status: 401 });
+    }
+    const { companyId } = sessionData;
     const totalBalanceResult = await prisma.account.aggregate({
       _sum: {
         balance: true,
@@ -19,15 +21,6 @@ export async function GET(request: Request) {
     const today = new Date();
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    const monthlyTransactions = await prisma.transaction.findMany({
-      where: {
-        transactionDate: {
-          gte: startOfMonth,
-          lte: endOfMonth,
-        },
-        companyId,
-      },
-    });
     // --- Aggregate Project Advances ---
     const allProjectsAdvanceResult = await prisma.project.aggregate({
       _sum: { advancePaid: true },
@@ -45,75 +38,119 @@ export async function GET(request: Request) {
         }
       }
     });
-    const totalProjectAdvancesThisMonth = monthlyProjectsAdvanceResult._sum.advancePaid ? Number(monthlyProjectsAdvanceResult._sum.advancePaid) : 0;
+    let totalCashInflow = totalProjectAdvances;
+    let totalCashOutflow = 0;
+    let totalPayablesReceived = 0;
 
-    let totalIncomeThisMonth = totalProjectAdvancesThisMonth;
-    let totalExpensesThisMonth = 0;
-
-    // Calculate TOTAL income from transactions (all time)
-    const allTransactions = await prisma.transaction.findMany({
-      where: {
-        companyId,
-      },
-    });
-
-    let totalIncome = totalProjectAdvances;
     allTransactions.forEach(trx => {
+      const amount = Math.abs(typeof trx.amount.toNumber === 'function' ? trx.amount.toNumber() : Number(trx.amount));
       const isAutoAdvance = (trx.description || '').toLowerCase().includes('advance payment for project');
-      // EXCLUDE TRANSFER_IN to avoid inflating income
-      // AND EXCLUDE auto-generated advance transactions because we already summed them from the Project table
-      if (trx.type === 'INCOME' && !isAutoAdvance) {
-        totalIncome += Math.abs(trx.amount.toNumber());
-      } else if (trx.type === 'DEBT_REPAID' && !trx.vendorId) {
-        // Customer paying us back (or someone else) -> Income
-        totalIncome += Math.abs(trx.amount.toNumber());
-      }
-    });
 
-    // Calculate monthly income for comparison
-    monthlyTransactions.forEach(trx => {
-      const isAutoAdvance = (trx.description || '').toLowerCase().includes('advance payment for project');
-      // EXCLUDE TRANSFER_IN and auto-advances
+      // 1. Operating Income Logic
       if (trx.type === 'INCOME' && !isAutoAdvance) {
-        totalIncomeThisMonth += Math.abs(trx.amount.toNumber());
+        totalIncome += amount;
       } else if (trx.type === 'DEBT_REPAID' && !trx.vendorId) {
-        totalIncomeThisMonth += Math.abs(trx.amount.toNumber());
+        totalIncome += amount;
       }
-    });
 
-    // Calculate TOTAL expenses from transactions (all time)
-    // EXCLUDE TRANSFER_OUT to avoid inflating expenses
-    let totalExpenses = 0;
-    allTransactions.forEach(trx => {
+      // 2. Operating Expenses Logic
       if (trx.type === 'EXPENSE' || trx.type === 'DEBT_TAKEN' || trx.type === 'DEBT_GIVEN' || (trx.type === 'DEBT_REPAID' && trx.vendorId)) {
         if (trx.category !== 'FIXED_ASSET_PURCHASE') {
-          totalExpenses += Math.abs(trx.amount.toNumber());
+          totalExpenses += amount;
+        }
+      }
+
+      // 3. Gross Inflow/Outflow (Shilin kasta)
+      const isUnifiedTransfer = trx.accountId === null && (trx.fromAccountId || trx.toAccountId);
+      const isGhostTransaction = trx.accountId === null && !isUnifiedTransfer;
+
+      if (!isGhostTransaction) {
+        // Positive flows to accounts
+        if (
+          ['INCOME', 'TRANSFER_IN', 'SHAREHOLDER_DEPOSIT', 'DEBT_RECEIVED'].includes(trx.type) ||
+          (trx.type === 'DEBT_REPAID' && !trx.vendorId) ||
+          (trx.type === 'TRANSFER_OUT' && trx.accountId === null)
+        ) {
+          // If INCOME and isAutoAdvance, it's already in totalProjectAdvances
+          if (!(trx.type === 'INCOME' && isAutoAdvance)) {
+            totalCashInflow += amount;
+          }
+        }
+        // Negative flows from accounts
+        if (['EXPENSE', 'DEBT_TAKEN', 'DEBT_GIVEN', 'TRANSFER_OUT'].includes(trx.type)) {
+          totalCashOutflow += amount;
+        }
+        if (trx.type === 'DEBT_REPAID' && trx.vendorId) {
+          totalCashOutflow += amount;
+        }
+
+        // 4. Payables Logic (Debt Received)
+        if (trx.type === 'DEBT_RECEIVED') {
+          totalPayablesReceived += amount;
         }
       }
     });
 
-    // Calculate monthly expenses 
+    // Monthly calculations
+    let totalCashInflowThisMonth = totalProjectAdvancesThisMonth;
+    let totalCashOutflowThisMonth = 0;
+    let totalPayablesReceivedThisMonth = 0;
+
     monthlyTransactions.forEach(trx => {
+      const amount = Math.abs(typeof trx.amount.toNumber === 'function' ? trx.amount.toNumber() : Number(trx.amount));
+      const isAutoAdvance = (trx.description || '').toLowerCase().includes('advance payment for project');
+
+      if (trx.type === 'INCOME' && !isAutoAdvance) {
+        totalIncomeThisMonth += amount;
+      } else if (trx.type === 'DEBT_REPAID' && !trx.vendorId) {
+        totalIncomeThisMonth += amount;
+      }
+
       if (trx.type === 'EXPENSE' || trx.type === 'DEBT_TAKEN' || trx.type === 'DEBT_GIVEN' || (trx.type === 'DEBT_REPAID' && trx.vendorId)) {
         if (trx.category !== 'FIXED_ASSET_PURCHASE') {
-          totalExpensesThisMonth += Math.abs(trx.amount.toNumber());
+          totalExpensesThisMonth += amount;
+        }
+      }
+
+      // Gross Monthly
+      const isUnifiedTransfer = trx.accountId === null && (trx.fromAccountId || trx.toAccountId);
+      const isGhostTransaction = trx.accountId === null && !isUnifiedTransfer;
+
+      if (!isGhostTransaction) {
+        if (
+          ['INCOME', 'TRANSFER_IN', 'SHAREHOLDER_DEPOSIT', 'DEBT_RECEIVED'].includes(trx.type) ||
+          (trx.type === 'DEBT_REPAID' && !trx.vendorId) ||
+          (trx.type === 'TRANSFER_OUT' && trx.accountId === null)
+        ) {
+          if (!(trx.type === 'INCOME' && isAutoAdvance)) {
+            totalCashInflowThisMonth += amount;
+          }
+        }
+        if (['EXPENSE', 'DEBT_TAKEN', 'DEBT_GIVEN', 'TRANSFER_OUT'].includes(trx.type)) {
+          totalCashOutflowThisMonth += amount;
+        }
+        if (trx.type === 'DEBT_REPAID' && trx.vendorId) {
+          totalCashOutflowThisMonth += amount;
+        }
+
+        if (trx.type === 'DEBT_RECEIVED') {
+          totalPayablesReceivedThisMonth += amount;
         }
       }
     });
 
-    // Calculate fixed asset expenses separately (all time)
+    // FIXED_ASSET_PURCHASE logic (already correct, but ensure consistency)
     let fixedAssetExpenses = 0;
     allTransactions.forEach(trx => {
       if (trx.category === 'FIXED_ASSET_PURCHASE') {
-        fixedAssetExpenses += Math.abs(trx.amount.toNumber());
+        fixedAssetExpenses += Math.abs(typeof trx.amount.toNumber === 'function' ? trx.amount.toNumber() : Number(trx.amount));
       }
     });
 
-    // Calculate monthly fixed asset expenses
     let fixedAssetExpensesThisMonth = 0;
     monthlyTransactions.forEach(trx => {
       if (trx.category === 'FIXED_ASSET_PURCHASE') {
-        fixedAssetExpensesThisMonth += Math.abs(trx.amount.toNumber());
+        fixedAssetExpensesThisMonth += Math.abs(typeof trx.amount.toNumber === 'function' ? trx.amount.toNumber() : Number(trx.amount));
       }
     });
 
@@ -130,21 +167,23 @@ export async function GET(request: Request) {
     const totalCashAccounts = accountTypeCounts.find(count => count.type === 'CASH')?._count.id || 0;
     const totalMobileMoneyAccounts = accountTypeCounts.find(count => count.type === 'MOBILE_MONEY')?._count.id || 0;
 
-
     return NextResponse.json(
       {
         totalBalance: totalBalance,
         totalIncomeThisMonth: totalIncomeThisMonth,
-        totalIncome: totalIncome, // Total income (all time)
+        totalIncome: totalIncome,
         totalExpensesThisMonth: totalExpensesThisMonth,
-        totalExpenses: totalExpenses, // Total expenses (all time, excluding fixed assets)
-        fixedAssetExpenses: fixedAssetExpenses, // Fixed asset expenses (all time)
-        fixedAssetExpensesThisMonth: fixedAssetExpensesThisMonth, // Fixed asset expenses this month
+        totalExpenses: totalExpenses,
+        totalCashInflow: totalCashInflow,
+        totalCashOutflowThisMonth: totalCashOutflowThisMonth,
+        totalPayablesReceived: totalPayablesReceived,
+        totalPayablesReceivedThisMonth: totalPayablesReceivedThisMonth,
+        fixedAssetExpenses: fixedAssetExpenses,
+        fixedAssetExpensesThisMonth: fixedAssetExpensesThisMonth,
         netFlowThisMonth: netFlowThisMonth,
         totalBankAccounts: totalBankAccounts,
         totalCashAccounts: totalCashAccounts,
         totalMobileMoneyAccounts: totalMobileMoneyAccounts,
-        // Add more aggregated data for reports as needed
       },
       { status: 200 }
     );

@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
-import { getSessionCompanyId } from '../../admin/auth';
+import { getSessionCompanyUser } from '@/lib/auth';
 import prisma from '@/lib/db';
 
 // GET /api/settings/categories - Get all expense categories
 export async function GET() {
   try {
-    const companyId = await getSessionCompanyId();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
     if (!companyId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
@@ -15,9 +16,9 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       categories,
-      message: 'Categories retrieved successfully' 
+      message: 'Categories retrieved successfully'
     });
   } catch (error) {
     console.error('Error fetching categories:', error);
@@ -31,7 +32,8 @@ export async function GET() {
 // POST /api/settings/categories - Create new expense category
 export async function POST(request: Request) {
   try {
-    const companyId = await getSessionCompanyId();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
     if (!companyId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
@@ -54,9 +56,9 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       category,
-      message: 'Category created successfully' 
+      message: 'Category created successfully'
     }, { status: 201 });
   } catch (error) {
     console.error('Error creating category:', error);

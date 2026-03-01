@@ -310,7 +310,7 @@ export default function VendorDetailsPage() {
                               <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
                                 {trans.description}
                                 {trans.expense && (
-                                  <Link href={`/expenses/${trans.expense.id}`} className="block text-xs text-primary hover:underline mt-1 flex items-center gap-1">
+                                  <Link href={`/projects/expenses/${trans.expense.id}`} className="block text-xs text-primary hover:underline mt-1 flex items-center gap-1">
                                     <Eye size={10} /> View details
                                   </Link>
                                 )}
@@ -361,7 +361,7 @@ export default function VendorDetailsPage() {
                                           </button>
                                         )}
                                         <Link
-                                          href={`/expenses/${trans.expense.id}`}
+                                          href={`/projects/expenses/${trans.expense.id}`}
                                           className="text-gray-500 bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded text-xs font-medium transition-colors border border-gray-200"
                                         >
                                           View
@@ -371,7 +371,7 @@ export default function VendorDetailsPage() {
                                       {['EXPENSE', 'DEBT_REPAID'].includes(trans.type) && (
                                         <div className="mt-1 flex justify-center">
                                           <Link
-                                            href={`/transactions/${trans.id}/receipt`}
+                                            href={`/projects/accounting/transactions/${trans.id}/receipt`}
                                             className="text-gray-500 hover:text-primary text-xs flex items-center gap-1"
                                           >
                                             <Printer size={12} /> Receipt
@@ -472,9 +472,9 @@ export default function VendorDetailsPage() {
                             <td className="px-4 py-3">{new Date(po.createdAt).toLocaleDateString()}</td>
                             <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
                               {po.project
-                                ? <Link href={`/projects/${po.project.id}`} className="hover:underline">{po.project.name}</Link>
+                                ? <Link href={`/projects/main/${po.project.id}`} className="hover:underline">{po.project.name}</Link>
                                 : po.expenses?.[0]?.project
-                                  ? <Link href={`/projects/${po.expenses[0].project.id}`} className="hover:underline">{po.expenses[0].project.name}</Link>
+                                  ? <Link href={`/projects/main/${po.expenses[0].project.id}`} className="hover:underline">{po.expenses[0].project.name}</Link>
                                   : '-'
                               }
                             </td>

@@ -5,8 +5,8 @@ import React, { useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import Link from 'next/link';
 import Layout from '@/components/layouts/Layout';
-import { 
-  ArrowLeft, UploadCloud, Download, FileText, CheckCircle, XCircle, Loader2, 
+import {
+  ArrowLeft, UploadCloud, Download, FileText, CheckCircle, XCircle, Loader2,
   ChevronRight, ChevronLeft, Table, Columns, CheckSquare, Info, List
 } from 'lucide-react';
 import Toast from '@/components/common/Toast'; // Reuse Toast component
@@ -36,7 +36,7 @@ export default function ExpensesImportPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   // Get companyId from user context (if available)
   const [companyId, setCompanyId] = useState<string>('');
-  
+
   // This should be handled properly with a context provider
   // For now, we'll use a placeholder
   React.useEffect(() => {
@@ -227,11 +227,11 @@ export default function ExpensesImportPage() {
             <p className="text-mediumGray dark:text-gray-400 max-w-md mx-auto">
               Fadlan soo shub faylkaaga CSV ama Excel oo ay ku jiraan kharashyadaada. Waxaanu ku hagaynaa habka dhoofinta.
             </p>
-            <input 
-              type="file" 
+            <input
+              type="file"
               id="file-upload" // Added ID for label
-              accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" 
-              onChange={handleFileChange} 
+              accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+              onChange={handleFileChange}
               ref={fileInputRef}
               className="hidden"
             />
@@ -290,8 +290,8 @@ export default function ExpensesImportPage() {
                     <tr key={col.key}>
                       <td className="px-4 py-2 text-darkGray dark:text-gray-100 font-medium">{col.label}</td>
                       <td className="px-4 py-2">
-                        <select 
-                          value={columnMapping[col.key] || ''} 
+                        <select
+                          value={columnMapping[col.key] || ''}
                           onChange={(e) => handleColumnMapChange(col.key, e.target.value)}
                           className="w-full p-2 border border-lightGray dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-primary"
                           title={`Dooro column-ka CSV ee la xirinayo beerta '${col.label}'`}
@@ -311,28 +311,28 @@ export default function ExpensesImportPage() {
                 </tbody>
               </table>
             </div>
-            
+
             {/* Data Preview */}
             {parsedData.length > 0 && (
-                <div className="mt-6">
-                    <h4 className="text-lg font-bold text-darkGray dark:text-gray-100 mb-3">Xogta Hordhaca ah (5 Saf oo Ugu Horreeya)</h4>
-                    <div className="overflow-x-auto bg-lightGray dark:bg-gray-700 p-4 rounded-lg shadow-inner">
-                        <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
-                            <thead className="bg-gray-200 dark:bg-gray-600">
-                                <tr>
-                                    {headers.map(header => <th key={header} className="px-4 py-2 text-left text-xs font-medium text-darkGray dark:text-gray-100 uppercase">{header}</th>)}
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                {parsedData.slice(0, 5).map((row, rowIndex) => (
-                                    <tr key={rowIndex}>
-                                        {headers.map(header => <td key={header} className="px-4 py-2 text-darkGray dark:text-gray-100 text-sm">{row[header]}</td>)}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+              <div className="mt-6">
+                <h4 className="text-lg font-bold text-darkGray dark:text-gray-100 mb-3">Xogta Hordhaca ah (5 Saf oo Ugu Horreeya)</h4>
+                <div className="overflow-x-auto bg-lightGray dark:bg-gray-700 p-4 rounded-lg shadow-inner">
+                  <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
+                    <thead className="bg-gray-200 dark:bg-gray-600">
+                      <tr>
+                        {headers.map(header => <th key={header} className="px-4 py-2 text-left text-xs font-medium text-darkGray dark:text-gray-100 uppercase">{header}</th>)}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                      {parsedData.slice(0, 5).map((row, rowIndex) => (
+                        <tr key={rowIndex}>
+                          {headers.map(header => <td key={header} className="px-4 py-2 text-darkGray dark:text-gray-100 text-sm">{row[header]}</td>)}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
+              </div>
             )}
 
             <div className="flex justify-between mt-8">
@@ -354,16 +354,16 @@ export default function ExpensesImportPage() {
               Kharashyadaada si guul leh ayaa loo diiwaan geliyay. Waxaad hadda ka arki kartaa bogga kharashyada.
             </p>
             {importErrors.length > 0 && (
-                <div className="bg-redError/10 border border-redError text-redError p-4 rounded-lg text-left">
-                    <h4 className="font-bold mb-2">Khaladaad Inta La Dhoofinayay:</h4>
-                    <ul className="list-disc list-inside">
-                        {importErrors.map((err, index) => (
-                            <li key={index}>Saf # {err.row}: {err.message}</li> //* Changed err.errors.join(', ') to err.message */}
-                        ))}
-                    </ul>
-                </div>
+              <div className="bg-redError/10 border border-redError text-redError p-4 rounded-lg text-left">
+                <h4 className="font-bold mb-2">Khaladaad Inta La Dhoofinayay:</h4>
+                <ul className="list-disc list-inside">
+                  {importErrors.map((err, index) => (
+                    <li key={index}>Saf # {err.row}: {err.message}</li> //* Changed err.errors.join(', ') to err.message */}
+                  ))}
+                </ul>
+              </div>
             )}
-            <Link href="/expenses" className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-primary hover:bg-blue-700 cursor-pointer transition-colors duration-200">
+            <Link href="/projects/expenses" className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-primary hover:bg-blue-700 cursor-pointer transition-colors duration-200">
               <List size={20} className="mr-2" /> Fiiri Kharashyada
             </Link>
           </div>
@@ -377,7 +377,7 @@ export default function ExpensesImportPage() {
     <Layout>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">Dhoofinta Kharashyada</h1>
-        <Link href="/expenses" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 flex items-center space-x-2">
+        <Link href="/projects/expenses" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 flex items-center space-x-2">
           <ArrowLeft size={20} /> <span>Jooji</span>
         </Link>
       </div>

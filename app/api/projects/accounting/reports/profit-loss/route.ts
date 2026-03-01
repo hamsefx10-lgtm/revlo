@@ -82,13 +82,13 @@ export async function GET(request: Request) {
 
     // Separate project income and direct project costs
     const projectIncomeItems = allTransactions
-      .filter(trx => trx.type === 'INCOME' && trx.projectId)
+      .filter(trx => (trx.type === 'INCOME' || (trx.type === 'DEBT_REPAID' && !trx.vendorId)) && trx.projectId)
       .map(trx => ({
         id: trx.id,
         date: trx.transactionDate.toISOString(),
         description: trx.description,
         amount: Number(trx.amount),
-        type: 'Project Income',
+        type: trx.type === 'DEBT_REPAID' ? 'Project Payment' : 'Project Income',
         projectId: trx.projectId,
         projectName: trx.project?.name || 'Unknown Project',
       }));
@@ -108,7 +108,7 @@ export async function GET(request: Request) {
     // Operating expenses (company expenses + non-project expenses)
     const operatingExpensesItems = [
       ...allExpenses
-        .filter(exp => !exp.projectId || ['Company Expense'].includes(exp.category))
+        .filter(exp => (!exp.projectId || ['Company Expense'].includes(exp.category)) && exp.category !== 'FIXED_ASSET_PURCHASE')
         .map(exp => ({
           id: exp.id,
           date: exp.expenseDate.toISOString(),
@@ -119,12 +119,12 @@ export async function GET(request: Request) {
           projectName: exp.project?.name || 'Company Expense',
         })),
       ...allTransactions
-        .filter(trx => trx.type === 'EXPENSE' && !trx.projectId)
+        .filter(trx => (trx.type === 'EXPENSE' || (trx.type === 'DEBT_REPAID' && trx.vendorId)) && !trx.projectId && trx.category !== 'FIXED_ASSET_PURCHASE')
         .map(trx => ({
           id: trx.id,
           date: trx.transactionDate.toISOString(),
           description: trx.description,
-          amount: Number(trx.amount),
+          amount: Math.abs(Number(trx.amount)),
           type: 'Operating Expense',
           projectId: trx.projectId,
           projectName: trx.project?.name || 'Company Expense',
@@ -144,17 +144,35 @@ export async function GET(request: Request) {
         expenses: {
           where: {
             expenseDate: Object.keys(dateFilter).length > 0 ? dateFilter : undefined,
-            category: { in: ['Material', 'Labor', 'Transport'] },
+            OR: [
+              { category: { in: ['Material', 'Labor', 'Transport'] } },
+              { paymentStatus: 'PARTIAL' } // Partial vendor payments linked to project
+            ]
           },
         },
       },
-    }).then(projects =>
-      projects.map(project => {
-        const totalIncome = project.transactions.reduce((sum, trx) => sum + Number(trx.amount), 0);
-        const totalDirectCosts = project.expenses.reduce((sum, exp) => sum + Number(exp.amount), 0);
+    }).then(async projects => {
+      // We also need to fetch Transactions (DEBT_REPAID / vendorId) for projects to get accurate costs
+      const results = [];
+      for (const project of projects) {
+        const vendorPayments = await prisma.transaction.findMany({
+          where: {
+            projectId: project.id,
+            type: 'DEBT_REPAID',
+            vendorId: { not: null },
+            transactionDate: Object.keys(dateFilter).length > 0 ? dateFilter : undefined,
+          }
+        });
+
+        const totalIncome = project.transactions.reduce((sum, trx) => sum + Number(trx.amount), 0) +
+          allTransactions.filter(trx => trx.projectId === project.id && trx.type === 'DEBT_REPAID' && !trx.vendorId).reduce((sum, trx) => sum + Number(trx.amount), 0);
+
+        const totalDirectCosts = project.expenses.reduce((sum, exp) => sum + Number(exp.amount), 0) +
+          vendorPayments.reduce((sum, trx) => sum + Math.abs(Number(trx.amount)), 0);
+
         const netProfit = totalIncome - totalDirectCosts;
 
-        return {
+        results.push({
           projectId: project.id,
           projectName: project.name,
           projectStatus: project.status,
@@ -169,6 +187,13 @@ export async function GET(request: Request) {
               type: 'INCOME',
               amount: Number(trx.amount),
             })),
+            ...allTransactions.filter(trx => trx.projectId === project.id && trx.type === 'DEBT_REPAID' && !trx.vendorId).map(trx => ({
+              id: trx.id,
+              date: trx.transactionDate.toISOString(),
+              description: trx.description,
+              type: 'DEBT_REPAID',
+              amount: Number(trx.amount),
+            })),
             ...project.expenses.map(exp => ({
               id: exp.id,
               date: exp.expenseDate.toISOString(),
@@ -176,10 +201,18 @@ export async function GET(request: Request) {
               type: exp.category,
               amount: Number(exp.amount),
             })),
+            ...vendorPayments.map(trx => ({
+              id: trx.id,
+              date: trx.transactionDate.toISOString(),
+              description: trx.description,
+              type: 'VENDOR_PAYMENT',
+              amount: Math.abs(Number(trx.amount)),
+            })),
           ],
-        };
-      })
-    );
+        });
+      }
+      return results;
+    });
 
     // Group company expenses by category
     const companyExpenseGroups = operatingExpensesItems.reduce((groups: any, item) => {
@@ -218,7 +251,7 @@ export async function GET(request: Request) {
 
       const monthProjectIncome = allTransactions
         .filter(trx =>
-          trx.type === 'INCOME' &&
+          (trx.type === 'INCOME' || (trx.type === 'DEBT_REPAID' && !trx.vendorId)) &&
           trx.projectId &&
           trx.transactionDate >= monthStart &&
           trx.transactionDate <= monthEnd
@@ -237,16 +270,18 @@ export async function GET(request: Request) {
       const monthOperatingExpenses = [
         ...allExpenses.filter(exp =>
           (!exp.projectId || exp.category === 'Company Expense') &&
+          exp.category !== 'FIXED_ASSET_PURCHASE' &&
           exp.expenseDate >= monthStart &&
           exp.expenseDate <= monthEnd
         ),
         ...allTransactions.filter(trx =>
-          trx.type === 'EXPENSE' &&
+          (trx.type === 'EXPENSE' || (trx.type === 'DEBT_REPAID' && trx.vendorId)) &&
           !trx.projectId &&
+          trx.category !== 'FIXED_ASSET_PURCHASE' &&
           trx.transactionDate >= monthStart &&
           trx.transactionDate <= monthEnd
         )
-      ].reduce((sum, item) => sum + Number(item.amount), 0);
+      ].reduce((sum, item) => sum + Math.abs(Number(item.amount)), 0);
 
       const monthNetProfit = monthProjectIncome - monthDirectCosts - monthOperatingExpenses;
 

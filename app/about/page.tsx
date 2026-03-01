@@ -27,10 +27,10 @@ export default function AboutPage() {
 
                 <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <h1 className="text-3xl md:text-6xl font-extrabold text-white mb-6">
-                        Hadafkayagu waa <span className="text-primary">Horumarinta</span> Ganacsiga Afrika
+                        Hadafkayagu waa <span className="text-primary">Horumarinta</span> Ganacsiga
                     </h1>
                     <p className="max-w-3xl mx-auto text-xl text-gray-200 leading-relaxed font-medium">
-                        Revlo ma ahan kaliya software; waa lamaanahaaga ganacsiga. Waxaan u taaganahay inaan casriyeeyno habka ganacsiga Soomaalidu u shaqeeyo.
+                        Revlo ma ahan kaliya software; waa lamaanahaaga ganacsiga. Waxaan u taaganahay inaan casriyeeyno habka ganacsiga u shaqeeyo.
                     </p>
                 </div>
             </section>

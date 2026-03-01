@@ -1,20 +1,40 @@
 // app/api/projects/accounting/reports/overview/route.ts - Overview API
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { getSessionCompanyId } from '../auth';
+import { getSessionCompanyUser } from '@/lib/auth';
 
 // GET /api/projects/accounting/reports/overview - Overview stats for dashboard
 export async function GET(request: Request) {
   try {
-    const companyId = await getSessionCompanyId();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
+    if (!companyId) {
+      return NextResponse.json({ message: 'Company ID not found in session.' }, { status: 401 });
+    }
     // Total Income, Expenses, Net Profit
     const incomeResult = await prisma.transaction.aggregate({
       _sum: { amount: true },
-      where: { companyId, type: { in: ['INCOME', 'TRANSFER_IN', 'DEBT_REPAID'] } },
+      where: {
+        companyId,
+        OR: [
+          { type: 'INCOME' },
+          { type: 'TRANSFER_IN' },
+          { type: 'DEBT_REPAID', vendorId: null }
+        ]
+      },
     });
     const expenseResult = await prisma.transaction.aggregate({
       _sum: { amount: true },
-      where: { companyId, type: { in: ['EXPENSE', 'TRANSFER_OUT', 'DEBT_TAKEN'] }, category: { not: 'FIXED_ASSET_PURCHASE' } },
+      where: {
+        companyId,
+        OR: [
+          { type: 'EXPENSE' },
+          { type: 'TRANSFER_OUT' },
+          { type: 'DEBT_TAKEN' },
+          { type: 'DEBT_REPAID', vendorId: { not: null } }
+        ],
+        category: { not: 'FIXED_ASSET_PURCHASE' }
+      },
     });
     // Money In (Lacagta Soo Galaysa) - All money received
     // This includes: INCOME transactions, TRANSFER_IN, DEBT_REPAID (when customer repays us), and all Payments
@@ -43,7 +63,10 @@ export async function GET(request: Request) {
     // This includes all expenses regardless of project or company
     const allExpenses = await prisma.expense.aggregate({
       _sum: { amount: true },
-      where: { companyId },
+      where: {
+        companyId,
+        category: { not: 'FIXED_ASSET_PURCHASE' }
+      },
     });
 
     // Total Money Out = All expenses from Expense table (most accurate)
@@ -66,18 +89,31 @@ export async function GET(request: Request) {
     // Expenses breakdown - For display purposes
     const companyExpenses = await prisma.expense.aggregate({
       _sum: { amount: true },
-      where: { companyId, projectId: null },
+      where: {
+        companyId,
+        projectId: null,
+        category: { not: 'FIXED_ASSET_PURCHASE' }
+      },
     });
     const projectExpenses = await prisma.expense.aggregate({
       _sum: { amount: true },
-      where: { companyId, projectId: { not: null } },
+      where: {
+        companyId,
+        projectId: { not: null },
+        category: { not: 'FIXED_ASSET_PURCHASE' }
+      },
     });
 
-    // Outstanding Debts: Amount we owe to vendors (DEBT_TAKEN transactions)
-    const outstandingDebts = await prisma.transaction.aggregate({
+    const totalDebtTaken = await prisma.transaction.aggregate({
       _sum: { amount: true },
       where: { companyId, type: 'DEBT_TAKEN' },
     });
+    const totalVendorDebtRepaid = await prisma.transaction.aggregate({
+      _sum: { amount: true },
+      where: { companyId, type: 'DEBT_REPAID', vendorId: { not: null } },
+    });
+
+    const outstandingDebtsAmount = Math.abs(Number(totalDebtTaken._sum.amount || 0)) - Math.abs(Number(totalVendorDebtRepaid._sum.amount || 0));
 
     // Receivable Debts: Amount customers owe us
     // This includes project agreements where advance payment is less than total amount
@@ -124,12 +160,12 @@ export async function GET(request: Request) {
         onHoldProjects,
         companyExpenses: companyExpenses._sum.amount ? Number(companyExpenses._sum.amount) : 0,
         projectExpenses: projectExpenses._sum.amount ? Number(projectExpenses._sum.amount) : 0,
-        outstandingDebts: outstandingDebts._sum.amount ? Number(outstandingDebts._sum.amount) : 0,
+        outstandingDebts: Math.max(0, outstandingDebtsAmount),
         receivableDebts: receivableDebtsAmount,
         fixedAssetsValue: fixedAssets._sum.value ? Number(fixedAssets._sum.value) : 0,
         totalBankBalance: totalBankBalance._sum.balance ? Number(totalBankBalance._sum.balance) : 0,
         totalCashBalance: totalCashBalance._sum.balance ? Number(totalCashBalance._sum.balance) : 0,
-        shareholdersEquity: netProfit + receivableDebtsAmount - (outstandingDebts._sum.amount ? Number(outstandingDebts._sum.amount) : 0)
+        shareholdersEquity: netProfit + receivableDebtsAmount - Math.max(0, outstandingDebtsAmount)
       },
     }, { status: 200 });
   } catch (error) {

@@ -1,12 +1,16 @@
 // app/api/company-labors/route.ts - Company Labor Records API
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { getSessionCompanyUser } from '../auth';
+import { getSessionCompanyUser } from '@/lib/auth';
 
 // GET /api/company-labors - Fetch all company labor records
 export async function GET(request: Request) {
   try {
-    const { companyId } = await getSessionCompanyUser();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
+    if (!companyId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
 
     const companyLabors = await prisma.companyLabor.findMany({
       where: {

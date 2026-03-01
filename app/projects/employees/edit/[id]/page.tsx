@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation'; // Import useParams
 import Layout from '@/components/layouts/Layout';
-import { 
+import {
   X, Loader2, Info, CheckCircle, User as UserIcon, Building, Mail, Phone, MapPin, MessageSquare,
   ArrowLeft, Tag, Briefcase as BriefcaseIcon, Clock as ClockIcon, Coins, Calendar, DollarSign, ClipboardList, Edit, ChevronRight
 } from 'lucide-react';
@@ -14,9 +14,9 @@ import Toast from '@/components/common/Toast'; // Reuse Toast component
 export default function EditEmployeePage() {
   const router = useRouter();
   const { id } = useParams(); // Get employee ID from URL
-  
+
   const [employeeType, setEmployeeType] = useState<'Company' | 'Project'>('Company'); // Company or Project employee
-  
+
   // Common fields for all employee types
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -35,11 +35,11 @@ export default function EditEmployeePage() {
   // For simplicity here, if the employeeType is 'Project', we'll only edit their core profile.
   // The fields below are kept for consistency with the 'add' page structure but won't be used for PUT.
   const [selectedProject, setSelectedProject] = useState('');
-  const [projectEmployeeName, setProjectEmployeeName] = useState(''); 
+  const [projectEmployeeName, setProjectEmployeeName] = useState('');
   const [workDescription, setWorkDescription] = useState('');
-  const [agreedWage, setAgreedWage] = useState<number | ''>(''); 
-  const [laborPaidAmount, setLaborPaidAmount] = useState<number | ''>(''); 
-  const [dateWorked, setDateWorked] = useState(new Date().toISOString().split('T')[0]); 
+  const [agreedWage, setAgreedWage] = useState<number | ''>('');
+  const [laborPaidAmount, setLaborPaidAmount] = useState<number | ''>('');
+  const [dateWorked, setDateWorked] = useState(new Date().toISOString().split('T')[0]);
 
   const [loading, setLoading] = useState(true); // Set to true for initial fetch
   const [submitting, setSubmitting] = useState(false); // For form submission loading
@@ -66,13 +66,13 @@ export default function EditEmployeePage() {
         const response = await fetch(`/api/employees/${id}`);
         if (!response.ok) throw new Error('Failed to fetch employee details');
         const data = await response.json();
-        
+
         // Populate form fields with fetched data
         setFullName(data.employee.fullName);
         setEmail(data.employee.email || '');
         setPhone(data.employee.phone || '');
         setIsActive(data.employee.isActive);
-        
+
         // Parse startDate to separate date and time
         if (data.employee.startDate) {
           const startDateObj = new Date(data.employee.startDate);
@@ -95,7 +95,7 @@ export default function EditEmployeePage() {
         } else {
           // If no monthly salary, assume it's a Project employee.
           // For editing, we primarily edit the core employee profile.
-          setEmployeeType('Project'); 
+          setEmployeeType('Project');
           setCompanyRole(data.employee.role); // Use the existing role for project employee profile
           setMonthlySalary(''); // No monthly salary for project employee profile
         }
@@ -104,7 +104,7 @@ export default function EditEmployeePage() {
         console.error('Error fetching employee details for edit:', error);
         setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka faahfaahinta shaqaalaha la soo gelinayay.', type: 'error' });
         // Redirect if employee not found or error
-        router.push('/employees'); 
+        router.push('/projects/employees');
       } finally {
         setLoading(false);
       }
@@ -131,7 +131,7 @@ export default function EditEmployeePage() {
       if (!salaryStartDate) newErrors.salaryStartDate = 'Taariikhda bilowga shaqada waa waajib.';
       if (!salaryStartTime) newErrors.salaryStartTime = 'Waqtiga bilowga shaqada waa waajib.';
     }
-    
+
     setValidationErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -203,7 +203,7 @@ export default function EditEmployeePage() {
         setToastMessage({ message: data.message || 'Shaqaalaha mashruuca si guul leh ayaa loo cusboonaysiiyay!', type: 'success' });
       }
 
-      router.push(`/employees/${id}`); // Redirect to employee details page on success
+      router.push(`/projects/employees/${id}`); // Redirect to employee details page on success
     } catch (error: any) {
       console.error('Employee Edit API error:', error);
       setToastMessage({ message: error.message || 'Cilad shabakadeed ayaa dhacday. Fadlan isku day mar kale.', type: 'error' });
@@ -226,7 +226,7 @@ export default function EditEmployeePage() {
     <Layout>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">
-          <Link href={`/employees/${id}`} className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
+          <Link href={`/projects/employees/${id}`} className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
             <ArrowLeft size={28} className="inline-block" />
           </Link>
           Edit Shaqaale: {fullName}
@@ -239,19 +239,19 @@ export default function EditEmployeePage() {
           <div>
             <label htmlFor="employeeType" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Nooca Shaqaalaha</label>
             <div className="flex space-x-3">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 disabled // Disable type change on edit page for simplicity
                 className={`flex items-center space-x-2 p-3 rounded-lg border transition-all duration-200 ${employeeType === 'Company' ? 'bg-primary text-white border-primary' : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 border-lightGray dark:border-gray-700 cursor-not-allowed'}`}
               >
-                <Building size={20}/> <span>Shaqaalaha Shirkadda</span>
+                <Building size={20} /> <span>Shaqaalaha Shirkadda</span>
               </button>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 disabled // Disable type change on edit page for simplicity
                 className={`flex items-center space-x-2 p-3 rounded-lg border transition-all duration-200 ${employeeType === 'Project' ? 'bg-primary text-white border-primary' : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 border-lightGray dark:border-gray-700 cursor-not-allowed'}`}
               >
-                <BriefcaseIcon size={20}/> <span>Shaqaalaha Mashruuca</span>
+                <BriefcaseIcon size={20} /> <span>Shaqaalaha Mashruuca</span>
               </button>
             </div>
           </div>
@@ -271,7 +271,7 @@ export default function EditEmployeePage() {
                   className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.fullName ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 />
               </div>
-              {validationErrors.fullName && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.fullName}</p>}
+              {validationErrors.fullName && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.fullName}</p>}
             </div>
             <div>
               <label htmlFor="email" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Email (Optional)</label>
@@ -286,7 +286,7 @@ export default function EditEmployeePage() {
                   className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.email ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 />
               </div>
-              {validationErrors.email && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.email}</p>}
+              {validationErrors.email && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.email}</p>}
             </div>
             <div>
               <label htmlFor="phone" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taleefan (Optional)</label>
@@ -306,11 +306,11 @@ export default function EditEmployeePage() {
               <label htmlFor="isActive" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Xaaladda Shaqaalaha</label>
               <div className="flex items-center justify-between p-3 bg-lightGray dark:bg-gray-700 rounded-lg border border-lightGray dark:border-gray-600">
                 <span className="text-darkGray dark:text-gray-300">Firfircoon</span>
-                <input 
-                  type="checkbox" 
-                  id="isActive" 
-                  checked={isActive} 
-                  onChange={(e) => setIsActive(e.target.checked)} 
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  checked={isActive}
+                  onChange={(e) => setIsActive(e.target.checked)}
                   className="h-5 w-5 text-primary rounded border-mediumGray dark:border-gray-600 focus:ring-primary"
                 />
               </div>
@@ -337,7 +337,7 @@ export default function EditEmployeePage() {
                   </select>
                   <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
                 </div>
-                {validationErrors.companyRole && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.companyRole}</p>}
+                {validationErrors.companyRole && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.companyRole}</p>}
               </div>
 
               {/* Monthly Salary */}
@@ -354,7 +354,7 @@ export default function EditEmployeePage() {
                     className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.monthlySalary ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                   />
                 </div>
-                {validationErrors.monthlySalary && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.monthlySalary}</p>}
+                {validationErrors.monthlySalary && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.monthlySalary}</p>}
               </div>
 
               {/* Salary Start Date */}
@@ -371,7 +371,7 @@ export default function EditEmployeePage() {
                       className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.salaryStartDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                     />
                   </div>
-                  {validationErrors.salaryStartDate && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.salaryStartDate}</p>}
+                  {validationErrors.salaryStartDate && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.salaryStartDate}</p>}
                 </div>
                 <div>
                   <label htmlFor="salaryStartTime" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Waqtiga Bilowga Mushaharka <span className="text-redError">*</span></label>
@@ -385,7 +385,7 @@ export default function EditEmployeePage() {
                       className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.salaryStartTime ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                     />
                   </div>
-                  {validationErrors.salaryStartTime && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.salaryStartTime}</p>}
+                  {validationErrors.salaryStartTime && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.salaryStartTime}</p>}
                 </div>
               </div>
             </div>
@@ -411,9 +411,9 @@ export default function EditEmployeePage() {
                   </select>
                   <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
                 </div>
-                {validationErrors.companyRole && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.companyRole}</p>}
+                {validationErrors.companyRole && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.companyRole}</p>}
               </div>
-              
+
               {/* Project Employee Start Date and Time */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -428,7 +428,7 @@ export default function EditEmployeePage() {
                       className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.salaryStartDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                     />
                   </div>
-                  {validationErrors.salaryStartDate && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.salaryStartDate}</p>}
+                  {validationErrors.salaryStartDate && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.salaryStartDate}</p>}
                 </div>
                 <div>
                   <label htmlFor="projectStartTime" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Waqtiga Bilowga Shaqada <span className="text-redError">*</span></label>
@@ -442,7 +442,7 @@ export default function EditEmployeePage() {
                       className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.salaryStartTime ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                     />
                   </div>
-                  {validationErrors.salaryStartTime && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.salaryStartTime}</p>}
+                  {validationErrors.salaryStartTime && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.salaryStartTime}</p>}
                 </div>
               </div>
             </div>

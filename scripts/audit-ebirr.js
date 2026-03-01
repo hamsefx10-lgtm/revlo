@@ -1,20 +1,18 @@
 const { PrismaClient } = require('@prisma/client');
+
 const prisma = new PrismaClient();
 
-async function checkEBirr() {
-    const companyId = '081fb675-b41e-4cea-92f7-50a5eb3e6f1e';
-    const eBirrAcc = await prisma.account.findFirst({
-        where: { name: { contains: 'e-birr', mode: 'insensitive' }, companyId }
-    });
+async function auditEBirr() {
+    const eBirrId = '3c156507-ea0a-4974-8a54-92f1e9dd519a';
 
-    const txns = await prisma.transaction.findMany({
+    // Fetch transactions involving this account
+    const allTx = await prisma.transaction.findMany({
         where: {
             OR: [
-                { accountId: eBirrAcc.id },
-                { fromAccountId: eBirrAcc.id },
-                { toAccountId: eBirrAcc.id }
-            ],
-            companyId
+                { accountId: eBirrId },
+                { fromAccountId: eBirrId },
+                { toAccountId: eBirrId }
+            ]
         },
         orderBy: [
             { transactionDate: 'asc' },
@@ -22,40 +20,48 @@ async function checkEBirr() {
         ]
     });
 
-    let sumIn = 0;
-    let sumOut = 0;
-    let runningBal = 0;
+    console.log(`Auditing E-Birr (${eBirrId}) - Found ${allTx.length} transactions`);
 
-    for (const t of txns) {
-        const amount = Math.abs(Number(t.amount));
+    let currentBalance = 0;
 
-        if (t.accountId === eBirrAcc.id) {
-            if (['INCOME', 'DEBT_REPAID', 'TRANSFER_IN', 'SHAREHOLDER_DEPOSIT'].includes(t.type)) {
-                runningBal += amount;
-                sumIn += amount;
-            } else {
-                runningBal -= amount;
-                sumOut += amount;
-            }
-        } else if (t.fromAccountId === eBirrAcc.id && t.type === 'TRANSFER_OUT') {
-            runningBal -= amount;
-            sumOut += amount;
-        } else if (t.toAccountId === eBirrAcc.id && t.type === 'TRANSFER_IN') {
-            runningBal += amount;
-            sumIn += amount;
-        } else {
-            runningBal -= amount;
-            sumOut += amount;
+    allTx.forEach((trx, index) => {
+        const amount = Math.abs(Number(trx.amount));
+
+        const isStandardIn = [
+            'INCOME',
+            'DEBT_RECEIVED',
+            'TRANSFER_IN'
+        ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && !trx.vendorId);
+
+        const isStandardOut = [
+            'EXPENSE',
+            'DEBT_GIVEN',
+            'DEBT_TAKEN',
+            'TRANSFER_OUT'
+        ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && trx.vendorId);
+
+        let change = 0;
+        // Addition logic
+        if ((trx.accountId === eBirrId && isStandardIn) || trx.toAccountId === eBirrId) {
+            change += amount;
         }
-    }
+        // Deduction logic
+        if ((trx.accountId === eBirrId && isStandardOut) || trx.fromAccountId === eBirrId) {
+            change -= amount;
+        }
 
-    console.log(`=== E-BIRR DIAGNOSTICS ===`);
-    console.log(`Transactions Read: ${txns.length}`);
-    console.log(`Total In: ${sumIn.toLocaleString()}`);
-    console.log(`Total Out: ${sumOut.toLocaleString()}`);
-    console.log(`Math Result (In - Out): ${(sumIn - sumOut).toLocaleString()}`);
-    console.log(`Final Running Balance: ${runningBal.toLocaleString()}`);
-    console.log(`Database Absolute Balance: ${Number(eBirrAcc.balance).toLocaleString()}`);
+        currentBalance += change;
+
+        // Show last 30 transactions
+        if (index > allTx.length - 30) {
+            console.log(`${trx.transactionDate.toISOString().slice(0, 10)} | Type: ${trx.type.padEnd(15)} | Amt: ${amount.toString().padStart(10)} | Change: ${change.toString().padStart(10)} | Bal: ${currentBalance.toFixed(2).padStart(12)} | Desc: ${trx.description}`);
+        }
+    });
+
+    console.log('\nFinal Calculated Balance:', currentBalance.toFixed(2));
+
+    const account = await prisma.account.findUnique({ where: { id: eBirrId } });
+    console.log('Stored Account Balance:', account ? account.balance : 'NOT FOUND');
 }
 
-checkEBirr().finally(() => prisma.$disconnect());
+auditEBirr().catch(console.error).finally(() => prisma.$disconnect());

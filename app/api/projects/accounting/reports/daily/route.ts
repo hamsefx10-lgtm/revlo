@@ -40,10 +40,30 @@ export async function GET(request: Request) {
     let newTransactionsCount = dailyTransactions.length;
 
     dailyTransactions.forEach((trx: any) => {
-      if (trx.type === 'INCOME' || trx.type === 'TRANSFER_IN' || trx.type === 'DEBT_TAKEN') {
-        todayIncome += trx.amount.toNumber();
-      } else if (trx.type === 'EXPENSE' || trx.type === 'TRANSFER_OUT' || trx.type === 'DEBT_REPAID') {
-        todayExpenses += trx.amount.toNumber();
+      const amount = Math.abs(trx.amount.toNumber());
+
+      // Income Classification
+      if (trx.type === 'INCOME' || trx.type === 'TRANSFER_IN' || trx.type === 'DEBT_RECEIVED' || (trx.type === 'DEBT_REPAID' && !trx.vendorId)) {
+        todayIncome += amount;
+      }
+      // Expense Classification
+      else if (trx.type === 'EXPENSE' || trx.type === 'TRANSFER_OUT' || (trx.type === 'DEBT_REPAID' && trx.vendorId)) {
+        todayExpenses += amount;
+      }
+      // Loans Taken (Inflow but liability) vs Loans Given (Outflow but asset)
+      else if (trx.type === 'DEBT_TAKEN') {
+        // If it's a vendor debt taken (credit purchase), it's essentially an expense not yet paid in cash.
+        // But for Daily Report Cash Flow, we usually care about actual money moves.
+        // However, looking at the previous logic, it was counting DEBT_TAKEN as income.
+        // Let's stick to Cash Flow: DEBT_TAKEN (loan received) = Inflow.
+        if (!trx.vendorId) {
+          todayIncome += amount;
+        } else {
+          // Vendor debt taken is not cash outflow yet, so we don't add to todayExpenses here.
+        }
+      }
+      else if (trx.type === 'DEBT_GIVEN') {
+        todayExpenses += amount;
       }
     });
 

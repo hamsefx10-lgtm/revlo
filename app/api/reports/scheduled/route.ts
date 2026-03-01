@@ -1,12 +1,17 @@
 // app/api/reports/scheduled/route.ts - Scheduled Reports API
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { reportScheduler } from '@/lib/scheduler';
-import { getSessionCompanyId } from '@/app/api/projects/accounting/reports/auth';
+import { getSessionCompanyUser } from '@/lib/auth';
 
 // GET /api/reports/scheduled - Get scheduled reports
 export async function GET(request: Request) {
   try {
-    const companyId = await getSessionCompanyId();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
+    if (!companyId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     const scheduledReports = reportScheduler.getScheduledReports(companyId);
 
     return NextResponse.json({ scheduledReports }, { status: 200 });
@@ -30,7 +35,11 @@ export async function GET(request: Request) {
 // POST /api/reports/scheduled - Create scheduled report
 export async function POST(request: Request) {
   try {
-    const companyId = await getSessionCompanyId();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
+    if (!companyId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     const {
       name,
       type,
@@ -82,7 +91,11 @@ export async function POST(request: Request) {
 // PUT /api/reports/scheduled/[id] - Update scheduled report
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
-    const companyId = await getSessionCompanyId();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
+    if (!companyId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     const { id } = params;
     const updates = await request.json();
 
@@ -109,7 +122,11 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 // DELETE /api/reports/scheduled/[id] - Delete scheduled report
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-    const companyId = await getSessionCompanyId();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
+    if (!companyId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     const { id } = params;
 
     reportScheduler.deleteScheduledReport(companyId, id);

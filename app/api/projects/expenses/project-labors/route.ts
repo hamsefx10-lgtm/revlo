@@ -1,12 +1,16 @@
 // app/api/project-labors/route.ts - Project Labor Records API
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { getSessionCompanyUser } from '../auth';
+import { getSessionCompanyUser } from '@/lib/auth';
 
 // GET /api/project-labors - Fetch all project labor records
 export async function GET(request: Request) {
   try {
-    const { companyId } = await getSessionCompanyUser();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
+    if (!companyId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
 
     const projectLabors = await prisma.projectLabor.findMany({
       where: {

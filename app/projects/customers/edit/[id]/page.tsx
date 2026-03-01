@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation'; // Import useParams
 import Layout from '@/components/layouts/Layout';
-import { 
+import {
   X, Loader2, Info, CheckCircle, User as UserIcon, Building, Mail, Phone, MapPin, MessageSquare, Edit,
   ArrowLeft // For back button
 } from 'lucide-react';
@@ -14,7 +14,7 @@ import Toast from '@/components/common/Toast'; // Reuse Toast component
 export default function EditCustomerPage() {
   const router = useRouter();
   const { id } = useParams(); // Get customer ID from URL
-  
+
   const [name, setName] = useState('');
   const [type, setType] = useState<'Individual' | 'Company'>('Individual');
   const [companyName, setCompanyName] = useState('');
@@ -35,10 +35,10 @@ export default function EditCustomerPage() {
 
       setLoading(true);
       try {
-        const response = await fetch(`/api/customers/${id}`);
+        const response = await fetch(`/api/projects/customers/${id}`);
         if (!response.ok) throw new Error('Failed to fetch customer details');
         const data = await response.json();
-        
+
         // Set form fields with fetched data
         setName(data.customer.name);
         setType(data.customer.type);
@@ -52,7 +52,7 @@ export default function EditCustomerPage() {
         console.error('Error fetching customer details for edit:', error);
         setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka faahfaahinta macmiilka la soo gelinayay.', type: 'error' });
         // Redirect if customer not found or error
-        router.push('/customers'); 
+        router.push('/projects/customers');
       } finally {
         setLoading(false);
       }
@@ -86,14 +86,14 @@ export default function EditCustomerPage() {
       const customerData = {
         name,
         type,
-        companyName: type === 'Company' ? companyName : null, 
+        companyName: type === 'Company' ? companyName : null,
         phone: phone || null,
         email: email || null,
         address: address || null,
         notes: notes || null,
       };
 
-      const response = await fetch(`/api/customers/${id}`, { // Use PUT method for update
+      const response = await fetch(`/api/projects/customers/${id}`, { // Use PUT method for update
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(customerData),
@@ -103,7 +103,7 @@ export default function EditCustomerPage() {
 
       if (response.ok) {
         setToastMessage({ message: data.message || 'Macmiilka si guul leh ayaa loo cusboonaysiiyay!', type: 'success' });
-        router.push(`/customers/${id}`); // Redirect to customer details page after update
+        router.push(`/projects/customers/${id}`); // Redirect to customer details page after update
       } else {
         setToastMessage({ message: data.message || 'Cilad ayaa dhacday marka macmiilka la cusboonaysiinayay.', type: 'error' });
       }
@@ -129,7 +129,7 @@ export default function EditCustomerPage() {
     <Layout>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">
-          <Link href={`/customers/${id}`} className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
+          <Link href={`/projects/customers/${id}`} className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
             <ArrowLeft size={28} className="inline-block" />
           </Link>
           Edit Macmiil: {name}
@@ -142,22 +142,22 @@ export default function EditCustomerPage() {
           <div>
             <label htmlFor="type" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Nooca Macmiilka <span className="text-redError">*</span></label>
             <div className="flex space-x-3">
-              <button 
-                type="button" 
-                onClick={() => setType('Individual')} 
+              <button
+                type="button"
+                onClick={() => setType('Individual')}
                 className={`flex items-center space-x-2 p-3 rounded-lg border transition-all duration-200 ${type === 'Individual' ? 'bg-primary text-white border-primary' : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 border-lightGray dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
               >
-                <UserIcon size={20}/> <span>Shakhsi</span>
+                <UserIcon size={20} /> <span>Shakhsi</span>
               </button>
-              <button 
-                type="button" 
-                onClick={() => setType('Company')} 
+              <button
+                type="button"
+                onClick={() => setType('Company')}
                 className={`flex items-center space-x-2 p-3 rounded-lg border transition-all duration-200 ${type === 'Company' ? 'bg-primary text-white border-primary' : 'bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 border-lightGray dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
               >
-                <Building size={20}/> <span>Shirkad</span>
+                <Building size={20} /> <span>Shirkad</span>
               </button>
             </div>
-            {validationErrors.type && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.type}</p>}
+            {validationErrors.type && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.type}</p>}
           </div>
 
           {/* Customer Name */}
@@ -174,7 +174,7 @@ export default function EditCustomerPage() {
                 className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.name ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
               />
             </div>
-            {validationErrors.name && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.name}</p>}
+            {validationErrors.name && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.name}</p>}
           </div>
 
           {/* Company Name (Conditional) */}
@@ -192,7 +192,7 @@ export default function EditCustomerPage() {
                   className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.companyName ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 />
               </div>
-              {validationErrors.companyName && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.companyName}</p>}
+              {validationErrors.companyName && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.companyName}</p>}
             </div>
           )}
 
@@ -211,7 +211,7 @@ export default function EditCustomerPage() {
                   className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.email ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
                 />
               </div>
-              {validationErrors.email && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1"/>{validationErrors.email}</p>}
+              {validationErrors.email && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.email}</p>}
             </div>
             <div>
               <label htmlFor="phone" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taleefan (Optional)</label>

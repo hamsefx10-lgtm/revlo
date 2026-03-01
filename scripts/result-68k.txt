@@ -1,0 +1,36 @@
+=== DEBT_RECEIVED TRANSACTIONS ===
+Count: 2
+---
+ID: 313e390e-c335-41d7-8961-25c225778098
+Amount: 48000
+Date: Tue Feb 17 2026 03:00:00 GMT+0300 (East Africa Time)
+Description: dayn xaawo laga qaatay 
+Note: null
+Account: CBE
+Company: Birshiil
+Customer: Xaawo 
+Vendor: null
+Category: null
+---
+ID: 4edd85c3-ca31-407d-b512-ebc851903d81
+Amount: 20000
+Date: Wed Feb 25 2026 03:00:00 GMT+0300 (East Africa Time)
+Description: MAGCC dayn laga qaatay 
+Note: null
+Account: CBE
+Company: Birshiil
+Customer: Ma'amiin Gcc
+Vendor: null
+Category: null
+=== TOTAL: 68000 ETB ===
+
+=== ALL TYPES SUMMARY ===
+TRANSFER_IN | count:7 | sum:160798.21
+INCOME | count:65 | sum:14451440.1
+DEBT_TAKEN | count:2 | sum:-39700
+TRANSFER_OUT | count:8 | sum:-34188.2
+DEBT_REPAID | count:25 | sum:989381
+EXPENSE | count:842 | sum:-11848291.85
+DEBT_GIVEN | count:64 | sum:1689620
+OTHER | count:1 | sum:1200
+DEBT_RECEIVED | count:2 | sum:68000

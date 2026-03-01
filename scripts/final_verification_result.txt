@@ -1,0 +1,10 @@
+=== VERIFIED AUDIT: AFTER GLOBAL SUMMARY FIX ===
+TOTAL STORED ACCOUNTS BALANCE: 771,646.25 ETB
+
+--- Updated Transaction Summary (Reports View) ---
+Total Inflow (including Proj Adv): 15,699,819.31 ETB
+Total Outflow: 15,101,256.06 ETB
+NET FLOW (In - Out): 598,563.25 ETB
+
+--- Analysis ---
+Difference (Balance - Net Flow): 173,083 ETB

@@ -1,12 +1,16 @@
 // app/api/vehicles/route.ts - Vehicles API Route
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { getSessionCompanyUser } from '@/app/api/projects/expenses/auth';
+import { getSessionCompanyUser } from '@/lib/auth';
 
 // GET /api/vehicles - Get all vehicles for the company
 export async function GET(request: Request) {
   try {
-    const { companyId } = await getSessionCompanyUser();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
+    if (!companyId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     const vehicles = await prisma.fixedAsset.findMany({
       where: { companyId, type: 'Vehicle' },
       orderBy: { name: 'asc' },
@@ -23,7 +27,11 @@ export async function GET(request: Request) {
 // POST /api/vehicles - Add a new vehicle
 export async function POST(request: Request) {
   try {
-    const { companyId } = await getSessionCompanyUser();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
+    if (!companyId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     const { name, plate } = await request.json();
     if (!name || !plate || typeof name !== 'string' || typeof plate !== 'string' || !name.trim() || !plate.trim()) {
       return NextResponse.json(

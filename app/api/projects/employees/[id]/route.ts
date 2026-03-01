@@ -193,36 +193,50 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     // 1. Get all expenses for this employee to refund account balances
     const employeeExpenses = await prisma.expense.findMany({
       where: { employeeId: id },
-      select: { paidFrom: true, amount: true }
+      select: { id: true, paidFrom: true, amount: true }
     });
 
-    // 2. Refund account balances for all expenses
+    // 2. Refund account balances for all expenses (ONLY if transactions exist)
     for (const expense of employeeExpenses) {
       if (expense.paidFrom && expense.amount) {
-        await prisma.account.update({
-          where: { id: expense.paidFrom },
-          data: {
-            balance: { increment: Number(expense.amount) }, // Soo celi lacagta
-          },
+        const linkedTrx = await prisma.transaction.findMany({
+          where: { expenseId: (expense as any).id }
         });
+        const totalTrxAmount = linkedTrx.reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
+
+        if (totalTrxAmount > 0) {
+          await prisma.account.update({
+            where: { id: expense.paidFrom },
+            data: {
+              balance: { increment: totalTrxAmount },
+            },
+          });
+        }
       }
     }
 
     // 3. Get all project labor records for this employee to refund account balances
     const projectLabors = await prisma.projectLabor.findMany({
       where: { employeeId: id },
-      select: { paidFrom: true, paidAmount: true }
+      select: { id: true, paidFrom: true, paidAmount: true }
     });
 
-    // 4. Refund account balances for all project labor records
+    // 4. Refund account balances for all project labor records (ONLY if transactions exist)
     for (const labor of projectLabors) {
       if (labor.paidFrom && labor.paidAmount) {
-        await prisma.account.update({
-          where: { id: labor.paidFrom },
-          data: {
-            balance: { increment: Number(labor.paidAmount) }, // Soo celi lacagta
-          },
+        const linkedTrx = await prisma.transaction.findMany({
+          where: { expenseId: (labor as any).id }
         });
+        const totalTrxAmount = linkedTrx.reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
+
+        if (totalTrxAmount > 0) {
+          await prisma.account.update({
+            where: { id: labor.paidFrom },
+            data: {
+              balance: { increment: totalTrxAmount },
+            },
+          });
+        }
       }
     }
 

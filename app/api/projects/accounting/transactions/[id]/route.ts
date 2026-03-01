@@ -161,12 +161,27 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       },
     });
 
-    // Cusboonaysii balance-ka accounts-ka (Tani waxay u baahan tahay logic adag oo maareeya isbeddelka balance-ka)
-    // Waxaad u baahan tahay inaad marka hore soo dejiso transaction-kii hore, ka dibna aad ka noqoto saameyntiisii,
-    // ka dibna aad ku darto saameynta transaction-ka cusub. Tani aad ayay u adag tahay.
-    // Waxaan ku talinayaa in balance-ka accounts-ka lagu xisaabiyo transactions-ka oo dhan,
-    // ama in update-ka balance-ka lagu sameeyo backend service gaar ah.
-    // Hadda, waxaan ka saaray logic-ka balance update-ka halkan si looga fogaado cilado.
+    // Cusboonaysii balance-ka accounts-ka
+    const { recalculateAccountBalance } = await import('@/lib/accounting');
+
+    // Collect all unique account IDs that might be affected
+    const affectedAccountIds = new Set<string>();
+    if (accountId) affectedAccountIds.add(accountId);
+    if (fromAccountId) affectedAccountIds.add(fromAccountId);
+    if (toAccountId) affectedAccountIds.add(toAccountId);
+
+    // Also consider the OLD accounts before update
+    const oldTrx = await prisma.transaction.findUnique({ where: { id } });
+    if (oldTrx) {
+      if (oldTrx.accountId) affectedAccountIds.add(oldTrx.accountId);
+      if (oldTrx.fromAccountId) affectedAccountIds.add(oldTrx.fromAccountId);
+      if (oldTrx.toAccountId) affectedAccountIds.add(oldTrx.toAccountId);
+    }
+
+    // Recalculate everyone
+    for (const accId of affectedAccountIds) {
+      await recalculateAccountBalance(accId);
+    }
 
     return NextResponse.json(
       { message: 'Dhaqdhaqaaqa lacagta si guul leh ayaa loo cusboonaysiiyay!', transaction: updatedTransaction },
@@ -206,11 +221,17 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       where: { id: id },
     });
 
-    // Cusboonaysii balance-ka accounts-ka (Tani waxay u baahan tahay logic adag oo maareeya isbeddelka balance-ka)
-    // Waxaad u baahan tahay inaad dib u xisaabiso balance-ka account-ka ka dib tirtiridda.
-    // Waxaan ku talinayaa in balance-ka accounts-ka lagu xisaabiyo transactions-ka oo dhan,
-    // ama in update-ka balance-ka lagu sameeyo backend service gaar ah.
-    // Hadda, waxaan ka saaray logic-ka balance update-ka halkan si looga fogaado cilado.
+    // Cusboonaysii balance-ka accounts-ka
+    const { recalculateAccountBalance } = await import('@/lib/accounting');
+
+    const affectedAccountIds = new Set<string>();
+    if (existingTransaction.accountId) affectedAccountIds.add(existingTransaction.accountId);
+    if (existingTransaction.fromAccountId) affectedAccountIds.add(existingTransaction.fromAccountId);
+    if (existingTransaction.toAccountId) affectedAccountIds.add(existingTransaction.toAccountId);
+
+    for (const accId of affectedAccountIds) {
+      await recalculateAccountBalance(accId);
+    }
 
     // Notify about transaction deletion for real-time updates
     const transactionEvent = {

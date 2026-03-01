@@ -104,7 +104,8 @@ export async function GET(req: NextRequest) {
                     { category: { contains: 'Repayment', mode: 'insensitive' } },
                     { category: { contains: 'Capital', mode: 'insensitive' } },
                     { category: { contains: 'Withdrawal', mode: 'insensitive' } },
-                    { category: { contains: 'Drawing', mode: 'insensitive' } }
+                    { category: { contains: 'Drawing', mode: 'insensitive' } },
+                    { category: 'FIXED_ASSET_PURCHASE' }
                 ]
             },
             select: { amount: true, category: true }

@@ -1,0 +1,7 @@
+--- Account Balances ---
+E-Birr: 34279.45999999996 (ID: 3c156507-ea0a-4974-8a54-92f1e9dd519a)
+CBE: 53148.68999999994 (ID: c8306c05-5279-4b05-b5fc-dda41c793a77)
+
+--- Transaction Audit per Account ---
+E-Birr: Stored=34279.45999999996, Calculated=13262501.54, Diff=-13228222.079999998
+CBE: Stored=53148.68999999994, Calculated=11165004.89, Diff=-11111856.200000001

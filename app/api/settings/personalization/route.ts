@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
-import { getSessionCompanyId } from '../../admin/auth';
+import { getSessionCompanyUser } from '@/lib/auth';
 import prisma from '@/lib/db';
 
 // GET /api/settings/personalization - Get personalization settings
 export async function GET() {
   try {
-    const companyId = await getSessionCompanyId();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
     if (!companyId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
@@ -42,9 +43,9 @@ export async function GET() {
       });
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       settings,
-      message: 'Personalization settings retrieved successfully' 
+      message: 'Personalization settings retrieved successfully'
     });
   } catch (error) {
     console.error('Error fetching personalization settings:', error);
@@ -58,7 +59,8 @@ export async function GET() {
 // PUT /api/settings/personalization - Update personalization settings
 export async function PUT(request: Request) {
   try {
-    const companyId = await getSessionCompanyId();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
     if (!companyId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
@@ -74,9 +76,9 @@ export async function PUT(request: Request) {
       },
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       settings,
-      message: 'Personalization settings updated successfully' 
+      message: 'Personalization settings updated successfully'
     });
   } catch (error) {
     console.error('Error updating personalization settings:', error);

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSessionCompanyId } from '../../../admin/auth';
+import { getSessionCompanyUser } from '@/lib/auth';
 import prisma from '@/lib/db';
 
 // PUT /api/settings/categories/[id] - Update expense category
@@ -8,7 +8,8 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const companyId = await getSessionCompanyId();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
     if (!companyId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
@@ -23,9 +24,9 @@ export async function PUT(
     }
 
     const category = await prisma.expenseCategory.update({
-      where: { 
+      where: {
         id: params.id,
-        companyId 
+        companyId
       },
       data: {
         name,
@@ -34,9 +35,9 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       category,
-      message: 'Category updated successfully' 
+      message: 'Category updated successfully'
     });
   } catch (error) {
     console.error('Error updating category:', error);
@@ -53,20 +54,21 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const companyId = await getSessionCompanyId();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
     if (!companyId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     await prisma.expenseCategory.delete({
-      where: { 
+      where: {
         id: params.id,
-        companyId 
+        companyId
       },
     });
 
-    return NextResponse.json({ 
-      message: 'Category deleted successfully' 
+    return NextResponse.json({
+      message: 'Category deleted successfully'
     });
   } catch (error) {
     console.error('Error deleting category:', error);

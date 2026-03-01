@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { getSessionCompanyUser } from '@/lib/auth';
@@ -45,24 +46,6 @@ export async function GET(request: Request) {
     const previousDay = new Date(selectedDate);
     previousDay.setDate(selectedDate.getDate() - 1);
     previousDay.setHours(23, 59, 59, 999);
-
-    console.log('[Daily Report API] Fetching debts...');
-    // Debts collected on selected date from projects
-    const debtsTx = await prisma.transaction.findMany({
-      where: {
-        companyId,
-        transactionDate: { gte: selectedDate, lt: nextDay },
-        type: 'DEBT_REPAID',
-        projectId: { not: null },
-      },
-      include: {
-        project: { select: { name: true } },
-      },
-    });
-    const debtsCollected = debtsTx.map((tx: any) => ({
-      project: tx.project?.name || String(tx.projectId) || 'Unknown',
-      amount: Number(tx.amount),
-    }));
 
     console.log('[Daily Report API] Fetching expenses...');
     // Expenses for selected date only
@@ -209,7 +192,10 @@ export async function GET(request: Request) {
       where: {
         companyId,
         transactionDate: { gte: selectedDate, lt: nextDay },
-        type: 'INCOME',
+        OR: [
+          { type: { in: ['INCOME', 'DEBT_RECEIVED'] } },
+          { type: 'DEBT_REPAID', vendorId: null }
+        ]
       },
       orderBy: { transactionDate: 'desc' },
       include: {
@@ -222,17 +208,28 @@ export async function GET(request: Request) {
     const income = incomeTx.reduce((sum: number, tx: any) => sum + Number(tx.amount), 0);
 
     // Map income transactions with details
-    const incomeTransactions = incomeTx.map((tx: any) => ({
-      id: tx.id,
-      description: tx.description || '',
-      amount: Number(tx.amount),
-      account: tx.account?.name || 'N/A',
-      project: tx.project?.name || null,
-      customer: tx.customer?.name || null,
-      note: tx.note || null,
-      transactionDate: tx.transactionDate?.toISOString().slice(0, 10) || '',
-      user: tx.user?.fullName || null,
-    }));
+    const incomeTransactions = incomeTx.map((tx: any) => {
+      let desc = tx.description || '';
+      if (!desc) {
+        if (tx.type === 'INCOME') desc = 'Dakhli (Income)';
+        else if (tx.type === 'SHAREHOLDER_DEPOSIT') desc = 'Qaaraan Saamile (Deposit)';
+        else if (tx.type === 'DEBT_REPAID') desc = 'Dayn La Bixiyay (Debt Collected)';
+        else if (tx.type === 'DEBT_RECEIVED') desc = 'Dayn La Qaaday (Loan Received)';
+        else desc = 'Dakhli';
+      }
+
+      return {
+        id: tx.id,
+        description: desc,
+        amount: Number(tx.amount),
+        account: tx.account?.name || 'N/A',
+        project: tx.project?.name || null,
+        customer: tx.customer?.name || null,
+        note: tx.note || null,
+        transactionDate: tx.transactionDate?.toISOString().slice(0, 10) || '',
+        user: tx.user?.fullName || null,
+      };
+    });
 
     console.log('[Daily Report API] Fetching transfer transactions...');
     // Transfer transactions - showing money movement between accounts
@@ -400,74 +397,86 @@ export async function GET(request: Request) {
       select: { id: true, name: true, balance: true },
     });
 
-    // Calculate balances for selected date (FORWARD CALCULATION - accurate historical snapshot)
+    // Calculate balances for selected date (OPTIMIZED: single query + in-memory calculation)
     let balances: { previous: Record<string, number>; today: Record<string, number> } | null = null;
-    let totalPrev: number | null = null;
-    let totalToday: number | null = null;
+    let totalPrev = 0;
+    let totalToday = 0;
 
     if (accounts.length > 0) {
-      balances = {
-        previous: {},
-        today: {},
-      };
+      balances = { previous: {}, today: {} };
+      const endOfToday = new Date(nextDay.getTime() - 1);
 
-      const accountIds = accounts.map(acc => acc.id);
-      const endOfSelectedDate = new Date(nextDay.getTime() - 1);
-
-      // FORWARD CALCULATION: Fetch ALL transactions UP TO selected date
-      const transactionsUpToToday = await prisma.transaction.findMany({
+      // Fetch ALL transactions for the company up to the end of the selected date
+      const allTx = await prisma.transaction.findMany({
         where: {
           companyId,
-          accountId: { in: accountIds },
-          transactionDate: { lte: endOfSelectedDate }, // ✅ All transactions up to end of selected date
+          transactionDate: { lte: endOfToday }
         },
         select: {
           accountId: true,
+          fromAccountId: true,
+          toAccountId: true,
           amount: true,
           type: true,
           transactionDate: true,
-        },
+          vendorId: true
+        }
       });
 
-      // Fetch ALL transactions UP TO previous day
-      const transactionsUpToPrevious = await prisma.transaction.findMany({
-        where: {
-          companyId,
-          accountId: { in: accountIds },
-          transactionDate: { lte: previousDay }, // ✅ All transactions up to end of previous day
-        },
-        select: {
-          accountId: true,
-          amount: true,
-          type: true,
-          transactionDate: true,
-        },
+      const startOfToday = selectedDate.getTime();
+      const accountMap = new Map();
+      accounts.forEach(acc => {
+        accountMap.set(acc.id, { prev: 0, today: 0, name: acc.name });
       });
 
-      const getNetEffect = (transactions: any[]) => {
-        return transactions.reduce((sum: number, tx: any) => {
-          const amount = Math.abs(Number(tx.amount));
-          if (['INCOME', 'DEBT_REPAID', 'TRANSFER_IN'].includes(tx.type)) {
-            return sum + amount;
-          } else if (['EXPENSE', 'DEBT_TAKEN', 'TRANSFER_OUT'].includes(tx.type)) {
-            return sum - amount;
+      allTx.forEach(trx => {
+        const amount = Math.abs(Number(trx.amount));
+        const isPrev = trx.transactionDate.getTime() < startOfToday;
+
+        // 1. Unified Transfer Logic (For new single-record transfers)
+        if (!trx.accountId) {
+          const fromAcc = accountMap.get(trx.fromAccountId as string);
+          const toAcc = accountMap.get(trx.toAccountId as string);
+
+          if (fromAcc) {
+            fromAcc.today -= amount;
+            if (isPrev) fromAcc.prev -= amount;
           }
-          return sum;
-        }, 0);
-      };
+          if (toAcc) {
+            toAcc.today += amount;
+            if (isPrev) toAcc.prev += amount;
+          }
+          return;
+        }
 
-      for (const acc of accounts) {
-        // Calculate TODAY's balance (end of selected date) by summing ALL transactions up to that date
-        const todayTxs = transactionsUpToToday.filter(tx => tx.accountId === acc.id);
-        balances.today[acc.name] = getNetEffect(todayTxs);
+        // 2. Standard Logic (For non-transfers and OLD dual-record transfers)
+        // Note: For legacy transfers, each record has accountId set. 
+        // We only process it for that specific accountId.
+        const stats = accountMap.get(trx.accountId);
+        if (!stats) return;
 
-        // Calculate PREVIOUS day's balance by summing ALL transactions up to previous day
-        const prevTxs = transactionsUpToPrevious.filter(tx => tx.accountId === acc.id);
-        balances.previous[acc.name] = getNetEffect(prevTxs);
-      }
+        const isStandardIn = [
+          'INCOME', 'DEBT_RECEIVED', 'TRANSFER_IN'
+        ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && !trx.vendorId);
 
-      totalPrev = Object.values(balances.previous).reduce((sum: number, val: number) => sum + val, 0);
-      totalToday = Object.values(balances.today).reduce((sum: number, val: number) => sum + val, 0);
+        const isStandardOut = [
+          'EXPENSE', 'DEBT_GIVEN', 'DEBT_TAKEN', 'TRANSFER_OUT'
+        ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && trx.vendorId);
+
+        let change = 0;
+        if (isStandardIn) change = amount;
+        else if (isStandardOut) change = -amount;
+
+        stats.today += change;
+        if (isPrev) stats.prev += change;
+      });
+
+      accountMap.forEach(stats => {
+        balances!.previous[stats.name] = stats.prev;
+        balances!.today[stats.name] = stats.today;
+        totalPrev += stats.prev;
+        totalToday += stats.today;
+      });
     }
 
     const responseData = {
@@ -486,7 +495,6 @@ export async function GET(request: Request) {
       totalProjectExpenses: totalProjectExpenses ?? 0,
       totalCompanyExpenses: totalCompanyExpenses ?? 0,
       totalExpenses: totalExpenses ?? 0,
-      debtsCollected,
       fixedAssets: fixedAssetsList || [],
       totalFixedAssets: totalFixedAssets ?? 0,
       otherTransactions: otherTransactionsList || [],

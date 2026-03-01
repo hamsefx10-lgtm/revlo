@@ -123,8 +123,10 @@ export async function GET(request: Request) {
             where: {
                 companyId,
                 transactionDate: dateFilter,
-                type: 'INCOME',
-                projectId: null
+                OR: [
+                    { type: 'INCOME', projectId: null },
+                    { type: 'DEBT_REPAID', vendorId: null, projectId: null }
+                ]
             }
         });
         const totalOtherIncome = otherIncome.reduce((sum, t) => sum + toNumber(t.amount), 0);
@@ -140,7 +142,8 @@ export async function GET(request: Request) {
                 projectId: null,
                 NOT: [
                     { category: { contains: 'Withdrawal', mode: 'insensitive' } },
-                    { category: { contains: 'Drawing', mode: 'insensitive' } }
+                    { category: { contains: 'Drawing', mode: 'insensitive' } },
+                    { category: 'FIXED_ASSET_PURCHASE' }
                 ]
             },
             include: { expenseCategory: true }
@@ -150,6 +153,21 @@ export async function GET(request: Request) {
         opExExpenses.forEach(e => {
             const cat = e.category || 'General';
             opExMap[cat] = (opExMap[cat] || 0) + toNumber(e.amount);
+        });
+
+        // Add DEBT_REPAID with vendorId to OpEx (direct vendor payments not in Expense table)
+        const vendorDebtPayments = await prisma.transaction.findMany({
+            where: {
+                companyId,
+                transactionDate: dateFilter,
+                type: 'DEBT_REPAID',
+                vendorId: { not: null },
+                expenseId: null // Avoid double counting if linked to an expense
+            }
+        });
+        vendorDebtPayments.forEach(t => {
+            const cat = 'Vendor Debt Repayment';
+            opExMap[cat] = (opExMap[cat] || 0) + Math.abs(toNumber(t.amount));
         });
 
         const opExBreakdown = Object.entries(opExMap).map(([category, amount]) => ({

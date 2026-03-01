@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
-import { getSessionCompanyId } from '../../admin/auth';
+import { getSessionCompanyUser } from '@/lib/auth';
 import prisma from '@/lib/db';
 import { Decimal } from '@prisma/client/runtime/library';
 
 // GET /api/settings/assets - Get all fixed assets
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const companyId = await getSessionCompanyId();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
     if (!companyId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
@@ -47,7 +48,8 @@ export async function GET() {
 // POST /api/settings/assets - Create new fixed asset
 export async function POST(request: Request) {
   try {
-    const companyId = await getSessionCompanyId();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
     if (!companyId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }

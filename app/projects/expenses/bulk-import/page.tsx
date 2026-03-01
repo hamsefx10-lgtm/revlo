@@ -588,7 +588,7 @@ export default function BulkImportExpensesPage() {
     <Layout>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
-          <Link href="/expenses" className="flex items-center text-primary hover:text-blue-700 mb-4">
+          <Link href="/projects/expenses" className="flex items-center text-primary hover:text-blue-700 mb-4">
             <ArrowLeft size={20} className="mr-2" />
             Dib ugu noqo Expenses
           </Link>
@@ -1063,7 +1063,7 @@ export default function BulkImportExpensesPage() {
             </div>
             <div className="mt-6 flex gap-4">
               <button
-                onClick={() => router.push('/expenses')}
+                onClick={() => router.push('/projects/expenses')}
                 className="flex-1 bg-primary text-white py-4 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md"
               >
                 Eeg Kharashyada

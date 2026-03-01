@@ -1,0 +1,4 @@
+Transactions with accountId: NULL
+ID: 7457e387-1b65-47e5-836e-d515ed51ae33, Type: EXPENSE, Amount: 17808, Desc: Material expense - 2025-09-30, from: null, to: null
+ID: a287af0c-69b8-4ae3-85a9-2d21fd00f633, Type: EXPENSE, Amount: 101775, Desc: Material expense - 2025-10-05, from: null, to: null
+ID: df982d22-8c78-4b2b-b14d-d7044b1fd40d, Type: DEBT_TAKEN, Amount: -54700, Desc: xafiiska cusub (Total Debt), from: null, to: null

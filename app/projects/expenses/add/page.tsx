@@ -919,32 +919,29 @@ function AddExpenseContent() {
           case 'Office Rent':
             expenseData.amount = amount;
             expenseData.officeRentPeriod = officeRentPeriod;
-            // Ensure paidFrom is preserved
             expenseData.paidFrom = paidFrom;
-            // If paidFrom is set, assume PAID
-            if (paidFrom) {
-              expenseData.paymentStatus = 'PAID';
-              expenseData.paymentDate = expenseDate || new Date().toISOString();
-            } else {
-              expenseData.paymentStatus = 'UNPAID';
-            }
+            expenseData.paymentStatus = paymentStatus;
+            expenseData.paidAmount = paymentStatus === 'PAID' ? amount : (paymentStatus === 'PARTIAL' ? Number(partialPaidAmount) : 0);
             break;
           case 'Electricity':
             expenseData.amount = amount;
             expenseData.electricityMeterReading = electricityMeterReading;
-            // Ensure paidFrom is preserved
             expenseData.paidFrom = paidFrom;
+            expenseData.paymentStatus = paymentStatus;
+            expenseData.paidAmount = paymentStatus === 'PAID' ? amount : (paymentStatus === 'PARTIAL' ? Number(partialPaidAmount) : 0);
             break;
           case 'Marketing':
             expenseData.amount = amount;
             expenseData.marketingCampaignName = marketingCampaignName;
-            // Ensure paidFrom is preserved
             expenseData.paidFrom = paidFrom;
+            expenseData.paymentStatus = paymentStatus;
+            expenseData.paidAmount = paymentStatus === 'PAID' ? amount : (paymentStatus === 'PARTIAL' ? Number(partialPaidAmount) : 0);
             break;
           case 'Utilities':
             expenseData.amount = amount;
-            // Ensure paidFrom is preserved
             expenseData.paidFrom = paidFrom;
+            expenseData.paymentStatus = paymentStatus;
+            expenseData.paidAmount = paymentStatus === 'PAID' ? amount : (paymentStatus === 'PARTIAL' ? Number(partialPaidAmount) : 0);
             break;
           case 'Material':
             // For company Material expense, send as category: 'Material', projectId: null
@@ -1171,7 +1168,7 @@ function AddExpenseContent() {
         // if (projectId) {
         //   router.push(`/projects/${projectId}`);
         // } else {
-        //   router.push('/expenses');
+        //   router.push('/projects/expenses');
         // }
         return;
       }
@@ -1215,7 +1212,7 @@ function AddExpenseContent() {
         // if (projectId) {
         //   router.push(`/projects/${projectId}`);
         // } else {
-        //   router.push('/expenses');
+        //   router.push('/projects/expenses');
         // }
         return;
       }
@@ -1290,7 +1287,7 @@ function AddExpenseContent() {
       // if (projectId) {
       //   router.push(`/projects/${projectId}`);
       // } else {
-      //   router.push('/expenses');
+      //   router.push('/projects/expenses');
       // }
     } catch (error: any) {
       console.error('Expense submission error:', error);
@@ -2108,6 +2105,55 @@ function AddExpenseContent() {
                 {validationErrors.companyExpenseType && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{validationErrors.companyExpenseType}</p>}
               </div>
 
+              {/* Shared Payment Fields for Company Expenses (excluding Material/Labor/Salary which have their own) */}
+              {companyExpenseType && !['Material', 'Company Labor', 'Salary', 'Debt'].includes(companyExpenseType) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 p-3 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+                  <div>
+                    <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Xaallada Lacag Bixinta *</label>
+                    <select
+                      value={paymentStatus}
+                      onChange={e => setPaymentStatus(e.target.value)}
+                      className="w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100"
+                    >
+                      <option value="PAID">Waa la bixiyey (PAID)</option>
+                      <option value="PARTIAL">Qayb baa la bixiyey (PARTIAL)</option>
+                      <option value="UNPAID">Lama bixin (UNPAID)</option>
+                    </select>
+                  </div>
+
+                  {paymentStatus !== 'UNPAID' && (
+                    <div>
+                      <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Akoonka Laga Jarayo *</label>
+                      <select
+                        value={paidFrom}
+                        onChange={e => setPaidFrom(e.target.value)}
+                        className="w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100"
+                        required
+                      >
+                        <option value="">-- Dooro Akoonka --</option>
+                        {accounts.map(acc => (
+                          <option key={acc.id} value={acc.id}>{acc.name} (${Number(acc.balance || 0).toLocaleString()})</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {paymentStatus === 'PARTIAL' && (
+                    <div className="md:col-span-2">
+                      <label className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Lacagta Hadda La Bixiyay (ETB) *</label>
+                      <input
+                        type="number"
+                        value={partialPaidAmount}
+                        onChange={e => setPartialPaidAmount(e.target.value)}
+                        className="w-full p-2 border rounded-lg bg-lightGray dark:bg-gray-800 text-darkGray dark:text-gray-100"
+                        placeholder="Geli lacagta aad hadda bixisay"
+                        required
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
 
 
               {/* NEW: Salary Specific Fields */}
@@ -2631,7 +2677,7 @@ function AddExpenseContent() {
                     {(!allCustomers || allCustomers.length === 0) && (
                       <p className="text-orange-600 text-xs mt-1 flex items-center">
                         <Info size={14} className="inline mr-1" />
-                        Ma jiraan customers-ka. <Link href="/customers/add" className="underline text-primary hover:text-blue-700">Ku dar customer cusub</Link>
+                        Ma jiraan customers-ka. <Link href="/projects/customers/add" className="underline text-primary hover:text-blue-700">Ku dar customer cusub</Link>
                       </p>
                     )}
                   </div>

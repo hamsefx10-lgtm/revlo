@@ -72,32 +72,17 @@ export async function POST(request: Request) {
         data: { balance: new Decimal(destinationAccount.balance + amount) },
       });
 
-      // 2. Abuur diiwaanada transactions-ka (labo transaction oo isku xiran)
-      // Transaction-ka laga wareejiyay (EXPENSE type from source account)
+      // 2. Abuur diiwaanka transactions-ka (hal transaction oo mideysan)
+      // We use TRANSFER_OUT as the master type and set accountId to null
+      // to signify this is a unified transfer between two accounts.
       await prisma.transaction.create({
         data: {
-          description: `Wareejin: ${description} (Loo Wareejiyay: ${destinationAccount.name})`,
-          amount: new Decimal(-amount), // Negative amount for transfer out
+          description: `Wareejin: ${description}`,
+          amount: new Decimal(amount), // Original positive amount
           type: 'TRANSFER_OUT',
           transactionDate: new Date(transactionDate),
           note: note || null,
-          accountId: sourceAccount.id, // Primary account for this transaction
-          fromAccountId: sourceAccount.id,
-          toAccountId: destinationAccount.id,
-          userId,
-          companyId,
-        },
-      });
-
-      // Transaction-ka loo wareejiyay (INCOME type to destination account)
-      await prisma.transaction.create({
-        data: {
-          description: `Wareejin: ${description} (Laga Wareejiyay: ${sourceAccount.name})`,
-          amount: new Decimal(amount), // Positive amount for transfer in
-          type: 'TRANSFER_IN',
-          transactionDate: new Date(transactionDate),
-          note: note || null,
-          accountId: destinationAccount.id, // Primary account for this transaction
+          accountId: null, // Unified transfer doesn't belong to just one "master" account field
           fromAccountId: sourceAccount.id,
           toAccountId: destinationAccount.id,
           userId,

@@ -32,10 +32,15 @@ interface Transaction {
   employee?: { fullName: string; }; // If linked to employee (DEBT_TAKEN = loan given out)
   user?: { fullName: string; };    // Who recorded
   isVirtual?: boolean;             // Flag indicating if this is a synthesized transaction (e.g. from Project records)
+  expenseId?: string;
+  customerId?: string;
+  vendorId?: string;
+  projectId?: string;
+  fixedAssetId?: string;
 }
 
 // --- Transaction Table Row Component ---
-const TransactionRow: React.FC<{ transaction: Transaction; onEdit: (id: string) => void; onDelete: (id: string) => void }> = ({ transaction, onEdit, onDelete }) => {
+const TransactionRow: React.FC<{ transaction: Transaction; onEdit: (trx: Transaction) => void; onDelete: (id: string) => void }> = ({ transaction, onEdit, onDelete }) => {
   // ── Direction logic ──────────────────────────────────────────────
   // Money IN  (green +): INCOME, TRANSFER_IN, DEBT_RECEIVED, DEBT_REPAID from customer/project
   // Money OUT (red  -): EXPENSE, TRANSFER_OUT, DEBT_TAKEN, DEBT_GIVEN, DEBT_REPAID to vendor
@@ -76,7 +81,7 @@ const TransactionRow: React.FC<{ transaction: Transaction; onEdit: (id: string) 
                 Bixi / Qaad
               </Link>
             )}
-            <button onClick={() => onEdit(transaction.id)} className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit Transaction">
+            <button onClick={() => onEdit(transaction)} className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit Transaction">
               <Edit size={18} />
             </button>
             <button onClick={() => onDelete(transaction.id)} className="p-2 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-colors duration-200" title="Delete Transaction">
@@ -90,7 +95,7 @@ const TransactionRow: React.FC<{ transaction: Transaction; onEdit: (id: string) 
 };
 
 // --- Transaction Card Component (Mobile Optimized) ---
-const TransactionCard: React.FC<{ transaction: Transaction; onEdit: (id: string) => void; onDelete: (id: string) => void }> = ({ transaction, onEdit, onDelete }) => {
+const TransactionCard: React.FC<{ transaction: Transaction; onEdit: (trx: Transaction) => void; onDelete: (id: string) => void }> = ({ transaction, onEdit, onDelete }) => {
   // ── Direction logic ──────────────────────────────────────────────
   // Money IN  (green +): INCOME, TRANSFER_IN, DEBT_RECEIVED, DEBT_REPAID from customer/project
   // Money OUT (red  -): EXPENSE, TRANSFER_OUT, DEBT_TAKEN, DEBT_GIVEN, DEBT_REPAID to vendor
@@ -126,7 +131,7 @@ const TransactionCard: React.FC<{ transaction: Transaction; onEdit: (id: string)
         </div>
         {!transaction.isVirtual && (
           <div className="flex space-x-1 flex-shrink-0 ml-2">
-            <button onClick={() => onEdit(transaction.id)} className="p-1.5 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit">
+            <button onClick={() => onEdit(transaction)} className="p-1.5 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit">
               <Edit size={14} />
             </button>
             <button onClick={() => onDelete(transaction.id)} className="p-1.5 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-colors duration-200" title="Delete">
@@ -175,7 +180,7 @@ const TransactionCard: React.FC<{ transaction: Transaction; onEdit: (id: string)
             </Link>
           )}
           {!transaction.isVirtual && (
-            <Link href={`/accounting/transactions/${transaction.id}`} className="text-primary hover:underline text-xs font-medium">
+            <Link href={`/projects/accounting/transactions/${transaction.id}`} className="text-primary hover:underline text-xs font-medium">
               Fiiri &rarr;
             </Link>
           )}
@@ -249,8 +254,17 @@ export default function TransactionsPage() {
     }
   };
 
-  const handleEditTransaction = (id: string) => {
-    router.push(`/projects/accounting/transactions/edit/${id}`); // Navigate to edit transaction page
+  const handleEditTransaction = (transaction: Transaction) => {
+    if (transaction.expenseId) {
+      // Redirect to expense edit page
+      router.push(`/projects/expenses/edit/${transaction.expenseId}`);
+    } else if (transaction.fixedAssetId) {
+      // Redirect to fixed asset page
+      router.push(`/projects/accounting/fixed-assets`);
+    } else {
+      // Default to general accounting edit
+      router.push(`/projects/accounting/transactions/edit/${transaction.id}`);
+    }
   };
 
   useEffect(() => {
@@ -319,18 +333,19 @@ export default function TransactionsPage() {
   //   ❌ FIXED_ASSET_PURCHASE— tracked separately
   // ─────────────────────────────────────────────────────────────
 
-  // 1. Total Income (Synced perfectly with Dashboard)
+  // 1. Total Operating Income (Business Revenue)
   const totalIncome = overviewStats?.totalIncome || 0;
 
-  // 2. Total Expenses (Synced perfectly with Dashboard)
+  // 2. Total Gross Inflow (Every shilling into accounts) - NEW
+  const totalCashInflow = overviewStats?.totalCashInflow || 0;
+
+  // 3. Total Expenses (Operating)
   const totalExpenses = overviewStats?.totalExpenses || 0;
 
-  // 3. Fixed Asset Purchases (Synced perfectly with Dashboard)
+  // 4. Fixed Asset Purchases
   const fixedAssetExpenses = overviewStats?.fixedAssetExpenses || 0;
 
-
-
-  // 7. Net Flow — real operating performance
+  // 5. Net Flow — real operating performance
   const netFlow = totalIncome - totalExpenses - fixedAssetExpenses;
 
   return (
@@ -357,44 +372,35 @@ export default function TransactionsPage() {
       </div>
 
       {/* Transaction Statistics Cards - Mobile Optimized */}
-      <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4 mb-6 lg:mb-8 animate-fade-in-up">
-        <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 lg:p-5 rounded-lg lg:rounded-xl shadow-md text-center hover:shadow-lg transition-shadow duration-300">
-          <div className="flex items-center justify-center mb-2">
-            <DollarSign size={20} className="text-primary mr-2" />
-            <h4 className="text-xs sm:text-sm font-semibold text-mediumGray dark:text-gray-400">Wadarta Dhaqdhaqaaqa</h4>
-          </div>
-          <p className="text-lg sm:text-2xl font-extrabold text-primary">{totalTransactionsCount}</p>
-        </div>
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6 lg:mb-8 animate-fade-in-up">
         <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 lg:p-5 rounded-lg lg:rounded-xl shadow-md text-center hover:shadow-lg transition-shadow duration-300 border-l-4 border-secondary">
           <div className="flex items-center justify-center mb-1">
             <TrendingUp size={20} className="text-secondary mr-2" />
-            <h4 className="text-xs sm:text-sm font-semibold text-mediumGray dark:text-gray-400">Wadarta Dakhliga</h4>
+            <h4 className="text-xs sm:text-sm font-semibold text-mediumGray dark:text-gray-400">Total Inflow (Soo Gashay)</h4>
           </div>
-          <p className="text-xs text-mediumGray mb-1">(Dakhli + Deyn Soo Xaray)</p>
-          <p className="text-lg sm:text-2xl font-extrabold text-secondary">{totalIncome.toLocaleString()} ETB</p>
+          <p className="text-xs text-mediumGray mb-1 font-medium">(Shilin kasta: Dakhli + Transfers + Loans)</p>
+          <p className="text-lg sm:text-2xl font-extrabold text-secondary">{totalCashInflow.toLocaleString()} ETB</p>
         </div>
+
         <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 lg:p-5 rounded-lg lg:rounded-xl shadow-md text-center hover:shadow-lg transition-shadow duration-300 border-l-4 border-redError">
           <div className="flex items-center justify-center mb-1">
             <TrendingDown size={20} className="text-redError mr-2" />
-            <h4 className="text-xs sm:text-sm font-semibold text-mediumGray dark:text-gray-400">Wadarta Kharashyada</h4>
+            <h4 className="text-xs sm:text-sm font-semibold text-mediumGray dark:text-gray-400">Total Outflow (Baxday)</h4>
           </div>
-          <p className="text-xs text-mediumGray mb-1">(Hantida kuma jirto)</p>
-          <p className="text-lg sm:text-2xl font-extrabold text-redError">{totalExpenses.toLocaleString()} ETB</p>
+          <p className="text-xs text-mediumGray mb-1 font-medium">(Shilin kasta: Kharash + Transfers + Loans)</p>
+          <p className="text-lg sm:text-2xl font-extrabold text-redError">{(overviewStats?.totalCashOutflow || 0).toLocaleString()} ETB</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 lg:p-5 rounded-lg lg:rounded-xl shadow-md text-center hover:shadow-lg transition-shadow duration-300 border-l-4 border-purple-500">
-          <div className="flex items-center justify-center mb-1">
-            <HardDrive size={20} className="text-purple-500 mr-2" />
-            <h4 className="text-xs sm:text-sm font-semibold text-mediumGray dark:text-gray-400">Kharashyada Hantida</h4>
-          </div>
-          <p className="text-lg sm:text-2xl font-extrabold text-purple-500">{fixedAssetExpenses.toLocaleString()} ETB</p>
-        </div>
+
 
         <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 lg:p-5 rounded-lg lg:rounded-xl shadow-md text-center hover:shadow-lg transition-shadow duration-300 border-l-4 border-primary">
           <div className="flex items-center justify-center mb-2">
-            <RefreshCw size={20} className={`mr-2 ${netFlow >= 0 ? 'text-primary' : 'text-redError'}`} />
-            <h4 className="text-xs sm:text-sm font-semibold text-mediumGray dark:text-gray-400">Net Flow</h4>
+            <RefreshCw size={20} className="text-primary mr-2" />
+            <h4 className="text-xs sm:text-sm font-semibold text-mediumGray dark:text-gray-400">Net Flow (Handa)</h4>
           </div>
-          <p className={`text-lg sm:text-2xl font-extrabold ${netFlow >= 0 ? 'text-primary' : 'text-redError'}`}>{netFlow.toLocaleString()} ETB</p>
+          <p className="text-xs text-mediumGray mb-1 font-medium">(Kala goynta In/Out)</p>
+          <p className={`text-lg sm:text-2xl font-extrabold ${(totalCashInflow - (overviewStats?.totalCashOutflow || 0)) >= 0 ? 'text-primary' : 'text-redError'}`}>
+            {(totalCashInflow - (overviewStats?.totalCashOutflow || 0)).toLocaleString()} ETB
+          </p>
         </div>
       </div>
 

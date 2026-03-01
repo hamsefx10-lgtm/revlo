@@ -223,14 +223,19 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ project, onDelete, onUpdateStat
 
 
 export default function ProjectsPage() {
+  const [pageLoading, setPageLoading] = useState(true);
   const [projects, setProjects] = useState<Project[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
+  const [filterCustomer, setFilterCustomer] = useState('All');
+  const [filterType, setFilterType] = useState('All');
   const [filterDateRange, setFilterDateRange] = useState('All');
-  // --- DEFAULT VIEW IS NOW 'kanban' ---
-  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('kanban');
-  const [pageLoading, setPageLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
+  const [cardsReflectFilters, setCardsReflectFilters] = useState(false);
   const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+  // Derived unique customers from projects list
+  const customerNames = ['All', ...Array.from(new Set(projects.map(p => p.customer.name).filter(Boolean)))];
 
   // --- API Functions (No Changes) ---
   const fetchProjects = async () => {
@@ -315,9 +320,24 @@ export default function ProjectsPage() {
     const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.customer.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'All' || project.status === filterStatus;
-    // Date filtering logic can be expanded here
-    const matchesDate = filterDateRange === 'All' ? true : true;
-    return matchesSearch && matchesStatus && matchesDate;
+    const matchesCustomer = filterCustomer === 'All' || project.customer.name === filterCustomer;
+    const matchesType = filterType === 'All' ||
+      (filterType === 'Fixed' && project.agreementAmount > 0) ||
+      (filterType === 'PAYG' && project.agreementAmount === 0);
+
+    let matchesDate = true;
+    if (filterDateRange !== 'All') {
+      const projDate = new Date(project.createdAt);
+      const now = new Date();
+      if (filterDateRange === 'Today') {
+        matchesDate = projDate.toDateString() === now.toDateString();
+      } else if (filterDateRange === 'This Month') {
+        matchesDate = projDate.getMonth() === now.getMonth() && projDate.getFullYear() === now.getFullYear();
+      } else if (filterDateRange === 'This Year') {
+        matchesDate = projDate.getFullYear() === now.getFullYear();
+      }
+    }
+    return matchesSearch && matchesStatus && matchesCustomer && matchesType && matchesDate;
   });
 
   const exportToExcel = () => {
@@ -357,15 +377,16 @@ export default function ProjectsPage() {
     XLSX.writeFile(workbook, `Projects_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
-  // --- Project Statistics (No Changes) ---
-  const activeProjectsCount = projects.filter(p => p.status === 'Active').length;
-  const completedProjectsCount = projects.filter(p => p.status === 'Completed').length;
-  const onHoldProjectsCount = projects.filter(p => p.status === 'On Hold').length;
-  const totalAmount = projects.reduce((sum, p) => {
+  // --- Project Statistics ---
+  const statsSource = cardsReflectFilters ? filteredProjects : projects;
+  const activeProjectsCount = statsSource.filter(p => p.status === 'Active').length;
+  const completedProjectsCount = statsSource.filter(p => p.status === 'Completed').length;
+  const onHoldProjectsCount = statsSource.filter(p => p.status === 'On Hold').length;
+  const totalAmount = statsSource.reduce((sum, p) => {
     const amt = typeof p.agreementAmount === 'number' ? p.agreementAmount : parseFloat(p.agreementAmount as any) || 0;
     return sum + amt;
   }, 0);
-  const totalAdvance = projects.reduce((sum, p) => {
+  const totalAdvance = statsSource.reduce((sum, p) => {
     const adv = typeof p.advancePaid === 'number' ? p.advancePaid : parseFloat(p.advancePaid as any) || 0;
     return sum + adv;
   }, 0);
@@ -479,6 +500,65 @@ export default function ProjectsPage() {
             </select>
             <ChevronRight className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 rotate-90 text-mediumGray dark:text-gray-400" size={20} />
           </div>
+
+          <div className="relative w-full sm:w-auto">
+            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
+            <select
+              title="Filter by customer"
+              className="w-full p-3 pl-10 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700/50 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary transition appearance-none min-w-[150px]"
+              value={filterCustomer} onChange={(e) => setFilterCustomer(e.target.value)}
+            >
+              <option value="All">All Customers</option>
+              {customerNames.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <ChevronRight className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 rotate-90 text-mediumGray dark:text-gray-400" size={20} />
+          </div>
+
+          <div className="relative w-full sm:w-auto">
+            <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
+            <select
+              title="Filter by project type"
+              className="w-full p-3 pl-10 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700/50 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary transition appearance-none"
+              value={filterType} onChange={(e) => setFilterType(e.target.value)}
+            >
+              <option value="All">All Types</option>
+              <option value="Fixed">Fixed Price</option>
+              <option value="PAYG">Pay As You Go</option>
+            </select>
+            <ChevronRight className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 rotate-90 text-mediumGray dark:text-gray-400" size={20} />
+          </div>
+
+          <div className="relative w-full sm:w-auto">
+            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
+            <select
+              title="Filter by date range"
+              className="w-full p-3 pl-10 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700/50 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary transition appearance-none"
+              value={filterDateRange} onChange={(e) => setFilterDateRange(e.target.value)}
+            >
+              <option value="All">Any Time</option>
+              <option value="Today">Today</option>
+              <option value="This Month">This Month</option>
+              <option value="This Year">This Year</option>
+            </select>
+            <ChevronRight className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 rotate-90 text-mediumGray dark:text-gray-400" size={20} />
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-4 w-full lg:w-auto">
+          {/* Toggle for stats cards */}
+          <div className="flex items-center gap-2 mr-auto lg:mr-0">
+            <input
+              type="checkbox"
+              id="reflectFilters"
+              checked={cardsReflectFilters}
+              onChange={(e) => setCardsReflectFilters(e.target.checked)}
+              className="w-4 h-4 text-primary rounded focus:ring-primary"
+            />
+            <label htmlFor="reflectFilters" className="text-xs font-semibold text-mediumGray dark:text-gray-400 cursor-pointer select-none">
+              Apply Filters to Totals
+            </label>
+          </div>
+
           {/* View Mode Toggle */}
           <div className="flex space-x-2 bg-lightGray dark:bg-gray-700/50 p-1 rounded-lg">
             <button onClick={() => setViewMode('list')} className={`w-full sm:w-auto px-4 py-2 rounded-md text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${viewMode === 'list' ? 'bg-white dark:bg-gray-800 text-primary shadow' : 'text-mediumGray dark:text-gray-300'}`}>

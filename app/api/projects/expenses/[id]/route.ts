@@ -517,112 +517,173 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     });
 
     // 4. NEW TRANSACTION LOGIC (Mirrors POST logic to handle all types correctly)
-    const amount = Number(body.amount);
     const category = body.category || updatedExpense.category;
     const subCategory = body.subCategory || updatedExpense.subCategory;
+    const description = body.description || updatedExpense.description || '';
     const paidFrom = body.paidFrom || updatedExpense.paidFrom;
     const paymentStatus = body.paymentStatus || updatedExpense.paymentStatus;
     const customerId = body.customerId || updatedExpense.customerId;
     const vendorId = body.vendorId || updatedExpense.vendorId;
-    const paidAmount = body.paidAmount ? Number(body.paidAmount) : undefined;
-    const description = body.description || updatedExpense.description;
 
-    let transactionType: 'INCOME' | 'EXPENSE' | 'TRANSFER_IN' | 'TRANSFER_OUT' | 'DEBT_TAKEN' | 'DEBT_REPAID' | 'OTHER' = 'EXPENSE';
-    let transactionAmount = amount;
-    let transactionCustomerId = customerId || undefined;
-    let transactionVendorId = vendorId || undefined;
-    let transactionAccountId = paidFrom || undefined;
+    const totalAmountNum = Number(body.amount || updatedExpense.amount);
+    const paidAmountNum = Number(body.paidAmount || 0);
+    const isPartial = paymentStatus === 'PARTIAL';
+    const isUnpaid = paymentStatus === 'UNPAID';
+
+    // We'll collect transactions to create
+    const transactionsToCreate: any[] = [];
 
     if (category === 'Debt' || (category === 'Company Expense' && subCategory === 'Debt')) {
       if (paymentStatus === 'REPAID') {
-        transactionType = 'DEBT_REPAID';
-        transactionCustomerId = customerId || null;
+        transactionsToCreate.push({
+          description: description,
+          amount: Math.abs(totalAmountNum),
+          type: 'DEBT_REPAID' as const,
+          transactionDate: formattedExpenseDate,
+          note: body.note || null,
+          accountId: paidFrom || null,
+          projectId: body.projectId || updatedExpense.projectId || null,
+          expenseId: id,
+          userId: updatedExpense.userId,
+          companyId,
+          customerId: customerId || undefined,
+        });
       } else {
-        transactionType = 'DEBT_TAKEN';
-        transactionCustomerId = customerId || null;
+        transactionsToCreate.push({
+          description: description,
+          amount: Math.abs(totalAmountNum),
+          type: 'DEBT_TAKEN' as const,
+          transactionDate: formattedExpenseDate,
+          note: body.note || null,
+          accountId: paidFrom || null,
+          projectId: body.projectId || updatedExpense.projectId || null,
+          expenseId: id,
+          userId: updatedExpense.userId,
+          companyId,
+          customerId: customerId || undefined,
+        });
       }
-    } else if (category === 'Material') {
-      if (paymentStatus === 'PAID') {
-        transactionType = 'EXPENSE';
-      } else if (paymentStatus === 'PARTIAL') {
-        transactionType = 'DEBT_REPAID';
-        if (paidAmount) transactionAmount = paidAmount;
-      } else {
-        transactionType = 'DEBT_TAKEN';
-        transactionVendorId = vendorId;
-      }
-    } else if (category === 'Company Expense') {
-      if (customerId && paidFrom && subCategory !== 'Debt') {
-        transactionType = 'DEBT_TAKEN';
-        transactionCustomerId = customerId;
-      } else if (vendorId) {
-        if (paymentStatus === 'PAID') {
-          transactionType = 'EXPENSE';
-        } else if (paymentStatus === 'PARTIAL') {
-          transactionType = 'DEBT_REPAID';
-          if (paidAmount) transactionAmount = paidAmount;
-        } else {
-          transactionType = 'DEBT_TAKEN';
+    } else if (category === 'Material' || (category === 'Company Expense' && (subCategory === 'Material' || vendorId))) {
+      // Logic for Vendor-related expenses (Material or other Company Expenses with vendorId)
+      if (isPartial) {
+        // 1. Record the full liability (No accountId)
+        transactionsToCreate.push({
+          description: `${description} (Total Debt)`,
+          amount: totalAmountNum,
+          type: 'DEBT_TAKEN' as const,
+          transactionDate: formattedExpenseDate,
+          note: body.note || null,
+          accountId: null,
+          projectId: body.projectId || updatedExpense.projectId || null,
+          expenseId: id,
+          userId: updatedExpense.userId,
+          companyId,
+          vendorId: vendorId || undefined,
+        });
+        // 2. Record the actual payment (With accountId)
+        if (paidAmountNum > 0) {
+          transactionsToCreate.push({
+            description: description,
+            amount: paidAmountNum,
+            type: 'DEBT_REPAID' as const,
+            transactionDate: formattedExpenseDate,
+            note: body.note || null,
+            accountId: paidFrom || null,
+            projectId: body.projectId || updatedExpense.projectId || null,
+            expenseId: id,
+            userId: updatedExpense.userId,
+            companyId,
+            vendorId: vendorId || undefined,
+          });
         }
+      } else if (isUnpaid) {
+        // Record as full debt
+        transactionsToCreate.push({
+          description: description,
+          amount: totalAmountNum,
+          type: 'DEBT_TAKEN' as const,
+          transactionDate: formattedExpenseDate,
+          note: body.note || null,
+          accountId: null,
+          projectId: body.projectId || updatedExpense.projectId || null,
+          expenseId: id,
+          userId: updatedExpense.userId,
+          companyId,
+          vendorId: vendorId || undefined,
+        });
+      } else {
+        // Fully PAID
+        transactionsToCreate.push({
+          description: description,
+          amount: -Math.abs(totalAmountNum),
+          type: 'EXPENSE' as const,
+          transactionDate: formattedExpenseDate,
+          note: body.note || null,
+          accountId: paidFrom || null,
+          projectId: body.projectId || updatedExpense.projectId || null,
+          expenseId: id,
+          userId: updatedExpense.userId,
+          companyId,
+          vendorId: vendorId || undefined,
+        });
       }
-    }
-
-    // Auto-detect customer debt if not set
-    if (customerId && paidFrom && !transactionCustomerId && transactionType === 'EXPENSE') {
-      transactionType = 'DEBT_TAKEN';
-      transactionCustomerId = customerId;
-    }
-
-    // Signed amount adjustments
-    if (transactionType === 'EXPENSE') transactionAmount = -Math.abs(transactionAmount);
-    else if (transactionType === 'DEBT_TAKEN') transactionAmount = -Math.abs(transactionAmount); // Debt taken = Money OUT
-    else if (transactionType === 'DEBT_REPAID') {
-      if (transactionCustomerId) transactionAmount = Math.abs(transactionAmount); // Customer pays us = Money IN
-      else if (transactionVendorId) transactionAmount = -Math.abs(transactionAmount); // We pay vendor = Money OUT
-    }
-
-    // Create fresh transaction
-    await prisma.transaction.create({
-      data: {
+    } else {
+      // Default basic expense
+      transactionsToCreate.push({
         description: description,
-        amount: transactionAmount,
-        type: transactionType,
+        amount: -Math.abs(totalAmountNum),
+        type: 'EXPENSE' as const,
         transactionDate: formattedExpenseDate,
         note: body.note || null,
-        accountId: transactionAccountId || null,
+        accountId: paidFrom || null,
         projectId: body.projectId || updatedExpense.projectId || null,
         expenseId: id,
         userId: updatedExpense.userId,
         companyId,
-        customerId: transactionCustomerId,
-        vendorId: transactionVendorId,
-      },
-    });
+        customerId: customerId || undefined,
+      });
+    }
 
-    // 5. Apply new account balance adjustments
-    const amountToAdjust = Math.abs(transactionAmount);
-    if (transactionAccountId && amountToAdjust > 0) {
-      if (transactionType === 'EXPENSE' || (transactionType === 'DEBT_REPAID' && transactionVendorId) || (transactionType === 'DEBT_TAKEN' && transactionCustomerId)) {
-        // MONEY OUT
+    // 5. Create transactions and update account balances
+    for (const trxData of transactionsToCreate) {
+      // Standardize signs for account movements:
+      // Positive = Inflow, Negative = Outflow
+      const type = trxData.type;
+      const amountValue = Math.abs(trxData.amount);
+
+      const isInflow = [
+        'INCOME',
+        'DEBT_RECEIVED',
+        'TRANSFER_IN',
+        'SHAREHOLDER_DEPOSIT'
+      ].includes(type) || (type === 'DEBT_REPAID' && !trxData.vendorId);
+
+      const finalAmount = isInflow ? amountValue : -amountValue;
+
+      await prisma.transaction.create({
+        data: {
+          ...trxData,
+          amount: finalAmount
+        },
+      });
+
+      // Update account balance using the signed amount
+      if (trxData.accountId && finalAmount !== 0) {
         await prisma.account.update({
-          where: { id: transactionAccountId },
-          data: { balance: { decrement: amountToAdjust } },
-        });
-      } else if (transactionType === 'DEBT_REPAID' && transactionCustomerId) {
-        // MONEY IN
-        await prisma.account.update({
-          where: { id: transactionAccountId },
-          data: { balance: { increment: amountToAdjust } },
+          where: { id: trxData.accountId },
+          data: {
+            balance: { increment: finalAmount },
+          },
         });
       }
     }
 
     // 6. Final Salary update if still applicable
-    if (category === 'Company Expense' && subCategory === 'Salary' && body.employeeId && amount) {
+    if (category === 'Company Expense' && subCategory === 'Salary' && body.employeeId && totalAmountNum) {
       await prisma.employee.update({
         where: { id: body.employeeId },
         data: {
-          salaryPaidThisMonth: { increment: amount },
+          salaryPaidThisMonth: { increment: totalAmountNum },
           lastPaymentDate: formattedExpenseDate,
         },
       });
@@ -685,22 +746,28 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
         }
       });
 
-      // 1. Refund account balance (only if it was actually paid)
-      if (accountIdToRefund && existingExpense.amount && existingExpense.paymentStatus !== 'UNPAID') {
+      // 1. Refund account balance (ONLY if a corresponding transaction exists)
+      const linkedTransactions = await tx.transaction.findMany({
+        where: { expenseId: id }
+      });
+
+      const totalTrxAmount = linkedTransactions.reduce((sum, trx) => sum + Math.abs(Number(trx.amount)), 0);
+
+      if (accountIdToRefund && totalTrxAmount > 0) {
         await tx.account.update({
           where: { id: accountIdToRefund },
           data: {
-            balance: { increment: Number(existingExpense.amount) },
+            balance: { increment: totalTrxAmount },
           },
         });
       }
 
-      // 2. If this was a salary payment
-      if (existingExpense.category === 'Company Expense' && existingExpense.subCategory === 'Salary' && existingExpense.employeeId && existingExpense.amount) {
+      // 2. If this was a salary payment, only decrement if transactions existed
+      if (existingExpense.category === 'Company Expense' && existingExpense.subCategory === 'Salary' && existingExpense.employeeId && totalTrxAmount > 0) {
         await tx.employee.update({
           where: { id: existingExpense.employeeId },
           data: {
-            salaryPaidThisMonth: { decrement: Number(existingExpense.amount) },
+            salaryPaidThisMonth: { decrement: totalTrxAmount },
           },
         });
       }

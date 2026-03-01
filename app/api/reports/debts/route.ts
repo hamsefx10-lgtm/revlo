@@ -1,12 +1,18 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { getSessionCompanyUser } from '@/app/api/projects/expenses/auth';
+import { getSessionCompanyUser } from '@/lib/auth';
 
 // Enhanced Debts report: Aggregates company debts and receivables with detailed information
 export async function GET(req: Request) {
   try {
     // Get companyId from session with proper authentication
-    const { companyId } = await getSessionCompanyUser();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
+
+    if (!companyId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
 
     // Get all transactions related to debts and receivables for the company
     const allTransactions = await prisma.transaction.findMany({

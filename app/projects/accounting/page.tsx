@@ -49,9 +49,10 @@ interface OverviewStats {
   totalIncomeThisMonth: number;
   totalIncome: number; // Total income (all time)
   totalExpensesThisMonth: number;
-  totalExpenses: number; // Total expenses (all time, excluding fixed assets)
   fixedAssetExpenses?: number; // Fixed asset expenses (all time)
   fixedAssetExpensesThisMonth?: number; // Fixed asset expenses this month
+  totalPayablesReceived?: number; // Total loans taken (all time)
+  totalPayablesReceivedThisMonth?: number; // Total loans taken this month
   netFlowThisMonth: number;
   totalBankAccounts: number;
   totalCashAccounts: number;
@@ -174,6 +175,8 @@ export default function AccountingPage() {
         totalExpenses: statsData.totalExpenses, // Total expenses (all time, excluding fixed assets)
         fixedAssetExpenses: statsData.fixedAssetExpenses || 0, // Fixed asset expenses (all time)
         fixedAssetExpensesThisMonth: statsData.fixedAssetExpensesThisMonth || 0, // Fixed asset expenses this month
+        totalPayablesReceived: statsData.totalPayablesReceived || 0,
+        totalPayablesReceivedThisMonth: statsData.totalPayablesReceivedThisMonth || 0,
         netFlowThisMonth: statsData.netFlowThisMonth,
         totalBankAccounts: statsData.totalBankAccounts,
         totalCashAccounts: statsData.totalCashAccounts,
@@ -443,19 +446,37 @@ export default function AccountingPage() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 border-l-4 border-orange-500">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 border-l-4 border-orange-600">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center">
-                  <div className="w-10 h-10 bg-orange-500/10 rounded-full flex items-center justify-center mr-3">
-                    <Scale size={20} className="text-orange-500" />
+                  <div className="w-10 h-10 bg-orange-600/10 rounded-full flex items-center justify-center mr-3">
+                    <Scale size={20} className="text-orange-600" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-darkGray dark:text-gray-100">Dhaqdhaqaaqa Deynta</h4>
+                    <h4 className="font-semibold text-darkGray dark:text-gray-100">Payables (Dayn la Qaatay)</h4>
+                    <p className="text-xs text-mediumGray dark:text-gray-400">Total Loans</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xl font-bold text-orange-600">{overviewStats.totalPayablesReceived?.toLocaleString() || 0}</p>
+                  <p className="text-xs text-mediumGray dark:text-gray-400">ETB</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 border-l-4 border-orange-400">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-orange-400/10 rounded-full flex items-center justify-center mr-3">
+                    <ClockIcon size={20} className="text-orange-400" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-darkGray dark:text-gray-100">Activity (Deyn)</h4>
                     <p className="text-xs text-mediumGray dark:text-gray-400">Debt Activity</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-xl font-bold text-orange-500">{debtTransactions.length}</p>
+                  <p className="text-xl font-bold text-orange-400">{debtTransactions.length}</p>
                   <p className="text-xs text-mediumGray dark:text-gray-400">Total</p>
                 </div>
               </div>
@@ -477,7 +498,7 @@ export default function AccountingPage() {
           </div>
 
           {/* Desktop Design - Enhanced Cards */}
-          <div className="hidden lg:grid lg:grid-cols-5 gap-6 mb-8 animate-fade-in-up">
+          <div className="hidden lg:grid lg:grid-cols-6 gap-6 mb-8 animate-fade-in-up">
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300 border-l-4 border-primary">
               <div className="flex items-center justify-center mb-3">
                 <DollarSign size={20} className="text-primary mr-2" />
@@ -490,10 +511,10 @@ export default function AccountingPage() {
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300 border-l-4 border-secondary">
               <div className="flex items-center justify-center mb-3">
                 <TrendingUp size={20} className="text-secondary mr-2" />
-                <h4 className="text-base font-semibold text-mediumGray dark:text-gray-400">Wadarta Dakhliga</h4>
+                <h4 className="text-base font-semibold text-mediumGray dark:text-gray-400">Dakhliga Shaqada</h4>
               </div>
               <p className="text-2xl font-extrabold text-secondary">{overviewStats.totalIncome.toLocaleString()} ETB</p>
-              <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Total Income</p>
+              <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Operating Income</p>
             </div>
 
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300 border-l-4 border-redError">
@@ -502,24 +523,33 @@ export default function AccountingPage() {
                 <h4 className="text-base font-semibold text-mediumGray dark:text-gray-400">Wadarta Kharashyada</h4>
               </div>
               <p className="text-2xl font-extrabold text-redError">{overviewStats.totalExpenses.toLocaleString()} ETB</p>
-              <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Total Expenses (ma jiraan Hantida)</p>
+              <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Total Expenses (no Assets)</p>
             </div>
 
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300 border-l-4 border-purple-500">
               <div className="flex items-center justify-center mb-3">
                 <HardDrive size={20} className="text-purple-500 mr-2" />
-                <h4 className="text-base font-semibold text-mediumGray dark:text-gray-400">Kharashyada Hantida Go'an</h4>
+                <h4 className="text-base font-semibold text-mediumGray dark:text-gray-400">Hantida Go'an</h4>
               </div>
               <p className="text-2xl font-extrabold text-purple-500">{overviewStats.fixedAssetExpenses?.toLocaleString() || 0} ETB</p>
-              <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Fixed Asset Expenses</p>
+              <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Fixed Asset Assets</p>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300 border-l-4 border-orange-500">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300 border-l-4 border-orange-600">
               <div className="flex items-center justify-center mb-3">
-                <Scale size={20} className="text-orange-500 mr-2" />
-                <h4 className="text-base font-semibold text-mediumGray dark:text-gray-400">Dhaqdhaqaaqa Deynta</h4>
+                <Scale size={20} className="text-orange-600 mr-2" />
+                <h4 className="text-base font-semibold text-mediumGray dark:text-gray-400">Payables (Deyn)</h4>
               </div>
-              <p className="text-2xl font-extrabold text-orange-500">{debtTransactions.length}</p>
+              <p className="text-2xl font-extrabold text-orange-600">{overviewStats.totalPayablesReceived?.toLocaleString() || 0} ETB</p>
+              <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Total Loans Received</p>
+            </div>
+
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300 border-l-4 border-orange-400">
+              <div className="flex items-center justify-center mb-3">
+                <ClockIcon size={20} className="text-orange-400 mr-2" />
+                <h4 className="text-base font-semibold text-mediumGray dark:text-gray-400">Activity (Deyn)</h4>
+              </div>
+              <p className="text-2xl font-extrabold text-orange-400">{debtTransactions.length}</p>
               <div className="text-sm text-mediumGray dark:text-gray-400 mt-1 space-y-1">
                 <p>{debtTransactions.filter(t => t.type === 'DEBT_TAKEN').length} Qaatay</p>
                 <p>{debtTransactions.filter(t => t.type === 'DEBT_REPAID').length} Bixiyay</p>

@@ -1,11 +1,16 @@
 // app/api/expenses/bulk-import/route.ts - Bulk Import Expenses API
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { getSessionCompanyUser } from '../auth';
+import { getSessionCompanyUser } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
-    const { companyId, userId } = await getSessionCompanyUser();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
+    const userId = session?.userId;
+    if (!companyId) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     const { expenseType, subCategory, projectId, expenses } = await request.json();
 
     if (!expenseType || !subCategory || !Array.isArray(expenses) || expenses.length === 0) {

@@ -1,19 +1,16 @@
-// app/api/projects/accounting/transactions/route.ts - Accounting Transactions API Route
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db'; // Import Prisma Client
-import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
+import { getSessionCompanyUser } from '@/lib/auth'; // Use central auth helper
 
 // GET /api/projects/accounting/transactions - Soo deji dhammaan dhaqdhaqaaqa lacagta
 export async function GET(request: Request) {
   try {
-    const { getServerSession } = await import('next-auth/next');
-    const { authOptions } = await import('@/lib/auth');
-    const session = await getServerSession(authOptions);
-    if (!session || !(session as any).user?.companyId) {
+    const sessionData = await getSessionCompanyUser();
+    if (!sessionData) {
       return NextResponse.json({ message: 'Awood uma lihid.' }, { status: 401 });
     }
-    const companyId = (session as any).user.companyId;
+    const companyId = sessionData.companyId;
 
     // Get query parameters for filtering
     const { searchParams } = new URL(request.url);
@@ -108,7 +105,14 @@ export async function GET(request: Request) {
     const processedTransactions = filteredRealTransactions.map(trx => ({
       ...trx,
       amount: trx.amount instanceof Decimal ? trx.amount.toNumber() : trx.amount,
-      isVirtual: false // Flag to show it's a real DB record
+      isVirtual: false,
+      // Source IDs for dynamic linking
+      expenseId: trx.expenseId,
+      customerId: trx.customerId,
+      vendorId: trx.vendorId,
+      fixedAssetId: trx.fixedAssetId,
+      projectId: trx.projectId,
+      employeeId: trx.employeeId
     }));
 
     // 3. Create virtual transactions from Projects
@@ -160,14 +164,11 @@ export async function GET(request: Request) {
 // POST /api/projects/accounting/transactions - Ku dar dhaqdhaqaaq cusub
 export async function POST(request: Request) {
   try {
-    const { getServerSession } = await import('next-auth/next');
-    const { authOptions } = await import('@/lib/auth');
-    const session = await getServerSession(authOptions);
-    if (!session || !(session as any).user?.companyId || !(session as any).user?.id) {
+    const sessionData = await getSessionCompanyUser();
+    if (!sessionData) {
       return NextResponse.json({ message: 'Awood uma lihid.' }, { status: 401 });
     }
-    const companyId = (session as any).user.companyId;
-    const userId = (session as any).user.id;
+    const { companyId, userId } = sessionData;
 
     const {
       description, amount, type, transactionDate, note,
@@ -241,86 +242,20 @@ export async function POST(request: Request) {
       },
     });
 
-    // Cusboonaysii balance-ka account-ka (Update account balance based on transaction type)
-    // 
-    // Accounting Logic:
-    // - INCOME: Money coming IN from customer → Balance INCREASES
-    // - DEBT_REPAID: Customer paying back their debt → Balance INCREASES
-    // - DEBT_TAKEN: Company taking a loan (money received) → Balance INCREASES
-    // - EXPENSE: Money going OUT for expenses → Balance DECREASES
-    //
-    // Accounting Logic Refined:
+    // Cusboonaysii balance-ka account-ka (Update account balance based on transaction history)
+    const { recalculateAccountBalance } = await import('@/lib/accounting');
 
-    // 1. INCOME: Money IN from Sales/Deposits -> INCREASES Balance
-    if (type === 'INCOME') {
-      await prisma.account.update({
-        where: { id: primaryAccount.id },
-        data: { balance: primaryAccount.balance + Math.abs(amount) },
-      });
+    // Recalculate for the primary account
+    if (accountId) {
+      await recalculateAccountBalance(accountId);
     }
 
-    // 2. EXPENSE: Money OUT for Costs -> DECREASES Balance
-    else if (type === 'EXPENSE') {
-      await prisma.account.update({
-        where: { id: primaryAccount.id },
-        data: { balance: primaryAccount.balance - Math.abs(amount) },
-      });
-    }
-
-    // 3. DEBT_TAKEN: Money Given as Loan (OUT) -> DECREASES Balance
-    else if (type === 'DEBT_TAKEN') {
-      await prisma.account.update({
-        where: { id: primaryAccount.id },
-        data: { balance: primaryAccount.balance - Math.abs(amount) },
-      });
-    }
-
-    // 3b. DEBT_RECEIVED: Money Received as Loan (IN) -> INCREASES Balance
-    else if (type === 'DEBT_RECEIVED') {
-      await prisma.account.update({
-        where: { id: primaryAccount.id },
-        data: { balance: primaryAccount.balance + Math.abs(amount) },
-      });
-    }
-
-    // 3c. DEBT_GIVEN: Money Given as Loan (OUT) -> DECREASES Balance
-    else if (type === 'DEBT_GIVEN') {
-      await prisma.account.update({
-        where: { id: primaryAccount.id },
-        data: { balance: primaryAccount.balance - Math.abs(amount) },
-      });
-    }
-
-    // 4. DEBT_REPAID: Complexity here (Money IN or OUT?)
-    // 4. DEBT_REPAID: Complexity here (Money IN or OUT?)
-    // Logic: 
-    // - If linked to Vendor -> We are paying back debt -> MONEY OUT
-    // - If linked to Customer/Project -> They are paying us back -> MONEY IN
-    // - If type was explicitly sent as MONEY_OUT (from frontend modal) -> MONEY OUT
-
-    // However, the frontend sends `type: 'MONEY_OUT'` in the payload for vendor payment.
-    // But the Prisma schema expects `TransactionType` enum values. 
-    // The current frontend code sends `type: 'MONEY_OUT'` which might be failing validation if not mapped.
-    // Let's check the schema. TransactionType enum usually has specific values.
-    // The frontend actually sends `{..., type: 'MONEY_OUT'}` in VendorPaymentModal.
-    // If the valid types are EXPENSE, DEBT_REPAID etc, we need to map it or trust the frontend to send DEBT_REPAID.
-    // Wait, the modal says `type: 'MONEY_OUT'`. Prisma likely rejects this if it's not in enum.
-    // We should fix the Modal to send `DEBT_REPAID` and handle it here.
-
-    // Back to API logic for DEBT_REPAID:
-    else if (type === 'DEBT_REPAID') {
-      if (vendorId) {
-        // Paying Vendor -> Decrease Balance
-        await prisma.account.update({
-          where: { id: primaryAccount.id },
-          data: { balance: { decrement: Math.abs(amount) } },
-        });
-      } else {
-        // Collecting from Customer/Project -> Increase Balance
-        await prisma.account.update({
-          where: { id: primaryAccount.id },
-          data: { balance: { increment: Math.abs(amount) } },
-        });
+    // Recalculate for transfer-related accounts
+    if (type === 'TRANSFER_OUT' || type === 'TRANSFER_IN') {
+      const payload = await request.clone().json();
+      const otherAccountId = type === 'TRANSFER_OUT' ? payload.toAccountId : payload.fromAccountId;
+      if (otherAccountId) {
+        await recalculateAccountBalance(otherAccountId);
       }
     }
 

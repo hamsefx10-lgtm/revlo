@@ -41,34 +41,61 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     // Reconstruct the running balance with pure double-entry verification
     let currentBalance = 0;
-    const history = rawTransactions.map((trx) => {
-      const amount = Number(trx.amount);
-      const isIncome = ['INCOME', 'DEBT_REPAID', 'TRANSFER_IN', 'SHAREHOLDER_DEPOSIT'].includes(trx.type) || (trx.toAccountId === id && trx.type === 'TRANSFER_IN');
-      const isStandardIn = ['INCOME', 'DEBT_REPAID', 'SHAREHOLDER_DEPOSIT'].includes(trx.type);
-      const isStandardOut = ['EXPENSE', 'DEBT_GIVEN', 'DEBT_TAKEN'].includes(trx.type);
+    const allProcessed = rawTransactions.map((trx) => {
+      const amount = Math.abs(Number(trx.amount));
+      let isIncome = false;
+      let change = 0;
+      let shouldProcess = false;
 
-      // Additions
-      if (trx.accountId === id && isStandardIn) {
-        currentBalance += Math.abs(amount);
+      // 1. Unified Transfer Logic (For new single-record transfers)
+      if (!trx.accountId) {
+        if (trx.toAccountId === id) {
+          isIncome = true;
+          change = amount;
+          shouldProcess = true;
+        } else if (trx.fromAccountId === id) {
+          isIncome = false;
+          change = -amount;
+          shouldProcess = true;
+        }
+      } else {
+        // 2. Standard Logic (For non-transfers and OLD dual-record transfers)
+        // We only process if accountId matches 'id' to avoid double-counting old pairs
+        if (trx.accountId === id) {
+          shouldProcess = true;
+          const isStandardIn = [
+            'INCOME', 'DEBT_RECEIVED', 'TRANSFER_IN'
+          ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && !trx.vendorId);
+
+          const isStandardOut = [
+            'EXPENSE', 'DEBT_GIVEN', 'DEBT_TAKEN', 'TRANSFER_OUT'
+          ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && trx.vendorId);
+
+          if (isStandardIn) {
+            isIncome = true;
+            change = amount;
+          } else if (isStandardOut) {
+            isIncome = false;
+            change = -amount;
+          }
+        }
       }
-      if (trx.toAccountId === id && trx.type === 'TRANSFER_IN') {
-        currentBalance += Math.abs(amount);
-      }
-      // Deductions
-      if (trx.accountId === id && isStandardOut) {
-        currentBalance -= Math.abs(amount);
-      }
-      if (trx.fromAccountId === id && trx.type === 'TRANSFER_OUT') {
-        currentBalance -= Math.abs(amount);
+
+      if (shouldProcess) {
+        currentBalance += change;
       }
 
       return {
         ...trx,
-        amount: Number(trx.amount),
+        amount: amount, // Keep as absolute for UI consistency
         isIncome,
-        runningBalance: currentBalance
+        runningBalance: currentBalance,
+        shouldProcess
       };
     });
+
+    // Filter to keep only relevant records for this ledger
+    const history = allProcessed.filter(trx => trx.shouldProcess);
 
     const account = await prisma.account.findFirst({
       where: { id: id, companyId }

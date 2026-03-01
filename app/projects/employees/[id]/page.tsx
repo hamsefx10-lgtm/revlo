@@ -209,7 +209,7 @@ const EmployeeDetailsPage: React.FC = () => {
       console.error('Error fetching employee details:', error);
       setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka faahfaahinta shaqaalaha la soo gelinayay.', type: 'error' });
       setEmployee(null); // Set employee to null on error
-      router.push('/employees');
+      router.push('/projects/employees');
     } finally {
       setLoading(false);
     }
@@ -640,7 +640,7 @@ const EmployeeDetailsPage: React.FC = () => {
             </div>
             <div className="flex gap-2">
               <Link
-                href={`/employees/edit/${employee.id}`}
+                href={`/projects/employees/edit/${employee.id}`}
                 className="flex-1 py-2 px-3 rounded-lg font-medium text-xs transition duration-200 shadow-md bg-accent text-white hover:bg-orange-600 flex items-center justify-center"
               >
                 <Edit size={14} className="mr-1" />
@@ -697,7 +697,7 @@ const EmployeeDetailsPage: React.FC = () => {
               )}
               {refreshing ? 'Cusboonaysiina...' : 'Cusboonaysii'}
             </button>
-            <Link href={`/employees/edit/${employee.id}`} className="bg-accent text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-orange-600 transition duration-200 shadow-md flex items-center">
+            <Link href={`/projects/employees/edit/${employee.id}`} className="bg-accent text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-orange-600 transition duration-200 shadow-md flex items-center">
               <Edit size={20} className="mr-2" /> Edit Shaqaale
             </Link>
             <button onClick={handleDeleteEmployee} className="bg-redError text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-red-700 transition duration-200 shadow-md flex items-center">
@@ -1661,7 +1661,7 @@ const EmployeeDetailsPage: React.FC = () => {
                       employeeId: String(employee.id),
                     });
                     // We rely on expenses/add logic to auto-fill remaining when previous records exist
-                    router.push(`/expenses/add?${params.toString()}`);
+                    router.push(`/projects/expenses/add?${params.toString()}`);
                   };
 
                   return (

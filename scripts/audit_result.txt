@@ -1,0 +1,34 @@
+=== DEEP INVESTIGATION: ACCOUNTS VS TRANSACTIONS ===
+
+--- Accounts Found ---
+- E-BIRR kafi (e9d353e3-6255-42d0-9cc3-3aadb65c11df): 3,105 ETB
+- Kaafi E-birr (5b800813-ba34-4b78-9dcc-3040809eaf5d): 5,175 ETB
+- CBE (f521b23b-6704-405c-ada4-07d81dcf4ff9): 0 ETB
+- CBE (c8306c05-5279-4b05-b5fc-dda41c793a77): 143,148.69 ETB
+- CBE (b56b13ee-cfc8-4ffa-aeb3-5f063f513a2b): 39,669 ETB
+- cbe (9a4ad217-f219-46c7-8917-027f64592810): 98,000 ETB
+- E-Birr (4eb99e0e-addd-4de2-b68a-a3d538c43d03): 145,432 ETB
+- cbe (dcd6fa61-e8d4-44c8-ba89-8510b44cbfea): 30,000 ETB
+- E-birr (e60c8290-82e4-46e4-b3e2-f17b423d1ce5): 898 ETB
+- Qasnada (b7768bcc-a361-4233-aa72-7a8ffd5a477b): 387,769.1 ETB
+- EBIRR COOP (5d9ed8e2-83f1-442a-86d8-da925f3fcddb): 0 ETB
+- E-Birr (3c156507-ea0a-4974-8a54-92f1e9dd519a): -106,870.54 ETB
+- sahay (b7977303-0409-4c53-8330-0ab36481fad5): 0 ETB
+- Esahal (6fd207cc-8b81-4907-acd4-d5dd580f4bc1): 0 USD
+- CBE (1926de4c-c595-4f87-a036-b83a7381a19c): -11,000 ETB
+- Test Cash Account (0a98a490-1259-4cb4-b065-3665aaca70a6): 0 ETB
+- CBE (cb554d57-1bdf-4332-b06c-19ab4672fe4d): 0 ETB
+- Ebirr (4021e489-3de7-4546-bf17-2f7d1e597933): 0 ETB
+- CBE (e5fb2863-0c29-4153-b6f2-3c866441b8e5): 0 ETB
+- E-Birr (ed07533f-41a4-4588-bcd4-08e920ca01bf): 0 ETB
+- CBE (5ee02434-8433-47e6-b691-a4cd8f9e399b): 36,320 ETB
+- CBE (42c2a044-bd18-4e5d-8caa-08eca994f197): 0 ETB
+TOTAL STORED ACCOUNTS BALANCE: 771,646.25
+
+--- Transaction Summary (Reports View) ---
+Total Inflow (including Proj Adv): 15,699,819.31 ETB
+Total Outflow: 15,101,256.06 ETB
+NET FLOW (In - Out): 598,563.25 ETB
+
+--- Analysis ---
+Difference (Balance - Net Flow): 173,083 ETB

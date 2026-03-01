@@ -81,10 +81,6 @@ interface DailyReport {
   totalProjectExpenses: number;
   totalCompanyExpenses: number;
   totalExpenses: number;
-  debtsCollected: Array<{
-    project: string;
-    amount: number;
-  }>;
   fixedAssets?: Array<{
     id: string;
     name: string;
@@ -315,18 +311,6 @@ async function exportPDF(data: DailyReport) {
       );
     }
 
-    // 5. Debt
-    if (data.debtsCollected.length > 0) {
-      renderTable(
-        'Debt Repayments / Collections',
-        [['Project', 'Amount']],
-        data.debtsCollected.map(d => [d.project, formatCurrency(d.amount)]),
-        {
-          totalLabel: 'Total Collected',
-          totalValue: formatCurrency(data.debtsCollected.reduce((s, d) => s + d.amount, 0))
-        }
-      );
-    }
 
     // 6. Transfers
     if (data.transfers.length > 0) {
@@ -799,21 +783,7 @@ export default function DailyReportPage() {
               </div>
             )}
 
-            {report.debtsCollected.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-                  <h3 className="font-bold text-gray-800 dark:text-white">Debt / Advances Collected</h3>
-                </div>
-                <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                  {report.debtsCollected.map((col, i) => (
-                    <div key={i} className="p-4 flex justify-between items-center">
-                      <p className="font-medium">{col.project}</p>
-                      <span className="font-bold text-green-600">{col.amount.toLocaleString()}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+
           </div>
 
         </div>

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSessionCompanyId } from '../../admin/auth';
+import { getSessionCompanyUser } from '@/lib/auth';
 import prisma from '@/lib/db';
 
 // PUT /api/notifications/[id] - Mark notification as read/unread
@@ -8,7 +8,8 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const companyId = await getSessionCompanyId();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
     if (!companyId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
@@ -16,9 +17,9 @@ export async function PUT(
     const { read } = await request.json();
 
     const notification = await prisma.notification.update({
-      where: { 
+      where: {
         id: params.id,
-        companyId 
+        companyId
       },
       data: { read },
     });
@@ -42,15 +43,16 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const companyId = await getSessionCompanyId();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
     if (!companyId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     await prisma.notification.delete({
-      where: { 
+      where: {
         id: params.id,
-        companyId 
+        companyId
       },
     });
 

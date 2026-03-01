@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSessionCompanyId } from '../../../admin/auth';
+import { getSessionCompanyUser } from '@/lib/auth';
 import prisma from '@/lib/db';
 
 // PUT /api/settings/assets/[id] - Update fixed asset
@@ -8,7 +8,9 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const companyId = await getSessionCompanyId();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
+    const { id } = params;
     if (!companyId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
@@ -23,9 +25,9 @@ export async function PUT(
     }
 
     const asset = await prisma.fixedAsset.update({
-      where: { 
+      where: {
         id: params.id,
-        companyId 
+        companyId
       },
       data: {
         name,
@@ -36,9 +38,9 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       asset,
-      message: 'Asset updated successfully' 
+      message: 'Asset updated successfully'
     });
   } catch (error) {
     console.error('Error updating asset:', error);
@@ -55,7 +57,10 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const companyId = await getSessionCompanyId();
+    const session = await getSessionCompanyUser();
+    const companyId = session?.companyId;
+    const { id } = params;
+
     if (!companyId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
@@ -90,8 +95,8 @@ export async function DELETE(
     // 4) Delete the asset
     await prisma.fixedAsset.delete({ where: { id: params.id } });
 
-    return NextResponse.json({ 
-      message: 'Asset deleted successfully and account refunded if a linked purchase transaction was found.' 
+    return NextResponse.json({
+      message: 'Asset deleted successfully and account refunded if a linked purchase transaction was found.'
     });
   } catch (error) {
     console.error('Error deleting asset:', error);

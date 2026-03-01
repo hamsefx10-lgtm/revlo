@@ -48,7 +48,7 @@ const CustomerDetailsPage: React.FC = () => {
   const fetchCustomerDetails = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/customers/${id}`);
+      const response = await fetch(`/api/projects/customers/${id}`);
       if (!response.ok) throw new Error('Failed to fetch customer details');
       const data = await response.json();
       setCustomer(data.customer);
@@ -116,14 +116,14 @@ const CustomerDetailsPage: React.FC = () => {
   const handleDeleteCustomer = async () => {
     if (window.confirm('Ma hubtaa inaad tirtirto macmiilkan? Tan lama soo celin karo!')) {
       try {
-        const response = await fetch(`/api/customers/${id}`, {
+        const response = await fetch(`/api/projects/customers/${id}`, {
           method: 'DELETE',
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || 'Failed to delete customer');
 
         setToastMessage({ message: data.message || 'Macmiilka si guul leh ayaa loo tirtiray!', type: 'success' });
-        router.push('/customers'); // Redirect to customers list after successful delete
+        router.push('/projects/customers'); // Redirect to customers list after successful delete
       } catch (error: any) {
         console.error('Error deleting customer:', error);
         setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka macmiilka la tirtirayay.', type: 'error' });
@@ -153,7 +153,7 @@ const CustomerDetailsPage: React.FC = () => {
         <div className="text-center p-8 text-redError bg-white dark:bg-gray-800 rounded-xl shadow-md">
           <InfoIcon size={32} className="inline-block mb-4 text-redError" />
           <p className="text-xl font-bold">Macmiilka ID "{id}" lama helin.</p>
-          <Link href="/customers" className="mt-4 inline-block text-primary hover:underline">Ku Noqo Macaamiisha &rarr;</Link>
+          <Link href="/projects/customers" className="mt-4 inline-block text-primary hover:underline">Ku Noqo Macaamiisha &rarr;</Link>
         </div>
         {toastMessage && (
           <Toast message={toastMessage.message} type={toastMessage.type} onClose={() => setToastMessage(null)} />
@@ -166,16 +166,16 @@ const CustomerDetailsPage: React.FC = () => {
     <Layout>
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 md:mb-8 gap-3 sm:gap-4 md:gap-0">
         <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-darkGray dark:text-gray-100 flex items-center">
-          <Link href="/customers" className="text-gray-700 dark:text-gray-200 hover:text-primary transition-colors duration-200 mr-2 sm:mr-4">
+          <Link href="/projects/customers" className="text-gray-700 dark:text-gray-200 hover:text-primary transition-colors duration-200 mr-2 sm:mr-4">
             <ArrowLeft size={20} className="inline-block sm:w-7 sm:h-7" />
           </Link>
           {customer.name}
         </h1>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-          <Link href={`/projects/add?customerId=${customer.id}`} className="bg-primary text-white py-2 sm:py-2.5 px-3 sm:px-4 md:px-6 rounded-lg font-bold text-sm sm:text-base md:text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center justify-center">
+          <Link href={`/projects/main/add?customerId=${customer.id}`} className="bg-primary text-white py-2 sm:py-2.5 px-3 sm:px-4 md:px-6 rounded-lg font-bold text-sm sm:text-base md:text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center justify-center">
             <Plus size={16} className="mr-1 sm:mr-2" /> Ku Dar Mashruuc
           </Link>
-          <Link href={`/customers/edit/${customer.id}`} className="bg-accent text-white py-2 sm:py-2.5 px-3 sm:px-4 md:px-6 rounded-lg font-bold text-sm sm:text-base md:text-lg hover:bg-orange-600 transition duration-200 shadow-md flex items-center justify-center">
+          <Link href={`/projects/customers/edit/${customer.id}`} className="bg-accent text-white py-2 sm:py-2.5 px-3 sm:px-4 md:px-6 rounded-lg font-bold text-sm sm:text-base md:text-lg hover:bg-orange-600 transition duration-200 shadow-md flex items-center justify-center">
             <Edit size={16} className="mr-1 sm:mr-2" /> Edit Macmiil
           </Link>
           <button onClick={handleDeleteCustomer} className="bg-redError text-white py-2 sm:py-2.5 px-3 sm:px-4 md:px-6 rounded-lg font-bold text-sm sm:text-base md:text-lg hover:bg-red-700 transition duration-200 shadow-md flex items-center justify-center">
@@ -436,7 +436,7 @@ const CustomerDetailsPage: React.FC = () => {
                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-lightGray dark:divide-gray-700">
                           {projectDebts.map(proj => (
                             <tr key={proj.id}>
-                              <td className="px-2 sm:px-3 md:px-4 py-2"><Link href={`/projects/${proj.id}`} className="text-primary hover:underline text-sm sm:text-base">{proj.name}</Link></td>
+                              <td className="px-2 sm:px-3 md:px-4 py-2"><Link href={`/projects/main/${proj.id}`} className="text-primary hover:underline text-sm sm:text-base">{proj.name}</Link></td>
                               <td className="px-2 sm:px-3 md:px-4 py-2 text-gray-900 dark:text-gray-100 text-sm sm:text-base">{proj.status}</td>
                               <td className="px-2 sm:px-3 md:px-4 py-2 text-gray-900 dark:text-gray-100 text-sm sm:text-base">${proj.agreementAmount.toLocaleString()}</td>
                               <td className="px-2 sm:px-3 md:px-4 py-2 text-gray-900 dark:text-gray-100 text-sm sm:text-base">${proj.advancePaid.toLocaleString()}</td>
@@ -620,7 +620,7 @@ const CustomerDetailsPage: React.FC = () => {
                     {customer.projects.map(proj => (
                       <div key={proj.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border-l-4 border-primary">
                         <div className="flex items-center justify-between mb-2">
-                          <Link href={`/projects/${proj.id}`} className="text-primary hover:underline font-semibold text-base">
+                          <Link href={`/projects/main/${proj.id}`} className="text-primary hover:underline font-semibold text-base">
                             {proj.name}
                           </Link>
                           <span className="px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
@@ -655,7 +655,7 @@ const CustomerDetailsPage: React.FC = () => {
                       <tbody className="bg-white dark:bg-gray-800 divide-y divide-lightGray dark:divide-gray-700">
                         {customer.projects.map(proj => (
                           <tr key={proj.id}>
-                            <td className="px-2 py-2"><Link href={`/projects/${proj.id}`} className="text-primary hover:underline">{proj.name}</Link></td>
+                            <td className="px-2 py-2"><Link href={`/projects/main/${proj.id}`} className="text-primary hover:underline">{proj.name}</Link></td>
                             <td className="px-2 py-2 text-gray-900 dark:text-gray-100">{proj.status}</td>
                             <td className="px-2 py-2 text-gray-900 dark:text-gray-100">${(proj.agreementAmount || 0).toLocaleString()}</td>
                             <td className="px-2 py-2 text-gray-900 dark:text-gray-100">${(proj.advancePaid || 0).toLocaleString()}</td>
@@ -666,7 +666,7 @@ const CustomerDetailsPage: React.FC = () => {
                   </div>
                 </>
               )}
-              <Link href={`/projects/add?customerId=${customer.id}`} className="mt-4 bg-secondary text-white py-2 px-4 rounded-lg flex items-center hover:bg-green-600 transition duration-200 w-fit">
+              <Link href={`/projects/main/add?customerId=${customer.id}`} className="mt-4 bg-secondary text-white py-2 px-4 rounded-lg flex items-center hover:bg-green-600 transition duration-200 w-fit">
                 <Plus size={18} className="mr-2" /> Ku Dar Mashruuc
               </Link>
             </div>
@@ -696,7 +696,7 @@ const CustomerDetailsPage: React.FC = () => {
                           <p className="text-xs text-mediumGray dark:text-gray-400 mb-1">Taariikh</p>
                           <p className="text-sm text-darkGray dark:text-gray-100">{new Date(pay.paymentDate).toLocaleDateString()}</p>
                           {pay.projectId && (
-                            <Link href={`/projects/${pay.projectId}`} className="text-xs text-primary hover:underline mt-2 inline-block">
+                            <Link href={`/projects/main/${pay.projectId}`} className="text-xs text-primary hover:underline mt-2 inline-block">
                               Eeg Mashruuc →
                             </Link>
                           )}
@@ -722,7 +722,7 @@ const CustomerDetailsPage: React.FC = () => {
                             <td className="px-2 py-2">{pay.paymentType}</td>
                             <td className="px-2 py-2 text-green-600 font-bold">+${pay.amount.toLocaleString()}</td>
                             <td className="px-2 py-2">{new Date(pay.paymentDate).toLocaleDateString()}</td>
-                            <td className="px-2 py-2">{pay.projectId ? <Link href={`/projects/${pay.projectId}`} className="text-primary hover:underline">Eeg Mashruuc</Link> : '-'}</td>
+                            <td className="px-2 py-2">{pay.projectId ? <Link href={`/projects/main/${pay.projectId}`} className="text-primary hover:underline">Eeg Mashruuc</Link> : '-'}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -906,7 +906,7 @@ const CustomerDetailsPage: React.FC = () => {
                         transaction={trx as any}
                         // Simplified view for customer page, maybe no edit/delete if not auth check
                         // But we can pass handlers if we want full functionality
-                        onEdit={(id) => router.push(`/accounting/transactions/edit/${id}`)}
+                        onEdit={(id) => router.push(`/projects/accounting/transactions/edit/${id}`)}
                       // onDelete not implemented here to avoid complexity with refreshing state cleanly without prop drilling
                       />
                     ))}
@@ -931,7 +931,7 @@ const CustomerDetailsPage: React.FC = () => {
                           <TransactionRow
                             key={trx.id}
                             transaction={trx as any}
-                            onEdit={(id) => router.push(`/accounting/transactions/edit/${id}`)}
+                            onEdit={(id) => router.push(`/projects/accounting/transactions/edit/${id}`)}
                           />
                         ))}
                       </tbody>
@@ -1022,7 +1022,7 @@ const CustomerDetailsPage: React.FC = () => {
                       <FileX2 className="mx-auto text-gray-400 dark:text-gray-500" size={48} />
                       <p className="text-gray-700 dark:text-gray-200 mt-2">Ma jiraan dukumentiyo oo la xiriira macmiilkan.</p>
                       <Link
-                        href="/expenses/add"
+                        href="/projects/expenses/add"
                         className="mt-4 inline-flex items-center gap-2 bg-primary text-white py-2 px-4 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
                       >
                         <Plus size={18} />

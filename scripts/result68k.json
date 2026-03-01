@@ -1,0 +1,47 @@
+{
+  "count": 0,
+  "total": 0,
+  "transactions": [],
+  "allTypesSummary": [
+    {
+      "type": "TRANSFER_IN",
+      "count": 7,
+      "sum": 160798.21
+    },
+    {
+      "type": "INCOME",
+      "count": 65,
+      "sum": 14451440.1
+    },
+    {
+      "type": "DEBT_TAKEN",
+      "count": 2,
+      "sum": -39700
+    },
+    {
+      "type": "TRANSFER_OUT",
+      "count": 8,
+      "sum": -34188.2
+    },
+    {
+      "type": "DEBT_REPAID",
+      "count": 25,
+      "sum": 989381
+    },
+    {
+      "type": "EXPENSE",
+      "count": 842,
+      "sum": -11848291.85
+    },
+    {
+      "type": "DEBT_GIVEN",
+      "count": 64,
+      "sum": 1689620
+    },
+    {
+      "type": "OTHER",
+      "count": 1,
+      "sum": 1200
+    }
+  ]
+}

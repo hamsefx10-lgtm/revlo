@@ -1,0 +1,4 @@
+=== MONTHLY AUDIT: FEBRUARY 2026 ===
+February Inflow: 757,780 ETB
+February Outflow: 2,298,893.1 ETB
+February NET FLOW: -1,541,113.1 ETB

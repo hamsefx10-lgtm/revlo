@@ -410,7 +410,7 @@ export default function AddTransactionPage() {
                 <option value="INCOME">Dakhli (Soo Gal)</option>
                 <option value="EXPENSE">Kharash (Baxay)</option>
                 <option value="DEBT_TAKEN">Amaah La Siiyay — Lacag baxday oo dayn ahaan</option>
-                <option value="DEBT_RECEIVED">Amaah La Qaatay — Lacag soo galay oo dayn ahaan</option>
+                <option value="DEBT_RECEIVED">Payables / Dayn la Qaatay — Lacag soo galay</option>
                 <option value="PAY_VENDOR_DEBT">Bixi Deyn (Vendor/Iibiye)</option>
                 <option value="COLLECT_CUSTOMER_DEBT">Soo Xaree Deyn (Macmiil)</option>
                 <option value="REPAY_PROJECT_DEBT">Soo Xaree Deyn (Mashruuc)</option>
@@ -591,7 +591,7 @@ export default function AddTransactionPage() {
           {transactionType === 'DEBT_RECEIVED' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border border-blue-500/20 rounded-lg bg-blue-500/5 animate-fade-in">
               <div className="col-span-full flex justify-between items-center mb-2">
-                <h3 className="text-lg font-bold text-blue-600 dark:text-blue-400">Faahfaahinta Daynta (Aan Qaadanay - Payables)</h3>
+                <h3 className="text-lg font-bold text-blue-600 dark:text-blue-400">Faahfaahinta Payables (Dayn la Qaatay)</h3>
                 <div className="flex gap-2">
                   <button
                     type="button"
@@ -895,7 +895,7 @@ export default function AddTransactionPage() {
                   {(!debts || debts.length === 0) && (
                     <p className="text-orange-600 text-xs mt-1 flex items-center">
                       <InfoIcon size={14} className="inline mr-1" />
-                      Ma jiraan customers-ka. <Link href="/customers/add" className="underline text-primary hover:text-blue-700">Ku dar customer cusub</Link>
+                      Ma jiraan customers-ka. <Link href="/projects/customers/add" className="underline text-primary hover:text-blue-700">Ku dar customer cusub</Link>
                     </p>
                   )}
                 </div>

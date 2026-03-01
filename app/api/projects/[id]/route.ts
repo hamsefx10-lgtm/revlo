@@ -299,36 +299,56 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     // 1. Get all expenses for this project to refund account balances
     const projectExpenses = await prisma.expense.findMany({
       where: { projectId: id },
-      select: { paidFrom: true, amount: true }
+      select: { id: true, paidFrom: true, amount: true }
     });
 
-    // 2. Refund account balances for all expenses
+    // 2. Refund account balances for all expenses (ONLY if transactions exist)
     for (const expense of projectExpenses) {
       if (expense.paidFrom && expense.amount) {
-        await prisma.account.update({
-          where: { id: expense.paidFrom },
-          data: {
-            balance: { increment: Number(expense.amount) }, // Soo celi lacagta
-          },
+        const linkedTrx = await prisma.transaction.findMany({
+          where: { expenseId: (expense as any).id } // We need ID for this
         });
+        const totalTrxAmount = linkedTrx.reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
+
+        if (totalTrxAmount > 0) {
+          await prisma.account.update({
+            where: { id: expense.paidFrom },
+            data: {
+              balance: { increment: totalTrxAmount },
+            },
+          });
+        }
       }
     }
 
     // 3. Get all project labor records for this project to refund account balances
     const projectLabors = await prisma.projectLabor.findMany({
       where: { projectId: id },
-      select: { paidFrom: true, paidAmount: true }
+      select: { id: true, paidFrom: true, paidAmount: true }
     });
 
-    // 4. Refund account balances for all project labor records
+    // 4. Refund account balances for all project labor records (ONLY if transactions exist)
     for (const labor of projectLabors) {
       if (labor.paidFrom && labor.paidAmount) {
-        await prisma.account.update({
-          where: { id: labor.paidFrom },
-          data: {
-            balance: { increment: Number(labor.paidAmount) }, // Soo celi lacagta
-          },
+        // Since ProjectLabor often doesn't have an explicit ID link in Transaction.expenseId 
+        // (sometimes they use description matching in the system), 
+        // we should try to search by amount and date if expenseId is null on transaction.
+        // HOWEVER, for Birshiil, we saw they use specific subCategory 'Labor' on Expenses too.
+
+        // Let's check for transactions linked via expenseId (which is used for labor too in some routes)
+        const linkedTrx = await prisma.transaction.findMany({
+          where: { expenseId: (labor as any).id }
         });
+        const totalTrxAmount = linkedTrx.reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
+
+        if (totalTrxAmount > 0) {
+          await prisma.account.update({
+            where: { id: labor.paidFrom },
+            data: {
+              balance: { increment: totalTrxAmount },
+            },
+          });
+        }
       }
     }
 

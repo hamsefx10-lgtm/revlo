@@ -207,11 +207,11 @@ const TransactionDetailsPage: React.FC = () => {
             <div>
               <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-4">La Xiriira (Optional)</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-darkGray dark:text-gray-100">
-                <p><span className="font-semibold text-mediumGray dark:text-gray-400">Mashruuc:</span> {transaction.project?.name ? <Link href={`/projects/${transaction.project.id}`} className="text-primary hover:underline">{transaction.project.name}</Link> : 'N/A'}</p>
-                <p><span className="font-semibold text-mediumGray dark:text-gray-400">Kharash:</span> {transaction.expense?.description ? <Link href={`/expenses/${transaction.expense.id}`} className="text-primary hover:underline">{transaction.expense.description}</Link> : 'N/A'}</p>
-                <p><span className="font-semibold text-mediumGray dark:text-gray-400">Macmiil:</span> {transaction.customer?.name ? <Link href={`/customers/${transaction.customer.id}`} className="text-primary hover:underline">{transaction.customer.name}</Link> : 'N/A'}</p>
-                <p><span className="font-semibold text-mediumGray dark:text-gray-400">Iibiye:</span> {transaction.vendor?.name ? <Link href={`/vendors/${transaction.vendor.id}`} className="text-primary hover:underline">{transaction.vendor.name}</Link> : 'N/A'}</p>
-                <p><span className="font-semibold text-mediumGray dark:text-gray-400">Shaqaale:</span> {transaction.employee?.fullName ? <Link href={`/employees/${transaction.employee.id}`} className="text-primary hover:underline">{transaction.employee.fullName}</Link> : 'N/A'}</p>
+                <p><span className="font-semibold text-mediumGray dark:text-gray-400">Mashruuc:</span> {transaction.project?.name ? <Link href={`/projects/main/${transaction.project.id}`} className="text-primary hover:underline">{transaction.project.name}</Link> : 'N/A'}</p>
+                <p><span className="font-semibold text-mediumGray dark:text-gray-400">Kharash:</span> {transaction.expense?.description ? <Link href={`/projects/expenses/${transaction.expense.id}`} className="text-primary hover:underline">{transaction.expense.description}</Link> : 'N/A'}</p>
+                <p><span className="font-semibold text-mediumGray dark:text-gray-400">Macmiil:</span> {transaction.customer?.name ? <Link href={`/projects/customers/${transaction.customer.id}`} className="text-primary hover:underline">{transaction.customer.name}</Link> : 'N/A'}</p>
+                <p><span className="font-semibold text-mediumGray dark:text-gray-400">Iibiye:</span> {transaction.vendor?.name ? <Link href={`/projects/vendors/${transaction.vendor.id}`} className="text-primary hover:underline">{transaction.vendor.name}</Link> : 'N/A'}</p>
+                <p><span className="font-semibold text-mediumGray dark:text-gray-400">Shaqaale:</span> {transaction.employee?.fullName ? <Link href={`/projects/employees/${transaction.employee.id}`} className="text-primary hover:underline">{transaction.employee.fullName}</Link> : 'N/A'}</p>
               </div>
             </div>
           )}
