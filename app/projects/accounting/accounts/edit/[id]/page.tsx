@@ -29,7 +29,6 @@ export default function EditAccountPage() {
 
   const [name, setName] = useState('');
   const [type, setType] = useState('');
-  const [balance, setBalance] = useState<number | ''>('');
   const [currency, setCurrency] = useState('');
 
   const [loading, setLoading] = useState(true); // For initial fetch
@@ -55,7 +54,6 @@ export default function EditAccountPage() {
         const acc = data.account;
         setName(acc.name);
         setType(acc.type);
-        setBalance(parseFloat(acc.balance)); // Convert Decimal to number
         setCurrency(acc.currency);
 
       } catch (error: any) {
@@ -74,7 +72,6 @@ export default function EditAccountPage() {
     const newErrors: { [key: string]: string } = {};
     if (!name.trim()) newErrors.name = 'Magaca Account-ka waa waajib.';
     if (!type) newErrors.type = 'Nooca Account-ka waa waajib.';
-    if (typeof balance !== 'number' || balance < 0) newErrors.balance = 'Balance-ka waa waajib oo waa inuu noqdaa nambar wanaagsan (ama eber).';
     if (!currency) newErrors.currency = 'Currency-ga waa waajib.';
 
     setValidationErrors(newErrors);
@@ -98,7 +95,6 @@ export default function EditAccountPage() {
       const accountData = {
         name,
         type,
-        balance,
         currency,
       };
 
@@ -183,40 +179,31 @@ export default function EditAccountPage() {
             {validationErrors.type && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.type}</p>}
           </div>
 
-          {/* Balance & Currency */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="balance" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Balance ($) <span className="text-redError">*</span></label>
-              <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
-                <input
-                  type="number"
-                  id="balance"
-                  value={balance}
-                  onChange={(e) => setBalance(parseFloat(e.target.value) || 0)}
-                  placeholder="Tusaale: 10000.00"
-                  className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.balance ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                />
-              </div>
-              {validationErrors.balance && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.balance}</p>}
+          {/* Currency */}
+          <div>
+            <label htmlFor="currency" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Currency <span className="text-redError">*</span></label>
+            <div className="relative">
+              <Coins className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
+              <select
+                id="currency"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.currency ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+              >
+                <option value="">-- Dooro Currency --</option>
+                {currencies.map(curr => <option key={curr} value={curr}>{curr}</option>)}
+              </select>
+              <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
             </div>
-            <div>
-              <label htmlFor="currency" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Currency <span className="text-redError">*</span></label>
-              <div className="relative">
-                <Coins className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
-                <select
-                  id="currency"
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
-                  className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.currency ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                >
-                  <option value="">-- Dooro Currency --</option>
-                  {currencies.map(curr => <option key={curr} value={curr}>{curr}</option>)}
-                </select>
-                <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
-              </div>
-              {validationErrors.currency && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.currency}</p>}
-            </div>
+            {validationErrors.currency && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.currency}</p>}
+          </div>
+
+          {/* Info Note */}
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg flex items-start space-x-3 border border-blue-100 dark:border-blue-800">
+            <InfoIcon className="text-blue-500 mt-0.5" size={20} />
+            <p className="text-sm text-blue-700 dark:text-blue-300">
+              <span className="font-bold">Xusuusin:</span> Balance-ka account-ka si toos ah ayaa looga soo xisaabinayaa dhaqdhaaqyada lacagta (Transactions). Marnaba gacanta laguma bedeli karo si loo hubiyo saxsanaanta xisaabaadkaaga.
+            </p>
           </div>
 
           {/* Submit Button */}

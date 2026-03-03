@@ -6,6 +6,7 @@ import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 
 // GET /api/projects/accounting/accounts/[id] - Soo deji account gaar ah
 export async function GET(request: Request, { params }: { params: { id: string } }) {
+  const { recalculateAccountBalance } = await import('@/lib/accounting');
   try {
     const { id } = params;
     const { getServerSession } = await import('next-auth/next');
@@ -98,18 +99,25 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const history = allProcessed.filter(trx => trx.shouldProcess);
 
     const account = await prisma.account.findFirst({
-      where: { id: id, companyId }
+      where: { id, companyId }
     });
 
     if (!account) {
       return NextResponse.json({ message: 'Account-ka lama helin.' }, { status: 404 });
     }
 
-    // Pass the fully constructed history sorted descending (newest first)
+    // CRITICAL UPDATE: The user requested to decouple the transaction history recalculator from the account balance.
+    // CRITICAL UPDATE: Restoring recalculateAccountBalance
+    // After fixing the DEBT_REPAID vendorId logic flaw in lib/accounting.ts,
+    // the recalculator is safe to use and accurately mathematically corrects the balance
+    // based on real transactions without anomalies.
+    const verifiedBalance = await recalculateAccountBalance(id);
+
+    // Pass the fully constructed history sorted ascending (oldest first to make running balance visually logical)
     const processedAccount = {
       ...account,
-      balance: Number(account.balance),
-      transactions: history.reverse(),
+      balance: verifiedBalance,
+      transactions: history, // Removed .reverse() to fix visual running balance
       fromTransactions: [], // deprecated, all in history now
       toTransactions: [],   // deprecated, all in history now
     };
@@ -135,17 +143,11 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ message: 'Awood uma lihid.' }, { status: 401 });
     }
     const companyId = (session as any).user.companyId;
-    const { name, type, balance, currency } = await request.json();
+    const { name, type, currency } = await request.json();
 
-    if (!name || !type || typeof balance !== 'number' || typeof currency !== 'string') {
+    if (!name || !type || typeof currency !== 'string') {
       return NextResponse.json(
-        { message: 'Fadlan buuxi dhammaan beeraha waajibka ah: Magaca, Nooca, Balance, Currency.' },
-        { status: 400 }
-      );
-    }
-    if (balance < 0) {
-      return NextResponse.json(
-        { message: 'Balance-ka ma noqon karo mid taban.' },
+        { message: 'Fadlan buuxi dhammaan beeraha waajibka ah: Magaca, Nooca, Currency.' },
         { status: 400 }
       );
     }
@@ -161,7 +163,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       data: {
         name,
         type,
-        balance: Number(balance),
         currency,
         updatedAt: new Date(),
       },

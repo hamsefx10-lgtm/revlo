@@ -220,7 +220,7 @@ export default function MyProfilePage() {
             </div>
           </Link>
 
-          <Link href="/projects" className="flex items-center p-4 bg-accent/10 hover:bg-accent/20 rounded-lg transition-colors duration-200">
+          <Link href="/projects/main" className="flex items-center p-4 bg-accent/10 hover:bg-accent/20 rounded-lg transition-colors duration-200">
             <Briefcase size={20} className="text-accent mr-3" />
             <div>
               <p className="font-semibold text-darkGray dark:text-gray-100">My Projects</p>

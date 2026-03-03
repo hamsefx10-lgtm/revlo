@@ -171,7 +171,7 @@ const TransactionCard: React.FC<{ transaction: Transaction; onEdit: (trx: Transa
       {/* Status Badge */}
       <div className="mt-3 flex items-center justify-between">
         <span className={`px-2 py-1 rounded-full text-xs font-semibold inline-flex items-center space-x-1 ${statusBgClass}`}>
-          {statusIcon} <span>{isIncome ? 'Dakhli' : 'Kharash'}</span>
+          {statusIcon} <span>{transaction.type === 'DEBT_RECEIVED' ? 'Payables' : (isIncome ? 'Dakhli' : 'Kharash')}</span>
         </span>
         <div className="flex items-center space-x-3">
           {(transaction.type.includes('DEBT')) && (

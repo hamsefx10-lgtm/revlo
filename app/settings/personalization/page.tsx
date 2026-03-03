@@ -192,7 +192,7 @@ export default function PersonalizationSettingsPage() {
               <label htmlFor="defaultHomePage" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Bogga Guriga ee Default</label>
               <select id="defaultHomePage" value={editDefaultHomePage} onChange={(e) => setEditDefaultHomePage(e.target.value)} className="w-full p-3 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary appearance-none">
                 <option value="/dashboard">Dashboard</option>
-                <option value="/projects">Projects</option>
+                <option value="/projects/main">Projects</option>
                 <option value="/expenses">Expenses</option>
                 <option value="/projects/accounting">Accounting</option>
               </select>

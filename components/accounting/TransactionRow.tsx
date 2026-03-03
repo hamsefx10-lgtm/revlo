@@ -152,7 +152,7 @@ const TransactionRow: React.FC<TransactionRowProps> = ({ transaction, onEdit, on
             </td>
             <td className="p-4 whitespace-nowrap text-right">
                 <div className="flex items-center justify-end space-x-2">
-                    <Link href={`/accounting/transactions/${transaction.id}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View Details">
+                    <Link href={`/projects/accounting/transactions/${transaction.id}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View Details">
                         <Eye size={18} />
                     </Link>
                     {onEdit && (

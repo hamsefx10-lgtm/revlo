@@ -79,7 +79,7 @@ const MobileTransactionCard: React.FC<MobileTransactionCardProps> = ({ transacti
                     </h4>
                 </div>
                 <div className="flex space-x-1 flex-shrink-0">
-                    <Link href={`/accounting/transactions/${transaction.id}`} className="p-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View">
+                    <Link href={`/projects/accounting/transactions/${transaction.id}`} className="p-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View">
                         <Eye size={14} />
                     </Link>
                     {onEdit && (

@@ -200,75 +200,72 @@
 60:8  Warning: React Hook useEffect has a missing dependency: 'fetchAccounts'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
 
 info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
-node.exe : Failed to 
-compile.
+node.exe : Failed to compile.
 At line:1 char:1
-+ & "C:\Program Files\
-nodejs/node.exe" 
++ & "C:\Program 
+Files\nodejs/node.exe" 
 "C:\Program 
-Files\nodejs/node_mo 
-...
-+ ~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~~~~~~~~~
-~~~~~
-    + CategoryInfo    
-          : NotSpeci  
-  fied: (Failed to    
- compile.:String)     
-[], RemoteExcepti    
-on
-    + FullyQualifiedE 
-   rrorId : NativeCo  
-  mmandError
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo           
+   : NotSpecified: (Failed   
+  to compile.:String) [],    
+ RemoteException
+    + FullyQualifiedErrorId  
+   : NativeCommandError
  
 
-./scripts/fix-all-acco
-unts.ts:45:51
-Type error: Property 
-'toNumber' does not 
-exist on type 
-'number'.
+./app/projects/accounting/pag
+e.tsx:175:9
+Type error: Object literal 
+may only specify known 
+properties, and 
+'totalExpenses' does not 
+exist in type 'OverviewStats 
+| ((prevState: OverviewStats 
+| null) => OverviewStats | 
+null)'.
 
-[0m [90m 43 |[39m  
-       }[0m
-[0m [90m 44 
-|[39m[0m
-[0m[31m[1m>[22m[3
-9m[90m 45 |[39m     
-    [36mconst[39m 
-oldBalance 
-[33m=[39m 
-[36mtypeof[39m accou
-nt[33m.[39mbalance[
-33m.[39mtoNumber 
-[33m===[39m 
-[32m'function'[39m 
-[33m?[39m account[3
-3m.[39mbalance[33m.
-[39mtoNumber() 
-[33m:[39m [33mNumbe
-r[39m(account[33m.[
-39mbalance)[33m;[39m
-[0m
-[0m [90m    |[39m  
-                      
-                      
-     [31m[1m^[22m[
-39m[0m
-[0m [90m 46 
-|[39m[0m
-[0m [90m 47 |[39m  
-       [36mif[39m (
-[33mMath[39m[33m.[3
-9mabs(oldBalance 
-[33m-[39m 
-runningBalance) 
-[33m>[39m 
-[35m0.01[39m) {[0m
-[0m [90m 48 |[39m  
-           console[33
-m.[39mlog([32m`[FIXI
-NG] ${account.name} 
-(ID: ${account.id})`[
-39m)[33m;[39m[0m
+[0m [90m 173 |[39m        
+ totalIncome[33m:[39m stats
+Data[33m.[39mtotalIncome[3
+3m,[39m [90m// Total 
+income (all time)[39m[0m
+[0m [90m 174 |[39m        
+ totalExpensesThisMonth[33m:
+[39m statsData[33m.[39mtot
+alExpensesThisMonth[33m,[39
+m[0m
+[0m[31m[1m>[22m[39m[90m
+ 175 |[39m         
+totalExpenses[33m:[39m stat
+sData[33m.[39mtotalExpenses
+[33m,[39m [90m// Total 
+expenses (all time, 
+excluding fixed 
+assets)[39m[0m
+[0m [90m     |[39m        
+ [31m[1m^[22m[39m[0m
+[0m [90m 176 |[39m        
+ fixedAssetExpenses[33m:[39
+m statsData[33m.[39mfixedAs
+setExpenses [33m||[39m 
+[35m0[39m[33m,[39m 
+[90m// Fixed asset expenses 
+(all time)[39m[0m
+[0m [90m 177 |[39m        
+ fixedAssetExpensesThisMonth
+[33m:[39m statsData[33m.[3
+9mfixedAssetExpensesThisMonth
+ [33m||[39m 
+[35m0[39m[33m,[39m 
+[90m// Fixed asset expenses 
+this month[39m[0m
+[0m [90m 178 |[39m        
+ totalPayablesReceived[33m:
+[39m statsData[33m.[39mtota
+lPayablesReceived 
+[33m||[39m 
+[35m0[39m[33m,[39m[0m

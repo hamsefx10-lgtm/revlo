@@ -283,19 +283,19 @@ function Page() {
               ) : (
                 <>
                   {/* Desktop Table View */}
-                  <div className="hidden lg:block overflow-x-auto mb-4">
-                    <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700 bg-white dark:bg-gray-800 rounded-lg">
+                  <div className="hidden lg:block overflow-x-auto mb-4 w-full">
+                    <table className="min-w-full w-full divide-y divide-lightGray dark:divide-gray-700 bg-white dark:bg-gray-800 rounded-lg">
                       <thead className="bg-lightGray dark:bg-gray-700">
                         <tr>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Taariikhda</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Taariikhda</th>
                           <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Sharaxaad</th>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Nooca</th>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Category</th>
-                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">La Xiriira</th>
-                          <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Soo Galay (In)</th>
-                          <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Baxay (Out)</th>
-                          <th scope="col" className="px-4 py-3 text-right text-xs font-medium border-l-2 border-lightGray dark:border-gray-600 text-darkGray dark:text-gray-200 uppercase tracking-wider bg-gray-50 dark:bg-gray-800">Haraaga (Bal)</th>
-                          <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Nooca</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Category</th>
+                          <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">La Xiriira</th>
+                          <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Soo Galay (In)</th>
+                          <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Baxay (Out)</th>
+                          <th scope="col" className="px-4 py-3 text-right text-xs font-medium border-l-2 border-lightGray dark:border-gray-600 text-darkGray dark:text-gray-200 uppercase tracking-wider bg-gray-50 dark:bg-gray-800 whitespace-nowrap">Haraaga (Bal)</th>
+                          <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-lightGray dark:divide-gray-700">

@@ -492,7 +492,7 @@ export async function POST(request: Request) {
         'DEBT_RECEIVED',
         'TRANSFER_IN',
         'SHAREHOLDER_DEPOSIT'
-      ].includes(type) || (type === 'DEBT_REPAID' && !trxData.vendorId);
+      ].includes(type);
 
       const finalAmount = isInflow ? amountValue : -amountValue;
 

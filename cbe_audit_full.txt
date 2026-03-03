@@ -1,0 +1,249 @@
+Looking up CBE Account Balance and Transactions...
+
+=== ACCOUNT: CBE (ID: c8306c05-5279-4b05-b5fc-dda41c793a77) ===
+Current Saved Balance: -59976.31999999995
+
+=== FULL RECALCULATION SIMULATION ===
+Simulated Correct Balance with CURRENT code: 61648.69000000006
+
+=== ALL TRANSACTIONS ===
+[2025-05-30] EXPENSE      | 72450    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-13
+[2025-06-01] EXPENSE      | 1200     | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-13
+[2025-06-01] EXPENSE      | 1500     | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-13
+[2025-06-01] EXPENSE      | 37100    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-13
+[2025-06-01] EXPENSE      | 13200    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-13
+[2025-06-02] EXPENSE      | 1100     | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-13
+[2025-06-04] EXPENSE      | 3800     | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-13
+[2025-06-08] EXPENSE      | 34350    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-13
+[2025-06-10] EXPENSE      | 5800     | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-13
+[2025-06-10] EXPENSE      | 3000     | (-) | Cust: No   | Ven: No   | mulugeta
+[2025-06-12] EXPENSE      | 7000     | (-) | Cust: No   | Ven: No   | mulugeta
+[2025-06-12] EXPENSE      | 2800     | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-06-13] EXPENSE      | 10600    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-06-13] EXPENSE      | 600      | (-) | Cust: No   | Ven: No   | Transport
+[2025-06-13] EXPENSE      | 230300   | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-11
+[2025-06-14] EXPENSE      | 33500    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-06-15] EXPENSE      | 2500     | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-13
+[2025-06-15] EXPENSE      | 800      | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-06-15] EXPENSE      | 1000     | (-) | Cust: No   | Ven: No   | riinjiile
+[2025-06-16] EXPENSE      | 3300     | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-13
+[2025-06-17] EXPENSE      | 2800     | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-13
+[2025-06-18] EXPENSE      | 500      | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-06-18] EXPENSE      | 5000     | (-) | Cust: No   | Ven: No   | mulugeta 
+[2025-06-19] EXPENSE      | 3000     | (-) | Cust: No   | Ven: No   | mulugeta 
+[2025-06-19] EXPENSE      | 17000    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-06-21] EXPENSE      | 2000     | (-) | Cust: No   | Ven: No   | mulugeta
+[2025-06-21] EXPENSE      | 25550    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-06-23] EXPENSE      | 1500     | (-) | Cust: No   | Ven: No   | MULIKETA
+[2025-06-23] EXPENSE      | 800      | (-) | Cust: No   | Ven: No   | XAMALKA ALABTA LOSOGADAY
+[2025-06-23] EXPENSE      | 700      | (-) | Cust: No   | Ven: No   | CUMAR ABDI WALI XAMLE
+[2025-06-23] EXPENSE      | 3000     | (-) | Cust: No   | Ven: No   | LAXAMDLE
+[2025-06-23] EXPENSE      | 2050     | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-06-26] EXPENSE      | 82250    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-06-27] EXPENSE      | 3000     | (-) | Cust: No   | Ven: No   | lxaamadle
+[2025-06-27] EXPENSE      | 5000     | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-06-27] EXPENSE      | 1000     | (-) | Cust: No   | Ven: No   | ABDI SALN RINJILE
+[2025-06-28] EXPENSE      | 1400     | (-) | Cust: No   | Ven: No   | xamaale 
+[2025-06-28] EXPENSE      | 1500     | (-) | Cust: No   | Ven: No   | riinjiile
+[2025-06-29] EXPENSE      | 3000     | (-) | Cust: No   | Ven: No   | malas asafe
+[2025-06-29] EXPENSE      | 2900     | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-06-30] EXPENSE      | 8000     | (-) | Cust: No   | Ven: No   | degom
+[2025-07-01] EXPENSE      | 12800    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-07-02] EXPENSE      | 1000     | (-) | Cust: No   | Ven: No   | riinjiile
+[2025-07-02] EXPENSE      | 450      | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-07-03] EXPENSE      | 2000     | (-) | Cust: No   | Ven: No   | riinjiile
+[2025-07-03] EXPENSE      | 2000     | (-) | Cust: No   | Ven: No   | miisas iyo shalfis 
+[2025-07-04] EXPENSE      | 5200     | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-07-04] EXPENSE      | 2000     | (-) | Cust: No   | Ven: No   | riinjiilw
+[2025-07-04] EXPENSE      | 1500     | (-) | Cust: No   | Ven: No   | mulugeta
+[2025-07-04] EXPENSE      | 12300    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-07-04] EXPENSE      | 700      | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-07-04] EXPENSE      | 1300     | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-07-05] EXPENSE      | 1000     | (-) | Cust: No   | Ven: No   | riinjiile
+[2025-07-05] EXPENSE      | 13500    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-07-05] EXPENSE      | 2000     | (-) | Cust: No   | Ven: No   | abdi wasac 
+[2025-07-05] EXPENSE      | 6500     | (-) | Cust: No   | Ven: No   | riinjiile
+[2025-07-05] EXPENSE      | 3300     | (-) | Cust: No   | Ven: No   | abdi wasac 
+[2025-07-05] EXPENSE      | 2800     | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-13
+[2025-07-06] EXPENSE      | 4600     | (-) | Cust: No   | Ven: No   | almuniam ka shaqeeyay 
+[2025-07-07] EXPENSE      | 850000   | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-23
+[2025-07-07] EXPENSE      | 699      | (-) | Cust: No   | Ven: No   | transport
+[2025-07-07] EXPENSE      | 1000     | (-) | Cust: No   | Ven: No   | samayn sakatuuro 
+[2025-07-07] EXPENSE      | 35000    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-07-07] EXPENSE      | 89050    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-07-07] EXPENSE      | 4100     | (-) | Cust: No   | Ven: No   | xamal albaabada looxa
+[2025-07-07] EXPENSE      | 28900    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-13
+[2025-07-07] EXPENSE      | 29000    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-07-07] EXPENSE      | 1000     | (-) | Cust: No   | Ven: No   | samayn skatuurada salada 
+[2025-07-08] EXPENSE      | 97000    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-07-08] EXPENSE      | 1000     | (-) | Cust: No   | Ven: No   | xamali alab
+[2025-07-08] EXPENSE      | 2000     | (-) | Cust: No   | Ven: No   | shaqalaha lababada loxa xaraynayay 
+[2025-07-08] EXPENSE      | 1500     | (-) | Cust: No   | Ven: No   | riinjiile
+[2025-07-08] EXPENSE      | 2000     | (-) | Cust: No   | Ven: No   | xidhxidhis albaabo 
+[2025-07-08] EXPENSE      | 5500     | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-07-09] EXPENSE      | 620      | (-) | Cust: No   | Ven: No   | nato haynok
+[2025-07-09] EXPENSE      | 1000     | (-) | Cust: No   | Ven: No   | albaabo xidhis 
+[2025-07-09] EXPENSE      | 300000   | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-23
+[2025-07-09] EXPENSE      | 4000     | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-07-09] EXPENSE      | 1000     | (-) | Cust: No   | Ven: No   | wasihun
+[2025-07-10] EXPENSE      | 700      | (-) | Cust: No   | Ven: No   | nimcan 
+[2025-07-10] EXPENSE      | 2998     | (-) | Cust: No   | Ven: No   | wasihun
+[2025-07-10] EXPENSE      | 1000     | (-) | Cust: No   | Ven: No   | xamal suhayb
+[2025-07-10] EXPENSE      | 1000     | (-) | Cust: No   | Ven: No   | wasihun
+[2025-07-10] EXPENSE      | 2000     | (-) | Cust: No   | Ven: No   | c wasac
+[2025-07-10] EXPENSE      | 500      | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-07-11] EXPENSE      | 2000     | (-) | Cust: No   | Ven: No   | kirada gaadhiga 
+[2025-07-11] EXPENSE      | 2500     | (-) | Cust: No   | Ven: No   | mahad haybe xamal
+[2025-07-11] EXPENSE      | 500      | (-) | Cust: No   | Ven: No   | abdi yuusuf 
+[2025-07-11] EXPENSE      | 2000     | (-) | Cust: No   | Ven: No   | c waasac
+[2025-07-12] EXPENSE      | 76000    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-07-12] EXPENSE      | 1000     | (-) | Cust: No   | Ven: No   | waraqu rinji
+[2025-07-12] EXPENSE      | 278450   | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-23
+[2025-07-13] EXPENSE      | 7800     | (-) | Cust: No   | Ven: No   | farxan mihmed
+[2025-07-15] EXPENSE      | 633413   | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-23
+[2025-07-17] EXPENSE      | 28000    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-07-18] EXPENSE      | 10000    | (-) | Cust: No   | Ven: No   | farxaan almuniam
+[2025-07-20] EXPENSE      | 34200    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-07-21] EXPENSE      | 32000    | (-) | Cust: No   | Ven: No   | kiro addis ababa  almuniam 
+[2025-07-21] EXPENSE      | 12100    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-07-25] EXPENSE      | 5000     | (-) | Cust: No   | Ven: No   | farxaan almuniam 
+[2025-08-25] EXPENSE      | 9950     | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-08-31] EXPENSE      | 1000     | (-) | Cust: No   | Ven: No   | samayn sanduq murayad
+[2025-09-01] EXPENSE      | 6000     | (-) | Cust: No   | Ven: No   | playwod xixidhis murayad 
+[2025-09-04] EXPENSE      | 1500     | (-) | Cust: No   | Ven: No   | samayn sanduq 4
+[2025-09-05] EXPENSE      | 269000   | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-09-05] EXPENSE      | 36000    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-09-05] EXPENSE      | 10000    | (-) | Cust: No   | Ven: No   | MAYAKAL
+[2025-09-05] EXPENSE      | 50000    | (-) | Cust: No   | Ven: No   | kirda gadhiga dhobwyn
+[2025-09-05] EXPENSE      | 4000     | (-) | Cust: No   | Ven: No   | xamalinta muraydaha
+[2025-09-05] EXPENSE      | 52350    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-09-05] EXPENSE      | 200      | (-) | Cust: No   | Ven: No   | maxamed axmed xamale
+[2025-09-07] EXPENSE      | 20580    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-09-08] EXPENSE      | 40000    | (-) | Cust: No   | Ven: No   | BAQI GADHIGA DHOBAWAYN ALMUNIUM
+[2025-09-17] EXPENSE      | 40000    | (-) | Cust: No   | Ven: No   | MAYKAL FASALKA LABAD E GACANTA
+[2025-10-10] INCOME       | 944000   | (+) | Cust: 1e2aa528-ad7c-4d00-8637-ea61878ea7d3 | Ven: No   | Advance Payment for Project: Masjid Garab Case
+[2025-10-10] INCOME       | 3000000  | (+) | Cust: 59705c85-d71e-4d23-8b05-4b75791fee18 | Ven: No   | Advance Payment for Project: Dhobawayn Almuniam Site
+[2025-10-13] EXPENSE      | 10800    | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-13
+[2025-10-15] EXPENSE      | 1500     | (-) | Cust: No   | Ven: No   | Khidmad Wareejin: transfer
+[2025-10-26] EXPENSE      | 1499     | (-) | Cust: No   | Ven: No   | +LAXAMADLE
+[2025-10-26] EXPENSE      | 1300     | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-10-26] EXPENSE      | 1000     | (-) | Cust: No   | Ven: No   | Material expense - 2025-10-26
+[2025-10-29] EXPENSE      | 20000    | (-) | Cust: No   | Ven: No   | test
+[2025-11-01] DEBT_GIVEN   | 7500     | (-) | Cust: 06ac2ccd-c01a-4552-b992-cb457ba71abb | Ven: No   | hibo ayaa loo diray  - hibo ayaa loo diray
+[2025-11-04] DEBT_GIVEN   | 8000     | (-) | Cust: 06ac2ccd-c01a-4552-b992-cb457ba71abb | Ven: No   | hibo loo diray - hibo loo diray
+[2025-11-06] DEBT_GIVEN   | 3000     | (-) | Cust: 859e95e5-b19f-4f4c-a0d7-563f197a583a | Ven: No   | nuur loo diray  - nuur loo diray
+[2025-11-06] DEBT_GIVEN   | 2000     | (-) | Cust: 06ac2ccd-c01a-4552-b992-cb457ba71abb | Ven: No   | farxaan loo diray - farxaan loo diray
+[2025-11-06] EXPENSE      | 300      | (-) | Cust: No   | Ven: No   | Taxi/Xamaal - Xamaal
+[2025-11-06] EXPENSE      | 200      | (-) | Cust: No   | Ven: No   | Taxi/Xamaal - Taxi
+[2025-11-06] EXPENSE      | 290      | (-) | Cust: No   | Ven: No   | Salary payment for hamse maolin amiin - 2025-12-03
+[2025-11-06] EXPENSE      | 4000     | (-) | Cust: No   | Ven: No   | barakad nijaar
+[2025-11-06] EXPENSE      | 3000     | (-) | Cust: No   | Ven: No   | Salary payment for Ahmed Mohamed - 2025-12-02
+[2025-11-06] EXPENSE      | 12000    | (-) | Cust: No   | Ven: No   | Salary payment for Ahmad  - 2025-12-02
+[2025-11-06] EXPENSE      | 4500     | (-) | Cust: No   | Ven: No   | Material expense - 2025-11-06
+[2025-11-06] EXPENSE      | 400      | (-) | Cust: No   | Ven: No   | Taxi/Xamaal - Taxi
+[2025-11-07] EXPENSE      | 300      | (-) | Cust: No   | Ven: No   | Taxi/Xamaal - Xamaal
+[2025-11-07] DEBT_GIVEN   | 1000     | (-) | Cust: 06ac2ccd-c01a-4552-b992-cb457ba71abb | Ven: No   | haawo loo diray  - haawo loo diray
+[2025-11-08] EXPENSE      | 1000     | (-) | Cust: No   | Ven: No   | Salary payment for Farxaan Mohamed - 2025-12-04
+[2025-11-08] EXPENSE      | 1000     | (-) | Cust: No   | Ven: No   | Salary payment for Farxaan Mohamed - 2025-12-04
+[2025-11-08] EXPENSE      | 21000    | (-) | Cust: No   | Ven: No   | Material expense - 2025-11-08
+[2025-11-08] EXPENSE      | 500      | (-) | Cust: No   | Ven: No   | Taxi/Xamaal - Xamaal
+[2025-11-08] DEBT_GIVEN   | 6000     | (-) | Cust: 859e95e5-b19f-4f4c-a0d7-563f197a583a | Ven: No   | nuur loo diray  - nuur loo diray
+[2025-11-08] EXPENSE      | 7900     | (-) | Cust: No   | Ven: No   | Material expense - 2025-11-08
+[2025-11-09] DEBT_GIVEN   | 70000    | (-) | Cust: 64dcebfb-9504-4d1c-a6de-489c076cc9c1 | Ven: No   | 
+[2025-11-09] EXPENSE      | 12460    | (-) | Cust: No   | Ven: No   | Material expense - 2025-11-09
+[2025-11-10] EXPENSE      | 3000     | (-) | Cust: No   | Ven: No   | Salary payment for Farxaan Mohamed - 2025-12-05
+[2025-11-11] EXPENSE      | 12000    | (-) | Cust: No   | Ven: No   | Fixed Asset Purchase - saacada laydhka 
+[2025-11-11] EXPENSE      | 3000     | (-) | Cust: No   | Ven: No   | Salary payment for Farxaan Mohamed - 2025-12-07
+[2025-11-16] EXPENSE      | 20400    | (-) | Cust: No   | Ven: No   | Material expense - 2025-12-07
+[2025-11-17] TRANSFER_OUT | 60000    | (-) | Cust: No   | Ven: No   | Wareejin: ebirr lagu diray (Loo Wareejiyay: E-Birr)
+[2025-11-17] EXPENSE      | 33500    | (-) | Cust: No   | Ven: No   | Fixed Asset Purchase - kombarasor c
+[2025-11-18] EXPENSE      | 142500   | (-) | Cust: No   | Ven: No   | phase wone ayaa la siiyay 
+[2025-11-18] EXPENSE      | 1070     | (-) | Cust: No   | Ven: No   | Salary payment for hamse maolin amiin - 2025-12-07
+[2025-11-18] EXPENSE      | 1000     | (-) | Cust: No   | Ven: No   | 
+[2025-11-19] EXPENSE      | 300      | (-) | Cust: No   | Ven: No   | Material expense - 2025-12-07
+[2025-11-19] EXPENSE      | 3000     | (-) | Cust: No   | Ven: No   | 
+[2025-11-19] EXPENSE      | 1495     | (-) | Cust: No   | Ven: No   | Salary payment for hamse maolin amiin - 2025-12-07
+[2025-11-19] EXPENSE      | 3000     | (-) | Cust: No   | Ven: No   | tigidh saylada yucub shaqlaha 
+[2025-11-19] EXPENSE      | 5000     | (-) | Cust: No   | Ven: No   | c waasac
+[2025-11-20] EXPENSE      | 650      | (-) | Cust: No   | Ven: No   | Material expense - 2025-12-07
+[2025-11-20] EXPENSE      | 62550    | (-) | Cust: No   | Ven: No   | Material expense - 2025-12-07
+[2025-11-20] EXPENSE      | 1300     | (-) | Cust: No   | Ven: No   | Taxi/Xamaal - Xamaal
+[2025-11-21] INCOME       | 210000   | (+) | Cust: 64dcebfb-9504-4d1c-a6de-489c076cc9c1 | Ven: No   | Advance Payment for Project: Saylada Yucub
+[2025-11-21] INCOME       | 210000   | (+) | Cust: 64dcebfb-9504-4d1c-a6de-489c076cc9c1 | Ven: No   | Advance Payment for Project: Saylada Dalaad
+[2025-11-30] EXPENSE      | 5000     | (-) | Cust: No   | Ven: No   | mulugeta
+[2025-11-30] EXPENSE      | 66990    | (-) | Cust: No   | Ven: 0bc9059c-54ab-4c42-9a9d-7808787dd8ac | Material expense - 2026-01-27
+[2025-11-30] TRANSFER_OUT | 16353.21 | (-) | Cust: No   | Ven: No   | Wareejin: Transfer to wallet (Loo Wareejiyay: E-Birr)
+[2025-11-30] EXPENSE      | 5000     | (-) | Cust: No   | Ven: No   | c waasa 
+[2025-12-01] EXPENSE      | 22000    | (-) | Cust: No   | Ven: No   | Material expense - 2025-12-11
+[2025-12-01] EXPENSE      | 7000     | (-) | Cust: No   | Ven: No   | Material expense - 2025-12-01
+[2025-12-03] TRANSFER_OUT | 44145    | (-) | Cust: No   | Ven: No   | Wareejin: transfer (Loo Wareejiyay: E-Birr)
+[2025-12-06] EXPENSE      | 800      | (-) | Cust: No   | Ven: No   | Material expense - 2025-12-11
+[2025-12-06] EXPENSE      | 2200     | (-) | Cust: No   | Ven: No   | Material expense - 2025-12-11
+[2025-12-06] EXPENSE      | 17000    | (-) | Cust: No   | Ven: 0bc9059c-54ab-4c42-9a9d-7808787dd8ac | Material expense - 2026-01-27
+[2025-12-06] DEBT_GIVEN   | 2750     | (-) | Cust: 859e95e5-b19f-4f4c-a0d7-563f197a583a | Ven: No   | 
+[2025-12-07] EXPENSE      | 700      | (-) | Cust: No   | Ven: No   | riinjiile
+[2025-12-07] EXPENSE      | 700      | (-) | Cust: No   | Ven: No   | riinjiile
+[2025-12-08] EXPENSE      | 3100     | (-) | Cust: No   | Ven: No   | laxaamadle 
+[2025-12-08] EXPENSE      | 3000     | (-) | Cust: No   | Ven: No   | c waasc
+[2025-12-08] EXPENSE      | 2000     | (-) | Cust: No   | Ven: No   | riinjile 
+[2025-12-09] EXPENSE      | 1820     | (-) | Cust: No   | Ven: No   | Material expense - 2025-12-11
+[2025-12-09] EXPENSE      | 300      | (-) | Cust: No   | Ven: No   | Taxi/Xamaal - Taxi
+[2025-12-09] EXPENSE      | 2000     | (-) | Cust: No   | Ven: No   | riinjiile
+[2025-12-09] EXPENSE      | 25500    | (-) | Cust: No   | Ven: No   | Material expense - 2025-12-11
+[2025-12-09] EXPENSE      | 2000     | (-) | Cust: No   | Ven: No   | riinjiile
+[2025-12-09] EXPENSE      | 3730     | (-) | Cust: No   | Ven: No   | --
+[2025-12-09] EXPENSE      | 400      | (-) | Cust: No   | Ven: No   | Taxi/Xamaal - Xamaal
+[2025-12-10] INCOME       | 130000   | (+) | Cust: 1041c26f-3736-4f99-a3ee-5f32bfd4d367 | Ven: No   | Advance Payment for Project: Eng Ahmed Site
+[2025-12-22] EXPENSE      | 3000     | (-) | Cust: No   | Ven: No   | Taxi/Xamaal - Xamaal
+[2025-12-25] EXPENSE      | 3000     | (-) | Cust: No   | Ven: 0bc9059c-54ab-4c42-9a9d-7808787dd8ac | Material expense - 2026-01-22
+[2025-12-30] EXPENSE      | 2500     | (-) | Cust: No   | Ven: No   | riinjiile 
+[2025-12-30] DEBT_REPAID  | 30000    | (-) | Cust: No   | Ven: No   | day kasoo xarootay
+[2025-12-31] INCOME       | 280000   | (+) | Cust: No   | Ven: No   | xafiiska cusub bay kasoo xarootay 
+[2025-12-31] EXPENSE      | 15950    | (-) | Cust: No   | Ven: 0bc9059c-54ab-4c42-9a9d-7808787dd8ac | Material expense - 2026-01-20
+[2026-01-01] EXPENSE      | 1700     | (-) | Cust: No   | Ven: 0bc9059c-54ab-4c42-9a9d-7808787dd8ac | Material expense - 2026-01-20
+[2026-01-02] EXPENSE      | 300      | (-) | Cust: No   | Ven: No   | 
+[2026-01-03] EXPENSE      | 10000    | (-) | Cust: No   | Ven: No   | maxaari laxamaadle
+[2026-01-06] INCOME       | 60000    | (+) | Cust: No   | Ven: No   | lacag qabasho saylada yucub
+[2026-01-25] INCOME       | 80000    | (+) | Cust: 44731e3e-5919-47af-a9e5-94bbba2ee75c | Ven: No   | Advance Payment for Project: masjid hoob kutubsar
+[2026-02-01] TRANSFER_OUT | 5000     | (-) | Cust: No   | Ven: No   | Wareejin: to wallet (Loo Wareejiyay: E-Birr)
+[2026-02-01] EXPENSE      | 84       | (-) | Cust: No   | Ven: No   | Khidmad Wareejin: To Wallet
+[2026-02-01] TRANSFER_OUT | 5300     | (-) | Cust: No   | Ven: No   | Wareejin: To Wallet (Loo Wareejiyay: E-Birr)
+[2026-02-01] EXPENSE      | 85.1     | (-) | Cust: No   | Ven: No   | Khidmad Wareejin: To Wallet
+[2026-02-01] TRANSFER_OUT | 20000    | (-) | Cust: No   | Ven: No   | Wareejin: trn (Loo Wareejiyay: E-Birr)
+[2026-02-01] EXPENSE      | 20000    | (-) | Cust: No   | Ven: No   | 
+[2026-02-01] EXPENSE      | 300      | (-) | Cust: No   | Ven: No   | 
+[2026-02-01] EXPENSE      | 2700     | (-) | Cust: No   | Ven: No   | 
+[2026-02-01] TRANSFER_OUT | 10000    | (-) | Cust: No   | Ven: No   | Wareejin: To Wallet (Loo Wareejiyay: E-Birr)
+[2026-02-02] EXPENSE      | 6500     | (-) | Cust: No   | Ven: No   | 
+[2026-02-02] EXPENSE      | 5600     | (-) | Cust: No   | Ven: No   | Salary payment for hamse maolin amiin - 2026-02-10
+[2026-02-02] EXPENSE      | 7000     | (-) | Cust: No   | Ven: No   | 
+[2026-02-02] EXPENSE      | 6000     | (-) | Cust: No   | Ven: No   | shidaal hilux
+[2026-02-02] EXPENSE      | 12000    | (-) | Cust: No   | Ven: No   | Salary payment for Ahmad  - 2026-02-07
+[2026-02-02] DEBT_REPAID  | 60000    | (+) | Cust: 5f7f439e-0608-4554-b6a4-48dbc9d8a59e | Ven: No   | dayn kaso xarootay 
+[2026-02-02] EXPENSE      | 9000     | (-) | Cust: No   | Ven: 0bc9059c-54ab-4c42-9a9d-7808787dd8ac | Material expense - 2026-02-06
+[2026-02-02] DEBT_GIVEN   | 60000    | (-) | Cust: 06ac2ccd-c01a-4552-b992-cb457ba71abb | Ven: No   | 
+[2026-02-02] EXPENSE      | 6000     | (-) | Cust: No   | Ven: No   | riinjiile 
+[2026-02-03] EXPENSE      | 2000     | (-) | Cust: No   | Ven: No   | abal ahmed mohamed
+[2026-02-03] EXPENSE      | 38870    | (-) | Cust: No   | Ven: No   | 
+[2026-02-03] EXPENSE      | 2000     | (-) | Cust: No   | Ven: No   | Salary payment for Ahmed Mohamed - 2026-02-10
+[2026-02-03] EXPENSE      | 18000    | (-) | Cust: No   | Ven: No   | 
+[2026-02-03] EXPENSE      | 1350     | (-) | Cust: No   | Ven: No   | riinjiille
+[2026-02-03] EXPENSE      | 10000    | (-) | Cust: No   | Ven: No   | c waasac ba ka shaqeeyay albaabada 
+[2026-02-06] EXPENSE      | 6000     | (-) | Cust: No   | Ven: No   | albaabada ka shaqeeyay 
+[2026-02-07] DEBT_GIVEN   | 10000    | (-) | Cust: 06ac2ccd-c01a-4552-b992-cb457ba71abb | Ven: No   | 
+[2026-02-07] EXPENSE      | 10000    | (-) | Cust: No   | Ven: No   | 
+[2026-02-12] EXPENSE      | 2000     | (-) | Cust: No   | Ven: No   | riijiile 
+[2026-02-12] EXPENSE      | 2000     | (-) | Cust: No   | Ven: No   | riijiile 
+[2026-02-16] DEBT_REPAID  | 7000     | (+) | Cust: 64dcebfb-9504-4d1c-a6de-489c076cc9c1 | Ven: No   | MAGCC dayn kaso xarotay 
+[2026-02-17] EXPENSE      | 5000     | (-) | Cust: No   | Ven: No   | riijilile 
+[2026-02-17] DEBT_RECEIVED | 48000    | (+) | Cust: 748f08ac-ff43-47a6-9dd1-173ee09b96e7 | Ven: No   | dayn xaawo laga qaatay 
+[2026-02-17] EXPENSE      | 500      | (-) | Cust: No   | Ven: No   | taxi
+[2026-02-17] EXPENSE      | 700      | (-) | Cust: No   | Ven: c265eb36-cd0b-4ff9-a387-a85ace2c993d | Material expense - 2026-02-19
+[2026-02-17] EXPENSE      | 300      | (-) | Cust: No   | Ven: c265eb36-cd0b-4ff9-a387-a85ace2c993d | Material expense - 2026-02-19
+[2026-02-18] DEBT_GIVEN   | 100000   | (-) | Cust: 06ac2ccd-c01a-4552-b992-cb457ba71abb | Ven: No   | 
+[2026-02-18] INCOME       | 1000000  | (+) | Cust: 59705c85-d71e-4d23-8b05-4b75791fee18 | Ven: No   | Advance Payment for Project: Dhobawayn albabada loxa
+[2026-02-18] DEBT_GIVEN   | 90000    | (-) | Cust: 859e95e5-b19f-4f4c-a0d7-563f197a583a | Ven: No   | 
+[2026-02-18] EXPENSE      | 800000   | (-) | Cust: No   | Ven: 75afce44-6300-403b-98f9-7aa005cfd791 | Material expense - 2026-02-21
+[2026-02-21] DEBT_REPAID  | 30000    | (+) | Cust: 5f7f439e-0608-4554-b6a4-48dbc9d8a59e | Ven: No   | dayn kaso xarootay 
+[2026-02-22] EXPENSE      | 20000    | (-) | Cust: No   | Ven: No   | albaabada looxa
+[2026-02-24] EXPENSE      | 5000     | (-) | Cust: No   | Ven: No   | Expense: bare loo diray  

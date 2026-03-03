@@ -38,6 +38,28 @@ export async function GET(request: Request) {
         }
       }
     });
+    const totalProjectAdvancesThisMonth = monthlyProjectsAdvanceResult._sum.advancePaid ? Number(monthlyProjectsAdvanceResult._sum.advancePaid) : 0;
+
+    const monthlyTransactions = await prisma.transaction.findMany({
+      where: {
+        transactionDate: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
+        companyId,
+      },
+    });
+
+    const allTransactions = await prisma.transaction.findMany({
+      where: { companyId }
+    });
+
+    let totalIncome = totalProjectAdvances;
+    let totalExpenses = 0;
+
+    let totalIncomeThisMonth = totalProjectAdvancesThisMonth;
+    let totalExpensesThisMonth = 0;
+
     let totalCashInflow = totalProjectAdvances;
     let totalCashOutflow = 0;
     let totalPayablesReceived = 0;
@@ -175,6 +197,7 @@ export async function GET(request: Request) {
         totalExpensesThisMonth: totalExpensesThisMonth,
         totalExpenses: totalExpenses,
         totalCashInflow: totalCashInflow,
+        totalCashOutflow: totalCashOutflow,
         totalCashOutflowThisMonth: totalCashOutflowThisMonth,
         totalPayablesReceived: totalPayablesReceived,
         totalPayablesReceivedThisMonth: totalPayablesReceivedThisMonth,

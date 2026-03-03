@@ -1,0 +1,50 @@
+[
+  {
+    "id": "e5fb2863-0c29-4153-b6f2-3c866441b8e5",
+    "name": "CBE",
+    "balance": "0",
+    "companyId": "cecb8c98-315a-4e69-9f1a-6a00dafd3aab"
+  },
+  {
+    "id": "5ee02434-8433-47e6-b691-a4cd8f9e399b",
+    "name": "CBE",
+    "balance": "36320",
+    "companyId": "d22beba9-b3c3-40a5-8375-6ad7d7794265"
+  },
+  {
+    "id": "c8306c05-5279-4b05-b5fc-dda41c793a77",
+    "name": "CBE",
+    "balance": "-59976.31999999995",
+    "companyId": "081fb675-b41e-4cea-92f7-50a5eb3e6f1e"
+  },
+  {
+    "id": "42c2a044-bd18-4e5d-8caa-08eca994f197",
+    "name": "CBE",
+    "balance": "0",
+    "companyId": "582c2ab0-ca90-4fc3-8401-1795fe49d5f0"
+  },
+  {
+    "id": "f521b23b-6704-405c-ada4-07d81dcf4ff9",
+    "name": "CBE",
+    "balance": "0",
+    "companyId": "60d5a3be-8c77-43fa-b17b-66c10c0ec5a1"
+  },
+  {
+    "id": "b56b13ee-cfc8-4ffa-aeb3-5f063f513a2b",
+    "name": "CBE",
+    "balance": "39669",
+    "companyId": "009c7dd5-c36d-415b-8d43-f1bfa7add031"
+  },
+  {
+    "id": "1926de4c-c595-4f87-a036-b83a7381a19c",
+    "name": "CBE",
+    "balance": "-11000",
+    "companyId": "22505fc4-6e8e-45e3-af22-6ad3037239f7"
+  },
+  {
+    "id": "cb554d57-1bdf-4332-b06c-19ab4672fe4d",
+    "name": "CBE",
+    "balance": "0",
+    "companyId": "8ae29f0b-b220-4010-a5f1-8812a45ead34"
+  }
+]

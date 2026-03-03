@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import Layout from '@/components/layouts/Layout';
+import Layout from '../../components/layouts/Layout';
 import {
   ArrowLeft, Landmark, Plus, Search, Filter, Calendar, List, LayoutGrid,
   DollarSign, CreditCard, Banknote, RefreshCw, Eye, Edit, Trash2,
@@ -12,10 +12,12 @@ import {
   User as UserIcon, Briefcase as BriefcaseIcon, Tag as TagIcon,
   Coins, Repeat, ReceiptText, Users, Building, Package, Scale, Truck, Mail, Phone, HardDrive // Added HardDrive for fixed assets
 } from 'lucide-react';
-import Toast from '@/components/common/Toast';
+import Toast from '../../components/common/Toast';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import TransactionRow from '@/components/accounting/TransactionRow';
-import MobileTransactionCard from '@/components/accounting/MobileTransactionCard';
+import TransactionRow from '../../components/accounting/TransactionRow';
+import MobileTransactionCard from '../../components/accounting/MobileTransactionCard';
+
+
 
 // --- Data Interfaces (Refined for API response) ---
 interface Account {
@@ -52,8 +54,6 @@ interface OverviewStats {
   totalExpenses: number; // Total expenses (all time, excluding fixed assets)
   fixedAssetExpenses?: number; // Fixed asset expenses (all time)
   fixedAssetExpensesThisMonth?: number; // Fixed asset expenses this month
-  totalPayablesReceived?: number; // Total loans taken (all time)
-  totalPayablesReceivedThisMonth?: number; // Total loans taken this month
   netFlowThisMonth: number;
   totalBankAccounts: number;
   totalCashAccounts: number;
@@ -113,7 +113,7 @@ const AccountRow: React.FC<{ account: Account; onEdit: (id: string) => void; onD
     <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-semibold text-right">ETB {account.balance.toLocaleString()}</td>
     <td className="p-4 whitespace-nowrap text-right">
       <div className="flex items-center justify-end space-x-2">
-        <Link href={`/projects/accounting/accounts/${account.id}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View Details">
+        <Link href={`/accounting/accounts/${account.id}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View Details">
           <Eye size={18} />
         </Link>
         <button onClick={() => onEdit(account.id)} className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit Account">
@@ -145,11 +145,11 @@ export default function AccountingPage() {
     setPageLoading(true);
     try {
       const [statsResponse, accountsResponse, transactionsResponse, debtTransactionsResponse, projectDebtTransactionsResponse] = await Promise.all([
-        fetch('/api/projects/accounting/reports'), // Fetch overview stats from new reports API
-        fetch('/api/projects/accounting/accounts'),
-        fetch('/api/projects/accounting/transactions?limit=5'), // Fetch only recent 5 transactions
-        fetch('/api/projects/accounting/transactions?includeDebts=true&limit=10'), // Fetch debt transactions
-        fetch('/api/projects/accounting/transactions?includeProjectDebts=true&limit=15') // Fetch project debt transactions
+        fetch('/api/accounting/reports'), // Fetch overview stats from new reports API
+        fetch('/api/accounting/accounts'),
+        fetch('/api/accounting/transactions?limit=5'), // Fetch only recent 5 transactions
+        fetch('/api/accounting/transactions?includeDebts=true&limit=10'), // Fetch debt transactions
+        fetch('/api/accounting/transactions?includeProjectDebts=true&limit=15') // Fetch project debt transactions
       ]);
 
       const statsData = await statsResponse.json();
@@ -176,8 +176,6 @@ export default function AccountingPage() {
         totalExpenses: statsData.totalExpenses, // Total expenses (all time, excluding fixed assets)
         fixedAssetExpenses: statsData.fixedAssetExpenses || 0, // Fixed asset expenses (all time)
         fixedAssetExpensesThisMonth: statsData.fixedAssetExpensesThisMonth || 0, // Fixed asset expenses this month
-        totalPayablesReceived: statsData.totalPayablesReceived || 0,
-        totalPayablesReceivedThisMonth: statsData.totalPayablesReceivedThisMonth || 0,
         netFlowThisMonth: statsData.netFlowThisMonth,
         totalBankAccounts: statsData.totalBankAccounts,
         totalCashAccounts: statsData.totalCashAccounts,
@@ -189,7 +187,7 @@ export default function AccountingPage() {
       setRecentTransactions(transactionsData.transactions); // Data already converted to Number in API
 
       // NEW: Fetch debts report (true aggregation)
-      const debtsReportRes = await fetch('/api/projects/accounting/reports/debts');
+      const debtsReportRes = await fetch('/api/reports/debts');
       const debtsReport = await debtsReportRes.json();
       const allDebts = debtsReport.debts || [];
 
@@ -212,13 +210,13 @@ export default function AccountingPage() {
   };
 
   const handleEditAccount = (id: string) => {
-    router.push(`/projects/accounting/accounts/edit/${id}`); // Navigate to edit account page
+    router.push(`/accounting/accounts/edit/${id}`); // Navigate to edit account page
   };
 
   const handleDeleteAccount = async (id: string) => {
     if (window.confirm('Ma hubtaa inaad tirtirto account-kan? Tan lama soo celin karo!')) {
       try {
-        const response = await fetch(`/api/projects/accounting/accounts/${id}`, {
+        const response = await fetch(`/api/accounting/accounts/${id}`, {
           method: 'DELETE',
         });
         const data = await response.json();
@@ -234,13 +232,13 @@ export default function AccountingPage() {
   };
 
   const handleEditTransaction = (id: string) => {
-    router.push(`/projects/accounting/transactions/edit/${id}`); // Navigate to edit transaction page
+    router.push(`/accounting/transactions/edit/${id}`); // Navigate to edit transaction page
   };
 
   const handleDeleteTransaction = async (id: string) => {
     if (window.confirm('Ma hubtaa inaad tirtirto dhaqdhaqaaqan lacagta ah? Tan lama soo celin karo!')) {
       try {
-        const response = await fetch(`/api/projects/accounting/transactions/${id}`, {
+        const response = await fetch(`/api/accounting/transactions/${id}`, {
           method: 'DELETE',
         });
         const data = await response.json();
@@ -349,7 +347,7 @@ export default function AccountingPage() {
         </div>
         <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
           <Link
-            href="/projects/accounting/transactions/add"
+            href="/accounting/transactions/add"
             className="group relative inline-flex items-center justify-center px-6 py-3 text-base font-semibold text-white transition-all duration-200 bg-primary rounded-xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary shadow-lg hover:shadow-xl hover:-translate-y-0.5"
           >
             <div className="p-1.5 bg-white/20 rounded-lg mr-3 group-hover:bg-white/30 transition-colors">
@@ -359,7 +357,7 @@ export default function AccountingPage() {
           </Link>
 
           <Link
-            href="/projects/accounting/transactions/transfer"
+            href="/accounting/transactions/transfer"
             className="group relative inline-flex items-center justify-center px-6 py-3 text-base font-semibold text-white transition-all duration-200 bg-emerald-600 rounded-xl hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-600 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
           >
             <div className="p-1.5 bg-white/20 rounded-lg mr-3 group-hover:bg-white/30 transition-colors">
@@ -447,37 +445,19 @@ export default function AccountingPage() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 border-l-4 border-orange-600">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 border-l-4 border-orange-500">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center">
-                  <div className="w-10 h-10 bg-orange-600/10 rounded-full flex items-center justify-center mr-3">
-                    <Scale size={20} className="text-orange-600" />
+                  <div className="w-10 h-10 bg-orange-500/10 rounded-full flex items-center justify-center mr-3">
+                    <Scale size={20} className="text-orange-500" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-darkGray dark:text-gray-100">Payables (Dayn la Qaatay)</h4>
-                    <p className="text-xs text-mediumGray dark:text-gray-400">Total Loans</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-xl font-bold text-orange-600">{overviewStats.totalPayablesReceived?.toLocaleString() || 0}</p>
-                  <p className="text-xs text-mediumGray dark:text-gray-400">ETB</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 border-l-4 border-orange-400">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-orange-400/10 rounded-full flex items-center justify-center mr-3">
-                    <ClockIcon size={20} className="text-orange-400" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-darkGray dark:text-gray-100">Activity (Deyn)</h4>
+                    <h4 className="font-semibold text-darkGray dark:text-gray-100">Dhaqdhaqaaqa Deynta</h4>
                     <p className="text-xs text-mediumGray dark:text-gray-400">Debt Activity</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-xl font-bold text-orange-400">{debtTransactions.length}</p>
+                  <p className="text-xl font-bold text-orange-500">{debtTransactions.length}</p>
                   <p className="text-xs text-mediumGray dark:text-gray-400">Total</p>
                 </div>
               </div>
@@ -499,7 +479,7 @@ export default function AccountingPage() {
           </div>
 
           {/* Desktop Design - Enhanced Cards */}
-          <div className="hidden lg:grid lg:grid-cols-6 gap-6 mb-8 animate-fade-in-up">
+          <div className="hidden lg:grid lg:grid-cols-5 gap-6 mb-8 animate-fade-in-up">
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300 border-l-4 border-primary">
               <div className="flex items-center justify-center mb-3">
                 <DollarSign size={20} className="text-primary mr-2" />
@@ -512,10 +492,10 @@ export default function AccountingPage() {
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300 border-l-4 border-secondary">
               <div className="flex items-center justify-center mb-3">
                 <TrendingUp size={20} className="text-secondary mr-2" />
-                <h4 className="text-base font-semibold text-mediumGray dark:text-gray-400">Dakhliga Shaqada</h4>
+                <h4 className="text-base font-semibold text-mediumGray dark:text-gray-400">Wadarta Dakhliga</h4>
               </div>
               <p className="text-2xl font-extrabold text-secondary">{overviewStats.totalIncome.toLocaleString()} ETB</p>
-              <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Operating Income</p>
+              <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Total Income</p>
             </div>
 
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300 border-l-4 border-redError">
@@ -524,33 +504,24 @@ export default function AccountingPage() {
                 <h4 className="text-base font-semibold text-mediumGray dark:text-gray-400">Wadarta Kharashyada</h4>
               </div>
               <p className="text-2xl font-extrabold text-redError">{overviewStats.totalExpenses.toLocaleString()} ETB</p>
-              <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Total Expenses (no Assets)</p>
+              <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Total Expenses (ma jiraan Hantida)</p>
             </div>
 
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300 border-l-4 border-purple-500">
               <div className="flex items-center justify-center mb-3">
                 <HardDrive size={20} className="text-purple-500 mr-2" />
-                <h4 className="text-base font-semibold text-mediumGray dark:text-gray-400">Hantida Go'an</h4>
+                <h4 className="text-base font-semibold text-mediumGray dark:text-gray-400">Kharashyada Hantida Go'an</h4>
               </div>
               <p className="text-2xl font-extrabold text-purple-500">{overviewStats.fixedAssetExpenses?.toLocaleString() || 0} ETB</p>
-              <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Fixed Asset Assets</p>
+              <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Fixed Asset Expenses</p>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300 border-l-4 border-orange-600">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300 border-l-4 border-orange-500">
               <div className="flex items-center justify-center mb-3">
-                <Scale size={20} className="text-orange-600 mr-2" />
-                <h4 className="text-base font-semibold text-mediumGray dark:text-gray-400">Payables (Deyn)</h4>
+                <Scale size={20} className="text-orange-500 mr-2" />
+                <h4 className="text-base font-semibold text-mediumGray dark:text-gray-400">Dhaqdhaqaaqa Deynta</h4>
               </div>
-              <p className="text-2xl font-extrabold text-orange-600">{overviewStats.totalPayablesReceived?.toLocaleString() || 0} ETB</p>
-              <p className="text-sm text-mediumGray dark:text-gray-400 mt-1">Total Loans Received</p>
-            </div>
-
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-all duration-300 border-l-4 border-orange-400">
-              <div className="flex items-center justify-center mb-3">
-                <ClockIcon size={20} className="text-orange-400 mr-2" />
-                <h4 className="text-base font-semibold text-mediumGray dark:text-gray-400">Activity (Deyn)</h4>
-              </div>
-              <p className="text-2xl font-extrabold text-orange-400">{debtTransactions.length}</p>
+              <p className="text-2xl font-extrabold text-orange-500">{debtTransactions.length}</p>
               <div className="text-sm text-mediumGray dark:text-gray-400 mt-1 space-y-1">
                 <p>{debtTransactions.filter(t => t.type === 'DEBT_TAKEN').length} Qaatay</p>
                 <p>{debtTransactions.filter(t => t.type === 'DEBT_REPAID').length} Bixiyay</p>
@@ -1017,7 +988,7 @@ export default function AccountingPage() {
                     Wali ma jiraan dhaqdhaqaaq lacag ah oo dhawaan la sameeyay.
                   </p>
                   <Link
-                    href="/projects/accounting/transactions/add"
+                    href="/accounting/transactions/add"
                     className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
                   >
                     <Plus size={18} className="mr-2" />
@@ -1061,7 +1032,7 @@ export default function AccountingPage() {
 
               <div className="mt-6 lg:mt-8 text-center">
                 <Link
-                  href="/projects/accounting/transactions"
+                  href="/accounting/transactions"
                   className="inline-flex items-center px-6 py-3 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg font-medium transition-all duration-200"
                 >
                   Fiiri Dhammaan Dhaqdhaqaaqa
@@ -1219,7 +1190,7 @@ export default function AccountingPage() {
                     Wali ma jiraan accounts lacag ah oo la helay.
                   </p>
                   <Link
-                    href="/projects/accounting/accounts/add"
+                    href="/accounting/accounts/add"
                     className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
                   >
                     <Plus size={18} className="mr-2" />
@@ -1240,7 +1211,7 @@ export default function AccountingPage() {
                             </h4>
                           </div>
                           <div className="flex space-x-2 flex-shrink-0 ml-2">
-                            <Link href={`/projects/accounting/accounts/${acc.id}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View">
+                            <Link href={`/accounting/accounts/${acc.id}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View">
                               <Eye size={16} />
                             </Link>
                             <button onClick={() => handleEditAccount(acc.id)} className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit">
@@ -1296,7 +1267,7 @@ export default function AccountingPage() {
 
               <div className="mt-6 lg:mt-8 text-center">
                 <Link
-                  href="/projects/accounting/accounts/add"
+                  href="/accounting/accounts/add"
                   className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
                 >
                   <Plus size={18} className="mr-2" />
@@ -1472,7 +1443,7 @@ export default function AccountingPage() {
                     Wali ma jiraan dhaqdhaqaaq lacag ah oo dhawaan la sameeyay.
                   </p>
                   <Link
-                    href="/projects/accounting/transactions/add"
+                    href="/accounting/transactions/add"
                     className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
                   >
                     <Plus size={18} className="mr-2" />
@@ -1509,7 +1480,7 @@ export default function AccountingPage() {
 
               <div className="mt-8 text-center">
                 <Link
-                  href="/projects/accounting/transactions"
+                  href="/accounting/transactions"
                   className="inline-flex items-center px-6 py-3 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg font-medium transition-all duration-200"
                 >
                   Fiiri Dhammaan Dhaqdhaqaaqa
@@ -1592,7 +1563,7 @@ export default function AccountingPage() {
                     Wali ma jiraan accounts lacag ah oo la helay.
                   </p>
                   <Link
-                    href="/projects/accounting/accounts/add"
+                    href="/accounting/accounts/add"
                     className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
                   >
                     <Plus size={18} className="mr-2" />
@@ -1627,7 +1598,7 @@ export default function AccountingPage() {
 
               <div className="mt-8 text-center">
                 <Link
-                  href="/projects/accounting/accounts/add"
+                  href="/accounting/accounts/add"
                   className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
                 >
                   <Plus size={18} className="mr-2" />
@@ -1725,7 +1696,7 @@ export default function AccountingPage() {
                     Deynta dhammaan mashaariicdu waa la bixiyay ama lama helin wax deyn mashruuc ah.
                   </p>
                   <Link
-                    href="/projects/accounting/transactions/add"
+                    href="/accounting/transactions/add"
                     className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 font-medium"
                   >
                     <Plus size={18} className="mr-2" />
