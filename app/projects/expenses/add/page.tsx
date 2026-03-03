@@ -420,7 +420,7 @@ function AddExpenseContent() {
         return;
       }
       try {
-        const res = await fetch(`/api/employees/${selectedEmployeeForSalary}`);
+        const res = await fetch(`/api/projects/employees/${selectedEmployeeForSalary}`);
         if (res.ok) {
           const data = await res.json();
           setSelectedEmployeeApiData(data.employee);

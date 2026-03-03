@@ -22,9 +22,8 @@ export async function POST(req: NextRequest) {
         const base64Data = Buffer.from(buffer).toString('base64');
         const mimeType = file.type || 'image/jpeg';
 
-        // Define model options to try in order
-        // gemini-2.0-flash gave 429 (limit 0). trying gemini-flash-latest
-        const models = ['gemini-flash-latest', 'gemini-1.5-flash-latest', 'gemini-pro-vision'];
+        // Define model options to try in order (Must use official Google API names)
+        const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
 
         // Prompt
         const promptText = `

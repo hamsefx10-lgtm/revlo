@@ -61,7 +61,7 @@ export async function POST(request: Request) {
         remainingAmount: parseFloat(agreementAmount) - parseFloat(advancePaid || 0),
         projectType,
         status: PROJECT_STATUSES?.ACTIVE || 'ACTIVE',
-        startDate: startDate ? new Date(startDate) : new Date(), // ✅ Save startDate
+        startDate: startDate ? new Date(`${startDate}T12:00:00Z`) : new Date(), // ✅ Mideeynta taariikhda si looga hortago timezones
         expectedCompletionDate: new Date(expectedCompletionDate),
         notes,
         customerId,
@@ -71,8 +71,8 @@ export async function POST(request: Request) {
 
     // Haddii advancePayments la keenay, samee transaction iyo update account balance
     if (advancePayments && Array.isArray(advancePayments) && advancePayments.length > 0) {
-      // ✅ Use startDate for all advance payment transactions
-      const paymentTransactionDate = startDate ? new Date(startDate) : new Date();
+      // ✅ Use startDate for all advance payment transactions with fixed timezone parsing
+      const paymentTransactionDate = startDate ? new Date(`${startDate}T12:00:00Z`) : new Date();
 
       for (const adv of advancePayments) {
         if (!adv.accountId || !adv.amount || isNaN(Number(adv.amount)) || Number(adv.amount) <= 0) continue;

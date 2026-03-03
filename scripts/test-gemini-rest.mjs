@@ -9,8 +9,7 @@ async function testRest() {
         console.error("No API Key");
         return;
     }
-
-    const models = ['gemini-2.0-flash'];
+    const models = ['gemini-2.5-flash', 'gemini-2.0-flash'];
 
     for (const model of models) {
         console.log(`\nTesting REST API for: ${model}...`);
