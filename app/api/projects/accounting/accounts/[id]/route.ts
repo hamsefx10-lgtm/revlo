@@ -6,7 +6,6 @@ import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 
 // GET /api/projects/accounting/accounts/[id] - Soo deji account gaar ah
 export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const { recalculateAccountBalance } = await import('@/lib/accounting');
   try {
     const { id } = params;
     const { getServerSession } = await import('next-auth/next');
@@ -107,16 +106,12 @@ export async function GET(request: Request, { params }: { params: { id: string }
     }
 
     // CRITICAL UPDATE: The user requested to decouple the transaction history recalculator from the account balance.
-    // CRITICAL UPDATE: Restoring recalculateAccountBalance
-    // After fixing the DEBT_REPAID vendorId logic flaw in lib/accounting.ts,
-    // the recalculator is safe to use and accurately mathematically corrects the balance
-    // based on real transactions without anomalies.
-    const verifiedBalance = await recalculateAccountBalance(id);
+    // We are now keeping the balance exactly as it is in the database, relying purely on future transactions to change it.
+    // Therefore, recalculateAccountBalance(id) has been disabled.
 
     // Pass the fully constructed history sorted ascending (oldest first to make running balance visually logical)
     const processedAccount = {
       ...account,
-      balance: verifiedBalance,
       transactions: history, // Removed .reverse() to fix visual running balance
       fromTransactions: [], // deprecated, all in history now
       toTransactions: [],   // deprecated, all in history now

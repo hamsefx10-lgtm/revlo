@@ -9,7 +9,7 @@ import {
   ArrowLeft, Plus, Search, Filter, Calendar, List, LayoutGrid,
   DollarSign, CreditCard, Banknote, RefreshCw, Eye, Edit, Trash2, Coins, Loader2,
   TrendingUp, TrendingDown, Info as InfoIcon, CheckCircle, XCircle, Clock as ClockIcon,
-  User as UserIcon, Briefcase as BriefcaseIcon, Tag as TagIcon, ChevronRight, Repeat // General icons for tables
+  User as UserIcon, Briefcase as BriefcaseIcon, Tag as TagIcon, ChevronRight, Repeat, FileX2, Download, Component // Added FileX2, Download, Component
 } from 'lucide-react';
 import Toast from '@/components/common/Toast';
 
@@ -26,14 +26,25 @@ interface Account {
 
 // --- Account Table Row Component ---
 const AccountRow: React.FC<{ account: Account; onEdit: (id: string) => void; onDelete: (id: string) => void }> = ({ account, onEdit, onDelete }) => (
-  <tr className="hover:bg-lightGray dark:hover:bg-gray-700 transition-colors duration-150 border-b border-lightGray dark:border-gray-700 last:border-b-0">
-    <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-medium flex items-center space-x-2">
-      <Banknote size={18} className="text-primary" /> <span>{account.name}</span>
+  <tr className="block md:table-row border-b md:border-b-0 border-lightGray dark:border-gray-700 mb-4 md:mb-0 rounded-lg md:rounded-none bg-white dark:bg-gray-800 md:bg-transparent shadow-md md:shadow-none md:hover:bg-lightGray/50 dark:md:hover:bg-gray-700/50 transition-colors duration-150">
+    <td data-label="Account" className="p-3 md:p-4 flex justify-between items-center md:table-cell text-left font-bold text-lg md:font-medium md:text-base text-darkGray dark:text-gray-100 whitespace-nowrap border-b md:border-b-0 border-lightGray dark:border-gray-700/50">
+      <div className="flex items-center space-x-2">
+        <Banknote size={18} className="text-primary hidden md:block" />
+        <span className="md:hidden text-primary font-bold">{account.name}</span>
+        <span className="hidden md:inline">{account.name}</span>
+      </div>
     </td>
-    <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">{account.type}</td>
-    <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">{account.currency}</td>
-    <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-semibold text-right">${account.balance.toLocaleString()}</td>
-    <td className="p-4 whitespace-nowrap text-right">
+    <td data-label="Type" className="p-3 md:p-4 flex justify-between items-center md:table-cell text-left text-mediumGray dark:text-gray-300 whitespace-nowrap border-b md:border-b-0 border-lightGray dark:border-gray-700/50">
+      <span className="font-bold md:hidden">Type:</span> {account.type}
+    </td>
+    <td data-label="Currency" className="p-3 md:p-4 flex justify-between items-center md:table-cell text-left text-mediumGray dark:text-gray-300 whitespace-nowrap border-b md:border-b-0 border-lightGray dark:border-gray-700/50">
+      <span className="font-bold md:hidden">Currency:</span> {account.currency}
+    </td>
+    <td data-label="Balance" className="p-3 md:p-4 flex justify-between items-center md:table-cell text-left md:text-right font-bold text-secondary dark:text-green-400 whitespace-nowrap border-b md:border-b-0 border-lightGray dark:border-gray-700/50">
+      <span className="font-bold md:hidden text-darkGray dark:text-gray-300">Balance:</span>
+      ${account.balance.toLocaleString()}
+    </td>
+    <td className="p-3 md:p-4 md:table-cell text-right">
       <div className="flex items-center justify-end space-x-2">
         <Link href={`/projects/accounting/transactions/transfer?fromAccount=${account.id}`} className="p-2 rounded-full bg-green-500/10 text-green-600 hover:bg-green-500 hover:text-white transition-colors duration-200" title="Transfer Money" aria-label="Transfer Money">
           <Repeat size={18} />
@@ -41,9 +52,9 @@ const AccountRow: React.FC<{ account: Account; onEdit: (id: string) => void; onD
         <Link href={`/projects/accounting/accounts/${account.id}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View Details">
           <Eye size={18} />
         </Link>
-        <button onClick={() => onEdit(account.id)} className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit Account" aria-label="Edit Account">
+        {/* <button onClick={() => onEdit(account.id)} className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit Account" aria-label="Edit Account">
           <Edit size={18} />
-        </button>
+        </button> */}
         <button onClick={() => onDelete(account.id)} className="p-2 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-colors duration-200" title="Delete Account" aria-label="Delete Account">
           <Trash2 size={18} />
         </button>
@@ -53,35 +64,52 @@ const AccountRow: React.FC<{ account: Account; onEdit: (id: string) => void; onD
 );
 
 // --- Account Card Component (for Mobile View) ---
-const AccountCard: React.FC<{ account: Account; onEdit: (id: string) => void; onDelete: (id: string) => void }> = ({ account, onEdit, onDelete }) => (
-  <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md animate-fade-in-up border-l-4 border-primary relative">
-    <div className="flex justify-between items-start mb-3">
-      <h4 className="font-semibold text-darkGray dark:text-gray-100 text-lg flex items-center space-x-2">
-        <Banknote size={20} className="text-primary" /> <span>{account.name}</span>
-      </h4>
-      <div className="flex space-x-2 flex-shrink-0">
-        <button onClick={() => onEdit(account.id)} className="p-1 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit Account" aria-label="Edit Account">
+const AccountCard: React.FC<{ account: Account; onEdit: (id: string) => void; onDelete: (id: string) => void }> = ({ account, onEdit, onDelete }) => {
+  let borderColor = 'border-lightGray dark:border-gray-700';
+  if (account.type === 'BANK') borderColor = 'border-accent';
+  else if (account.type === 'MOBILE_MONEY') borderColor = 'border-primary';
+  else if (account.type === 'CASH') borderColor = 'border-darkGray';
+
+  return (
+    <div className={`bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg mb-4 border-l-4 ${borderColor} transform hover:scale-[1.02] hover:shadow-xl transition-all duration-300 flex flex-col justify-between`}>
+      <div>
+        <div className="flex justify-between items-start mb-3">
+          <div>
+            <h4 className="font-bold text-lg text-darkGray dark:text-gray-100 flex items-center gap-2">
+              <Banknote size={18} className="text-primary" /> {account.name}
+            </h4>
+            <span className="text-[10px] text-mediumGray font-bold uppercase tracking-wider block mt-1">{account.type}</span>
+          </div>
+          <span className="font-bold text-lg text-secondary dark:text-green-400">
+            ${account.balance.toLocaleString()}
+          </span>
+        </div>
+
+        <div className="space-y-2 text-sm text-mediumGray dark:text-gray-400">
+          <div className="flex items-center gap-2">
+            <Coins size={14} className="text-gray-400" />
+            <span>Currency: <span className="font-medium text-darkGray dark:text-gray-200">{account.currency}</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-end space-x-2 mt-4 pt-3 border-t border-lightGray dark:border-gray-700/50">
+        <Link href={`/projects/accounting/transactions/transfer?fromAccount=${account.id}`} className="p-2 rounded-full bg-green-500/10 text-green-600 hover:bg-green-500 hover:text-white transition-colors duration-200" title="Transfer Money" aria-label="Transfer Money">
+          <Repeat size={16} />
+        </Link>
+        <Link href={`/projects/accounting/accounts/${account.id}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View Details">
+          <Eye size={16} />
+        </Link>
+        {/* <button onClick={() => onEdit(account.id)} className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit Account" aria-label="Edit Account">
           <Edit size={16} />
-        </button>
-        <button onClick={() => onDelete(account.id)} className="p-1 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-colors duration-200" title="Delete Account" aria-label="Delete Account">
+        </button> */}
+        <button onClick={() => onDelete(account.id)} className="p-2 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-colors duration-200" title="Delete Account" aria-label="Delete Account">
           <Trash2 size={16} />
         </button>
       </div>
     </div>
-    <p className="text-sm text-mediumGray dark:text-gray-400 mb-1 flex items-center space-x-2">
-      <TagIcon size={14} /> <span>Nooca: {account.type}</span>
-    </p>
-    <p className="text-sm text-mediumGray dark:text-gray-400 mb-1 flex items-center space-x-2">
-      <Coins size={14} /> <span>Currency: {account.currency}</span>
-    </p>
-    <p className="text-sm text-mediumGray dark:text-gray-400 mb-1 flex items-center space-x-2">
-      <DollarSign size={14} /> <span>Balance: ${account.balance.toLocaleString()}</span>
-    </p>
-    <Link href={`/projects/accounting/accounts/${account.id}`} className="mt-3 inline-block text-primary hover:underline text-sm font-medium">
-      Fiiri Faahfaahin &rarr;
-    </Link>
-  </div>
-);
+  );
+};
 
 
 export default function AccountsPage() {
@@ -174,97 +202,101 @@ export default function AccountsPage() {
 
   return (
     <Layout>
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">
-          <Link href="/projects/accounting" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
-            <ArrowLeft size={28} className="inline-block" />
-          </Link>
-          Accounts
-        </h1>
-        <div className="flex space-x-3">
-          <Link href="/projects/accounting/accounts/add" className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center">
-            <Plus size={20} className="mr-2" /> Ku Dar Account
-          </Link>
-          <button onClick={fetchAccounts} className="bg-secondary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-green-600 transition duration-200 shadow-md flex items-center">
-            <RefreshCw size={20} className="mr-2" /> Cusboonaysii
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-bold text-darkGray dark:text-gray-100">
+            <Link href="/projects/accounting" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4 inline-block align-middle pb-1">
+              <ArrowLeft size={28} />
+            </Link>
+            Accounts
+          </h1>
+          <p className="text-mediumGray dark:text-gray-400 mt-1">Manage all your financial accounts from one place.</p>
+        </div>
+        <div className="flex gap-3 self-start md:self-center">
+          <button onClick={fetchAccounts} className="bg-secondary text-white py-2.5 px-4 rounded-lg font-bold hover:bg-green-600 transition duration-200 shadow-md flex items-center" title="Refresh">
+            <RefreshCw size={20} />
           </button>
+          <Link href="/projects/accounting/accounts/add" className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-lg hover:shadow-primary/40 flex items-center gap-2">
+            <Plus size={20} /> Ku Dar Account
+          </Link>
         </div>
       </div>
 
       {/* Account Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-fade-in-up">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">Wadarta Accounts-ka</h4>
-          <p className="text-3xl font-extrabold text-primary">{totalAccountsCount}</p>
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-fade-in-up">
+        <div className="bg-white dark:bg-gray-800 p-3 md:p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 w-full text-center border-l-4 border-primary flex flex-col items-center justify-center min-h-[110px]">
+          <Component className="text-primary mb-2" size={22} />
+          <h4 className="text-xs font-semibold text-primary mb-1 truncate">Wadarta Accounts-ka</h4>
+          <span className="text-2xl md:text-3xl font-bold text-primary">{totalAccountsCount}</span>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">Wadarta Balance</h4>
-          <p className="text-3xl font-extrabold text-secondary">${totalBalance.toLocaleString()}</p>
+        <div className="bg-white dark:bg-gray-800 p-3 md:p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 w-full text-center border-l-4 border-secondary flex flex-col items-center justify-center min-h-[110px]">
+          <DollarSign className="text-secondary mb-2" size={22} />
+          <h4 className="text-xs font-semibold text-secondary mb-1 truncate">Wadarta Balance</h4>
+          <span className="text-xl md:text-2xl font-bold text-secondary">${totalBalance.toLocaleString()}</span>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">Accounts-ka Bankiga</h4>
-          <p className="text-3xl font-extrabold text-accent">{bankAccountsCount}</p>
+        <div className="bg-white dark:bg-gray-800 p-3 md:p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 w-full text-center border-l-4 border-accent flex flex-col items-center justify-center min-h-[110px]">
+          <Banknote className="text-accent mb-2" size={22} />
+          <h4 className="text-xs font-semibold text-accent mb-1 truncate">Accounts-ka Bankiga</h4>
+          <span className="text-2xl md:text-3xl font-bold text-accent">{bankAccountsCount}</span>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center">
-          <h4 className="text-lg font-semibold text-mediumGray dark:text-gray-400">Accounts-ka Cash-ka</h4>
-          <p className="text-3xl font-extrabold text-darkGray dark:text-gray-100">{cashAccountsCount}</p>
+        <div className="bg-white dark:bg-gray-800 p-3 md:p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 w-full text-center border-l-4 border-darkGray flex flex-col items-center justify-center min-h-[110px]">
+          <Coins className="text-darkGray dark:text-gray-300 mb-2" size={22} />
+          <h4 className="text-xs font-semibold text-darkGray dark:text-gray-300 mb-1 truncate">Accounts-ka Cash-ka</h4>
+          <span className="text-2xl md:text-3xl font-bold text-darkGray dark:text-gray-100">{cashAccountsCount}</span>
         </div>
       </div>
 
       {/* Search and Filter Bar */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md mb-8 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 animate-fade-in-up">
-        <div className="relative w-full md:flex-1">
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md mb-8 flex flex-col lg:flex-row items-center space-y-4 lg:space-y-0 lg:space-x-4 animate-fade-in-up">
+        <div className="relative w-full lg:flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
           <input
             type="text"
             placeholder="Search accounts by name or type..."
-            className="w-full p-3 pl-10 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200"
+            className="w-full p-3 pl-10 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700/50 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary transition"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        {/* Filter by Type */}
-        <div className="relative w-full md:w-48">
-          <Filter size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" />
-          <label htmlFor="filterType" className="sr-only">Filter by Account Type</label>
-          <select
-            id="filterType"
-            title="Filter by Account Type"
-            className="w-full p-3 pl-10 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 appearance-none"
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-          >
-            {accountTypes.map(type => <option key={type} value={type}>{type}</option>)}
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400">
-            <ChevronRight className="transform rotate-90" size={20} />
+        <div className="flex flex-col sm:flex-row w-full lg:w-auto gap-4">
+          {/* Filter by Type */}
+          <div className="relative w-full sm:w-auto">
+            <Filter size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" />
+            <select
+              title="Filter by Account Type"
+              className="w-full p-3 pl-10 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700/50 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary transition appearance-none min-w-[160px]"
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+            >
+              {accountTypes.map(type => <option key={type} value={type}>{type}</option>)}
+            </select>
+            <ChevronRight className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 rotate-90 text-mediumGray dark:text-gray-400" size={20} />
+          </div>
+          {/* Filter by Currency */}
+          <div className="relative w-full sm:w-auto">
+            <Coins size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" />
+            <select
+              title="Filter by Currency"
+              className="w-full p-3 pl-10 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700/50 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary transition appearance-none min-w-[120px]"
+              value={filterCurrency}
+              onChange={(e) => setFilterCurrency(e.target.value)}
+            >
+              {currencies.map(curr => <option key={curr} value={curr}>{curr}</option>)}
+            </select>
+            <ChevronRight className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 rotate-90 text-mediumGray dark:text-gray-400" size={20} />
           </div>
         </div>
-        {/* Filter by Currency */}
-        <div className="relative w-full md:w-48">
-          <Coins size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" />
-          <label htmlFor="filterCurrency" className="sr-only">Filter by Currency</label>
-          <select
-            id="filterCurrency"
-            title="Filter by Currency"
-            className="w-full p-3 pl-10 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 appearance-none"
-            value={filterCurrency}
-            onChange={(e) => setFilterCurrency(e.target.value)}
-          >
-            {currencies.map(curr => <option key={curr} value={curr}>{curr}</option>)}
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400">
-            <ChevronRight className="transform rotate-90" size={20} />
+
+        <div className="flex items-center space-x-4 w-full lg:w-auto">
+          {/* View Mode Toggle */}
+          <div className="flex space-x-2 bg-lightGray dark:bg-gray-700/50 p-1 rounded-lg w-full">
+            <button onClick={() => setViewMode('list')} className={`w-full sm:w-auto px-4 py-2 rounded-md text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${viewMode === 'list' ? 'bg-white dark:bg-gray-800 text-primary shadow' : 'text-mediumGray dark:text-gray-300'}`} title="List View" aria-label="List View">
+              <List size={20} /> List
+            </button>
+            <button onClick={() => setViewMode('cards')} className={`w-full sm:w-auto px-4 py-2 rounded-md text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${viewMode === 'cards' ? 'bg-white dark:bg-gray-800 text-primary shadow' : 'text-mediumGray dark:text-gray-300'}`} title="Cards View" aria-label="Cards View">
+              <LayoutGrid size={20} /> Cards
+            </button>
           </div>
-        </div>
-        {/* View Mode Toggle */}
-        <div className="flex space-x-2 w-full md:w-auto justify-center">
-          <button onClick={() => setViewMode('list')} className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-primary text-white' : 'bg-lightGray dark:bg-gray-700 text-mediumGray dark:text-gray-400'} hover:bg-primary/80 dark:hover:bg-gray-600 transition-colors duration-200`} title="List View" aria-label="List View">
-            <List size={20} />
-          </button>
-          <button onClick={() => setViewMode('cards')} className={`p-2 rounded-lg ${viewMode === 'cards' ? 'bg-primary text-white' : 'bg-lightGray dark:bg-gray-700 text-mediumGray dark:text-gray-400'} hover:bg-primary/80 dark:hover:bg-gray-600 transition-colors duration-200`} title="Cards View" aria-label="Cards View">
-            <LayoutGrid size={20} />
-          </button>
         </div>
       </div>
 
@@ -274,35 +306,31 @@ export default function AccountsPage() {
           <Loader2 className="animate-spin mr-3 text-primary" size={32} /> Loading Accounts...
         </div>
       ) : filteredAccounts.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center text-mediumGray dark:text-gray-400 animate-fade-in">
-          Ma jiraan accounts la helay.
+        <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md text-center text-mediumGray dark:text-gray-400 animate-fade-in flex flex-col items-center gap-4">
+          <FileX2 size={48} className="text-gray-300 dark:text-gray-600" />
+          <h3 className="text-xl font-semibold text-darkGray dark:text-gray-200">No Accounts Found</h3>
+          <p>Codsigaaga wax account ah laguma helin. Isku day inaad beddesho miirayaasha.</p>
         </div>
       ) : viewMode === 'list' ? (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden animate-fade-in">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
-              <thead className="bg-lightGray dark:bg-gray-700">
-                <tr>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Magaca Account-ka</th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Nooca</th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Currency</th>
-                  <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Balance</th>
-                  <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-lightGray dark:divide-gray-700">
-                {filteredAccounts.map(account => (
-                  <AccountRow key={account.id} account={account} onEdit={handleEditAccount} onDelete={handleDeleteAccount} />
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {/* Pagination Placeholder */}
-          <div className="p-4 flex justify-between items-center border-t border-lightGray dark:border-gray-700">
-            <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition" title="Previous Page" aria-label="Previous Page">Hore</button>
-            <span className="text-sm text-darkGray dark:text-gray-100">Page 1 of {Math.ceil(filteredAccounts.length / 10) || 1}</span>
-            <button className="text-sm text-mediumGray dark:text-gray-400 hover:text-primary transition" title="Next Page" aria-label="Next Page">Next</button>
-          </div>
+        <div className="animate-fade-in">
+          <table className="hidden md:table min-w-full text-sm">
+            <thead className="bg-lightGray dark:bg-gray-900/50">
+              <tr>
+                <th scope="col" className="px-4 py-3 text-left font-medium text-mediumGray dark:text-gray-400 uppercase">Magaca Account-ka</th>
+                <th scope="col" className="px-4 py-3 text-left font-medium text-mediumGray dark:text-gray-400 uppercase">Nooca</th>
+                <th scope="col" className="px-4 py-3 text-left font-medium text-mediumGray dark:text-gray-400 uppercase">Currency</th>
+                <th scope="col" className="px-4 py-3 text-right font-medium text-mediumGray dark:text-gray-400 uppercase">Balance</th>
+                <th scope="col" className="px-4 py-3 text-right font-medium text-mediumGray dark:text-gray-400 uppercase">Actions</th>
+              </tr>
+            </thead>
+          </table>
+          <table className="min-w-full">
+            <tbody className="md:divide-y md:divide-lightGray dark:md:divide-gray-700">
+              {filteredAccounts.map(account => (
+                <AccountRow key={account.id} account={account} onEdit={handleEditAccount} onDelete={handleDeleteAccount} />
+              ))}
+            </tbody>
+          </table>
         </div>
       ) : ( /* Cards View */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
