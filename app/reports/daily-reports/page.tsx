@@ -59,6 +59,7 @@ interface DailyReport {
     note?: string | null;
     employeeName?: string | null;
     vendorName?: string | null;
+    details?: string | null;
   }>;
   companyExpenses: Array<{
     id: string;
@@ -91,6 +92,24 @@ interface DailyReport {
     assignedTo: string | null;
   }>;
   totalFixedAssets?: number;
+  debtsTaken?: Array<{
+    id: string;
+    description?: string;
+    amount: number;
+    account?: string;
+    customerName?: string | null;
+    vendorName?: string | null;
+    employeeName?: string | null;
+  }>;
+  debtsRepaid?: Array<{
+    id: string;
+    description?: string;
+    amount: number;
+    account?: string;
+    customerName?: string | null;
+    vendorName?: string | null;
+    employeeName?: string | null;
+  }>;
 }
 
 async function exportPDF(data: DailyReport) {
@@ -116,63 +135,63 @@ async function exportPDF(data: DailyReport) {
   };
 
   const renderDocument = (logoDataUrl?: string) => {
-    // Brand Colors
-    const PRIMARY_COLOR: [number, number, number] = [30, 58, 138]; // Dark Blue
-    const SECONDARY_COLOR: [number, number, number] = [100, 116, 139]; // Slate Gray
-
     // -- HEADER --
-    doc.setFillColor(...PRIMARY_COLOR);
-    doc.rect(0, 0, 210, 4, 'F');
 
     // Logo & Company Info
     if (logoDataUrl) {
       try {
-        doc.addImage(logoDataUrl, 'PNG', 14, 10, 25, 25, undefined, 'FAST');
+        // Adjust the width/height to match the logo aspect ratio better. 
+        // 14x22 seems to fit the vertical logo shape without stretching it too wide.
+        doc.addImage(logoDataUrl, 'PNG', 14, 12, 14, 22, undefined, 'FAST');
       } catch {
-        doc.setFillColor(...PRIMARY_COLOR);
-        doc.circle(20, 20, 8, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        const initials = (data.companyName || 'BW').slice(0, 2).toUpperCase();
-        doc.text(initials, 20, 23, { align: 'center' });
+        // fallback
       }
     }
 
-    doc.setTextColor(15, 23, 42);
+    // Title text styling (Bir + shiil in different colors)
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(22);
-    doc.text(data.companyName || 'Birshiil Work Shop', 45, 18);
+    doc.setFontSize(28); // Increased size
 
-    doc.setFontSize(10);
+    // "Bir" part in Black
+    doc.setTextColor(0, 0, 0);
+    doc.text('Bir', 34, 26);
+
+    // Hardcoded tightly spaced width to make sure 's' touches 'r'
+    const birWidth = 14.5;
+
+    // "shiil" part in darker orange/amber
+    doc.setTextColor(242, 154, 40);
+    doc.text('shiil', 34 + birWidth, 26);
+
+    doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...SECONDARY_COLOR);
-    doc.text('Daily Financial Report', 45, 24);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Daily Financial Report', 34, 32);
 
     // Meta Data
-    doc.setFontSize(10);
-    doc.setTextColor(60, 60, 60);
-    const dateY = 18;
-    doc.text('DATE:', 150, dateY);
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    const startXMeta = 135;
+    const valueXMeta = 165;
+    const metaY1 = 18;
     doc.setFont('helvetica', 'bold');
-    doc.text(data.date, 170, dateY);
-
+    doc.text('DATE', startXMeta, metaY1);
     doc.setFont('helvetica', 'normal');
-    const refY = 24;
-    doc.text('REF:', 150, refY);
+    doc.text(data.date, valueXMeta, metaY1);
+
+    const metaY2 = 24;
     doc.setFont('helvetica', 'bold');
-    doc.text(`D-${data.date.replace(/-/g, '')}`, 170, refY);
+    doc.text('REF NUMBER', startXMeta, metaY2);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`D-${data.date.replace(/-/g, '')}`, valueXMeta, metaY2);
 
     if (data.preparedBy) {
-      const prepY = 30;
-      doc.setFont('helvetica', 'normal');
-      doc.text('PREPARED BY:', 150, prepY);
+      const metaY3 = 30;
       doc.setFont('helvetica', 'bold');
-      doc.text(data.preparedBy, 180, prepY);
+      doc.text('PREPARED BY', startXMeta, metaY3);
+      doc.setFont('helvetica', 'normal');
+      doc.text(data.preparedBy, valueXMeta, metaY3);
     }
-
-    doc.setDrawColor(200, 200, 200);
-    doc.line(14, 38, 196, 38);
 
     let yPos = 45;
 
@@ -181,58 +200,110 @@ async function exportPDF(data: DailyReport) {
       title: string,
       head: string[][],
       body: (string | number)[][],
-      options: { totalLabel?: string; totalValue?: string; startY?: number } = {}
+      options: {
+        totalLabel?: string;
+        totalValue?: string;
+        totalColor?: [number, number, number];
+        startY?: number;
+        didParseCell?: (data: any) => void;
+      } = {}
     ) => {
       if (!body.length) return;
 
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.setTextColor(...PRIMARY_COLOR);
-      doc.text(title.toUpperCase(), 14, yPos);
       yPos += 5;
+
+      // Draw top horizontal line
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(0.5);
+      doc.line(14, yPos, 196, yPos);
+      yPos += 7;
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.text(title, 14, yPos);
+      yPos += 5;
+
+      // Draw line below title
+      doc.setLineWidth(0.2);
+      doc.line(14, yPos, 196, yPos);
+      yPos += 2;
+
+      // Ensure the head text is uppercase
+      const upperHead = head.map(row => row.map(cell => typeof cell === 'string' ? cell.toUpperCase() : cell));
 
       autoTable(doc, {
         startY: yPos,
-        head,
+        head: upperHead,
         body,
-        theme: 'grid',
+        theme: 'striped',
         headStyles: {
-          fillColor: [248, 250, 252],
-          textColor: [30, 41, 59],
+          fillColor: [255, 255, 255],
+          textColor: [0, 0, 0],
           fontStyle: 'bold',
-          lineWidth: 0,
-          fontSize: 9,
+          fontSize: 8,
+          cellPadding: { top: 2, bottom: 1, left: 1, right: 1 },
         },
         bodyStyles: {
-          textColor: [51, 65, 85],
-          fontSize: 9,
-          cellPadding: 3,
+          textColor: [0, 0, 0],
+          fontSize: 8,
+          // Base fontStyle sets everything to normal by default, we'll bold totals via hooks or options.
+          fontStyle: 'normal',
+          cellPadding: { top: 2, bottom: 2, left: 1, right: 1 },
         },
         alternateRowStyles: {
-          fillColor: [255, 255, 255],
+          fillColor: [247, 247, 247], // Even lighter grey, better contrast
         },
         columnStyles: {
-          [head[0].length - 1]: { halign: 'right', fontStyle: 'bold' }
-        },
-        styles: {
-          lineColor: [226, 232, 240],
-          lineWidth: 0.1,
+          [head[0].length - 1]: { halign: 'right' }
+          // Removed [head[0].length - 2] forced right-alignment since it breaks "ACCOUNT" under "Income Received"
         },
         margin: { left: 14, right: 14 },
+        didParseCell: (hookData) => {
+          // Right align any cell in the body that actually represents a money amount (ends in ETB)
+          // But avoid right-aligning descriptions that just happen to contain numbers.
+          if (hookData.section === 'body' && typeof hookData.cell.raw === 'string') {
+            const val = hookData.cell.raw.trim();
+            // If it's a monetary value, right align.
+            if (val.endsWith('ETB') && !val.includes('-')) {
+              // We avoid strings with '-' because descriptions often have dates e.g. "Material expense - 2026-03-03"
+              // If "208,000 ETB", it ends with ETB and doesn't have a dash (usually).
+              hookData.cell.styles.halign = 'right';
+            } else if (/^[\d,.\s]+ETB$/.test(val) || /^[\+\-]?[\d,.\s]+ETB$/.test(val)) {
+              // Strict regex for amount + ETB e.g "208,000 ETB" or "+406,035 ETB"
+              hookData.cell.styles.halign = 'right';
+            } else {
+              // Explicitly left-align text to fix centering issues for descriptions
+              hookData.cell.styles.halign = 'left';
+            }
+          } else if (hookData.section === 'head') {
+            // Head cells default to left unless they are specifically the last column (amount)
+            if (hookData.column.index !== head[0].length - 1) {
+              hookData.cell.styles.halign = 'left';
+            }
+          }
+
+          if (options.didParseCell) {
+            options.didParseCell(hookData);
+          }
+        }
       });
 
       if (options.totalLabel && options.totalValue) {
-        const finalY = (doc as any).lastAutoTable.finalY;
-        doc.setFillColor(241, 245, 249);
-        doc.rect(140, finalY, 56, 8, 'F');
+        const finalY = (doc as any).lastAutoTable.finalY + 4;
 
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+
+        doc.text(options.totalLabel, 150, finalY, { align: 'right' });
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9);
-        doc.setTextColor(...PRIMARY_COLOR);
-        doc.text(options.totalLabel, 145, finalY + 5.5);
-        doc.text(options.totalValue, 192, finalY + 5.5, { align: 'right' });
+        if (options.totalColor) {
+          doc.setTextColor(...options.totalColor);
+        }
+        doc.text(options.totalValue, 196, finalY, { align: 'right' });
 
-        yPos = finalY + 15;
+        yPos = finalY + 10;
       } else {
         yPos = (doc as any).lastAutoTable.finalY + 10;
       }
@@ -241,11 +312,18 @@ async function exportPDF(data: DailyReport) {
     // 1. Account Balances
     if (data.balances && Object.keys(data.balances.today).length > 0) {
       const allAccounts = Array.from(new Set([...Object.keys(data.balances.previous || {}), ...Object.keys(data.balances.today || {})]));
-      const balanceRows = allAccounts.map(name => [
-        name,
-        formatCurrency(data.balances.previous[name] || 0),
-        formatCurrency(data.balances.today[name] || 0)
-      ]);
+
+      const balanceRows = allAccounts.map(name => {
+        const prevBal = data.balances.previous[name] || 0;
+        const currBal = data.balances.today[name] || 0;
+        return [
+          name,
+          formatCurrency(prevBal),
+          formatCurrency(currBal)
+        ];
+      });
+
+      // Special handling for the total row
       balanceRows.push([
         'TOTAL LIQUIDITY',
         formatCurrency(data.totalPrev || 0),
@@ -255,7 +333,48 @@ async function exportPDF(data: DailyReport) {
       renderTable(
         'Account Balances',
         [['Account', 'Previous Balance', 'Current Balance']],
-        balanceRows
+        balanceRows,
+        {
+          didParseCell: (hookData) => {
+            // Apply styles specifically for the Account Balances table
+            if (hookData.section === 'body') {
+              const rowIndex = hookData.row.index;
+              const isTotalRow = rowIndex === balanceRows.length - 1;
+              const colIndex = hookData.column.index;
+
+              if (isTotalRow) {
+                // Total row is bold
+                hookData.cell.styles.fontStyle = 'bold';
+              } else {
+                // Ensure other rows are normal
+                hookData.cell.styles.fontStyle = 'normal';
+              }
+
+              // Color specific columns (Previous Balance and Current Balance)
+              // Only color the values, not the account names. 
+              // And let's not color the total liquidity row.
+              if (!isTotalRow && (colIndex === 1 || colIndex === 2)) {
+                // For now, setting them to dark gray/blue depending on your preference. 
+                // Based on user: "kuwaana tirooyinka numbarada sii kalaro ku haboon waana qaybta accountska"
+                // Let's use a standard blue for balances to make them pop out but remain professional.
+                hookData.cell.styles.textColor = [15, 23, 42]; // slate-900 
+              }
+
+              // Force right alignment for numeric columns (index 1 & 2)
+              if (colIndex === 1 || colIndex === 2) {
+                hookData.cell.styles.halign = 'right';
+              }
+            }
+
+            // Align headers for numeric columns to the right as well to match body
+            if (hookData.section === 'head') {
+              const colIndex = hookData.column.index;
+              if (colIndex === 1 || colIndex === 2) {
+                hookData.cell.styles.halign = 'right';
+              }
+            }
+          }
+        }
       );
     }
 
@@ -263,15 +382,20 @@ async function exportPDF(data: DailyReport) {
     if (data.incomeTransactions.length > 0) {
       renderTable(
         'Income Received',
-        [['Description', 'Account', 'Amount']],
+        [['Customer', 'Project', 'Description', 'Account', 'Amount']],
         data.incomeTransactions.map(tx => {
-          let desc = tx.description || 'Income';
-          if (tx.customer) desc += ` (${tx.customer})`;
-          return [desc, tx.account || '-', formatCurrency(tx.amount)];
+          return [
+            tx.customer || '-',
+            tx.project || '-',
+            tx.description || 'Income',
+            tx.account || '-',
+            formatCurrency(tx.amount)
+          ];
         }),
         {
           totalLabel: 'Total Income',
-          totalValue: formatCurrency(data.income)
+          totalValue: formatCurrency(data.income),
+          totalColor: [22, 163, 74] // Green
         }
       );
     }
@@ -280,16 +404,40 @@ async function exportPDF(data: DailyReport) {
     if (data.projectExpenses.length > 0) {
       renderTable(
         'Project Expenses',
-        [['Project', 'Category', 'Description', 'Amount']],
-        data.projectExpenses.map(e => [
-          e.project,
-          e.category,
-          e.description,
-          formatCurrency(e.amount)
-        ]),
+        [['Project', 'Category', 'Employee / Vendor', 'Description', 'Amount']],
+        data.projectExpenses.map(exp => {
+          let entity = exp.employeeName || exp.vendorName || '-';
+          let desc = exp.description || 'Project Expense';
+
+          if (exp.details && !exp.details.includes('Shaqaale:')) {
+            desc += ` - ${exp.details}`;
+          }
+
+          // Strip date securely
+          desc = desc.replace(/\s?-?\s*\d{4}-\d{2}-\d{2}$/, '').trim();
+
+          // Simplify description if it includes the employee/vendor name
+          if (entity !== '-' && desc.toLowerCase().includes(entity.toLowerCase())) {
+            if (exp.category === 'Salary' || exp.category === 'Labor' || desc.toLowerCase().includes('salary')) {
+              desc = 'Salary Payment';
+            } else {
+              // Remove standard prefix and name e.g., "Salary payment for Ahmad" -> "payment for" or just replace name
+              desc = desc.replace(new RegExp(`\\s*(for|to)?\\s*${entity}`, 'gi'), '').trim();
+            }
+          }
+
+          return [
+            exp.project || '-',
+            exp.category || '-',
+            entity,
+            desc,
+            formatCurrency(exp.amount)
+          ];
+        }),
         {
           totalLabel: 'Total Project Exp.',
-          totalValue: formatCurrency(data.totalProjectExpenses)
+          totalValue: formatCurrency(data.totalProjectExpenses),
+          totalColor: [220, 38, 38] // Red
         }
       );
     }
@@ -298,15 +446,79 @@ async function exportPDF(data: DailyReport) {
     if (data.companyExpenses.length > 0) {
       renderTable(
         'Company Expenses',
-        [['Category', 'Description', 'Amount']],
-        data.companyExpenses.map(e => {
-          let desc = e.description || '';
-          if (e.details) desc += ` - ${e.details}`;
-          return [e.category, desc, formatCurrency(e.amount)];
+        [['Category', 'Employee / Vendor', 'Description', 'Amount']],
+        data.companyExpenses.map(exp => {
+          let entity = exp.employeeName || exp.vendorName || '-';
+          let desc = exp.description || 'Company Expense';
+
+          if (exp.details && !exp.details.includes('Shaqaale:')) {
+            desc += ` - ${exp.details}`;
+          }
+          // Strip date securely
+          desc = desc.replace(/\s?-?\s*\d{4}-\d{2}-\d{2}$/, '').trim();
+
+          // Simplify description if it includes the employee name
+          if (entity !== '-' && desc.toLowerCase().includes(entity.toLowerCase())) {
+            if (exp.category === 'Salary' || exp.category === 'Company Labor' || desc.toLowerCase().includes('salary')) {
+              desc = 'Salary Payment';
+            } else {
+              // Remove standard prefix and name e.g., "Salary payment for Ahmad" -> "payment for" or just replace name entirely
+              desc = desc.replace(new RegExp(`\\s*(for|to)?\\s*${entity}`, 'gi'), '').trim();
+            }
+          }
+
+          return [
+            exp.category || '-',
+            entity,
+            desc,
+            formatCurrency(exp.amount)
+          ];
         }),
         {
           totalLabel: 'Total Ops Exp.',
-          totalValue: formatCurrency(data.totalCompanyExpenses)
+          totalValue: formatCurrency(data.totalCompanyExpenses),
+          totalColor: [220, 38, 38] // Red
+        }
+      );
+    }
+
+    // 5. Debts Taken
+    if (data.debtsTaken && data.debtsTaken.length > 0) {
+      renderTable(
+        'Debts Taken (Loans Received)',
+        [['Lender / Customer', 'Description', 'Account', 'Amount']],
+        data.debtsTaken.map(tx => {
+          // We cast to any here just for flexibility to pull name fields if present from backend
+          let entity = (tx as any).customerName || (tx as any).vendorName || (tx as any).employeeName || '-';
+          let desc = tx.description || 'Debt Taken';
+          desc = desc.replace(/\s?-?\s*\d{4}-\d{2}-\d{2}$/, '').trim();
+          return [entity, desc, tx.account || '-', formatCurrency(tx.amount)];
+        }),
+        {
+          totalLabel: 'Total Debts Taken',
+          totalValue: formatCurrency(
+            data.debtsTaken.reduce((sum, tx) => sum + tx.amount, 0)
+          )
+        }
+      );
+    }
+
+    // 6. Debts Repaid
+    if (data.debtsRepaid && data.debtsRepaid.length > 0) {
+      renderTable(
+        'Debts Repaid',
+        [['Lender / Customer', 'Description', 'Account', 'Amount']],
+        data.debtsRepaid.map(tx => {
+          let entity = (tx as any).customerName || (tx as any).vendorName || (tx as any).employeeName || '-';
+          let desc = tx.description || 'Debt Repaid';
+          desc = desc.replace(/\s?-?\s*\d{4}-\d{2}-\d{2}$/, '').trim();
+          return [entity, desc, tx.account || '-', formatCurrency(tx.amount)];
+        }),
+        {
+          totalLabel: 'Total Debts Repaid',
+          totalValue: formatCurrency(
+            data.debtsRepaid.reduce((sum, tx) => sum + tx.amount, 0)
+          )
         }
       );
     }
@@ -324,49 +536,51 @@ async function exportPDF(data: DailyReport) {
     // -- SUMMARY --
     const summaryY = yPos + 5;
 
-    doc.setDrawColor(226, 232, 240);
-    doc.setFillColor(250, 250, 250);
-    doc.roundedRect(120, summaryY, 76, 40, 2, 2, 'FD');
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.line(110, summaryY, 196, summaryY);
 
-    doc.setFontSize(11);
+    doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...PRIMARY_COLOR);
-    doc.text('FINANCIAL SUMMARY', 125, summaryY + 8);
+    doc.setTextColor(0, 0, 0);
+    doc.text('FINANCIAL SUMMARY', 110, summaryY + 8);
 
-    doc.setFontSize(9);
+    doc.setFontSize(10);
 
     // Income
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(50, 50, 50);
-    doc.text('Total Income:', 125, summaryY + 16);
+    doc.text('Total Income:', 110, summaryY + 16);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(22, 163, 74);
-    doc.text(formatCurrency(data.income || 0), 190, summaryY + 16, { align: 'right' });
+    doc.setTextColor(22, 163, 74); // Green
+    doc.text(formatCurrency(data.income || 0), 196, summaryY + 16, { align: 'right' });
 
     // Expenses
     const totalExp = data.totalExpenses + (data.totalFixedAssets || 0);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(50, 50, 50);
-    doc.text('Total Expenses:', 125, summaryY + 23);
+    doc.text('Total Expenses:', 110, summaryY + 24);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(220, 38, 38);
-    doc.text(`(${formatCurrency(totalExp)})`, 190, summaryY + 23, { align: 'right' });
+    doc.setTextColor(220, 38, 38); // Red
+    doc.text(`(${formatCurrency(totalExp)})`, 196, summaryY + 24, { align: 'right' });
 
     // Net Flow
     const netFlow = (data.income || 0) - totalExp;
-    doc.line(125, summaryY + 28, 190, summaryY + 28);
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.2);
+    doc.line(110, summaryY + 28, 196, summaryY + 28);
 
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(50, 50, 50);
-    doc.text('Net Cash Flow:', 125, summaryY + 34);
+    doc.setFontSize(12);
+    doc.setTextColor(15, 23, 42); // Very dark gray for title
+    doc.text('Net Cash Flow:', 110, summaryY + 36);
 
     if (netFlow >= 0) {
-      doc.setTextColor(22, 163, 74);
+      doc.setTextColor(22, 163, 74); // Green
     } else {
-      doc.setTextColor(220, 38, 38);
+      doc.setTextColor(220, 38, 38); // Red
     }
-    doc.setFontSize(10);
-    doc.text(formatCurrency(netFlow), 190, summaryY + 34, { align: 'right' });
+    doc.text(formatCurrency(netFlow), 196, summaryY + 36, { align: 'right' });
 
     // Footer
     const pageHeight = doc.internal.pageSize.getHeight();

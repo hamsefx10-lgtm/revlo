@@ -181,7 +181,9 @@ export async function GET(request: Request) {
       return baseExpense;
     };
     const mappedProjectExpenses = projectExpenses.map(mapExpense);
-    const mappedCompanyExpenses = companyExpenses.map(mapExpense);
+    const mappedCompanyExpenses = companyExpenses
+      .filter((exp: any) => exp.category !== 'Debt' && exp.subCategory !== 'Debt')
+      .map(mapExpense);
     const totalProjectExpenses = mappedProjectExpenses.reduce((sum: number, e: any) => sum + e.amount, 0);
     const totalCompanyExpenses = mappedCompanyExpenses.reduce((sum: number, e: any) => sum + e.amount, 0);
     const totalExpenses = totalProjectExpenses + totalCompanyExpenses;
@@ -363,7 +365,7 @@ export async function GET(request: Request) {
           account: { select: { name: true } },
           project: { select: { name: true } },
           customer: { select: { name: true } },
-          // vendor: { select: { name: true } },
+          vendor: { select: { name: true } },
           user: { select: { fullName: true } },
           employee: { select: { fullName: true } },
         },
@@ -376,9 +378,9 @@ export async function GET(request: Request) {
         type: tx.type,
         account: tx.account?.name || 'N/A',
         project: tx.project?.name || null,
-        customer: tx.customer?.name || null,
-        vendor: tx.vendor?.name || null,
-        employee: tx.employee?.fullName || null,
+        customerName: tx.customer?.name || null,
+        vendorName: tx.vendor?.name || null,
+        employeeName: tx.employee?.fullName || null,
         user: tx.user?.fullName || null,
         category: tx.category || null,
         note: tx.note || null,
@@ -479,6 +481,9 @@ export async function GET(request: Request) {
       });
     }
 
+    const debtsTaken = otherTransactionsList.filter(tx => tx.type === 'DEBT_TAKEN');
+    const debtsRepaid = otherTransactionsList.filter(tx => tx.type === 'DEBT_REPAID');
+
     const responseData = {
       date: selectedDate.toISOString().slice(0, 10),
       companyName,
@@ -497,6 +502,8 @@ export async function GET(request: Request) {
       totalExpenses: totalExpenses ?? 0,
       fixedAssets: fixedAssetsList || [],
       totalFixedAssets: totalFixedAssets ?? 0,
+      debtsTaken,
+      debtsRepaid,
       otherTransactions: otherTransactionsList || [],
     };
 
