@@ -7,7 +7,7 @@ import {
   Settings, X, UserCircle, LogOut,
   Landmark, UserCogIcon, Shield, Calendar, Menu, Wrench, Factory,
   Package, BarChart3, Scissors, MessageCircle, ShoppingCart, Tag, Mail,
-  ClipboardList, LayoutGrid, Hammer, Warehouse
+  ClipboardList, LayoutGrid, Hammer, Warehouse, HardDrive
 } from 'lucide-react';
 
 import { usePathname } from 'next/navigation';
@@ -113,6 +113,7 @@ const menuConfig = {
       { name: 'Fiscal Years', href: '/admin/fiscal-years', icon: <Calendar />, group: 'Administration' },
       { name: 'Contact Messages', href: '/admin/contact-messages', icon: <Mail />, group: 'Administration' },
       { name: 'Platform Admin', href: '/admin', icon: <Wrench />, group: 'Administration' },
+      { name: 'Download App', href: '/download', icon: <HardDrive />, group: 'Administration' },
     ]
   },
   ADMIN: {
@@ -146,6 +147,7 @@ const menuConfig = {
     ],
     admin: [
       { name: 'Users', href: '/settings/users', icon: <Shield />, group: 'Administration' },
+      { name: 'Download App', href: '/download', icon: <HardDrive />, group: 'Administration' },
     ]
   },
   MANAGER: {
@@ -175,6 +177,7 @@ const menuConfig = {
     ],
     admin: [
       { name: 'Fiscal Years', href: '/admin/fiscal-years', icon: <Calendar />, group: 'Administration' },
+      { name: 'Download App', href: '/download', icon: <HardDrive />, group: 'Administration' },
     ]
   },
   MEMBER: {
@@ -220,6 +223,7 @@ const menuConfig = {
     ],
     admin: [
       { name: 'Settings', href: '/settings', icon: <Wrench />, group: 'Administration' },
+      { name: 'Download App', href: '/download', icon: <HardDrive />, group: 'Administration' },
     ]
   },
   SHOP_ADMIN: {
@@ -237,6 +241,7 @@ const menuConfig = {
     ],
     admin: [
       { name: 'Settings', href: '/settings', icon: <Wrench />, group: 'Administration' },
+      { name: 'Download App', href: '/download', icon: <HardDrive />, group: 'Administration' },
     ]
   },
   MANUFACTURING_ADMIN: {
@@ -257,6 +262,7 @@ const menuConfig = {
     ],
     admin: [
       { name: 'Settings', href: '/settings', icon: <Wrench />, group: 'Administration' },
+      { name: 'Download App', href: '/download', icon: <HardDrive />, group: 'Administration' },
     ]
   }
 };

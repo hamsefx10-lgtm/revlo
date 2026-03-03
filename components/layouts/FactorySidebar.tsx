@@ -17,7 +17,8 @@ import {
     Users,
     CreditCard,
     Briefcase,
-    Zap
+    Zap,
+    HardDrive
 } from 'lucide-react';
 
 interface FactorySidebarProps {
@@ -60,6 +61,7 @@ const FactorySidebar: React.FC<FactorySidebarProps> = ({
         { name: 'Reports', href: '/manufacturing/reports', icon: <BarChart3 />, group: 'Analytics' },
 
         { name: 'Settings', href: '/settings', icon: <Settings />, group: 'System' },
+        { name: 'Download App', href: '/download', icon: <HardDrive />, group: 'System' },
     ];
 
     const groupedItems = menuItems.reduce((acc: any, item) => {

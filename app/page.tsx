@@ -67,7 +67,7 @@ const Navbar = () => {
               </Link>
             ))}
             <Link href="/download" className="text-sm font-bold hover:text-primary transition-colors text-mediumGray dark:text-gray-300">
-              App-ka
+              Install
             </Link>
           </div>
 
@@ -108,7 +108,7 @@ const Navbar = () => {
               {link.name}
             </Link>
           ))}
-          <Link href="/download" className="block text-2xl font-bold text-darkGray dark:text-white hover:text-primary pb-4">App-ka</Link>
+          <Link href="/download" className="block text-2xl font-bold text-darkGray dark:text-white hover:text-primary pb-4">Install</Link>
 
           <div className="pt-8 flex flex-col gap-4">
             <Link href="/login" className="w-full text-center text-lg font-bold py-4 bg-gray-100 dark:bg-gray-800 text-darkGray dark:text-white rounded-2xl active:scale-95 transition-transform" onClick={() => setIsOpen(false)}>
