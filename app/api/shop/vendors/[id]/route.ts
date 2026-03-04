@@ -76,7 +76,7 @@ export async function PUT(
                 name: companyName,
                 contactPerson,
                 email,
-                phone,
+                phoneNumber: phone,
                 address
             }
         });

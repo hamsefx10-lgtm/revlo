@@ -392,7 +392,7 @@ export default function VendorsPage() {
                               <Eye size={14} />
                             </Link>
                             <Link
-                              href={`/projects/vendors/${vendor.id}/edit`}
+                              href={`/projects/vendors/edit/${vendor.id}`}
                               className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1"
                             >
                               <Edit size={14} />
@@ -488,7 +488,7 @@ export default function VendorsPage() {
                           <Eye size={16} />
                         </Link>
                         <Link
-                          href={`/projects/vendors/${vendor.id}/edit`}
+                          href={`/projects/vendors/edit/${vendor.id}`}
                           className="bg-primary/10 text-primary hover:bg-primary hover:text-white p-2 rounded-lg transition-colors"
                         >
                           <Edit size={16} />

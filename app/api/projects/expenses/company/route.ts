@@ -2,6 +2,8 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { getSessionCompanyUser } from '@/lib/auth';
+import { sendReceiptViaWhatsApp } from '@/lib/whatsapp/send-receipt';
+import { logToFile } from '@/lib/whatsapp/manager';
 
 // GET /api/expenses/company - List all company expenses
 export async function GET(request: Request) {
@@ -33,8 +35,10 @@ export async function GET(request: Request) {
 
 // POST /api/expenses/company - Add new company expense
 export async function POST(request: Request) {
+  logToFile('[Company Expenses API] POST request received');
   try {
     const sessionData = await getSessionCompanyUser();
+    logToFile(`[Company Expenses API] Session User: ${JSON.stringify({ userId: sessionData?.userId, companyId: sessionData?.companyId })}`);
     if (!sessionData) {
       return NextResponse.json(
         { message: 'Awood uma lihid. Fadlan soo gal.' },
@@ -335,6 +339,28 @@ export async function POST(request: Request) {
             balance: { decrement: amountToDeduct },
           },
         });
+      }
+    }
+
+    // 4. Send automated WhatsApp receipt to vendor if applicable
+    logToFile(`[WhatsApp Debug] Checking trigger conditions (Company): vendorId=${vendorId}, paymentStatus=${paymentStatus}, finalStatus=${finalPaymentStatus}, hasExpense=${!!newExpense}`);
+    if (vendorId && (finalPaymentStatus === 'PAID' || finalPaymentStatus === 'PARTIAL') && newExpense) {
+      try {
+        const vendor = await prisma.shopVendor.findUnique({ where: { id: vendorId } });
+        const company = await prisma.company.findUnique({ where: { id: companyId } });
+
+        const vendorPhone = vendor?.phone || vendor?.phoneNumber;
+        logToFile(`[WhatsApp Debug] Vendor found: ${!!vendor}, Company found: ${!!company}, Phone: ${vendorPhone}`);
+
+        if (vendorPhone && company) {
+          const expenseWithVendor = { ...newExpense, vendor };
+          logToFile(`[Company Expenses API] Triggering WhatsApp receipt for expense ${newExpense.id} to vendor ${vendor.name}`);
+          sendReceiptViaWhatsApp(company.id, company.name, vendorPhone, expenseWithVendor);
+        } else {
+          logToFile(`[WhatsApp Debug] Conditions not met for sending: phone=${!!vendorPhone}, company=${!!company}`);
+        }
+      } catch (waErr) {
+        logToFile(`[Company Expenses API ERROR] Failed to trigger WhatsApp receipt: ${waErr}`);
       }
     }
 

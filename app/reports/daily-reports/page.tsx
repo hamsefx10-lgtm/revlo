@@ -97,6 +97,7 @@ interface DailyReport {
     description?: string;
     amount: number;
     account?: string;
+    project?: string | null;
     customerName?: string | null;
     vendorName?: string | null;
     employeeName?: string | null;
@@ -106,6 +107,7 @@ interface DailyReport {
     description?: string;
     amount: number;
     account?: string;
+    project?: string | null;
     customerName?: string | null;
     vendorName?: string | null;
     employeeName?: string | null;
@@ -999,6 +1001,47 @@ export default function DailyReportPage() {
 
 
           </div>
+
+          {/* 6. Vendor Debt Repayments */}
+          {(report.debtsRepaid?.filter(tx => tx.vendorName) ?? []).length > 0 && (
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-orange-50/30">
+                <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                  <Receipt size={18} className="text-orange-500" /> Lacag Bixinta Iibiyayaasha
+                </h3>
+                <span className="text-xs font-semibold text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full">
+                  {(report.debtsRepaid?.filter(tx => tx.vendorName) ?? []).length} Items
+                </span>
+              </div>
+              <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                {report.debtsRepaid?.filter(tx => tx.vendorName).map((tx, idx) => (
+                  <div key={idx} className="p-4 flex justify-between items-start hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-white">{tx.description || 'Lacag bixin'}</p>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {tx.vendorName && (
+                          <span className="text-xs text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-100 font-medium">
+                            Iibiye: {tx.vendorName}
+                          </span>
+                        )}
+                        {tx.project && (
+                          <span className="text-xs text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-100 font-medium">
+                            Mashruuc: {tx.project}
+                          </span>
+                        )}
+                        {tx.account && (
+                          <span className="text-xs text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">
+                            {tx.account}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <span className="font-bold text-red-500 whitespace-nowrap">-{tx.amount.toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
         </div>
       </div>

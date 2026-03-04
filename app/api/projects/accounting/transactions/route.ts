@@ -268,6 +268,51 @@ export async function POST(request: Request) {
       timestamp: Date.now()
     };
 
+    // Update Expense Payment Status and send WhatsApp Receipt if applicable
+    if (expenseId && type === 'DEBT_REPAID') {
+      try {
+        const expense = await prisma.expense.findFirst({ where: { id: expenseId } });
+        if (expense) {
+          // Calculate total amount paid for this expense
+          const relatedTransactions = await prisma.transaction.findMany({
+            where: {
+              expenseId: expenseId,
+              type: { in: ['EXPENSE', 'DEBT_REPAID'] }
+            }
+          });
+          const totalPaid = relatedTransactions.reduce((sum, t) => sum + Math.abs(Number(t.amount || 0)), 0);
+          const expAmount = Number(expense.amount || 0);
+
+          let newStatus = 'UNPAID';
+          if (expAmount > 0 && totalPaid >= expAmount) {
+            newStatus = 'PAID';
+          } else if (totalPaid > 0 && totalPaid < expAmount) {
+            newStatus = 'PARTIAL';
+          }
+
+          // Update expense status
+          const updatedExpense = await prisma.expense.update({
+            where: { id: expenseId },
+            data: { paymentStatus: newStatus }
+          });
+
+          // Trigger WhatsApp receipt if vendor is linked
+          if (vendorId) {
+            const company = await prisma.company.findUnique({ where: { id: companyId } });
+            const vendor = await prisma.shopVendor.findUnique({ where: { id: vendorId } });
+            if (company && vendor?.phoneNumber) {
+              const { sendReceiptViaWhatsApp } = await import('@/lib/whatsapp/send-receipt');
+              const expenseWithVendor = { ...updatedExpense, vendor };
+              console.log(`[Transaction API] Triggering WhatsApp receipt for expense ${expenseId} repayment to vendor ${vendor.name}`);
+              sendReceiptViaWhatsApp(company.id, company.name, vendor.phoneNumber, expenseWithVendor);
+            }
+          }
+        }
+      } catch (expErr) {
+        console.error('[Transaction API] Failed to update expense status or send receipt', expErr);
+      }
+    }
+
     return NextResponse.json(
       { message: 'Dhaqdhaqaaqa lacagta si guul leh ayaa loo daray!', transaction: newTransaction, event: transactionEvent },
       { status: 201 }

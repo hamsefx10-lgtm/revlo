@@ -47,14 +47,14 @@ export async function recalculateAccountBalance(accountId: string, upToDate?: Da
             'INCOME',
             'DEBT_RECEIVED',
             'TRANSFER_IN'
-        ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && !!trx.customerId);
+        ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && !trx.vendorId);
 
         const isStandardOut = [
             'EXPENSE',
             'DEBT_GIVEN',
             'DEBT_TAKEN',
             'TRANSFER_OUT'
-        ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && !trx.customerId);
+        ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && !!trx.vendorId);
 
         if (isStandardIn) {
             currentBalance += amount;

@@ -8,9 +8,10 @@ interface VendorPaymentModalProps {
     onSuccess: () => void;
     vendorId: string;
     vendorName: string;
-    expenseId?: string; // Optional: if paying a specific expense
-    expenseAmount?: number; // Optional: amount of the specific expense
-    expenseDescription?: string; // Optional: description of the specific expense
+    expenseId?: string;
+    expenseAmount?: number;
+    expenseDescription?: string;
+    projectId?: string; // Link payment to the project the expense belongs to
 }
 
 interface PaymentFormData {
@@ -30,7 +31,8 @@ const VendorPaymentModal: React.FC<VendorPaymentModalProps> = ({
     vendorName,
     expenseId,
     expenseAmount,
-    expenseDescription
+    expenseDescription,
+    projectId,
 }) => {
     const [loading, setLoading] = useState(false);
     const [accounts, setAccounts] = useState<{ id: string; name: string; type: string }[]>([]);
@@ -84,14 +86,15 @@ const VendorPaymentModal: React.FC<VendorPaymentModalProps> = ({
             const payload = {
                 vendorId,
                 amount: Number(data.amount),
-                transactionDate: data.paymentDate, // Corrected date key
+                transactionDate: data.paymentDate,
                 accountId: data.accountId,
-                description: `Payment to ${vendorName}`, // Added missing description
+                description: `Payment to ${vendorName}`,
                 method: data.paymentMethod,
                 reference: data.reference,
                 note: data.note,
-                expenseId: expenseId, // Link to specific expense if provided
-                type: 'DEBT_REPAID' // Explicitly setting type to DEBT_REPAID for vendor payments
+                expenseId: expenseId,
+                projectId: projectId, // Link to project if expense is project-linked
+                type: 'DEBT_REPAID'
             };
 
             const response = await fetch('/api/projects/accounting/transactions', {

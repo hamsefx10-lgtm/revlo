@@ -95,7 +95,7 @@ export default function VendorDetailsPage() {
 
   // Payment Modal State
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [selectedExpenseForPayment, setSelectedExpenseForPayment] = useState<{ id: string; amount: number; description: string } | undefined>(undefined);
+  const [selectedExpenseForPayment, setSelectedExpenseForPayment] = useState<{ id: string; amount: number; description: string; projectId?: string } | undefined>(undefined);
 
   const fetchVendorDetails = async () => {
     setLoading(true);
@@ -351,7 +351,8 @@ export default function VendorDetailsPage() {
                                               setSelectedExpenseForPayment({
                                                 id: trans.expense!.id,
                                                 amount: currentRemaining,
-                                                description: trans.expense!.description
+                                                description: trans.expense!.description,
+                                                projectId: (trans.expense as any)?.projectId || undefined
                                               });
                                               setIsPaymentModalOpen(true);
                                             }}
@@ -430,7 +431,8 @@ export default function VendorDetailsPage() {
                                 setSelectedExpenseForPayment({
                                   id: expense.id,
                                   amount: remaining,
-                                  description: expense.description
+                                  description: expense.description,
+                                  projectId: expense.project?.id || undefined
                                 });
                                 setIsPaymentModalOpen(true);
                               }}
@@ -563,6 +565,7 @@ export default function VendorDetailsPage() {
           expenseId={selectedExpenseForPayment?.id}
           expenseAmount={selectedExpenseForPayment?.amount}
           expenseDescription={selectedExpenseForPayment?.description}
+          projectId={selectedExpenseForPayment?.projectId}
         />
       )}
     </Layout>

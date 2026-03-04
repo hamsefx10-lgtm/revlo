@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import Layout from '@/components/layouts/Layout';
 import {
-  Settings, Banknote, Tag, Landmark, Users, Building, Database, Palette, User, HardDrive, Bell, Key, Info, Globe, Trash2
+  Settings, Banknote, Tag, Landmark, Users, Building, Database, Palette, User, HardDrive, Bell, Key, Info, Globe, Trash2, MessageCircle
 } from 'lucide-react';
 
 export default function SettingsOverviewPage() {
@@ -142,6 +142,16 @@ export default function SettingsOverviewPage() {
           <div>
             <h3 className="text-lg font-bold text-darkGray dark:text-gray-100 mb-1">Security</h3>
             <p className="text-xs text-mediumGray dark:text-gray-400">Maamul settings-ka amniga akoonkaaga iyo password-kaaga.</p>
+          </div>
+        </Link>
+        {/* WhatsApp Integration */}
+        <Link href="/settings/whatsapp" className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 flex items-center space-x-6 group">
+          <div className="bg-green-50 dark:bg-green-900/20 text-green-500 p-4 rounded-full group-hover:bg-green-500 group-hover:text-white transition-colors duration-200">
+            <MessageCircle size={32} />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-darkGray dark:text-gray-100 mb-1">WhatsApp</h3>
+            <p className="text-xs text-mediumGray dark:text-gray-400">Xidh WhatsApp-kaaga si aad u dirto rasiidhyada macaamiisha iyo iibiyayaasha.</p>
           </div>
         </Link>
         {/* Recycle Bin - New Addition */}

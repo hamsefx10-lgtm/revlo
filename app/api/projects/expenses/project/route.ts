@@ -2,6 +2,8 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { getSessionCompanyUser } from '@/lib/auth';
+import { sendReceiptViaWhatsApp } from '@/lib/whatsapp/send-receipt';
+import { logToFile } from '@/lib/whatsapp/manager';
 
 // GET /api/expenses/project - List all project expenses
 export async function GET(request: Request) {
@@ -23,8 +25,10 @@ export async function GET(request: Request) {
 
 // POST /api/expenses/project - Add new project expense
 export async function POST(request: Request) {
+    logToFile('[Project Expenses API] POST request received');
     try {
         const sessionUser = await getSessionCompanyUser() as { companyId: string; userId: string } | null;
+        logToFile(`[Project Expenses API] Session User: ${JSON.stringify({ userId: sessionUser?.userId, companyId: sessionUser?.companyId })}`);
         if (!sessionUser) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
@@ -291,6 +295,7 @@ export async function POST(request: Request) {
                     user: { connect: { id: userId } },
                     project: projectId ? { connect: { id: projectId } } : undefined,
                     employee: employeeId ? { connect: { id: employeeId } } : undefined,
+                    vendor: vendorId ? { connect: { id: vendorId } } : undefined, // NEW: Use relation way
                     receiptUrl: receiptUrl || undefined,
                     transportType: category === 'Transport' ? transportType : undefined,
                     consultantName: category === 'Consultancy' ? consultantName : undefined,
@@ -302,10 +307,9 @@ export async function POST(request: Request) {
                     supplierName: category === 'Equipment Rental' ? supplierName : undefined,
                     bankAccountId: category === 'Equipment Rental' ? bankAccountId : undefined,
                     materialDate: materialDate ? new Date(materialDate) : undefined,
-                    invoiceNumber, // NEW: Invoice Number
-                    paymentStatus: finalPaymentStatus, // UPDATED: Use fallback
-                    paymentDate: finalPaymentDate ? new Date(finalPaymentDate as any) : undefined, // NEW: Include payment date
-                    expenseCategory: invoiceNumber ? undefined : undefined, // Ensure no schema conflict if not present
+                    invoiceNumber: invoiceNumber || undefined,
+                    paymentStatus: finalPaymentStatus,
+                    paymentDate: finalPaymentDate ? new Date(finalPaymentDate as any) : undefined,
                 },
             });
         }
@@ -369,7 +373,7 @@ export async function POST(request: Request) {
                 userId,
                 companyId,
                 projectId,
-                vendorId: tVendorId,
+                vendorId: tVendorId || null,
             },
         });
 
@@ -379,6 +383,29 @@ export async function POST(request: Request) {
                 where: { id: tAccountId },
                 data: { balance: { decrement: Math.abs(Number(amount)) } },
             });
+        }
+
+        // 4. Send automated WhatsApp receipt to vendor if applicable
+        console.log('[Project Expenses API] Entering WhatsApp trigger block');
+        logToFile(`[WhatsApp Debug] Checking trigger conditions: vendorId=${vendorId}, paymentStatus=${paymentStatus}, finalStatus=${finalPaymentStatus}, hasExpense=${!!newExpense}`);
+        if (vendorId && (finalPaymentStatus === 'PAID' || finalPaymentStatus === 'PARTIAL') && newExpense) {
+            try {
+                const vendor = await prisma.shopVendor.findUnique({ where: { id: vendorId } });
+                const company = await prisma.company.findUnique({ where: { id: companyId } });
+
+                const vendorPhone = vendor?.phone || vendor?.phoneNumber;
+                logToFile(`[WhatsApp Debug] Vendor found: ${!!vendor}, Company found: ${!!company}, Phone: ${vendorPhone}`);
+
+                if (vendorPhone && company) {
+                    const expenseWithVendor = { ...newExpense, vendor };
+                    logToFile(`[Project Expenses API] Triggering WhatsApp receipt for expense ${newExpense.id} to vendor ${vendor.name}`);
+                    sendReceiptViaWhatsApp(company.id, company.name, vendorPhone, expenseWithVendor);
+                } else {
+                    logToFile(`[WhatsApp Debug] Conditions not met for sending: phone=${!!vendorPhone}, company=${!!company}`);
+                }
+            } catch (waErr) {
+                logToFile(`[Project Expenses API ERROR] Failed to trigger WhatsApp receipt: ${waErr}`);
+            }
         }
 
         return NextResponse.json({

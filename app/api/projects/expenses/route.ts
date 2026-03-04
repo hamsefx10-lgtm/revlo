@@ -4,6 +4,7 @@ import prisma from '@/lib/db'; // Import Prisma Client
 import { isValidEmail } from '@/lib/utils'; // For email validation if needed
 import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { getSessionCompanyUser } from '@/lib/auth';
+import { sendReceiptViaWhatsApp } from '@/lib/whatsapp/send-receipt';
 
 // GET /api/expenses - Soo deji dhammaan kharashyada
 export async function GET(request: Request) {
@@ -44,12 +45,12 @@ export async function GET(request: Request) {
             name: true,
           }
         },
-        /* vendor: {
+        vendor: {
           select: {
             id: true,
             name: true,
           }
-        }, */
+        },
         customer: {
           select: {
             id: true,
@@ -102,7 +103,7 @@ export async function GET(request: Request) {
       date: exp.expenseDate,
       project: exp.project ? { id: exp.project.id, name: exp.project.name } : undefined,
       company: exp.company ? { id: exp.company.id, name: exp.company.name } : undefined,
-      // vendor: exp.vendor ? { id: exp.vendor.id, name: exp.vendor.name } : undefined,
+      vendor: exp.vendor ? { id: exp.vendor.id, name: exp.vendor.name } : undefined,
       customer: exp.customer ? { id: exp.customer.id, name: exp.customer.name } : undefined,
       category: exp.category,
       subCategory: exp.subCategory || undefined,
@@ -534,6 +535,23 @@ export async function POST(request: Request) {
           where: { id: projectId },
           data: { status: 'Completed' }
         });
+      }
+    }
+    // 5. Send automated WhatsApp receipt to vendor if applicable
+    if (vendorId && (paymentStatus === 'PAID' || paymentStatus === 'PARTIAL')) {
+      try {
+        const vendor = await prisma.shopVendor.findUnique({ where: { id: vendorId } });
+        const company = await prisma.company.findUnique({ where: { id: companyId } });
+
+        if (vendor?.phoneNumber && company) {
+          // Add basic vendor context for the PDF generator
+          const expenseWithVendor = { ...newExpense, vendor };
+          console.log(`[Expenses API] Triggering WhatsApp receipt for expense ${newExpense.id} to vendor ${vendor.name}`);
+          // Send asynchronously without awaiting to not block the API response
+          sendReceiptViaWhatsApp(company.id, company.name, vendor.phoneNumber, expenseWithVendor);
+        }
+      } catch (waErr) {
+        console.error('[Expenses API] Failed to trigger WhatsApp receipt', waErr);
       }
     }
 

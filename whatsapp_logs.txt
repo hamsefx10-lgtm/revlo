@@ -1,0 +1,725 @@
+[2026-03-04T13:34:47.564Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T13:35:07.566Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T13:35:12.563Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T13:35:12.564Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:35:12.566Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:35:12.567Z] [API] Session Status: DISCONNECTED
+[2026-03-04T13:35:17.570Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:35:17.572Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:35:17.573Z] [API] Session Status: DISCONNECTED
+[2026-03-04T13:35:22.558Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:35:22.561Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:35:22.561Z] [API] Session Status: DISCONNECTED
+[2026-03-04T13:35:27.547Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:35:27.550Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:35:27.550Z] [API] Session Status: DISCONNECTED
+[2026-03-04T13:35:32.550Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:35:32.551Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:35:32.552Z] [API] Session Status: DISCONNECTED
+[2026-03-04T13:35:37.551Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:35:37.554Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:35:37.554Z] [API] Session Status: DISCONNECTED
+[2026-03-04T13:35:42.554Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:35:42.556Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:35:42.556Z] [API] Session Status: DISCONNECTED
+[2026-03-04T13:35:47.557Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T13:35:47.559Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:35:47.570Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:35:47.570Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-04T13:35:47.574Z] [API] Session Status: CONNECTING
+[2026-03-04T13:35:47.634Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:35:47.638Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:35:47.638Z] [API] Session Status: CONNECTING
+[2026-03-04T13:35:47.675Z] [WhatsApp] CRITICAL: Failed to initialize client for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e. This is likely a Puppeteer or file system permissions issue: Error: The browser is already running for C:\Users\OMEN\projects\revlo-vr\.wwebjs_auth\session-company-081fb675-b41e-4cea-92f7-50a5eb3e6f1e. Use a different `userDataDir` or stop the running browser first.
+[2026-03-04T13:35:52.623Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:35:52.624Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:35:52.624Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-04T13:35:52.625Z] [API] Session Status: CONNECTING
+[2026-03-04T13:35:52.703Z] [WhatsApp] CRITICAL: Failed to initialize client for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e. This is likely a Puppeteer or file system permissions issue: Error: The browser is already running for C:\Users\OMEN\projects\revlo-vr\.wwebjs_auth\session-company-081fb675-b41e-4cea-92f7-50a5eb3e6f1e. Use a different `userDataDir` or stop the running browser first.
+[2026-03-04T13:35:57.626Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:35:57.627Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:35:57.627Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-04T13:35:57.628Z] [API] Session Status: CONNECTING
+[2026-03-04T13:35:57.708Z] [WhatsApp] CRITICAL: Failed to initialize client for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e. This is likely a Puppeteer or file system permissions issue: Error: The browser is already running for C:\Users\OMEN\projects\revlo-vr\.wwebjs_auth\session-company-081fb675-b41e-4cea-92f7-50a5eb3e6f1e. Use a different `userDataDir` or stop the running browser first.
+[2026-03-04T13:36:02.623Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:36:02.625Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:36:02.625Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-04T13:36:02.626Z] [API] Session Status: CONNECTING
+[2026-03-04T13:36:02.702Z] [WhatsApp] CRITICAL: Failed to initialize client for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e. This is likely a Puppeteer or file system permissions issue: Error: The browser is already running for C:\Users\OMEN\projects\revlo-vr\.wwebjs_auth\session-company-081fb675-b41e-4cea-92f7-50a5eb3e6f1e. Use a different `userDataDir` or stop the running browser first.
+[2026-03-04T13:36:07.621Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:36:07.623Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:36:07.623Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-04T13:36:07.624Z] [API] Session Status: CONNECTING
+[2026-03-04T13:36:07.712Z] [WhatsApp] CRITICAL: Failed to initialize client for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e. This is likely a Puppeteer or file system permissions issue: Error: The browser is already running for C:\Users\OMEN\projects\revlo-vr\.wwebjs_auth\session-company-081fb675-b41e-4cea-92f7-50a5eb3e6f1e. Use a different `userDataDir` or stop the running browser first.
+[2026-03-04T13:45:12.785Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T13:45:12.787Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:45:12.790Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:45:12.791Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-04T13:45:12.796Z] [API] Session Status: CONNECTING
+[2026-03-04T13:45:12.837Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:45:12.839Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:45:12.840Z] [API] Session Status: CONNECTING
+[2026-03-04T13:45:12.874Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:45:12.876Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:45:12.876Z] [API] Session Status: CONNECTING
+[2026-03-04T13:45:17.847Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:45:17.849Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:45:17.849Z] [API] Session Status: CONNECTING
+[2026-03-04T13:45:21.729Z] [WhatsApp] QR Code string received for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e: 2@ZSIc25Ftg2kxBZyMk2...
+[2026-03-04T13:45:22.154Z] [WhatsApp] QR Code data URL generated successfully for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:45:22.839Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:45:22.841Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:45:22.841Z] [API] Session Status: CONNECTING
+[2026-03-04T13:45:27.846Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:45:27.848Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:45:27.849Z] [API] Session Status: CONNECTING
+[2026-03-04T13:45:32.845Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:45:32.847Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:45:32.848Z] [API] Session Status: CONNECTING
+[2026-03-04T13:45:37.848Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:45:37.851Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:45:37.851Z] [API] Session Status: CONNECTING
+[2026-03-04T13:45:42.861Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:45:42.864Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:45:42.865Z] [API] Session Status: CONNECTING
+[2026-03-04T13:45:47.840Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:45:47.841Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:45:47.841Z] [API] Session Status: CONNECTING
+[2026-03-04T13:45:52.838Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:45:52.839Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:45:52.840Z] [API] Session Status: CONNECTING
+[2026-03-04T13:45:57.842Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:45:57.844Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:45:57.844Z] [API] Session Status: CONNECTING
+[2026-03-04T13:46:02.840Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:46:02.841Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:46:02.842Z] [API] Session Status: CONNECTING
+[2026-03-04T13:46:07.836Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:46:07.838Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:46:07.838Z] [API] Session Status: CONNECTING
+[2026-03-04T13:46:13.030Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:46:13.033Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:46:13.034Z] [API] Session Status: CONNECTING
+[2026-03-04T13:46:17.843Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:46:17.845Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:46:17.845Z] [API] Session Status: CONNECTING
+[2026-03-04T13:46:21.656Z] [WhatsApp] QR Code string received for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e: 2@QBc8/B7gn9RaUaU8Ql...
+[2026-03-04T13:46:22.068Z] [WhatsApp] QR Code data URL generated successfully for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:46:22.837Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:46:22.839Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:46:22.839Z] [API] Session Status: CONNECTING
+[2026-03-04T13:46:27.839Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:46:27.841Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:46:27.841Z] [API] Session Status: CONNECTING
+[2026-03-04T13:46:32.841Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:46:32.843Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:46:32.843Z] [API] Session Status: CONNECTING
+[2026-03-04T13:46:37.837Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:46:37.838Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:46:37.838Z] [API] Session Status: CONNECTING
+[2026-03-04T13:46:41.659Z] [WhatsApp] QR Code string received for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e: 2@Dj4Avqnhj2CkfUpwb+...
+[2026-03-04T13:46:42.235Z] [WhatsApp] QR Code data URL generated successfully for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:46:42.843Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:46:42.844Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:46:42.844Z] [API] Session Status: CONNECTING
+[2026-03-04T13:46:47.841Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:46:47.842Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:46:47.842Z] [API] Session Status: CONNECTING
+[2026-03-04T13:46:52.837Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:46:52.839Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:46:52.839Z] [API] Session Status: CONNECTING
+[2026-03-04T13:46:57.840Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:46:57.841Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:46:57.841Z] [API] Session Status: CONNECTING
+[2026-03-04T13:47:01.675Z] [WhatsApp] QR Code string received for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e: 2@g9LLdwEYUrvdAbFBs4...
+[2026-03-04T13:47:02.070Z] [WhatsApp] QR Code data URL generated successfully for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:47:02.844Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:47:02.846Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:47:02.846Z] [API] Session Status: CONNECTING
+[2026-03-04T13:47:07.842Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:47:07.844Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:47:07.844Z] [API] Session Status: CONNECTING
+[2026-03-04T13:47:12.842Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:47:12.843Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:47:12.843Z] [API] Session Status: CONNECTING
+[2026-03-04T13:47:17.838Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:47:17.839Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:47:17.839Z] [API] Session Status: CONNECTING
+[2026-03-04T13:47:22.811Z] [WhatsApp] Authenticated for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:47:22.813Z] [WhatsApp] Authenticated for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:47:22.814Z] [WhatsApp] Authenticated for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:47:22.848Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:47:22.851Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:47:22.851Z] [API] Session Status: CONNECTING
+[2026-03-04T13:47:22.896Z] [WhatsApp] Client is ready for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:47:27.841Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:47:27.843Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:47:27.843Z] [API] Session Status: CONNECTED
+[2026-03-04T13:47:27.867Z] [API] GET /api/settings/whatsapp
+[2026-03-04T13:47:27.868Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T13:47:27.869Z] [API] Session Status: CONNECTED
+[2026-03-04T13:47:45.499Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T13:48:20.574Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T13:48:57.720Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T14:09:25.497Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T14:09:35.193Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T14:21:03.402Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T14:23:15.442Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T14:41:45.431Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T14:42:30.653Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T14:46:11.533Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T14:47:31.520Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T14:49:34.128Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T14:52:14.898Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T14:57:00.697Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T14:57:00.699Z] [API] GET /api/settings/whatsapp
+[2026-03-04T14:57:00.717Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T14:57:00.718Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-04T14:57:00.721Z] [API] Session Status: CONNECTING
+[2026-03-04T14:57:02.554Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T14:57:02.556Z] [API] GET /api/settings/whatsapp
+[2026-03-04T14:57:02.581Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T14:57:02.582Z] [API] Session Status: CONNECTING
+[2026-03-04T14:57:02.677Z] [API] GET /api/settings/whatsapp
+[2026-03-04T14:57:02.681Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T14:57:02.682Z] [API] Session Status: CONNECTING
+[2026-03-04T14:57:06.300Z] [API] GET /api/settings/whatsapp
+[2026-03-04T14:57:06.301Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T14:57:06.301Z] [API] Session Status: CONNECTING
+[2026-03-04T14:57:11.281Z] [WhatsApp] Authenticated for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T14:57:11.313Z] [API] GET /api/settings/whatsapp
+[2026-03-04T14:57:11.316Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T14:57:11.317Z] [API] Session Status: CONNECTING
+[2026-03-04T14:57:11.400Z] [WhatsApp] Client is ready for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T14:57:16.301Z] [API] GET /api/settings/whatsapp
+[2026-03-04T14:57:16.303Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T14:57:16.303Z] [API] Session Status: CONNECTED
+[2026-03-04T14:57:16.369Z] [API] GET /api/settings/whatsapp
+[2026-03-04T14:57:16.372Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T14:57:16.372Z] [API] Session Status: CONNECTED
+[2026-03-04T14:57:58.584Z] [TEST SCRIPT] Logging test successful
+[2026-03-04T14:59:01.621Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T14:59:07.767Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T15:01:15.156Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T15:01:20.609Z] [WhatsApp Debug] Checking trigger conditions: vendorId=0bc9059c-54ab-4c42-9a9d-7808787dd8ac, paymentStatus=PAID, finalStatus=PAID, hasExpense=true
+[2026-03-04T15:01:21.516Z] [WhatsApp Debug] Vendor found: true, Company found: true, Phone: 
+[2026-03-04T15:01:21.517Z] [WhatsApp Debug] Conditions not met for sending: phone=false, company=true
+[2026-03-04T15:01:42.614Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T15:01:42.617Z] [API] GET /api/settings/whatsapp
+[2026-03-04T15:01:42.630Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T15:01:42.631Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-04T15:01:42.633Z] [API] Session Status: CONNECTING
+[2026-03-04T15:01:43.818Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T15:01:43.820Z] [API] GET /api/settings/whatsapp
+[2026-03-04T15:01:43.848Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T15:01:43.849Z] [API] Session Status: CONNECTING
+[2026-03-04T15:01:44.627Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T15:01:44.629Z] [API] GET /api/settings/whatsapp
+[2026-03-04T15:01:44.639Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T15:01:44.639Z] [API] Session Status: CONNECTING
+[2026-03-04T15:01:46.950Z] [WhatsApp] Authenticated for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T15:01:47.296Z] [WhatsApp] Client is ready for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T15:01:47.681Z] [API] GET /api/settings/whatsapp
+[2026-03-04T15:01:47.684Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T15:01:47.685Z] [API] Session Status: CONNECTED
+[2026-03-04T15:01:47.726Z] [API] GET /api/settings/whatsapp
+[2026-03-04T15:01:47.728Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-04T15:01:47.729Z] [API] Session Status: CONNECTED
+[2026-03-04T15:02:02.687Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T18:31:36.230Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T18:32:34.553Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T18:34:00.569Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T18:34:02.000Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T18:35:01.279Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T18:35:01.283Z] [API] GET /api/settings/whatsapp
+[2026-03-04T18:35:01.293Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T18:35:01.295Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-04T18:35:01.307Z] [API] Session Status: CONNECTING
+[2026-03-04T18:35:01.881Z] [API] GET /api/settings/whatsapp
+[2026-03-04T18:35:01.889Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T18:35:01.890Z] [API] Session Status: CONNECTING
+[2026-03-04T18:35:01.989Z] [API] GET /api/settings/whatsapp
+[2026-03-04T18:35:01.997Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T18:35:01.999Z] [API] Session Status: CONNECTING
+[2026-03-04T18:35:06.894Z] [API] GET /api/settings/whatsapp
+[2026-03-04T18:35:06.899Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T18:35:06.900Z] [API] Session Status: CONNECTING
+[2026-03-04T18:35:11.850Z] [API] GET /api/settings/whatsapp
+[2026-03-04T18:35:11.855Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T18:35:11.856Z] [API] Session Status: CONNECTING
+[2026-03-04T18:35:14.066Z] [WhatsApp] QR Code string received for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38: 2@ZH5UP6ZU2mqCvkjf1V...
+[2026-03-04T18:35:14.584Z] [WhatsApp] QR Code data URL generated successfully for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T18:35:16.858Z] [API] GET /api/settings/whatsapp
+[2026-03-04T18:35:16.863Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T18:35:16.864Z] [API] Session Status: CONNECTING
+[2026-03-04T18:35:21.840Z] [API] GET /api/settings/whatsapp
+[2026-03-04T18:35:21.843Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T18:35:21.844Z] [API] Session Status: CONNECTING
+[2026-03-04T18:35:26.854Z] [API] GET /api/settings/whatsapp
+[2026-03-04T18:35:26.858Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T18:35:26.859Z] [API] Session Status: CONNECTING
+[2026-03-04T18:35:31.861Z] [API] GET /api/settings/whatsapp
+[2026-03-04T18:35:31.864Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T18:35:31.865Z] [API] Session Status: CONNECTING
+[2026-03-04T18:35:36.877Z] [API] GET /api/settings/whatsapp
+[2026-03-04T18:35:36.881Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T18:35:36.882Z] [API] Session Status: CONNECTING
+[2026-03-04T18:35:41.871Z] [API] GET /api/settings/whatsapp
+[2026-03-04T18:35:41.874Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T18:35:41.875Z] [API] Session Status: CONNECTING
+[2026-03-04T18:35:46.859Z] [API] GET /api/settings/whatsapp
+[2026-03-04T18:35:46.862Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T18:35:46.863Z] [API] Session Status: CONNECTING
+[2026-03-04T18:35:49.047Z] [WhatsApp] Authenticated for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T18:35:49.051Z] [WhatsApp] Authenticated for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T18:35:49.057Z] [WhatsApp] Authenticated for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T18:35:50.522Z] [WhatsApp] Client is ready for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T18:35:51.868Z] [API] GET /api/settings/whatsapp
+[2026-03-04T18:35:51.872Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T18:35:51.872Z] [API] Session Status: CONNECTED
+[2026-03-04T18:35:52.002Z] [API] GET /api/settings/whatsapp
+[2026-03-04T18:35:52.020Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T18:35:52.022Z] [API] Session Status: CONNECTED
+[2026-03-04T18:36:04.715Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T18:36:35.508Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T18:36:37.066Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T18:37:31.237Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T18:54:09.337Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T18:54:53.563Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T18:54:54.839Z] [WhatsApp Debug] Checking trigger conditions (Company): vendorId=bc8b7139-ae1e-476b-84ba-46abbad01e46, paymentStatus=PAID, finalStatus=PAID, hasExpense=true
+[2026-03-04T18:54:55.566Z] [WhatsApp Debug] Vendor found: true, Company found: true, Phone: 0929475332
+[2026-03-04T18:54:55.567Z] [Company Expenses API] Triggering WhatsApp receipt for expense 2a8afff9-66e1-45eb-aa6e-e848d6d7823f to vendor hamse Amin abdi
+[2026-03-04T18:54:55.932Z] [WhatsApp] Starting PDF generation for expense 2a8afff9-66e1-45eb-aa6e-e848d6d7823f
+[2026-03-04T18:54:57.500Z] [WhatsApp] Sending PDF message to 251929475332@c.us
+[2026-03-04T18:54:57.539Z] [WhatsApp ERROR] Error sending receipt to 0929475332: TypeError: Invalid value at currentMsg.body: value is invalid
+[2026-03-04T18:57:15.270Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T18:58:12.657Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T18:58:16.649Z] [WhatsApp Debug] Checking trigger conditions: vendorId=bc8b7139-ae1e-476b-84ba-46abbad01e46, paymentStatus=PAID, finalStatus=PAID, hasExpense=true
+[2026-03-04T18:58:17.368Z] [WhatsApp Debug] Vendor found: true, Company found: true, Phone: 0929475332
+[2026-03-04T18:58:17.369Z] [Project Expenses API] Triggering WhatsApp receipt for expense b40984e1-65e4-4057-bc4c-182496d0b1af to vendor hamse Amin abdi
+[2026-03-04T18:58:17.732Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-04T18:58:17.736Z] [WhatsApp] Cannot send receipt for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38. Manager Status: CONNECTING
+[2026-03-04T18:58:24.988Z] [WhatsApp] Authenticated for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:04:17.919Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T19:04:21.772Z] [WhatsApp Debug] Checking trigger conditions: vendorId=bc8b7139-ae1e-476b-84ba-46abbad01e46, paymentStatus=PAID, finalStatus=PAID, hasExpense=true
+[2026-03-04T19:04:22.526Z] [WhatsApp Debug] Vendor found: true, Company found: true, Phone: 0929475332
+[2026-03-04T19:04:22.528Z] [Project Expenses API] Triggering WhatsApp receipt for expense 4e8a0349-f9ba-452f-8d62-9ddbb5c81020 to vendor hamse Amin abdi
+[2026-03-04T19:04:23.109Z] [WhatsApp] Cannot send receipt for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38. Manager Status: CONNECTING
+[2026-03-04T19:17:31.057Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T19:17:35.042Z] [WhatsApp Debug] Checking trigger conditions: vendorId=bc8b7139-ae1e-476b-84ba-46abbad01e46, paymentStatus=PAID, finalStatus=PAID, hasExpense=true
+[2026-03-04T19:17:35.823Z] [WhatsApp Debug] Vendor found: true, Company found: true, Phone: 0929475332
+[2026-03-04T19:17:35.824Z] [Project Expenses API] Triggering WhatsApp receipt for expense d5910289-4747-4bd1-8d85-1f075f730a97 to vendor hamse Amin abdi
+[2026-03-04T19:17:36.198Z] [WhatsApp] Session for 6789dbe7-1d48-4775-a722-2f7fa8cbae38 is CONNECTING, waiting...
+[2026-03-04T19:17:41.250Z] [WhatsApp] Cannot send receipt for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38. Manager Status: CONNECTING
+[2026-03-04T19:21:35.495Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T19:21:35.497Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:21:35.501Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:21:35.501Z] [API] Session Status: CONNECTING
+[2026-03-04T19:21:35.531Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:21:35.535Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:21:35.535Z] [API] Session Status: CONNECTING
+[2026-03-04T19:21:35.573Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:21:35.576Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:21:35.577Z] [API] Session Status: CONNECTING
+[2026-03-04T19:21:40.534Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:21:40.536Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:21:40.536Z] [API] Session Status: CONNECTING
+[2026-03-04T19:21:45.551Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:21:45.553Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:21:45.554Z] [API] Session Status: CONNECTING
+[2026-03-04T19:21:50.536Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:21:50.538Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:21:50.538Z] [API] Session Status: CONNECTING
+[2026-03-04T19:21:55.533Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:21:55.535Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:21:55.536Z] [API] Session Status: CONNECTING
+[2026-03-04T19:22:00.541Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:22:00.543Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:22:00.543Z] [API] Session Status: CONNECTING
+[2026-03-04T19:22:05.526Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:22:05.527Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:22:05.527Z] [API] Session Status: CONNECTING
+[2026-03-04T19:22:10.529Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:22:10.530Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:22:10.530Z] [API] Session Status: CONNECTING
+[2026-03-04T19:22:15.523Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:22:15.524Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:22:15.524Z] [API] Session Status: CONNECTING
+[2026-03-04T19:22:20.540Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:22:20.542Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:22:20.542Z] [API] Session Status: CONNECTING
+[2026-03-04T19:22:25.529Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:22:25.531Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:22:25.531Z] [API] Session Status: CONNECTING
+[2026-03-04T19:22:30.530Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:22:30.532Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:22:30.532Z] [API] Session Status: CONNECTING
+[2026-03-04T19:22:35.544Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:22:35.547Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:22:35.548Z] [API] Session Status: CONNECTING
+[2026-03-04T19:22:40.527Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:22:40.528Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:22:40.529Z] [API] Session Status: CONNECTING
+[2026-03-04T19:22:45.530Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:22:45.531Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:22:45.532Z] [API] Session Status: CONNECTING
+[2026-03-04T19:22:50.526Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:22:50.528Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:22:50.528Z] [API] Session Status: CONNECTING
+[2026-03-04T19:22:55.524Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:22:55.526Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:22:55.526Z] [API] Session Status: CONNECTING
+[2026-03-04T19:23:00.528Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:23:00.529Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:23:00.529Z] [API] Session Status: CONNECTING
+[2026-03-04T19:23:05.523Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:23:05.524Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:23:05.525Z] [API] Session Status: CONNECTING
+[2026-03-04T19:23:10.528Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:23:10.529Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:23:10.530Z] [API] Session Status: CONNECTING
+[2026-03-04T19:23:15.528Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:23:15.529Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:23:15.530Z] [API] Session Status: CONNECTING
+[2026-03-04T19:23:20.531Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:23:20.532Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:23:20.532Z] [API] Session Status: CONNECTING
+[2026-03-04T19:23:25.532Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:23:25.533Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:23:25.534Z] [API] Session Status: CONNECTING
+[2026-03-04T19:23:30.527Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:23:30.528Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:23:30.528Z] [API] Session Status: CONNECTING
+[2026-03-04T19:23:35.527Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:23:35.528Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:23:35.528Z] [API] Session Status: CONNECTING
+[2026-03-04T19:23:40.525Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:23:40.527Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:23:40.527Z] [API] Session Status: CONNECTING
+[2026-03-04T19:23:45.525Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:23:45.527Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:23:45.527Z] [API] Session Status: CONNECTING
+[2026-03-04T19:23:50.528Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:23:50.529Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:23:50.530Z] [API] Session Status: CONNECTING
+[2026-03-04T19:23:55.525Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:23:55.527Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:23:55.527Z] [API] Session Status: CONNECTING
+[2026-03-04T19:24:00.526Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:24:00.527Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:24:00.527Z] [API] Session Status: CONNECTING
+[2026-03-04T19:24:05.526Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:24:05.528Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:24:05.528Z] [API] Session Status: CONNECTING
+[2026-03-04T19:24:10.525Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:24:10.526Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:24:10.526Z] [API] Session Status: CONNECTING
+[2026-03-04T19:24:15.528Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:24:15.529Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:24:15.530Z] [API] Session Status: CONNECTING
+[2026-03-04T19:24:20.528Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:24:20.530Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:24:20.530Z] [API] Session Status: CONNECTING
+[2026-03-04T19:24:25.531Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:24:25.533Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:24:25.533Z] [API] Session Status: CONNECTING
+[2026-03-04T19:24:30.527Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:24:30.529Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:24:30.530Z] [API] Session Status: CONNECTING
+[2026-03-04T19:24:35.525Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:24:35.526Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:24:35.527Z] [API] Session Status: CONNECTING
+[2026-03-04T19:24:40.530Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:24:40.531Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:24:40.531Z] [API] Session Status: CONNECTING
+[2026-03-04T19:24:45.527Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:24:45.528Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:24:45.528Z] [API] Session Status: CONNECTING
+[2026-03-04T19:24:50.527Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:24:50.528Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:24:50.528Z] [API] Session Status: CONNECTING
+[2026-03-04T19:24:55.525Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:24:55.527Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:24:55.527Z] [API] Session Status: CONNECTING
+[2026-03-04T19:25:00.528Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:25:00.530Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:25:00.530Z] [API] Session Status: CONNECTING
+[2026-03-04T19:25:05.523Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:25:05.525Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:25:05.525Z] [API] Session Status: CONNECTING
+[2026-03-04T19:25:10.525Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:25:10.526Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:25:10.526Z] [API] Session Status: CONNECTING
+[2026-03-04T19:25:15.526Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:25:15.527Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:25:15.527Z] [API] Session Status: CONNECTING
+[2026-03-04T19:25:20.528Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:25:20.529Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:25:20.529Z] [API] Session Status: CONNECTING
+[2026-03-04T19:25:25.525Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:25:25.526Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:25:25.526Z] [API] Session Status: CONNECTING
+[2026-03-04T19:25:30.523Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:25:30.525Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:25:30.525Z] [API] Session Status: CONNECTING
+[2026-03-04T19:25:35.529Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:25:35.530Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:25:35.530Z] [API] Session Status: CONNECTING
+[2026-03-04T19:25:40.528Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:25:40.530Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:25:40.530Z] [API] Session Status: CONNECTING
+[2026-03-04T19:25:45.523Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:25:45.525Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:25:45.525Z] [API] Session Status: CONNECTING
+[2026-03-04T19:25:50.530Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:25:50.532Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:25:50.532Z] [API] Session Status: CONNECTING
+[2026-03-04T19:25:55.547Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:25:55.551Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:25:55.552Z] [API] Session Status: CONNECTING
+[2026-03-04T19:26:00.531Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:26:00.533Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:26:00.533Z] [API] Session Status: CONNECTING
+[2026-03-04T19:26:05.526Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:26:05.527Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:26:05.527Z] [API] Session Status: CONNECTING
+[2026-03-04T19:26:10.614Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T19:26:10.615Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T19:26:10.616Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T19:26:10.616Z] [WhatsApp Manager] Destroying session for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38...
+[2026-03-04T19:26:10.618Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:26:10.627Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:26:10.627Z] [API] Session Status: CONNECTING
+[2026-03-04T19:26:15.533Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:26:15.534Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:26:15.535Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-04T19:26:15.538Z] [API] Session Status: CONNECTING
+[2026-03-04T19:26:20.576Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:26:20.581Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:26:20.582Z] [API] Session Status: CONNECTING
+[2026-03-04T19:26:20.797Z] [WhatsApp] Authenticated for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:26:20.989Z] [WhatsApp] Client is ready for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:26:25.556Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T19:26:25.557Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T19:26:25.558Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T19:26:25.559Z] [WhatsApp Manager] Destroying session for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38...
+[2026-03-04T19:26:25.561Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:26:25.572Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:26:25.573Z] [API] Session Status: CONNECTED
+[2026-03-04T19:26:25.685Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:26:25.690Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:26:25.690Z] [API] Session Status: CONNECTED
+[2026-03-04T19:27:16.059Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T19:27:16.060Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T19:27:16.061Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T19:27:16.063Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:27:16.076Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:27:16.077Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-04T19:27:16.079Z] [API] Session Status: CONNECTING
+[2026-03-04T19:27:16.211Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:27:16.216Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:27:16.216Z] [API] Session Status: CONNECTING
+[2026-03-04T19:27:16.392Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:27:16.416Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:27:16.417Z] [API] Session Status: CONNECTING
+[2026-03-04T19:27:20.698Z] [WhatsApp] Authenticated for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:27:20.819Z] [WhatsApp] Client is ready for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:27:21.123Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:27:21.125Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:27:21.126Z] [API] Session Status: CONNECTED
+[2026-03-04T19:27:21.173Z] [API] GET /api/settings/whatsapp
+[2026-03-04T19:27:21.176Z] [API] Company ID: 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:27:21.176Z] [API] Session Status: CONNECTED
+[2026-03-04T19:29:24.471Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T19:29:24.471Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T19:29:24.472Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T19:29:24.473Z] [WhatsApp Manager] Destroying session for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38...
+[2026-03-04T19:29:26.422Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T19:29:26.422Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T19:29:26.423Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T19:38:32.074Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T19:38:32.075Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T19:38:32.075Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T19:38:32.082Z] [Project Expenses API] POST request received
+[2026-03-04T19:38:32.097Z] [Project Expenses API] Session User: {"userId":"7f48e84b-56af-4be1-b625-2c3c0588b089","companyId":"6789dbe7-1d48-4775-a722-2f7fa8cbae38"}
+[2026-03-04T19:38:35.809Z] [WhatsApp Debug] Checking trigger conditions: vendorId=bc8b7139-ae1e-476b-84ba-46abbad01e46, paymentStatus=PAID, finalStatus=PAID, hasExpense=true
+[2026-03-04T19:38:36.540Z] [WhatsApp Debug] Vendor found: true, Company found: true, Phone: 0929475332
+[2026-03-04T19:38:36.540Z] [Project Expenses API] Triggering WhatsApp receipt for expense 59f198cc-20bf-420b-99c0-f5175e3abd11 to vendor hamse Amin abdi
+[2026-03-04T19:38:36.907Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-04T19:38:36.909Z] [WhatsApp] Session for 6789dbe7-1d48-4775-a722-2f7fa8cbae38 is CONNECTING, waiting...
+[2026-03-04T19:38:40.896Z] [WhatsApp] Authenticated for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:38:41.015Z] [WhatsApp] Client is ready for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:38:41.944Z] [WhatsApp] Session for 6789dbe7-1d48-4775-a722-2f7fa8cbae38 became CONNECTED after 5s
+[2026-03-04T19:38:41.945Z] [WhatsApp] Starting PDF generation for expense 59f198cc-20bf-420b-99c0-f5175e3abd11
+[2026-03-04T19:38:43.501Z] [WhatsApp] Sending PDF message to 251929475332@c.us
+[2026-03-04T19:38:43.530Z] [WhatsApp ERROR] Error sending receipt to 0929475332: TypeError: Invalid value at currentMsg.body: value is invalid
+[2026-03-04T19:41:33.786Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T19:41:33.786Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T19:41:33.787Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T19:41:33.787Z] [WhatsApp Manager] Destroying session for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38...
+[2026-03-04T19:41:33.797Z] [Project Expenses API] POST request received
+[2026-03-04T19:41:33.819Z] [Project Expenses API] Session User: {"userId":"7f48e84b-56af-4be1-b625-2c3c0588b089","companyId":"6789dbe7-1d48-4775-a722-2f7fa8cbae38"}
+[2026-03-04T19:41:38.263Z] [WhatsApp Debug] Checking trigger conditions: vendorId=bc8b7139-ae1e-476b-84ba-46abbad01e46, paymentStatus=PAID, finalStatus=PAID, hasExpense=true
+[2026-03-04T19:41:39.394Z] [WhatsApp Debug] Vendor found: true, Company found: true, Phone: 0929475332
+[2026-03-04T19:41:39.395Z] [Project Expenses API] Triggering WhatsApp receipt for expense 598822eb-d4a5-4664-9387-88414687abff to vendor hamse Amin abdi
+[2026-03-04T19:41:39.765Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-04T19:41:39.768Z] [WhatsApp] Session for 6789dbe7-1d48-4775-a722-2f7fa8cbae38 is CONNECTING, waiting...
+[2026-03-04T19:41:44.443Z] [WhatsApp] Authenticated for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:41:44.517Z] [WhatsApp] Client is ready for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:41:44.794Z] [WhatsApp] Session for 6789dbe7-1d48-4775-a722-2f7fa8cbae38 became CONNECTED after 5s
+[2026-03-04T19:41:44.795Z] [WhatsApp] Starting PDF generation for expense 598822eb-d4a5-4664-9387-88414687abff
+[2026-03-04T19:41:46.775Z] [WhatsApp] PDF generated, size: 71511 bytes
+[2026-03-04T19:41:46.776Z] [WhatsApp] Sending PDF message to 251929475332@c.us
+[2026-03-04T19:41:46.776Z] [WhatsApp] Media Data Length: 95348, MimeType: application/pdf, FileName: Receipt_598822eb.pdf
+[2026-03-04T19:41:46.803Z] [WhatsApp ERROR] Error sending receipt to 0929475332: TypeError: Invalid value at currentMsg.body: value is invalid
+[2026-03-04T19:44:32.501Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T19:44:32.502Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T19:44:32.502Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T19:44:32.503Z] [WhatsApp Manager] Destroying session for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38...
+[2026-03-04T19:44:32.510Z] [Project Expenses API] POST request received
+[2026-03-04T19:44:32.529Z] [Project Expenses API] Session User: {"userId":"7f48e84b-56af-4be1-b625-2c3c0588b089","companyId":"6789dbe7-1d48-4775-a722-2f7fa8cbae38"}
+[2026-03-04T19:44:36.673Z] [WhatsApp Debug] Checking trigger conditions: vendorId=bc8b7139-ae1e-476b-84ba-46abbad01e46, paymentStatus=PAID, finalStatus=PAID, hasExpense=true
+[2026-03-04T19:44:37.415Z] [WhatsApp Debug] Vendor found: true, Company found: true, Phone: 0929475332
+[2026-03-04T19:44:37.416Z] [Project Expenses API] Triggering WhatsApp receipt for expense f17f78f4-2d2b-4d05-aa0c-3b7a6e2dc0ab to vendor hamse Amin abdi
+[2026-03-04T19:44:38.090Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-04T19:44:38.093Z] [WhatsApp] Session for 6789dbe7-1d48-4775-a722-2f7fa8cbae38 is CONNECTING, waiting...
+[2026-03-04T19:44:43.119Z] [WhatsApp] Cannot send receipt for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38. Manager Status: CONNECTING
+[2026-03-04T19:44:43.633Z] [WhatsApp] Authenticated for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:44:43.717Z] [WhatsApp] Client is ready for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:46:49.173Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T19:46:49.174Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T19:46:49.174Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T19:46:49.175Z] [WhatsApp Manager] Destroying session for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38...
+[2026-03-04T19:46:49.181Z] [Company Expenses API] POST request received
+[2026-03-04T19:46:49.196Z] [Company Expenses API] Session User: {"userId":"7f48e84b-56af-4be1-b625-2c3c0588b089","companyId":"6789dbe7-1d48-4775-a722-2f7fa8cbae38"}
+[2026-03-04T19:46:52.272Z] [WhatsApp Debug] Checking trigger conditions (Company): vendorId=bc8b7139-ae1e-476b-84ba-46abbad01e46, paymentStatus=PAID, finalStatus=PAID, hasExpense=true
+[2026-03-04T19:46:53.202Z] [WhatsApp Debug] Vendor found: true, Company found: true, Phone: 0929475332
+[2026-03-04T19:46:53.202Z] [Company Expenses API] Triggering WhatsApp receipt for expense 368ba8eb-81f1-4836-824e-3335a61c9755 to vendor hamse Amin abdi
+[2026-03-04T19:46:53.578Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-04T19:46:53.580Z] [WhatsApp] Session for 6789dbe7-1d48-4775-a722-2f7fa8cbae38 is CONNECTING, waiting (max 15s)...
+[2026-03-04T19:46:58.064Z] [WhatsApp] Authenticated for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:46:58.173Z] [WhatsApp] Client is ready for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:46:58.613Z] [WhatsApp] Session for 6789dbe7-1d48-4775-a722-2f7fa8cbae38 became CONNECTED after 5s
+[2026-03-04T19:46:58.614Z] [WhatsApp] Starting PDF generation for expense 368ba8eb-81f1-4836-824e-3335a61c9755
+[2026-03-04T19:47:00.416Z] [WhatsApp] Sending text-only message to 251929475332@c.us
+[2026-03-04T19:47:00.451Z] [WhatsApp] Text message sent successfully
+[2026-03-04T19:47:00.451Z] [WhatsApp] PDF generated, size: 68029 bytes. Attempting to send as separate file...
+[2026-03-04T19:47:00.484Z] [WhatsApp ERROR] Failed to send PDF separately: TypeError: Invalid value at currentMsg.body: value is invalid
+[2026-03-04T19:47:00.485Z] [WhatsApp] Receipt sent successfully to 251929475332@c.us
+[2026-03-04T19:50:08.699Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T19:50:08.700Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T19:50:08.700Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T19:50:08.701Z] [WhatsApp Manager] Destroying session for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38...
+[2026-03-04T19:50:08.710Z] [Project Expenses API] POST request received
+[2026-03-04T19:50:08.737Z] [Project Expenses API] Session User: {"userId":"7f48e84b-56af-4be1-b625-2c3c0588b089","companyId":"6789dbe7-1d48-4775-a722-2f7fa8cbae38"}
+[2026-03-04T19:50:14.981Z] [WhatsApp Debug] Checking trigger conditions: vendorId=bc8b7139-ae1e-476b-84ba-46abbad01e46, paymentStatus=PAID, finalStatus=PAID, hasExpense=true
+[2026-03-04T19:50:15.684Z] [WhatsApp Debug] Vendor found: true, Company found: true, Phone: 0929475332
+[2026-03-04T19:50:15.685Z] [Project Expenses API] Triggering WhatsApp receipt for expense 11ab95f8-3405-40c2-b5a4-7497f28363cc to vendor hamse Amin abdi
+[2026-03-04T19:50:16.037Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-04T19:50:16.040Z] [WhatsApp] Session for 6789dbe7-1d48-4775-a722-2f7fa8cbae38 is CONNECTING, waiting (max 15s)...
+[2026-03-04T19:50:20.147Z] [WhatsApp] Authenticated for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:50:20.268Z] [WhatsApp] Client is ready for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T19:50:21.064Z] [WhatsApp] Session for 6789dbe7-1d48-4775-a722-2f7fa8cbae38 became CONNECTED after 5s
+[2026-03-04T19:50:21.065Z] [WhatsApp] Starting PDF generation for expense 11ab95f8-3405-40c2-b5a4-7497f28363cc
+[2026-03-04T19:50:22.862Z] [WhatsApp] Sending text-only message to 251929475332@c.us
+[2026-03-04T19:50:22.892Z] [WhatsApp] Text message sent successfully
+[2026-03-04T19:50:22.893Z] [WhatsApp] PDF generated, size: 71106 bytes. Attempting to send using fromFilePath...
+[2026-03-04T19:50:22.897Z] [WhatsApp] Media object created from file. Sending to 251929475332@c.us...
+[2026-03-04T19:50:22.932Z] [WhatsApp ERROR] Failed to send PDF from file: TypeError: Invalid value at currentMsg.body: value is invalid
+[2026-03-04T19:50:22.932Z] [WhatsApp] Receipt sent successfully to 251929475332@c.us
+[2026-03-04T19:50:54.777Z] [WhatsApp] Message received for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38 from 251929475332@c.us: mahadsanid
+[2026-03-04T19:58:29.005Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T19:58:29.010Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T19:58:29.012Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T19:58:29.015Z] [WhatsApp Manager] Destroying session for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38...
+[2026-03-04T19:58:39.745Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T19:58:39.746Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T19:58:39.747Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T20:01:51.244Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:01:51.245Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T20:01:51.247Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T20:02:27.109Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:02:27.111Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T20:02:27.113Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T20:02:27.171Z] [Project Expenses API] POST request received
+[2026-03-04T20:02:28.186Z] [Project Expenses API] Session User: {"userId":"7f48e84b-56af-4be1-b625-2c3c0588b089","companyId":"6789dbe7-1d48-4775-a722-2f7fa8cbae38"}
+[2026-03-04T20:02:33.008Z] [WhatsApp Debug] Checking trigger conditions: vendorId=bc8b7139-ae1e-476b-84ba-46abbad01e46, paymentStatus=PAID, finalStatus=PAID, hasExpense=true
+[2026-03-04T20:02:33.753Z] [WhatsApp Debug] Vendor found: true, Company found: true, Phone: 0929475332
+[2026-03-04T20:02:33.755Z] [Project Expenses API] Triggering WhatsApp receipt for expense 7d0e25bf-d65a-45c9-a1a0-5d7a79244dd5 to vendor hamse Amin abdi
+[2026-03-04T20:02:34.131Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-04T20:02:34.144Z] [WhatsApp] Session for 6789dbe7-1d48-4775-a722-2f7fa8cbae38 is CONNECTING, waiting (max 15s)...
+[2026-03-04T20:02:43.759Z] [WhatsApp] Authenticated for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T20:02:44.048Z] [WhatsApp] Client is ready for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T20:02:44.248Z] [WhatsApp] Session for 6789dbe7-1d48-4775-a722-2f7fa8cbae38 became CONNECTED after 10s
+[2026-03-04T20:02:44.254Z] [WhatsApp] Sending link-based receipt to 251929475332@c.us
+[2026-03-04T20:02:45.379Z] [WhatsApp] Link-based receipt sent successfully to 251929475332@c.us
+[2026-03-04T20:03:54.349Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:03:54.351Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T20:03:54.353Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T20:03:54.356Z] [WhatsApp Manager] Destroying session for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38...
+[2026-03-04T20:06:55.085Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:06:55.088Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T20:06:55.089Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T20:06:55.924Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:11:39.918Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:11:39.919Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T20:11:39.920Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T20:11:39.941Z] [Project Expenses API] POST request received
+[2026-03-04T20:11:39.958Z] [Project Expenses API] Session User: {"userId":"7f48e84b-56af-4be1-b625-2c3c0588b089","companyId":"6789dbe7-1d48-4775-a722-2f7fa8cbae38"}
+[2026-03-04T20:11:45.446Z] [WhatsApp Debug] Checking trigger conditions: vendorId=bc8b7139-ae1e-476b-84ba-46abbad01e46, paymentStatus=PAID, finalStatus=PAID, hasExpense=true
+[2026-03-04T20:11:46.174Z] [WhatsApp Debug] Vendor found: true, Company found: true, Phone: 0929475332
+[2026-03-04T20:11:46.176Z] [Project Expenses API] Triggering WhatsApp receipt for expense 8fbe9aca-189c-49f4-9fe1-408256f1c746 to vendor hamse Amin abdi
+[2026-03-04T20:11:46.568Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-04T20:11:46.581Z] [WhatsApp] Session for 6789dbe7-1d48-4775-a722-2f7fa8cbae38 is CONNECTING, waiting (max 15s)...
+[2026-03-04T20:12:02.159Z] [WhatsApp] Cannot send receipt for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38. Manager Status: CONNECTING
+[2026-03-04T20:12:11.942Z] [WhatsApp] Authenticated for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T20:12:12.224Z] [WhatsApp] Client is ready for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T20:13:10.615Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:13:10.616Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T20:13:10.617Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T20:13:10.618Z] [WhatsApp Manager] Destroying session for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38...
+[2026-03-04T20:13:12.208Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:13:49.466Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:13:49.470Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T20:13:49.476Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T20:13:50.191Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:14:15.696Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:14:15.699Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T20:14:15.701Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T20:14:30.618Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:14:30.625Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T20:14:30.633Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T20:15:02.789Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:15:02.791Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T20:15:02.792Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T20:15:05.795Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:16:04.480Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:16:04.481Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T20:16:04.482Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T20:16:04.492Z] [Company Expenses API] POST request received
+[2026-03-04T20:16:04.556Z] [Company Expenses API] Session User: {"userId":"7f48e84b-56af-4be1-b625-2c3c0588b089","companyId":"6789dbe7-1d48-4775-a722-2f7fa8cbae38"}
+[2026-03-04T20:16:06.619Z] [WhatsApp Debug] Checking trigger conditions (Company): vendorId=bc8b7139-ae1e-476b-84ba-46abbad01e46, paymentStatus=PARTIAL, finalStatus=PARTIAL, hasExpense=true
+[2026-03-04T20:16:09.053Z] [WhatsApp Debug] Vendor found: true, Company found: true, Phone: 0929475332
+[2026-03-04T20:16:09.055Z] [Company Expenses API] Triggering WhatsApp receipt for expense 883d1e49-951a-4489-81f3-12f8779d08d0 to vendor hamse Amin abdi
+[2026-03-04T20:16:09.712Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-04T20:16:09.720Z] [WhatsApp] Session for 6789dbe7-1d48-4775-a722-2f7fa8cbae38 is CONNECTING, waiting (max 15s)...
+[2026-03-04T20:16:18.717Z] [WhatsApp] Authenticated for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T20:16:18.991Z] [WhatsApp] Client is ready for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+[2026-03-04T20:16:19.779Z] [WhatsApp] Session for 6789dbe7-1d48-4775-a722-2f7fa8cbae38 became CONNECTED after 10s
+[2026-03-04T20:16:19.780Z] [WhatsApp] Sending link-based receipt to 251929475332@c.us
+[2026-03-04T20:16:20.081Z] [WhatsApp] Link-based receipt sent successfully to 251929475332@c.us
+[2026-03-04T20:17:10.922Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:17:10.923Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-04T20:17:10.924Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-04T20:17:10.925Z] [WhatsApp Manager] Destroying session for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38...
+[2026-03-04T20:17:11.719Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:28:21.162Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:28:21.162Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:28:21.162Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:28:21.165Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:28:21.170Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:28:21.174Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:28:31.080Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:28:31.097Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:28:31.305Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-04T20:28:31.306Z] [WhatsApp Manager] Module Loaded / Hot Reloaded

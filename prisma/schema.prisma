@@ -165,6 +165,10 @@ model Company {
   deletedItems            DeletedItem[]
   auditLogs               AuditLog[]
 
+  // WhatsApp Integration
+  whatsappSessionStatus   String?                  @default("DISCONNECTED") // DISCONNECTED, CONNECTING, CONNECTED
+  whatsappNumber          String?
+
   @@map("companies")
 }
 

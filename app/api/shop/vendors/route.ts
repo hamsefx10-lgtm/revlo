@@ -85,14 +85,14 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'User does not belong to a company' }, { status: 400 });
         }
 
-        // Schema uses 'name', 'type'. 'ShopVendor' model.
+        // Schema uses 'name', 'type', 'phoneNumber'. 'ShopVendor' model.
         const vendor = await prisma.shopVendor.create({
             data: {
                 name: companyName, // Map to DB 'name'
                 type: category || 'General', // Map category to 'type' (Required)
                 contactPerson: contactPerson || '',
                 email: email || '',
-                phone: phone || '',
+                phoneNumber: phone || '', // Maps to 'phoneNumber' in DB schema
                 address: address || '',
                 productsServices: null,
                 notes: '',
