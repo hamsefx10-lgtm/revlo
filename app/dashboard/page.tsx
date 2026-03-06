@@ -457,7 +457,7 @@ export default function DashboardPage() {
       <RevloLoader />
     </div>
   );
-  if (error) return <div className="text-red-500 text-center p-6">{error}</div>;
+  if (error) return <div className="text-red-500 text-center p-6">{error.message || String(error)}</div>;
   if (!stats) return null;
 
   const {
@@ -579,7 +579,8 @@ export default function DashboardPage() {
                 </h3>
                 <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Lacag Soo Galaysa</span>
               </div>
-              <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">{formatCurrency(outstandingDebts || 0)}</div> {/* Using outstandingDebts as proxy based on current API logic till refined */}
+              <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">{formatCurrency(totalReceivables || 0)}</div>
+
               <p className="text-sm text-gray-500">Macaamiisha iyo Mashaariicda deynta lagu leeyahay</p>
               <Link href="/projects/accounting?tab=Debts" className="text-primary text-sm font-medium hover:underline mt-3 block">Fiiri Liiska &rarr;</Link>
             </div>
@@ -593,7 +594,8 @@ export default function DashboardPage() {
                 </h3>
                 <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">Lacag Baxaysa</span>
               </div>
-              <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">{formatCurrency(0)}</div> {/* Logic for Payables is pending in API, defaulting to 0 or manual calc */}
+              <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">{formatCurrency(totalPayables || 0)}</div>
+
               <p className="text-sm text-gray-500">Iibiyayaasha iyo Kharashyada aan la bixin</p>
               <Link href="/projects/accounting?tab=Debts" className="text-primary text-sm font-medium hover:underline mt-3 block">Bixi Hadda &rarr;</Link>
             </div>

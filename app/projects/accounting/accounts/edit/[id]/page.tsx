@@ -30,6 +30,7 @@ export default function EditAccountPage() {
   const [name, setName] = useState('');
   const [type, setType] = useState('');
   const [currency, setCurrency] = useState('');
+  const [balance, setBalance] = useState('');
 
   const [loading, setLoading] = useState(true); // For initial fetch
   const [submitting, setSubmitting] = useState(false); // For form submission
@@ -55,6 +56,7 @@ export default function EditAccountPage() {
         setName(acc.name);
         setType(acc.type);
         setCurrency(acc.currency);
+        setBalance(acc.balance.toString());
 
       } catch (error: any) {
         console.error('Error fetching account details for edit:', error);
@@ -73,6 +75,7 @@ export default function EditAccountPage() {
     if (!name.trim()) newErrors.name = 'Magaca Account-ka waa waajib.';
     if (!type) newErrors.type = 'Nooca Account-ka waa waajib.';
     if (!currency) newErrors.currency = 'Currency-ga waa waajib.';
+    if (!balance || isNaN(Number(balance))) newErrors.balance = 'Balance waa waajib inuu ahaado tiro.';
 
     setValidationErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -96,6 +99,7 @@ export default function EditAccountPage() {
         name,
         type,
         currency,
+        balance: parseFloat(balance),
       };
 
       const response = await fetch(`/api/projects/accounting/accounts/${id}`, { // Use PUT method for update
@@ -198,11 +202,29 @@ export default function EditAccountPage() {
             {validationErrors.currency && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.currency}</p>}
           </div>
 
+          {/* Balance */}
+          <div>
+            <label htmlFor="balance" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Balance <span className="text-redError">*</span></label>
+            <div className="relative">
+              <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
+              <input
+                type="number"
+                step="0.01"
+                id="balance"
+                value={balance}
+                onChange={(e) => setBalance(e.target.value)}
+                placeholder="0.00"
+                className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.balance ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+              />
+            </div>
+            {validationErrors.balance && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.balance}</p>}
+          </div>
+
           {/* Info Note */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg flex items-start space-x-3 border border-blue-100 dark:border-blue-800">
-            <InfoIcon className="text-blue-500 mt-0.5" size={20} />
-            <p className="text-sm text-blue-700 dark:text-blue-300">
-              <span className="font-bold">Xusuusin:</span> Balance-ka account-ka si toos ah ayaa looga soo xisaabinayaa dhaqdhaaqyada lacagta (Transactions). Marnaba gacanta laguma bedeli karo si loo hubiyo saxsanaanta xisaabaadkaaga.
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg flex items-start space-x-3 border border-yellow-200 dark:border-yellow-800">
+            <InfoIcon className="text-yellow-600 dark:text-yellow-400 mt-0.5" size={20} />
+            <p className="text-sm text-yellow-800 dark:text-yellow-300">
+              <span className="font-bold">Digniin:</span> Adiga ayaa si ku meel gaadh ah loogu furay in aad Balance-ka beddesho. Guud ahaan habkan waa xiran yahay si aan lacagaha loo qaldin.
             </p>
           </div>
 

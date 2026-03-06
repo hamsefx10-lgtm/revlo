@@ -138,11 +138,11 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ message: 'Awood uma lihid.' }, { status: 401 });
     }
     const companyId = (session as any).user.companyId;
-    const { name, type, currency } = await request.json();
+    const { name, type, currency, balance } = await request.json();
 
-    if (!name || !type || typeof currency !== 'string') {
+    if (!name || !type || typeof currency !== 'string' || typeof balance !== 'number') {
       return NextResponse.json(
-        { message: 'Fadlan buuxi dhammaan beeraha waajibka ah: Magaca, Nooca, Currency.' },
+        { message: 'Fadlan buuxi dhammaan beeraha waajibka ah: Magaca, Nooca, Currency, Balance.' },
         { status: 400 }
       );
     }
@@ -159,6 +159,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         name,
         type,
         currency,
+        balance,
         updatedAt: new Date(),
       },
     });

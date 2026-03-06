@@ -101,6 +101,7 @@ interface DailyReport {
     customerName?: string | null;
     vendorName?: string | null;
     employeeName?: string | null;
+    note?: string | null;
   }>;
   debtsRepaid?: Array<{
     id: string;
@@ -111,6 +112,7 @@ interface DailyReport {
     customerName?: string | null;
     vendorName?: string | null;
     employeeName?: string | null;
+    note?: string | null;
   }>;
 }
 
@@ -136,15 +138,45 @@ async function exportPDF(data: DailyReport) {
     }
   };
 
-  const renderDocument = (logoDataUrl?: string) => {
+  const loadWatermarkAsDataUrl = async (logoUrl?: string) => {
+    if (!logoUrl) return null;
+    try {
+      return await new Promise<string>((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          // The user wants the text part of the logo for the watermark, not the top icon.
+          // The exact crop depends on the image, let's just use the whole image with low opacity
+          // since cropping the bottom text perfectly might be difficult without knowing the exact pixel layout.
+          // Let's use the whole image instead for a more reliable watermark.
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, img.width, img.height);
+            resolve(canvas.toDataURL('image/png'));
+          } else {
+            resolve(img.src); // fallback
+          }
+        };
+        img.onerror = () => reject(new Error('Failed to load image for watermark'));
+        img.src = logoUrl;
+      });
+    } catch (error) {
+      console.warn('Unable to load watermark:', error);
+      return null;
+    }
+  };
+
+  const renderDocument = (logoDataUrl?: string, watermarkDataUrl?: string) => {
     // -- HEADER --
 
     // Logo & Company Info
     if (logoDataUrl) {
       try {
-        // Adjust the width/height to match the logo aspect ratio better. 
-        // 14x22 seems to fit the vertical logo shape without stretching it too wide.
-        doc.addImage(logoDataUrl, 'PNG', 14, 12, 14, 22, undefined, 'FAST');
+        // Enlarge the main logo significantly as requested
+        doc.addImage(logoDataUrl, 'PNG', 14, 12, 28, 28, undefined, 'FAST');
       } catch {
         // fallback
       }
@@ -156,19 +188,20 @@ async function exportPDF(data: DailyReport) {
 
     // "Bir" part in Black
     doc.setTextColor(0, 0, 0);
-    doc.text('Bir', 34, 26);
+    doc.text('Bir', 46, 26); // Shifted right to accommodate larger logo
 
     // Hardcoded tightly spaced width to make sure 's' touches 'r'
     const birWidth = 14.5;
 
     // "shiil" part in darker orange/amber
     doc.setTextColor(242, 154, 40);
-    doc.text('shiil', 34 + birWidth, 26);
+    doc.text('shiil', 46 + birWidth, 26); // Shifted right
 
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(0, 0, 0);
-    doc.text('Daily Financial Report', 34, 32);
+    // "Daily Financial Report" styled distinctly, smaller, and aligned
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(120, 120, 120);
+    doc.text('Daily Financial Report', 46, 34); // Shifted right
 
     // Meta Data
     doc.setFontSize(9);
@@ -214,11 +247,21 @@ async function exportPDF(data: DailyReport) {
 
       yPos += 5;
 
-      // Draw top horizontal line
-      doc.setDrawColor(0, 0, 0);
-      doc.setLineWidth(0.5);
-      doc.line(14, yPos, 196, yPos);
-      yPos += 7;
+      // Prevent orphan titles
+      if (yPos > doc.internal.pageSize.getHeight() - 40) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      // Draw top horizontal line (Green) only for Account Balances
+      if (title === 'Account Balances') {
+        doc.setDrawColor(22, 163, 74);
+        doc.setLineWidth(0.5);
+        doc.line(14, yPos, 196, yPos);
+        yPos += 7;
+      } else {
+        yPos += 2; // small padding instead
+      }
 
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(14);
@@ -238,29 +281,42 @@ async function exportPDF(data: DailyReport) {
         startY: yPos,
         head: upperHead,
         body,
-        theme: 'striped',
+        theme: 'plain',
+        pageBreak: 'avoid',
+        // rowPageBreak prevents a single row from awkwardly splitting across pages 
+        rowPageBreak: 'avoid',
         headStyles: {
           fillColor: [255, 255, 255],
-          textColor: [0, 0, 0],
+          textColor: [30, 41, 59], // Dark Slate Gray
           fontStyle: 'bold',
           fontSize: 8,
-          cellPadding: { top: 2, bottom: 1, left: 1, right: 1 },
+          cellPadding: { top: 3, bottom: 2, left: 1, right: 1 },
+          lineColor: [200, 200, 200],
+          lineWidth: { bottom: 0.5 }
         },
         bodyStyles: {
-          textColor: [0, 0, 0],
+          textColor: [50, 60, 70],
           fontSize: 8,
-          // Base fontStyle sets everything to normal by default, we'll bold totals via hooks or options.
           fontStyle: 'normal',
-          cellPadding: { top: 2, bottom: 2, left: 1, right: 1 },
-        },
-        alternateRowStyles: {
-          fillColor: [247, 247, 247], // Even lighter grey, better contrast
+          cellPadding: { top: 3, bottom: 3, left: 1, right: 1 },
         },
         columnStyles: {
           [head[0].length - 1]: { halign: 'right' }
-          // Removed [head[0].length - 2] forced right-alignment since it breaks "ACCOUNT" under "Income Received"
         },
         margin: { left: 14, right: 14 },
+        didDrawCell: (hookData) => {
+          // Add a very subtle bottom border to every body row
+          if (hookData.section === 'body') {
+            doc.setDrawColor(240, 240, 240);
+            doc.setLineWidth(0.1);
+            doc.line(
+              hookData.cell.x,
+              hookData.cell.y + hookData.cell.height,
+              hookData.cell.x + hookData.cell.width,
+              hookData.cell.y + hookData.cell.height
+            );
+          }
+        },
         didParseCell: (hookData) => {
           // Right align any cell in the body that actually represents a money amount (ends in ETB)
           // But avoid right-aligning descriptions that just happen to contain numbers.
@@ -294,18 +350,21 @@ async function exportPDF(data: DailyReport) {
       if (options.totalLabel && options.totalValue) {
         const finalY = (doc as any).lastAutoTable.finalY + 4;
 
-        doc.setFont('helvetica', 'normal');
+        doc.setFont('helvetica', 'bold');
         doc.setFontSize(10);
-        doc.setTextColor(0, 0, 0);
+        doc.setTextColor(30, 41, 59);
+
+        // Draw a light box for the total
+        doc.setFillColor(248, 250, 252); // slate-50
+        doc.rect(140, finalY - 4, 56, 7, 'F');
 
         doc.text(options.totalLabel, 150, finalY, { align: 'right' });
-        doc.setFont('helvetica', 'bold');
         if (options.totalColor) {
           doc.setTextColor(...options.totalColor);
         }
         doc.text(options.totalValue, 196, finalY, { align: 'right' });
 
-        yPos = finalY + 10;
+        yPos = finalY + 12;
       } else {
         yPos = (doc as any).lastAutoTable.finalY + 10;
       }
@@ -325,9 +384,9 @@ async function exportPDF(data: DailyReport) {
         ];
       });
 
-      // Special handling for the total row
+      // Add a generic Total row as requested by the user
       balanceRows.push([
-        'TOTAL LIQUIDITY',
+        'Total',
         formatCurrency(data.totalPrev || 0),
         formatCurrency(data.totalToday || 0)
       ]);
@@ -345,20 +404,15 @@ async function exportPDF(data: DailyReport) {
               const colIndex = hookData.column.index;
 
               if (isTotalRow) {
-                // Total row is bold
                 hookData.cell.styles.fontStyle = 'bold';
               } else {
-                // Ensure other rows are normal
                 hookData.cell.styles.fontStyle = 'normal';
               }
 
               // Color specific columns (Previous Balance and Current Balance)
               // Only color the values, not the account names. 
-              // And let's not color the total liquidity row.
-              if (!isTotalRow && (colIndex === 1 || colIndex === 2)) {
-                // For now, setting them to dark gray/blue depending on your preference. 
-                // Based on user: "kuwaana tirooyinka numbarada sii kalaro ku haboon waana qaybta accountska"
-                // Let's use a standard blue for balances to make them pop out but remain professional.
+              // Based on user: "kuwaana tirooyinka numbarada sii kalaro ku haboon waana qaybta accountska"
+              if (colIndex === 1 || colIndex === 2) {
                 hookData.cell.styles.textColor = [15, 23, 42]; // slate-900 
               }
 
@@ -492,8 +546,9 @@ async function exportPDF(data: DailyReport) {
         data.debtsTaken.map(tx => {
           // We cast to any here just for flexibility to pull name fields if present from backend
           let entity = (tx as any).customerName || (tx as any).vendorName || (tx as any).employeeName || '-';
-          let desc = tx.description || 'Debt Taken';
+          let desc = tx.note || tx.description || 'Debt Taken';
           desc = desc.replace(/\s?-?\s*\d{4}-\d{2}-\d{2}$/, '').trim();
+          if (!desc) desc = 'Debt Taken';
           return [entity, desc, tx.account || '-', formatCurrency(tx.amount)];
         }),
         {
@@ -512,8 +567,9 @@ async function exportPDF(data: DailyReport) {
         [['Lender / Customer', 'Description', 'Account', 'Amount']],
         data.debtsRepaid.map(tx => {
           let entity = (tx as any).customerName || (tx as any).vendorName || (tx as any).employeeName || '-';
-          let desc = tx.description || 'Debt Repaid';
+          let desc = tx.note || tx.description || 'Debt Repaid';
           desc = desc.replace(/\s?-?\s*\d{4}-\d{2}-\d{2}$/, '').trim();
+          if (!desc) desc = 'Debt Repaid';
           return [entity, desc, tx.account || '-', formatCurrency(tx.amount)];
         }),
         {
@@ -536,7 +592,15 @@ async function exportPDF(data: DailyReport) {
     }
 
     // -- SUMMARY --
-    const summaryY = yPos + 5;
+    let summaryY = yPos + 5;
+    const pageHeightPDF = doc.internal.pageSize.getHeight();
+
+    // Check if there's enough room for both the Financial Summary and the signatures/stamp
+    // Summary is ~40 units tall, signatures take the bottom 40 units.
+    if (summaryY > pageHeightPDF - 90) {
+      doc.addPage();
+      summaryY = 30;
+    }
 
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.5);
@@ -584,18 +648,36 @@ async function exportPDF(data: DailyReport) {
     }
     doc.text(formatCurrency(netFlow), 196, summaryY + 36, { align: 'right' });
 
-    // Footer
-    const pageHeight = doc.internal.pageSize.getHeight();
-    doc.setFontSize(8);
-    doc.setTextColor(150, 150, 150);
-    doc.text(`Generated on ${new Date().toLocaleString()}`, 14, pageHeight - 10);
-    doc.text('Powered by Revlo', 196, pageHeight - 10, { align: 'right' });
+    // Check if there's enough room on the current page for the signature block
+    // We removed the signatures and stamp entirely.
+
+    // Pagination & Watermark Footer Hook
+    const pageCount = (doc as any).internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+
+      // Watermark
+      if (watermarkDataUrl) {
+        (doc as any).setGState(new (doc as any).GState({ opacity: 0.05 }));
+        // Draw large logo in center
+        doc.addImage(watermarkDataUrl, 'PNG', 55, 100, 100, 100, undefined, 'FAST');
+        (doc as any).setGState(new (doc as any).GState({ opacity: 1.0 }));
+      }
+
+      const pageHeight = doc.internal.pageSize.getHeight();
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`Generated on ${new Date().toLocaleString()}`, 14, pageHeight - 10);
+      doc.text(`Page ${i} of ${pageCount}`, 105, pageHeight - 10, { align: 'center' });
+      doc.text('Powered by Revlo', 196, pageHeight - 10, { align: 'right' });
+    }
 
     doc.save(`daily_report_${data.date}.pdf`);
   };
 
   const logoDataUrl = await loadLogoAsDataUrl(data.companyLogoUrl);
-  renderDocument(logoDataUrl || undefined);
+  const watermarkDataUrl = await loadWatermarkAsDataUrl(data.companyLogoUrl);
+  renderDocument(logoDataUrl || undefined, watermarkDataUrl || undefined);
 }
 
 export default function DailyReportPage() {

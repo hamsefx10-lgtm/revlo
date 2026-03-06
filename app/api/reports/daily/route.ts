@@ -47,6 +47,8 @@ export async function GET(request: Request) {
     previousDay.setDate(selectedDate.getDate() - 1);
     previousDay.setHours(23, 59, 59, 999);
 
+    console.log(`[Daily Report API] Date Range: ${selectedDate.toISOString()} to ${nextDay.toISOString()}`);
+
     console.log('[Daily Report API] Fetching expenses...');
     // Expenses for selected date only
     const expenses = await prisma.expense.findMany({
@@ -62,6 +64,8 @@ export async function GET(request: Request) {
         vendor: { select: { name: true } },
       },
     });
+
+    console.log(`[Daily Report API] Found ${expenses.length} expenses for date.`);
 
     // Split expenses into project and company
     const projectExpenses = expenses.filter((exp: any) => exp.projectId !== null);
@@ -208,6 +212,7 @@ export async function GET(request: Request) {
       },
     });
     const income = incomeTx.reduce((sum: number, tx: any) => sum + Number(tx.amount), 0);
+    console.log(`[Daily Report API] Found ${incomeTx.length} income tx for date.`);
 
     // Map income transactions with details
     const incomeTransactions = incomeTx.map((tx: any) => {
@@ -484,8 +489,14 @@ export async function GET(request: Request) {
     const debtsTaken = otherTransactionsList.filter(tx => tx.type === 'DEBT_TAKEN');
     const debtsRepaid = otherTransactionsList.filter(tx => tx.type === 'DEBT_REPAID');
 
+    let displayDate = dateParam;
+    if (!displayDate || isNaN(new Date(displayDate).getTime())) {
+      const offset = selectedDate.getTimezoneOffset() * 60000;
+      displayDate = new Date(selectedDate.getTime() - offset).toISOString().split('T')[0];
+    }
+
     const responseData = {
-      date: selectedDate.toISOString().slice(0, 10),
+      date: displayDate,
       companyName,
       companyLogoUrl,
       preparedBy,

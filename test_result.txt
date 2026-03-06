@@ -1,0 +1,16 @@
+--- Test Transaction Edit ---
+Found Transaction ID: a0cb279e-3134-409a-8455-f2c1b7a1a075
+Original Account ID: 3c156507-ea0a-4974-8a54-92f1e9dd519a | Balance: 1512.330000000075
+Amount: -2150
+Target Account ID: 0a98a490-1259-4cb4-b065-3665aaca70a6 | Balance: 0
+
+--- Simulating PUT request ---
+Transaction 'accountId' updated in database.
+Recalculation finished.
+
+--- Results ---
+Original Account Balance: 3662.330000000075 (Expected: -637.669999999925)
+Target Account Balance: -2150 (Expected: 2150)
+
+--- Reverting ---
+Reverted successfully.

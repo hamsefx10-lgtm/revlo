@@ -34,7 +34,7 @@ function AddExpenseContent() {
 
   // Common fields for all expense types
   const [amount, setAmount] = useState<number | ''>(''); // This will be conditionally rendered/calculated
-  const [paidFrom, setPaidFrom] = useState('Cash');
+  const [paidFrom, setPaidFrom] = useState('');
   const [expenseDate, setExpenseDate] = useState(new Date().toISOString().split('T')[0]);
   const [note, setNote] = useState('');
   const [selectedProject, setSelectedProject] = useState('');
@@ -1153,7 +1153,7 @@ function AddExpenseContent() {
         }
         setToastMessage({ message: 'Shaqaale mashruuc iyo kharashkiisa si guul leh ayaa loo diiwaan geliyay!', type: 'success' });
         // Clear form
-        setCategory(''); setAmount(''); setPaidFrom('Cash'); setExpenseDate(new Date().toISOString().split('T')[0]); setNote(''); setSelectedProject('');
+        setCategory(''); setAmount(''); setPaidFrom(''); setExpenseDate(new Date().toISOString().split('T')[0]); setNote(''); setSelectedProject('');
         setMaterials([{ id: 1, name: '', qty: '', price: '', unit: 'pcs' }]);
         setSelectedEmployeeForSalary(''); setWorkDescription(''); setWage(''); setLaborPaidAmount(''); setTransportType(''); setTaxiXamaalType('');
         setCompanyExpenseType(''); setLenderName(''); setLoanDate(''); setReceiptImage(null);
@@ -1198,7 +1198,7 @@ function AddExpenseContent() {
         }
         setToastMessage({ message: 'Shaqaale shirkad iyo kharashkiisa si guul leh ayaa loo diiwaan geliyay!', type: 'success' });
         // Clear form
-        setCategory(''); setAmount(''); setPaidFrom('Cash'); setExpenseDate(new Date().toISOString().split('T')[0]); setNote(''); setSelectedProject('');
+        setCategory(''); setAmount(''); setPaidFrom(''); setExpenseDate(new Date().toISOString().split('T')[0]); setNote(''); setSelectedProject('');
         setMaterials([{ id: 1, name: '', qty: '', price: '', unit: 'pcs' }]);
         setSelectedEmployeeForSalary(''); setWorkDescription(''); setWage(''); setLaborPaidAmount(''); setTransportType(''); setTaxiXamaalType('');
         setCompanyExpenseType(''); setLenderName(''); setLoanDate(''); setReceiptImage(null);
@@ -1272,7 +1272,7 @@ function AddExpenseContent() {
       }
 
       // Clear form
-      setCategory(''); setAmount(''); setPaidFrom('Cash'); setExpenseDate(new Date().toISOString().split('T')[0]); setNote(''); setSelectedProject('');
+      setCategory(''); setAmount(''); setPaidFrom(''); setExpenseDate(new Date().toISOString().split('T')[0]); setNote(''); setSelectedProject('');
       setMaterials([{ id: 1, name: '', qty: '', price: '', unit: '' }]);
       setSelectedEmployeeForSalary(''); setWorkDescription(''); setWage(''); setLaborPaidAmount(''); setTransportType('');
       setCompanyExpenseType(''); setLenderName(''); setLoanDate(''); setReceiptImage(null);

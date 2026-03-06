@@ -52,9 +52,9 @@ const AccountRow: React.FC<{ account: Account; onEdit: (id: string) => void; onD
         <Link href={`/projects/accounting/accounts/${account.id}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View Details">
           <Eye size={18} />
         </Link>
-        {/* <button onClick={() => onEdit(account.id)} className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit Account" aria-label="Edit Account">
+        <button onClick={() => onEdit(account.id)} className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit Account" aria-label="Edit Account">
           <Edit size={18} />
-        </button> */}
+        </button>
         <button onClick={() => onDelete(account.id)} className="p-2 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-colors duration-200" title="Delete Account" aria-label="Delete Account">
           <Trash2 size={18} />
         </button>
@@ -100,9 +100,9 @@ const AccountCard: React.FC<{ account: Account; onEdit: (id: string) => void; on
         <Link href={`/projects/accounting/accounts/${account.id}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View Details">
           <Eye size={16} />
         </Link>
-        {/* <button onClick={() => onEdit(account.id)} className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit Account" aria-label="Edit Account">
+        <button onClick={() => onEdit(account.id)} className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit Account" aria-label="Edit Account">
           <Edit size={16} />
-        </button> */}
+        </button>
         <button onClick={() => onDelete(account.id)} className="p-2 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-colors duration-200" title="Delete Account" aria-label="Delete Account">
           <Trash2 size={16} />
         </button>

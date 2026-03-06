@@ -139,6 +139,9 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       if (!employee) return NextResponse.json({ message: 'Shaqaalaha la xiriira lama helin.' }, { status: 400 });
     }
 
+    // Capture OLD accounts BEFORE update
+    const oldTrx = await prisma.transaction.findUnique({ where: { id } });
+
     // Cusboonaysii dhaqdhaqaaq cusub
     const updatedTransaction = await prisma.transaction.update({
       where: { id: id },
@@ -171,7 +174,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     if (toAccountId) affectedAccountIds.add(toAccountId);
 
     // Also consider the OLD accounts before update
-    const oldTrx = await prisma.transaction.findUnique({ where: { id } });
     if (oldTrx) {
       if (oldTrx.accountId) affectedAccountIds.add(oldTrx.accountId);
       if (oldTrx.fromAccountId) affectedAccountIds.add(oldTrx.fromAccountId);

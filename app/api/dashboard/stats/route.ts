@@ -117,24 +117,94 @@ export async function GET(request: Request) {
     }));
 
     // Receivables (Customers owe us) & Payables (We owe vendors) logic
-    // We will use the 'debts' report logic simplified:
-    // Payables: Sum of Remaining Unpaid Purchases + Remaining Vendor Debts
-    // Receivables: Sum of Remaining Unpaid Sales + Remaining Customer Debts
-    // For dashboard, calculating "Remaining" perfectly for every item is heavy.
-    // Let's aggregate from the `Transaction` table for "Net Flow" or just return the static 0 if not easily available,
-    // ALTHOUGH, the user specifically asked for "Replac[ing] Outstanding Debts".
-    // Let's aggregate 'DEBT_TAKEN' (Liability) - 'DEBT_REPAID (Vendor)' as Payables estimate?
-    // Let's try to be as accurate as possible:
-    // We can't easily get 'Unpaid Sales' (Receivables) purely from Transactions if they are not recorded there until paid.
-    // BUT we can get 'Outstanding Debts' from the `api/reports/debts` logic.
-    // Ideally we should import that logic. For now, let's leave Receivables/Payables as 0 if we can't calculate easily, 
-    // OR just use the Aggregates we have:
-    // Net Payables Estimate = Total DEBT_TAKEN - Total DEBT_REPAID (Vendor)
+    // Payables: (DEBT_TAKEN from Vendors) - (DEBT_REPAID to Vendors)
+    // Receivables: (DEBT_GIVEN to Customers or DEBT_TAKEN by Customers) - (DEBT_REPAID from Customers)
 
-    // Let's recalculate `totalReceivables` and `totalPayables` based on explicit type logic if possible
-    // Simplified for now:
-    const totalPayables = 0; // Placeholder for real logic (requires iterating all vendors balance)
-    const totalReceivables = 0; // Placeholder
+    // 1. Calculate Total Payables (Money we owe vendors/others)
+    const liabilityTransactions = await prisma.transaction.findMany({
+      where: {
+        companyId,
+        AND: [
+          {
+            OR: [
+              { type: 'DEBT_TAKEN' },
+              { type: 'DEBT_REPAID' }
+            ]
+          },
+          {
+            // Vendors, or Customers acting as lenders
+            OR: [
+              { vendorId: { not: null } },
+              { customerId: { not: null }, type: 'DEBT_RECEIVED' }, // If a customer gave us a loan
+            ]
+          }
+        ]
+      },
+      select: { amount: true, type: true }
+    });
+
+    let totalPayables = 0;
+    for (const tx of liabilityTransactions) {
+      const amt = Math.abs(Number(tx.amount));
+      if (tx.type === 'DEBT_TAKEN' || tx.type === 'DEBT_RECEIVED') {
+        totalPayables += amt;
+      } else if (tx.type === 'DEBT_REPAID') {
+        totalPayables -= amt;
+      }
+    }
+    if (totalPayables < 0) totalPayables = 0; // Prevent negative payables
+
+    // 2. Calculate Total Receivables (Money owed to us by customers)
+    const assetTransactions = await prisma.transaction.findMany({
+      where: {
+        companyId,
+        customerId: { not: null },
+        OR: [
+          { type: 'DEBT_GIVEN' }, // Legacy or rare
+          { type: 'DEBT_TAKEN' }, // Common when customer takes debt from us
+          { type: 'DEBT_REPAID' }
+        ]
+      },
+      select: { amount: true, type: true }
+    });
+
+    let totalReceivables = 0;
+    for (const tx of assetTransactions) {
+      const amt = Math.abs(Number(tx.amount));
+      if (tx.type === 'DEBT_TAKEN' || tx.type === 'DEBT_GIVEN') {
+        totalReceivables += amt;
+      } else if (tx.type === 'DEBT_REPAID') {
+        totalReceivables -= amt;
+      }
+    }
+
+    // Also add unpaid Project Agreements to Receivables (Total Agreement - Advance Paid - Income Received)
+    const projectsWithDebts = await prisma.project.findMany({
+      where: { companyId },
+      select: {
+        agreementAmount: true,
+        advancePaid: true,
+        transactions: {
+          where: { type: { in: ['INCOME', 'DEBT_REPAID'] } },
+          select: { amount: true, description: true }
+        }
+      }
+    });
+
+    for (const proj of projectsWithDebts) {
+      const agreement = Number(proj.agreementAmount) || 0;
+      const advance = Math.abs(Number(proj.advancePaid) || 0);
+
+      // Filter out auto-generated advance transactions to avoid double counting
+      const repayments = proj.transactions.filter(t =>
+        !(t.description || '').toLowerCase().includes('advance payment')
+      ).reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
+
+      const remaining = agreement - (advance + repayments);
+      if (remaining > 0) {
+        totalReceivables += remaining;
+      }
+    }
 
     // Money In calculation
     const moneyInFromTransactions = incomeAgg._sum.amount ? Number(incomeAgg._sum.amount) : 0;
