@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Save,
     ArrowLeft,
@@ -10,7 +10,8 @@ import {
     CheckCircle2,
     Plus,
     Trash2,
-    ChevronDown
+    ChevronDown,
+    Globe
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -41,6 +42,32 @@ export default function CreatePurchaseOrderPage() {
     const [vendorId, setVendorId] = useState('');
     const [orderDate, setOrderDate] = useState(new Date().toISOString().split('T')[0]);
     const [expectedDelivery, setExpectedDelivery] = useState('');
+    const [currency, setCurrency] = useState('USD');
+    const [exchangeRate, setExchangeRate] = useState<number>(1);
+    const [fetchingRate, setFetchingRate] = useState(false);
+
+    useEffect(() => {
+        if (currency === 'USD') {
+            fetchTodayRate();
+        } else {
+            setExchangeRate(1);
+        }
+    }, [currency]);
+
+    const fetchTodayRate = async () => {
+        setFetchingRate(true);
+        try {
+            const res = await fetch('/api/settings/exchange-rate');
+            const data = await res.json();
+            if (data.rate) {
+                setExchangeRate(data.rate.rate);
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setFetchingRate(false);
+        }
+    };
 
     const [items, setItems] = useState<PurchaseItem[]>([
         { id: 1, productId: '', productName: '', quantity: 1, unitCost: 0 }
@@ -72,13 +99,44 @@ export default function CreatePurchaseOrderPage() {
     const tax = subtotal * 0.15;
     const total = subtotal + tax;
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!vendorId) {
+            alert('Please select a vendor');
+            return;
+        }
         setIsLoading(true);
-        setTimeout(() => {
+        try {
+            const res = await fetch('/api/shop/purchases', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    vendorId,
+                    expectedDelivery,
+                    notes: '', // Can add a notes field later
+                    items: items.map(i => ({
+                        productId: i.productId,
+                        productName: i.productName,
+                        quantity: i.quantity,
+                        unitCost: i.unitCost
+                    })),
+                    currency,
+                    exchangeRate
+                })
+            });
+
+            if (res.ok) {
+                alert('Purchase Order created successfully!');
+                window.location.href = '/shop/purchases';
+            } else {
+                const data = await res.json();
+                throw new Error(data.error || 'Failed to create PO');
+            }
+        } catch (e: any) {
+            alert('Error: ' + e.message);
+        } finally {
             setIsLoading(false);
-            alert('Purchase Order created successfully!');
-        }, 1500);
+        }
     };
 
     return (
@@ -122,6 +180,34 @@ export default function CreatePurchaseOrderPage() {
                 <div className="p-8 border-b border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/20 grid grid-cols-1 md:grid-cols-3 gap-6">
 
                     <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Currency</label>
+                        <div className="flex gap-2">
+                            <select
+                                value={currency}
+                                onChange={(e) => setCurrency(e.target.value)}
+                                className="block w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB] transition-all font-bold"
+                            >
+                                <option value="USD">USD (Dollar)</option>
+                                <option value="ETB">ETB (Birr)</option>
+                            </select>
+                            {currency === 'USD' && (
+                                <div className="relative w-32">
+                                    <input
+                                        type="number"
+                                        value={exchangeRate}
+                                        onChange={(e) => setExchangeRate(parseFloat(e.target.value))}
+                                        className="w-full px-3 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-bold text-center"
+                                        placeholder="Rate"
+                                    />
+                                    <div className="absolute -top-6 left-0 text-[8px] font-black text-blue-500 uppercase tracking-widest flex items-center gap-1">
+                                        <Globe size={8} /> Rate
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div>
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Vendor</label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -139,22 +225,6 @@ export default function CreatePurchaseOrderPage() {
                             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
                                 <ChevronDown size={16} />
                             </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Order Date</label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Calendar size={18} className="text-gray-400" />
-                            </div>
-                            <input
-                                type="date"
-                                value={orderDate}
-                                onChange={(e) => setOrderDate(e.target.value)}
-                                className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB] transition-all font-medium text-gray-700 dark:text-gray-200"
-                                required
-                            />
                         </div>
                     </div>
 
@@ -255,15 +325,21 @@ export default function CreatePurchaseOrderPage() {
                         <div className="w-full md:w-1/3 space-y-3">
                             <div className="flex justify-between text-sm text-gray-500 font-medium">
                                 <span>Subtotal</span>
-                                <span>ETB {subtotal.toLocaleString()}</span>
+                                <span>{currency} {subtotal.toLocaleString()}</span>
                             </div>
+                            {currency === 'USD' && (
+                                <div className="flex justify-between text-[10px] text-blue-500 font-black uppercase tracking-widest">
+                                    <span>Equivalent in ETB</span>
+                                    <span>ETB {(subtotal * exchangeRate).toLocaleString()}</span>
+                                </div>
+                            )}
                             <div className="flex justify-between text-sm text-gray-500 font-medium">
-                                <span>Tax (15%)</span>
-                                <span>ETB {tax.toLocaleString()}</span>
+                                <span>Tax (0%)</span>
+                                <span>{currency} 0.00</span>
                             </div>
                             <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
                                 <span className="text-lg font-bold text-gray-900 dark:text-white">Total</span>
-                                <span className="text-2xl font-black text-[#2ECC71]">ETB {total.toLocaleString()}</span>
+                                <span className="text-2xl font-black text-[#2ECC71]">{currency} {subtotal.toLocaleString()}</span>
                             </div>
                         </div>
                     </div>

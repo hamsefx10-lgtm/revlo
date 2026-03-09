@@ -18,10 +18,22 @@ import {
     FileText,
     MapPin,
     Phone,
-    Loader2
+    Loader2,
+    Barcode,
+    ExternalLink,
+    ChevronRight,
+    Tag,
+    Layers,
+    Clock,
+    Plus,
+    X,
+    MoreVertical,
+    AlertTriangle
 } from 'lucide-react';
+import Link from 'next/link';
 import { format } from 'date-fns';
 import { useToast } from '@/components/ui/use-toast';
+import BarcodeComponent from 'react-barcode';
 import StatusBadge from '@/components/shop/ui/StatusBadge';
 import { useReactToPrint } from 'react-to-print';
 
@@ -35,14 +47,6 @@ interface PurchaseOrder {
         address: string;
         contactPerson: string;
     };
-    items: {
-        id: string;
-        productId: string;
-        productName: string;
-        quantity: number;
-        unitCost: number;
-        total: number;
-    }[];
     expenses: {
         id: string;
         amount: number;
@@ -58,8 +62,49 @@ interface PurchaseOrder {
     total: number;
     paidAmount: number;
     paymentStatus: string;
+    currency: string;
+    exchangeRate: number;
+    shippingCost: number;
+    customsFee: number;
+    otherExpenses: number;
     status: string;
+    items: {
+        id: string;
+        productId: string;
+        productName: string;
+        quantity: number;
+        unitCost: number;
+        total: number;
+        unitCostUSD?: number;
+        product?: {
+            sku: string;
+            sellingPrice: number;
+        };
+    }[];
 }
+
+const BarcodePrintTemplate = React.forwardRef(({ items }: { items: any[] }, ref: any) => (
+    <div ref={ref} className="p-10 bg-white min-h-screen">
+        <div className="grid grid-cols-2 gap-8">
+            {items.map((item, idx) => (
+                <div key={idx} className="border-2 border-black p-4 flex flex-col items-center justify-center text-center break-inside-avoid mb-6">
+                    <p className="font-bold text-lg mb-1 truncate w-full">{item.productName}</p>
+                    <div className="scale-90">
+                        <BarcodeComponent
+                            value={item.product?.sku || 'NO-SKU'}
+                            width={1.5}
+                            height={50}
+                            fontSize={14}
+                        />
+                    </div>
+                    <p className="font-bold mt-1">ETB {item.product?.sellingPrice?.toLocaleString() || 'N/A'}</p>
+                    <p className="text-[10px] text-gray-500 mt-1">Order Item: {idx + 1}</p>
+                </div>
+            ))}
+        </div>
+    </div>
+));
+BarcodePrintTemplate.displayName = 'BarcodePrintTemplate';
 
 export default function PurchaseOrderDetails({ params }: { params: { id: string } }) {
     const router = useRouter();
@@ -67,11 +112,18 @@ export default function PurchaseOrderDetails({ params }: { params: { id: string 
     const [po, setPo] = useState<PurchaseOrder | null>(null);
     const [loading, setLoading] = useState(true);
     const componentRef = useRef<HTMLDivElement>(null);
+    const barcodeRef = useRef<HTMLDivElement>(null);
 
     const handlePrint = useReactToPrint({
         // @ts-ignore
         content: () => componentRef.current,
         documentTitle: po ? `${po.poNumber}_Invoice` : 'Purchase_Order',
+    });
+
+    const handlePrintBarcodes = useReactToPrint({
+        // @ts-ignore
+        content: () => barcodeRef.current,
+        documentTitle: po ? `${po.poNumber}_Barcodes` : 'Item_Barcodes',
     });
 
     useEffect(() => {
@@ -110,209 +162,302 @@ export default function PurchaseOrderDetails({ params }: { params: { id: string 
     }
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0B1120] pb-20 font-sans">
-            {/* Header Actions */}
-            <div className="sticky top-0 z-20 border-b border-gray-200 bg-white/80 px-6 py-4 backdrop-blur-md dark:border-gray-800 dark:bg-[#151C2C]/80">
-                <div className="mx-auto flex max-w-5xl items-center justify-between">
+        <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0B1120] pb-20 font-sans animate-fade-in">
+            {/* STICKY ACTION HEADER */}
+            <div className="sticky top-0 z-40 border-b border-gray-100 dark:border-gray-800 bg-white/70 dark:bg-[#151C2C]/70 backdrop-blur-xl">
+                <div className="mx-auto flex max-w-7xl items-center justify-between px-4 md:px-8 py-3">
                     <button
                         onClick={() => router.back()}
-                        className="flex items-center gap-2 rounded-lg py-2 pr-4 text-sm font-bold text-gray-500 transition-colors hover:text-gray-900 dark:hover:text-white"
+                        className="group flex items-center gap-2 rounded-xl bg-gray-50 dark:bg-gray-800 px-4 py-2 text-sm font-black text-gray-500 transition-all hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white border border-gray-100 dark:border-gray-700"
                     >
-                        <ArrowLeft size={18} /> Back
+                        <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+                        <span className="hidden sm:inline">Return to Logistics</span>
                     </button>
+
                     <div className="flex gap-2">
                         <button
                             onClick={handlePrint}
-                            className="flex items-center gap-2 rounded-xl bg-gray-100 px-4 py-2 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+                            className="flex items-center gap-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-5 py-2 text-sm font-black text-gray-700 dark:text-gray-200 transition-all hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-none sm:px-6"
                         >
-                            <Printer size={16} /> Print
+                            <Printer size={18} /> <span className="hidden sm:inline">Print Document</span>
                         </button>
-                        {/* <button className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-blue-700 hover:shadow-blue-500/30">
-                            <Download size={16} /> PDF
-                        </button> */}
+                        <Link
+                            href={`/shop/purchases/edit/${po.id}`}
+                            className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-sm font-black text-white shadow-xl shadow-blue-500/20 transition-all hover:bg-blue-700 hover:shadow-blue-500/30 sm:px-6"
+                        >
+                            <Edit size={18} /> <span className="hidden sm:inline">Modify Order</span>
+                        </Link>
                     </div>
                 </div>
             </div>
 
-            {/* Main Content (Printable Area) */}
-            <div className="w-full px-4 md:px-8 mt-6">
-                <div ref={componentRef} className="rounded-[24px] bg-white p-8 shadow-sm dark:bg-[#151C2C] dark:border dark:border-gray-800 print:text-black print:shadow-none print:dark:bg-white print:dark:text-black">
+            <div className="mx-auto max-w-7xl px-4 md:px-8 py-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-                    {/* Invoice Header */}
-                    <div className="mb-8 flex flex-col justify-between gap-6 border-b border-gray-100 pb-8 dark:border-gray-800 md:flex-row md:items-start">
-                        <div>
-                            <div className="mb-2 flex items-center gap-3">
-                                <div className="rounded-xl bg-blue-50 p-2.5 text-blue-600 dark:bg-blue-900/20 print:bg-transparent print:text-blue-600">
-                                    <Truck size={28} />
+                    {/* LEFT COLUMN: MAIN ORDER INFO */}
+                    <div className="lg:col-span-8 space-y-8">
+
+                        {/* INVOICE CARD */}
+                        <div ref={componentRef} className="rounded-[2.5rem] bg-white dark:bg-[#151C2C] p-8 md:p-12 shadow-xl shadow-gray-200/40 dark:shadow-none border border-gray-100 dark:border-gray-800 relative overflow-hidden print:shadow-none print:border-none print:p-0">
+
+                            {/* Decorative Accent */}
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
+
+                            {/* DOCUMENT HEADER */}
+                            <div className="flex flex-col md:flex-row justify-between gap-8 mb-12 relative">
+                                <div>
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className="p-4 bg-gradient-to-br from-blue-600 to-blue-400 rounded-3xl text-white shadow-lg shadow-blue-500/30">
+                                            <Truck size={36} />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter">Purchase Order</h2>
+                                            <p className="text-blue-600 font-black tracking-widest text-[10px] uppercase mt-1">Official Requisition Document</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2 mt-6">
+                                        <div className="px-4 py-1.5 bg-gray-900 dark:bg-gray-800 text-white rounded-full text-xs font-black tracking-widest uppercase">
+                                            #{po.poNumber}
+                                        </div>
+                                        <StatusBadge status={po.status} />
+                                        <span className={`flex items-center gap-2 rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest ${po.paymentStatus === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                            {po.paymentStatus}
+                                        </span>
+                                    </div>
                                 </div>
-                                <h1 className="text-3xl font-black text-gray-900 dark:text-white print:text-black">Purchase Order</h1>
-                            </div>
-                            <p className="text-sm font-medium text-gray-500">#{po.poNumber}</p>
-                            <div className="mt-4 flex gap-2">
-                                <StatusBadge status={po.status} />
-                                <span className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${po.paymentStatus === 'Paid' ? 'bg-green-100 text-green-700' :
-                                    po.paymentStatus === 'Partial' ? 'bg-orange-100 text-orange-700' :
-                                        'bg-red-100 text-red-700'
-                                    }`}>
-                                    <span className={`h-1.5 w-1.5 rounded-full ${po.paymentStatus === 'Paid' ? 'bg-green-600' :
-                                        po.paymentStatus === 'Partial' ? 'bg-orange-600' :
-                                            'bg-red-600'
-                                        }`} />
-                                    {po.paymentStatus}
-                                </span>
-                            </div>
-                        </div>
 
-                        <div className="text-right">
-                            <div className="mb-1 text-sm font-bold text-gray-400">Date Issued</div>
-                            <div className="mb-4 text-lg font-bold text-gray-900 dark:text-white print:text-black">{format(new Date(po.createdAt), 'MMMM dd, yyyy')}</div>
-
-                            {po.expectedDelivery && (
-                                <>
-                                    <div className="mb-1 text-sm font-bold text-gray-400">Expected Delivery</div>
-                                    <div className="text-md font-medium text-gray-700 dark:text-gray-300 print:text-black">{format(new Date(po.expectedDelivery), 'MMM dd, yyyy')}</div>
-                                </>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Vendor and Company Info */}
-                    <div className="mb-10 grid grid-cols-1 gap-12 md:grid-cols-2">
-                        <div>
-                            <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-gray-400">Supplier Details</h3>
-                            <div className="space-y-1">
-                                <p className="text-xl font-bold text-gray-900 dark:text-white print:text-black">{po.vendor.name}</p>
-                                {po.vendor.contactPerson && <p className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"><User size={14} /> {po.vendor.contactPerson}</p>}
-                                {po.vendor.email && <p className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"><Mail size={14} /> {po.vendor.email}</p>}
-                                {po.vendor.phone && <p className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"><Phone size={14} /> {po.vendor.phone}</p>}
-                                {po.vendor.address && <p className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"><MapPin size={14} /> {po.vendor.address}</p>}
-                            </div>
-                        </div>
-                        {/* We could add generic company info or shipping info here if we had it in state */}
-                        <div className="rounded-xl bg-gray-50 p-6 dark:bg-gray-800/50 print:bg-gray-50 print:border print:border-gray-200">
-                            <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-gray-400">Notes</h3>
-                            <p className="text-sm font-medium italic text-gray-600 dark:text-gray-300 print:text-gray-700">
-                                {po.notes || "No additional notes for this order."}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Items Table - Desktop */}
-                    <div className="hidden md:block mb-10 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
-                        <table className="w-full text-left">
-                            <thead className="bg-gray-50 dark:bg-gray-800">
-                                <tr>
-                                    <th className="px-6 py-4 text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Item</th>
-                                    <th className="px-6 py-4 text-right text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Qty</th>
-                                    <th className="px-6 py-4 text-right text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Unit Cost</th>
-                                    <th className="px-6 py-4 text-right text-xs font-bold uppercase text-gray-500 dark:text-gray-400">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                                {po.items.map((item) => (
-                                    <tr key={item.id}>
-                                        <td className="px-6 py-4">
-                                            {item.productId ? (
-                                                <a href={`/shop/inventory/${item.productId}`} className="font-bold text-blue-600 hover:underline dark:text-blue-400 print:text-black print:no-underline">
-                                                    {item.productName}
-                                                </a>
-                                            ) : (
-                                                <p className="font-bold text-gray-900 dark:text-white print:text-black">{item.productName}</p>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 text-right font-medium text-gray-600 dark:text-gray-300">{item.quantity}</td>
-                                        <td className="px-6 py-4 text-right font-medium text-gray-600 dark:text-gray-300">ETB {item.unitCost.toLocaleString()}</td>
-                                        <td className="px-6 py-4 text-right font-bold text-gray-900 dark:text-white print:text-black">ETB {item.total.toLocaleString()}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Items List - Mobile */}
-                    <div className="md:hidden space-y-4 mb-10">
-                        <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400">Ordered Items</h3>
-                        {po.items.map((item) => (
-                            <div key={item.id} className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800">
-                                <div className="flex justify-between items-start mb-2">
-                                    {item.productId ? (
-                                        <a href={`/shop/inventory/${item.productId}`} className="font-bold text-blue-600 hover:underline dark:text-blue-400 text-sm">
-                                            {item.productName}
-                                        </a>
-                                    ) : (
-                                        <p className="font-bold text-gray-900 dark:text-white text-sm">{item.productName}</p>
+                                <div className="text-right flex flex-col justify-end">
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Issue Date</p>
+                                    <p className="text-xl font-black text-gray-900 dark:text-white">{format(new Date(po.createdAt), 'MMMM dd, yyyy')}</p>
+                                    {po.expectedDelivery && (
+                                        <div className="mt-4">
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Expected Arrival</p>
+                                            <p className="text-sm font-bold text-gray-700 dark:text-gray-300">{format(new Date(po.expectedDelivery), 'MMM dd, yyyy')}</p>
+                                        </div>
                                     )}
-                                    <span className="text-xs font-bold bg-white dark:bg-gray-700 px-2 py-1 rounded border border-gray-200 dark:border-gray-600">x{item.quantity}</span>
-                                </div>
-                                <div className="flex justify-between text-xs text-gray-500">
-                                    <span>Rate: ETB {item.unitCost.toLocaleString()}</span>
-                                    <span className="font-bold text-gray-900 dark:text-white">ETB {item.total.toLocaleString()}</span>
                                 </div>
                             </div>
-                        ))}
+
+                            {/* ENTITIES GRID */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12 border-y border-gray-100 dark:border-gray-800 py-10">
+                                <div>
+                                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Supplier Information</h4>
+                                    <div className="space-y-4">
+                                        <p className="text-2xl font-black text-gray-900 dark:text-white leading-tight">{po.vendor.name}</p>
+                                        <div className="space-y-2">
+                                            {po.vendor.contactPerson && <p className="flex items-center gap-3 text-sm text-gray-500 font-medium"><User size={16} className="text-blue-500" /> {po.vendor.contactPerson}</p>}
+                                            {po.vendor.phone && <p className="flex items-center gap-3 text-sm text-gray-500 font-medium"><Phone size={16} className="text-blue-500" /> {po.vendor.phone}</p>}
+                                            {po.vendor.email && <p className="flex items-center gap-3 text-sm text-gray-500 font-medium"><Mail size={16} className="text-blue-500" /> {po.vendor.email}</p>}
+                                            {po.vendor.address && <p className="flex items-center gap-3 text-sm text-gray-500 font-medium"><MapPin size={16} className="text-blue-500" /> {po.vendor.address}</p>}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-gray-50 dark:bg-gray-800/30 p-8 rounded-[2rem] border border-gray-100 dark:border-gray-700/50">
+                                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Internal Memo</h4>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed italic font-medium">
+                                        {po.notes || "No specific instructions or internal notes provided for this procurement cycle."}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* ITEMS TABLE */}
+                            <div className="mb-12">
+                                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 px-2">Manifest Details</h4>
+                                <div className="overflow-hidden rounded-3xl border border-gray-100 dark:border-gray-800">
+                                    <table className="w-full">
+                                        <thead>
+                                            <tr className="bg-gray-50 dark:bg-gray-800/50">
+                                                <th className="px-6 py-5 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Requisition Item</th>
+                                                <th className="px-6 py-5 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">Qty</th>
+                                                <th className="px-6 py-5 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Unit Value</th>
+                                                <th className="px-6 py-5 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Extension</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+                                            {po.items.map((item) => (
+                                                <tr key={item.id} className="group hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors">
+                                                    <td className="px-6 py-5">
+                                                        <div className="flex flex-col">
+                                                            <span className="font-black text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">
+                                                                {item.productName}
+                                                            </span>
+                                                            <span className="text-[10px] font-bold text-gray-400 uppercase mt-1 tracking-wider">SKU: {item.product?.sku || 'N/A'}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-5 text-center font-black text-gray-700 dark:text-gray-300">{item.quantity}</td>
+                                                    <td className="px-6 py-5 text-right">
+                                                        <p className="text-sm font-black text-gray-900 dark:text-white">ETB {item.unitCost.toLocaleString()}</p>
+                                                        {po.currency === 'USD' && item.unitCostUSD && (
+                                                            <p className="text-[10px] font-bold text-blue-500 mt-0.5">$ {item.unitCostUSD.toLocaleString()}</p>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-6 py-5 text-right">
+                                                        <p className="text-sm font-black text-gray-900 dark:text-white">ETB {item.total.toLocaleString()}</p>
+                                                        {po.currency === 'USD' && item.unitCostUSD && (
+                                                            <p className="text-[10px] font-bold text-blue-500 mt-0.5">$ {(item.unitCostUSD * item.quantity).toLocaleString()}</p>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {/* SIGNATURE AREA (PRINT ONLY) */}
+                            <div className="mt-20 hidden print:block pt-12 border-t border-gray-200">
+                                <div className="flex justify-between items-end">
+                                    <div className="text-center w-64">
+                                        <div className="border-b-2 border-black mb-2" />
+                                        <p className="text-sm font-bold uppercase tracking-widest">Vendor Acceptance</p>
+                                    </div>
+                                    <div className="text-center w-64">
+                                        <div className="border-b-2 border-black mb-2" />
+                                        <p className="text-sm font-bold uppercase tracking-widest">Authorized Signature</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* STOCK LABELING SECTION */}
+                        <div className="rounded-[2.5rem] bg-white dark:bg-[#151C2C] p-10 border border-gray-100 dark:border-gray-800 shadow-xl shadow-gray-200/40 dark:shadow-none">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-orange-50 dark:bg-orange-900/20 text-orange-600 rounded-2xl">
+                                        <Barcode size={32} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-2xl font-black text-gray-900 dark:text-white">Stock Labeling</h3>
+                                        <p className="text-sm text-gray-500 font-medium">Generate barcodes for batch item processing.</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={handlePrintBarcodes}
+                                    className="flex items-center justify-center gap-2 rounded-2xl bg-gray-900 hover:bg-black px-8 py-4 text-sm font-black text-white shadow-xl shadow-gray-900/20 transition-all active:scale-95"
+                                >
+                                    <Printer size={18} /> Print Bulk Labels
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                                {po.items.map((item, idx) => (
+                                    <div key={idx} className="p-6 rounded-3xl border-2 border-gray-100 dark:border-gray-800 flex flex-col items-center group hover:border-blue-500/30 transition-all bg-gray-50/30 dark:bg-gray-800/20">
+                                        <p className="font-black text-gray-800 dark:text-gray-200 mb-4 text-center line-clamp-1 w-full">{item.productName}</p>
+                                        <div className="bg-white p-4 rounded-xl shadow-sm dark:bg-white group-hover:scale-105 transition-transform duration-300">
+                                            <BarcodeComponent
+                                                value={item.product?.sku || 'NO-SKU'}
+                                                width={1.2}
+                                                height={40}
+                                                fontSize={12}
+                                                background="transparent"
+                                            />
+                                        </div>
+                                        <div className="mt-4 flex items-center justify-between w-full pt-4 border-t border-gray-100 dark:border-gray-700">
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Extension</span>
+                                            <span className="text-sm font-black text-gray-900 dark:text-white">x{item.quantity}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Financial Summary */}
-                    <div className="flex flex-col md:flex-row justify-end gap-12">
-                        {/* Payment History */}
-                        <div className="flex-1">
-                            <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-gray-400">Payment History</h3>
-                            {po.expenses.length > 0 ? (
-                                <ul className="space-y-3">
-                                    {po.expenses.map((exp) => (
-                                        <li key={exp.id} className="flex items-center justify-between rounded-lg bg-gray-50 p-3 text-sm dark:bg-gray-800/10 print:bg-transparent print:border print:border-gray-100">
-                                            <div className="flex items-center gap-3">
-                                                <div className="rounded-full bg-green-100 p-1.5 text-green-600 print:hidden">
-                                                    <CheckCircle size={12} />
-                                                </div>
-                                                <div>
-                                                    <p className="font-bold text-gray-700 dark:text-gray-300">{format(new Date(exp.expenseDate), 'MMM dd, yyyy')}</p>
-                                                    <p className="text-xs text-gray-500">{exp.paidFrom}</p>
-                                                </div>
+                    {/* RIGHT COLUMN: FINANCIALS & HISTORY */}
+                    <div className="lg:col-span-4 space-y-8">
+
+                        {/* REQUISITION SUMMARY */}
+                        <div className="rounded-[2.5rem] bg-gradient-to-br from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-900 p-10 text-white shadow-2xl relative overflow-hidden">
+                            <div className="absolute bottom-0 right-0 w-48 h-48 bg-white/5 rounded-full -mb-24 -mr-24 blur-3xl pointer-events-none" />
+
+                            <h3 className="text-lg font-black uppercase tracking-[0.2em] mb-8 opacity-60">Financial View</h3>
+
+                            <div className="space-y-6">
+                                <div className="flex justify-between items-center opacity-80">
+                                    <span className="text-sm font-bold">Subtotal Value</span>
+                                    <span className="text-lg font-black">ETB {po.subtotal.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between items-center opacity-80">
+                                    <span className="text-sm font-bold">Calculated Tax</span>
+                                    <span className="text-lg font-black">ETB {po.tax.toLocaleString()}</span>
+                                </div>
+
+                                {po.currency === 'USD' && (
+                                    <div className="py-6 border-y border-white/10 space-y-3">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-[#3498DB]">Landed Costs (USD)</p>
+                                        <div className="flex justify-between text-sm opacity-80">
+                                            <span>S&F / Freight</span>
+                                            <span className="font-bold">$ {po.shippingCost.toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm opacity-80">
+                                            <span>Customs / Duty</span>
+                                            <span className="font-bold">$ {po.customsFee.toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm opacity-80">
+                                            <span>Brokerage / Misc</span>
+                                            <span className="font-bold">$ {po.otherExpenses.toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="pt-6">
+                                    <div className="flex justify-between items-end mb-2">
+                                        <span className="text-sm font-bold opacity-60">Grand Total</span>
+                                        <span className="text-4xl font-black text-[#3498DB] leading-none">ETB {po.total.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center pt-4 text-green-400">
+                                        <span className="text-xs font-black uppercase tracking-widest">Liquidated</span>
+                                        <span className="text-lg font-black">- ETB {po.paidAmount.toLocaleString()}</span>
+                                    </div>
+                                </div>
+
+                                <div className="mt-8 p-6 bg-white/10 rounded-[2rem] border border-white/10 backdrop-blur-md">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="text-xs font-black uppercase tracking-widest opacity-60 text-red-300">Net Liability</span>
+                                        {po.paymentStatus === 'Paid' && <CheckCircle size={16} className="text-green-400" />}
+                                    </div>
+                                    <p className="text-3xl font-black tracking-tighter">ETB {(po.total - po.paidAmount).toLocaleString()}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* TRANSACTIONAL LOG */}
+                        <div className="rounded-[2.5rem] bg-white dark:bg-[#151C2C] p-10 border border-gray-100 dark:border-gray-800 shadow-xl shadow-gray-200/40 dark:shadow-none">
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-2xl">
+                                    <Clock size={24} />
+                                </div>
+                                <h3 className="text-xl font-black text-gray-900 dark:text-white">Audit Trail</h3>
+                            </div>
+
+                            <div className="space-y-6 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-blue-500 before:via-gray-100 before:to-gray-100 dark:before:via-gray-800 dark:before:to-gray-800">
+                                {po.expenses.length > 0 ? po.expenses.map((exp) => (
+                                    <div key={exp.id} className="relative pl-10 group">
+                                        <div className="absolute left-0 top-1.5 h-3 w-3 -translate-x-1/2 rounded-full border-2 border-white bg-blue-500 ring-4 ring-blue-500/10 group-hover:scale-150 transition-transform dark:border-[#151C2C]" />
+                                        <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 group-hover:border-blue-500/30 transition-all">
+                                            <div className="flex justify-between items-start mb-1">
+                                                <p className="text-sm font-black text-gray-900 dark:text-white">ETB {exp.amount.toLocaleString()}</p>
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{format(new Date(exp.expenseDate), 'MMM dd')}</p>
                                             </div>
-                                            <span className="font-bold text-gray-900 dark:text-white">ETB {exp.amount.toLocaleString()}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p className="text-sm text-gray-400 italic">No payments recorded yet.</p>
-                            )}
+                                            <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400">{exp.paidFrom}</p>
+                                            {exp.description && <p className="text-[10px] text-gray-400 italic mt-2 line-clamp-1">{exp.description}</p>}
+                                        </div>
+                                    </div>
+                                )) : (
+                                    <div className="text-center py-8 opacity-40">
+                                        <AlertTriangle size={32} className="mx-auto mb-2" />
+                                        <p className="text-xs font-bold uppercase tracking-widest">No Activity Logged</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
-                        {/* Totals */}
-                        <div className="w-full md:w-80 space-y-3">
-                            <div className="flex justify-between text-sm">
-                                <span className="font-medium text-gray-500">Subtotal</span>
-                                <span className="font-bold text-gray-900 dark:text-white">ETB {po.subtotal.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                                <span className="font-medium text-gray-500">Tax</span>
-                                <span className="font-bold text-gray-900 dark:text-white">ETB {po.tax.toLocaleString()}</span>
-                            </div>
-                            <div className="border-t border-dashed border-gray-200 pt-3 dark:border-gray-700">
-                                <div className="flex justify-between text-lg">
-                                    <span className="font-bold text-gray-900 dark:text-white">Total</span>
-                                    <span className="font-black text-blue-600">ETB {po.total.toLocaleString()}</span>
-                                </div>
-                            </div>
-                            <div className="flex justify-between text-sm text-green-600">
-                                <span className="font-bold">Paid</span>
-                                <span className="font-bold">- ETB {po.paidAmount.toLocaleString()}</span>
-                            </div>
-                            <div className="mt-2 flex justify-between rounded-xl bg-gray-900 p-4 text-white dark:bg-gray-800 print:bg-black print:text-white">
-                                <span className="font-bold">Balance Due</span>
-                                <span className="font-black">ETB {(po.total - po.paidAmount).toLocaleString()}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Footer / Signature Area for print */}
-                    <div className="mt-20 hidden pt-8 text-center text-sm text-gray-400 print:block">
-                        <div className="border-t border-gray-200 pt-4">
-                            <p>Authorized Signature</p>
-                        </div>
                     </div>
                 </div>
+            </div>
+
+            {/* BARCODE PRINT TEMPLATE (HIDDEN) */}
+            <div className="hidden">
+                <BarcodePrintTemplate ref={barcodeRef} items={po.items} />
             </div>
         </div>
     );

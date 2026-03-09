@@ -51,63 +51,87 @@ export async function POST(
 
         // Update within Transaction
         const updatedPO = await prisma.$transaction(async (tx) => {
+            const purchaseOrder = await tx.purchaseOrder.findUnique({
+                where: { id },
+                select: { currency: true, exchangeRate: true, total: true, paidAmount: true, poNumber: true, vendorId: true, id: true }
+            });
+            if (!purchaseOrder) throw new Error('Purchase Order not found');
 
-            // 1. Deduct from Account if selected
-            if (accountId) {
-                const account = await tx.account.findUnique({ where: { id: accountId } });
-                if (!account) throw new Error('Account not found');
+            const account = accountId ? await tx.account.findUnique({ where: { id: accountId } }) : null;
 
-                if (account.balance < paidAmount) {
-                    // Optional: Throw error if insufficient funds? User might want to allow negative.
-                    // For now allowing negative or user choice.
+            // 1. Calculate Deductions
+            // The 'amount' sent from frontend is in the PO's currency.
+            const amountInPOCurrency = paidAmount;
+
+            // How much to increment the PO's paidAmount (which is always in ETB)
+            let incrementPaidAmountETB = 0;
+            if (purchaseOrder.currency === 'USD') {
+                incrementPaidAmountETB = amountInPOCurrency * (purchaseOrder.exchangeRate || 1);
+            } else {
+                incrementPaidAmountETB = amountInPOCurrency;
+            }
+
+            // How much to deduct from the Account (in the Account's currency)
+            let deductionFromAccount = 0;
+            if (account) {
+                if (account.currency === purchaseOrder.currency) {
+                    deductionFromAccount = amountInPOCurrency;
+                } else if (account.currency === 'ETB' && purchaseOrder.currency === 'USD') {
+                    // Smart Payment: Paying USD order from ETB account
+                    const rate = parseFloat(body.exchangeRate) || purchaseOrder.exchangeRate || 1;
+                    deductionFromAccount = amountInPOCurrency * rate;
+                } else if (account.currency === 'USD' && purchaseOrder.currency === 'ETB') {
+                    // Paying ETB order from USD account
+                    const rate = parseFloat(body.exchangeRate) || purchaseOrder.exchangeRate || 1;
+                    deductionFromAccount = amountInPOCurrency / rate;
                 }
 
                 await tx.account.update({
                     where: { id: accountId },
-                    data: { balance: { decrement: paidAmount } }
+                    data: { balance: { decrement: deductionFromAccount } }
                 });
             }
 
-            // 2. Create Expense
+            // 2. Create Expense (Records the deduction in the system's base currency - ETB)
+            // Note: Expense amount is usually the actual cost incurred in ETB
+            const totalCostETB = account?.currency === 'ETB' ? deductionFromAccount : incrementPaidAmountETB;
+
             await tx.expense.create({
                 data: {
-                    description: `Payment for PO ${po.poNumber}`,
-                    amount: paidAmount,
-                    paidFrom: method || 'Cash',
+                    description: `Payment for PO ${purchaseOrder.poNumber}`,
+                    amount: totalCostETB,
+                    paidFrom: method || (account ? `Account: ${account.name}` : 'Cash'),
                     category: 'Purchase Payment',
                     expenseDate: new Date(),
                     note: notes,
                     companyId: user.companyId,
                     userId: session.user.id,
-                    purchaseOrderId: po.id,
-                    vendorId: po.vendorId,
-                    accountId: accountId || null, // Link to account
+                    purchaseOrderId: purchaseOrder.id,
+                    vendorId: purchaseOrder.vendorId,
+                    accountId: accountId || null,
                     approved: true
                 }
             });
 
             // 3. Create Transaction (Ledger Entry)
-            // This is critical for the Balance Sheet to reflect the cash outflow
             await tx.transaction.create({
                 data: {
                     companyId: user.companyId,
                     userId: session.user.id,
-                    description: `Payment for PO #${po.poNumber}`,
-                    amount: paidAmount, // Transaction amount
-                    type: 'EXPENSE', // Type: Expense (Cash Out)
+                    description: `Payment for PO #${purchaseOrder.poNumber}${purchaseOrder.currency === 'USD' ? ` ($${amountInPOCurrency})` : ''}`,
+                    amount: totalCostETB,
+                    type: 'EXPENSE',
                     category: 'Purchase Payment',
-                    accountId: accountId || undefined, // Link to the funding account
+                    accountId: accountId || undefined,
                     transactionDate: new Date(),
                     note: notes,
-                    // If your schema supports vendorId on transaction, add it:
-                    // vendorId: po.vendorId
                 }
             });
 
             // 4. Update PO
-            const newPaidTotal = (po.paidAmount || 0) + paidAmount;
+            const newPaidTotal = (purchaseOrder.paidAmount || 0) + incrementPaidAmountETB;
             let paymentStatus = 'Unpaid';
-            if (newPaidTotal >= po.total) paymentStatus = 'Paid';
+            if (newPaidTotal >= purchaseOrder.total - 0.01) paymentStatus = 'Paid'; // Small delta for float precision
             else if (newPaidTotal > 0) paymentStatus = 'Partial';
 
             return await tx.purchaseOrder.update({

@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { vendorId, items, notes, expectedDelivery, paidAmount, paymentMethod } = body;
+        const { vendorId, items, notes, expectedDelivery, paidAmount, paymentMethod, shippingCost, customsFee, otherExpenses } = body;
 
         if (!vendorId || !items || items.length === 0) {
             return NextResponse.json({ error: 'Vendor and items are required' }, { status: 400 });
@@ -84,18 +84,43 @@ export async function POST(req: NextRequest) {
         const count = await prisma.purchaseOrder.count({ where: { companyId: user.companyId } });
         const poNumber = `PO-${new Date().getFullYear()}-${(count + 1).toString().padStart(3, '0')}`;
 
-        // Calculate totals
-        let subtotal = 0;
+        // Multi-Currency Logic
+        const currency = body.currency || 'USD';
+        let exchangeRate = parseFloat(body.exchangeRate || 1);
+
+        // If USD, try to fetch today's rate if not provided
+        if (currency === 'USD' && (!body.exchangeRate || body.exchangeRate === 1)) {
+            const latestRateRecord = await prisma.exchangeRate.findFirst({
+                where: { companyId: user.companyId },
+                orderBy: { date: 'desc' }
+            });
+            if (latestRateRecord) {
+                exchangeRate = latestRateRecord.rate;
+            }
+        }
+
+        // Calculate totals in ETB
+        let subtotalETB = 0;
+        let totalQty = 0;
         items.forEach((item: any) => {
-            subtotal += item.quantity * item.unitCost;
+            const unitCostETB = currency === 'USD' ? item.unitCost * exchangeRate : item.unitCost;
+            subtotalETB += item.quantity * unitCostETB;
+            totalQty += parseInt(item.quantity) || 0;
         });
-        const tax = 0;
-        const total = subtotal + tax;
+
+        // Calculate Additional Costs
+        const shippingETB = currency === 'USD' ? (parseFloat(shippingCost) || 0) * exchangeRate : (parseFloat(shippingCost) || 0);
+        const customsETB = currency === 'USD' ? (parseFloat(customsFee) || 0) * exchangeRate : (parseFloat(customsFee) || 0);
+        const otherETB = currency === 'USD' ? (parseFloat(otherExpenses) || 0) * exchangeRate : (parseFloat(otherExpenses) || 0);
+        const totalAdditionalCostsETB = shippingETB + customsETB + otherETB;
+
+        const taxETB = 0;
+        const totalETB = subtotalETB + taxETB + totalAdditionalCostsETB;
 
         // Determine Payment Status
         const paid = parseFloat(paidAmount || 0);
         let paymentStatus = 'Unpaid';
-        if (paid >= total) paymentStatus = 'Paid';
+        if (paid >= totalETB) paymentStatus = 'Paid';
         else if (paid > 0) paymentStatus = 'Partial';
 
         // Transaction
@@ -108,26 +133,53 @@ export async function POST(req: NextRequest) {
                     userId: session.user.id,
                     companyId: user.companyId,
                     status: 'Pending',
-                    subtotal,
-                    tax,
-                    total,
+                    subtotal: subtotalETB,
+                    tax: taxETB,
+                    total: totalETB,
                     paidAmount: paid,
                     paymentStatus,
                     notes,
                     expectedDelivery: expectedDelivery ? new Date(expectedDelivery) : null,
+                    currency,
+                    exchangeRate,
+                    shippingCost: parseFloat(shippingCost) || 0,
+                    customsFee: parseFloat(customsFee) || 0,
+                    otherExpenses: parseFloat(otherExpenses) || 0,
+                    // Note: If Prisma schema doesn't have shipping/customs columns yet, we just roll it into the item's cost.
+                    // But if you plan to save them, add them here. For now it affects landed cost perfectly.
                 }
             });
 
             // Create Items
             for (const item of items) {
+                // Base Cost
+                const baseUnitCostETB = currency === 'USD' ? parseFloat(item.unitCost) * exchangeRate : parseFloat(item.unitCost);
+                const itemTotalBaseCostETB = parseInt(item.quantity) * baseUnitCostETB;
+
+                // Landed Cost Distribution (Proportional based on cost)
+                let itemAdditionalCostETB = 0;
+                if (subtotalETB > 0) {
+                    const proportion = itemTotalBaseCostETB / subtotalETB;
+                    itemAdditionalCostETB = totalAdditionalCostsETB * proportion;
+                }
+
+                // Final Landed Cost per unit
+                const itemQty = parseInt(item.quantity) || 1; // Default to 1 to avoid division by zero
+                const landedUnitCostETB = baseUnitCostETB + (itemAdditionalCostETB / itemQty);
+                const landedUnitCostUSD = landedUnitCostETB / (exchangeRate || 1);
+
+                // Create Items
                 await tx.purchaseOrderItem.create({
                     data: {
                         poId: purchaseOrder.id,
                         productId: item.productId,
                         productName: item.productName,
-                        quantity: parseInt(item.quantity),
-                        unitCost: parseFloat(item.unitCost),
-                        total: parseInt(item.quantity) * parseFloat(item.unitCost)
+                        sku: item.sku || null,
+                        quantity: itemQty,
+                        unitCost: landedUnitCostETB,
+                        total: itemQty * landedUnitCostETB,
+                        unitCostUSD: landedUnitCostUSD,
+                        sellingPrice: parseFloat(item.sellingPrice) || null,
                     }
                 });
             }
@@ -155,8 +207,12 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({ purchaseOrder: result }, { status: 201 });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error creating purchase order:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        // Include original error message if available for debugging
+        return NextResponse.json({
+            error: 'Internal server error',
+            details: error?.message || 'Unknown error'
+        }, { status: 500 });
     }
 }

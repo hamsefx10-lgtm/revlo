@@ -16,7 +16,8 @@ import {
     PauseCircle,
     Clock,
     PlayCircle,
-    AlertCircle
+    AlertCircle,
+    Globe
 } from 'lucide-react';
 
 import { toast } from 'sonner';
@@ -135,6 +136,12 @@ export default function POSPage() {
     // Payment Logic State
     const [paymentTab, setPaymentTab] = useState('Cash'); // 'Cash', 'Card', 'Credit'
     const [partialPaidAmount, setPartialPaidAmount] = useState('');
+
+    // Multi-Currency State
+    const [exchangeRate, setExchangeRate] = useState<number>(1);
+    const [currency, setCurrency] = useState('ETB');
+    const [autoConvertDebt, setAutoConvertDebt] = useState(true);
+    const [convertDebtAfterDays, setConvertDebtAfterDays] = useState('7');
 
     // Held Carts State
     const [heldCarts, setHeldCarts] = useState<HeldCart[]>([]);
@@ -364,6 +371,13 @@ export default function POSPage() {
                     const compData = await compRes.json();
                     setCompanySettings(compData.company);
                 }
+
+                // Fetch Today's Exchange Rate
+                const rateRes = await fetch('/api/settings/exchange-rate');
+                const rateData = await rateRes.json();
+                if (rateData.rate) {
+                    setExchangeRate(rateData.rate.rate);
+                }
             } catch (e) {
                 console.error("Error fetching POS data", e);
             }
@@ -524,7 +538,13 @@ export default function POSPage() {
                     notes: notes || null,
                     // New fields for credit/partial
                     paidAmount: paymentTab === 'Credit' ? parseFloat(partialPaidAmount || '0') : undefined,
-                    paymentStatus: paymentTab === 'Credit' ? (parseFloat(partialPaidAmount || '0') > 0 ? 'Partial' : 'Unpaid') : 'Paid'
+                    paymentStatus: paymentTab === 'Credit' ? (parseFloat(partialPaidAmount || '0') > 0 ? 'Partial' : 'Unpaid') : 'Paid',
+
+                    // Multi-Currency fields
+                    currency: currency,
+                    exchangeRate: exchangeRate,
+                    autoConvertDebt: autoConvertDebt,
+                    convertDebtAfterDays: parseInt(convertDebtAfterDays) || 7,
                 }),
             });
 
@@ -717,7 +737,12 @@ export default function POSPage() {
                         </div>
                         <div className="flex justify-between text-base font-bold text-gray-900 dark:text-white pt-2 border-t border-gray-200 dark:border-gray-700 mt-2">
                             <span>Total Payable</span>
-                            <span className="text-[#3498DB] text-xl">ETB {total.toFixed(2)}</span>
+                            <div className="text-right">
+                                <span className="text-[#3498DB] text-xl block leading-none">ETB {total.toFixed(2)}</span>
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1 block">
+                                    ≈ USD {(total / exchangeRate).toFixed(2)}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
@@ -732,8 +757,8 @@ export default function POSPage() {
                                         key={method}
                                         onClick={() => setPaymentTab(method)}
                                         className={`py-2 rounded-lg text-xs font-bold border transition-all ${isSelected
-                                                ? 'bg-[#3498DB] text-white border-[#3498DB] shadow-md shadow-blue-500/20'
-                                                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'
+                                            ? 'bg-[#3498DB] text-white border-[#3498DB] shadow-md shadow-blue-500/20'
+                                            : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'
                                             }`}
                                     >
                                         {method === 'Credit' ? 'Credit/Debt' : method}
@@ -759,6 +784,40 @@ export default function POSPage() {
                                     className="w-full pl-10 pr-3 py-2 rounded-lg border border-red-200 dark:border-red-800 bg-white dark:bg-gray-900 focus:border-red-500 outline-none text-sm font-bold text-gray-800 dark:text-gray-200"
                                     placeholder="0.00"
                                 />
+                            </div>
+                            <div className="mt-3 p-3 bg-white/50 dark:bg-gray-900/50 rounded-lg border border-red-200/50 dark:border-red-800/50">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                        <div
+                                            onClick={() => setAutoConvertDebt(!autoConvertDebt)}
+                                            className={`relative w-8 h-5 rounded-full transition-colors cursor-pointer ${autoConvertDebt ? 'bg-red-500' : 'bg-gray-300 dark:bg-gray-700'}`}
+                                        >
+                                            <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${autoConvertDebt ? 'translate-x-3' : 'translate-x-0'}`} />
+                                        </div>
+                                        <span className="text-[10px] font-black text-red-700 dark:text-red-400 uppercase">Auto-convert to USD</span>
+                                    </div>
+                                    {autoConvertDebt && (
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-[9px] font-bold text-gray-500">After:</span>
+                                            <input
+                                                type="number"
+                                                value={convertDebtAfterDays}
+                                                onChange={e => setConvertDebtAfterDays(e.target.value)}
+                                                className="w-10 bg-white dark:bg-gray-800 border border-red-200 dark:border-red-800 rounded px-1 py-0.5 text-[10px] font-black text-center"
+                                            />
+                                            <span className="text-[9px] font-bold text-gray-500">Days</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex items-start gap-2">
+                                    <Globe size={12} className="text-red-400 mt-0.5 shrink-0" />
+                                    <p className="text-[9px] font-bold text-red-600/70 dark:text-red-400/70 leading-tight italic">
+                                        {autoConvertDebt
+                                            ? `Dayntu waxay isu beddeli doontaa Dollar haddii aan lagu bixin ${convertDebtAfterDays} maalmood.`
+                                            : `Dayntu waxay ku jiri doontaa Birr (ETB) si joogto ah.`
+                                        }
+                                    </p>
+                                </div>
                             </div>
                             {!selectedCustomerId && (
                                 <p className="text-[10px] text-red-600 mt-2 font-bold flex items-center gap-1 animate-pulse">

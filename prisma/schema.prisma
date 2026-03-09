@@ -46,26 +46,26 @@ model User {
   telegramLinks  TelegramUserLink[]
 
   // Security / Trusted Devices
-  trustedDevices     TrustedDevice[]
-  twoFASecret        String?           // For TOTP if we implement later, or just general secret
-  otpCode            String?           // Current email OTP
-  otpExpires         DateTime?         // When OTP expires
-  resetToken         String?           // For password reset code
-  resetTokenExpires  DateTime?         // When reset token expires
+  trustedDevices    TrustedDevice[]
+  twoFASecret       String? // For TOTP if we implement later, or just general secret
+  otpCode           String? // Current email OTP
+  otpExpires        DateTime? // When OTP expires
+  resetToken        String? // For password reset code
+  resetTokenExpires DateTime? // When reset token expires
 
   // Shop Management Relations
   products         Product[]         @relation("UserProducts")
   factoryMaterials FactoryMaterial[] @relation("UserFactoryMaterials")
   shopClients      ShopClient[]      @relation("UserShopClients")
-  vendors        ShopVendor[]    @relation("UserShopVendors")
-  sales          Sale[]          @relation("UserSales")
-  purchaseOrders PurchaseOrder[] @relation("UserPurchaseOrders")
-  stockMovements StockMovement[] @relation("UserStockMovements")
-  tillSessions   TillSession[]
-  customers      Customer[]      @relation("UserCustomers")
-  inventoryItems InventoryItem[]
-  deletedItems   DeletedItem[]
-  auditLogs      AuditLog[]
+  vendors          ShopVendor[]      @relation("UserShopVendors")
+  sales            Sale[]            @relation("UserSales")
+  purchaseOrders   PurchaseOrder[]   @relation("UserPurchaseOrders")
+  stockMovements   StockMovement[]   @relation("UserStockMovements")
+  tillSessions     TillSession[]
+  customers        Customer[]        @relation("UserCustomers")
+  inventoryItems   InventoryItem[]
+  deletedItems     DeletedItem[]
+  auditLogs        AuditLog[]
 
   @@map("users")
 }
@@ -126,6 +126,7 @@ model Company {
   receiptHeader           String?
   receiptFooter           String?
   taxRate                 Float?                   @default(0)
+  requireReceiptNumber    Boolean                  @default(false)
   accounts                Account[]
   billOfMaterials         BillOfMaterial[]
   chatRooms               ChatRoom[]
@@ -164,10 +165,11 @@ model Company {
   stockMovements          StockMovement[]
   deletedItems            DeletedItem[]
   auditLogs               AuditLog[]
+  exchangeRates           ExchangeRate[]
 
   // WhatsApp Integration
-  whatsappSessionStatus   String?                  @default("DISCONNECTED") // DISCONNECTED, CONNECTING, CONNECTED
-  whatsappNumber          String?
+  whatsappSessionStatus String? @default("DISCONNECTED") // DISCONNECTED, CONNECTING, CONNECTED
+  whatsappNumber        String?
 
   @@map("companies")
 }
@@ -1007,6 +1009,7 @@ model Product {
   category     String
   description  String?
   costPrice    Float
+  costPriceUSD Float    @default(0)
   sellingPrice Float
   stock        Int      @default(0)
   minStock     Int      @default(5)
@@ -1091,6 +1094,15 @@ model Sale {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  // NEW: Multi-Currency Fields
+  currency             String    @default("ETB")
+  exchangeRate         Float     @default(1)
+  isConvertedToUSD     Boolean   @default(false)
+  convertedAt          DateTime?
+  originalTotal        Float? // The total in ETB before it was converted to USD
+  autoConvertDebt      Boolean   @default(true) // Whether to convert to USD if not paid
+  convertDebtAfterDays Int       @default(7)    // Days after which to convert
+
   user           User        @relation("UserSales", fields: [userId], references: [id])
   company        Company?    @relation(fields: [companyId], references: [id])
   customer       ShopClient? @relation(fields: [customerId], references: [id])
@@ -1113,6 +1125,10 @@ model SaleItem {
   costPrice   Float    @default(0) // COGS per unit at time of sale
   totalCost   Float    @default(0) // Total COGS for this line item
   createdAt   DateTime @default(now())
+
+  // NEW: Multi-Currency Fields
+  unitPriceUSD Float?
+  costPriceUSD Float?
 
   sale    Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id])
@@ -1137,11 +1153,20 @@ model PurchaseOrder {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  user     User                @relation("UserPurchaseOrders", fields: [userId], references: [id])
-  company  Company?            @relation(fields: [companyId], references: [id])
-  vendor   ShopVendor          @relation(fields: [vendorId], references: [id])
-  items    PurchaseOrderItem[]
-  expenses Expense[] // Link to payments
+  // NEW: Multi-Currency Fields
+  currency     String @default("USD")
+  exchangeRate Float  @default(1)
+
+  // NEW: Landed Cost Fields
+  shippingCost Float @default(0)
+  customsFee   Float @default(0)
+  otherExpenses Float @default(0)
+
+  user      User                @relation("UserPurchaseOrders", fields: [userId], references: [id])
+  company   Company?            @relation(fields: [companyId], references: [id])
+  vendor    ShopVendor          @relation(fields: [vendorId], references: [id])
+  items     PurchaseOrderItem[]
+  expenses  Expense[] // Link to payments
   projectId String?
   project   Project?            @relation(fields: [projectId], references: [id])
 
@@ -1154,10 +1179,15 @@ model PurchaseOrderItem {
   poId        String
   productId   String
   productName String
+  sku         String?
   quantity    Int
   unitCost    Float
+  sellingPrice Float?
   total       Float
   createdAt   DateTime @default(now())
+
+  // NEW: Multi-Currency Fields
+  unitCostUSD Float?
 
   purchaseOrder PurchaseOrder @relation(fields: [poId], references: [id], onDelete: Cascade)
   product       Product       @relation(fields: [productId], references: [id])
@@ -1293,8 +1323,8 @@ model DeletedItem {
 
 model AuditLog {
   id        String   @id @default(uuid()) @map("_id")
-  action    String   // e.g. "CLOSE_PERIOD", "VIEW_REPORT", "UPDATE_SETTINGS"
-  entity    String   // e.g. "FiscalYear", "Transaction"
+  action    String // e.g. "CLOSE_PERIOD", "VIEW_REPORT", "UPDATE_SETTINGS"
+  entity    String // e.g. "FiscalYear", "Transaction"
   entityId  String?
   details   String?
   ipAddress String?
@@ -1309,4 +1339,15 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+model ExchangeRate {
+  id        String   @id @default(uuid())
+  from      String   @default("USD")
+  to        String   @default("ETB")
+  rate      Float // How many ETB per 1 USD
+  date      DateTime @default(now())
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id])
 
+  @@unique([date, companyId])
+  @@map("exchange_rates")
+}

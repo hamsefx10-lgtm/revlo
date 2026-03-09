@@ -44,19 +44,25 @@ export async function POST(req: NextRequest) {
           3. **Math Verification**: 
              - Always check: Qty * Unit Price ≈ Total.
              - If they don't match, trust the **Corrected/Written Total** first, then adjustment the Qty or Price to match.
+          
+          4. **Receipt Number**:
+             - Look for any printed or handwritten reference/receipt/invoice number on the receipt (e.g. "No. 008", "Ref: 123", "Invoice #456", "REC-001", "Receipt No. 08").
+             - Extract it exactly as written. If none found, return null.
 
           Extract structured data:
           1. List of Items (name, qty (integer), price, unit).
           2. The detailed total amount (Sum of the valid totals).
           3. The Date (YYYY-MM-DD).
           4. Vendor Name.
+          5. Receipt/Invoice Number.
 
           Return ONLY valid JSON:
           {
             "items": [{ "name": "Item", "qty": 1, "price": 0, "unit": "pcs", "total": 0 }],
             "totalAmount": 0,
             "date": "YYYY-MM-DD",
-            "vendorName": "Vendor"
+            "vendorName": "Vendor",
+            "receiptNumber": "008"
           }
         `;
 

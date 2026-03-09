@@ -4,6 +4,8 @@ import './globals.css';
 import { Providers } from './Providers';
 import GoogleTranslate from '../components/GoogleTranslate';
 import SmoothScroll from '@/components/SmoothScroll';
+import Script from 'next/script';
+import PWAInstallBanner from '@/components/PWAInstallBanner';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -139,6 +141,8 @@ export default function RootLayout({
         <Providers>
           {children}
         </Providers>
+        <PWAInstallBanner />
+        <Script id="pwa-register" src="/pwa-register.js" strategy="afterInteractive" />
       </body>
     </html>
   );

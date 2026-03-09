@@ -4,7 +4,7 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js')
       .then((registration) => {
         console.log('SW registered: ', registration);
-        
+
         // Check for updates
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
@@ -34,13 +34,15 @@ window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   // Stash the event so it can be triggered later
   deferredPrompt = e;
-  
+
   // Show install buttons or prompt
   const installButton = document.getElementById('pwa-install-button');
   const installButtonMain = document.getElementById('pwa-install-button-main');
-  
+
   if (installButton) {
-    installButton.style.display = 'block';
+    const installBanner = document.getElementById('pwa-install-banner');
+    if (installBanner) installBanner.style.display = 'block';
+
     installButton.addEventListener('click', () => {
       // Show the install prompt
       deferredPrompt.prompt();
@@ -55,7 +57,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
       });
     });
   }
-  
+
   if (installButtonMain) {
     installButtonMain.style.display = 'block';
     installButtonMain.addEventListener('click', () => {
@@ -80,11 +82,11 @@ window.addEventListener('appinstalled', (evt) => {
   // Hide install buttons
   const installButton = document.getElementById('pwa-install-button');
   const installButtonMain = document.getElementById('pwa-install-button-main');
-  
+
   if (installButton) {
     installButton.style.display = 'none';
   }
-  
+
   if (installButtonMain) {
     installButtonMain.style.display = 'none';
   }
@@ -96,11 +98,11 @@ if (window.matchMedia('(display-mode: standalone)').matches) {
   // Hide install buttons if app is already installed
   const installButton = document.getElementById('pwa-install-button');
   const installButtonMain = document.getElementById('pwa-install-button-main');
-  
+
   if (installButton) {
     installButton.style.display = 'none';
   }
-  
+
   if (installButtonMain) {
     installButtonMain.style.display = 'none';
   }

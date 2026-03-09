@@ -12,10 +12,30 @@ export function logToFile(message: string) {
     try {
         fs.appendFileSync(LOG_FILE, logMessage);
     } catch (e) {
-        console.error('Failed to write to log file:', e);
+        // console.error('Failed to write to log file:', e);
     }
     console.log(message);
 }
+
+const clearLockFile = (clientId: string) => {
+    try {
+        const lockPath = path.join(process.cwd(), '.wwebjs_auth', `session-${clientId}`, 'SingletonLock');
+        if (fs.existsSync(lockPath)) {
+            logToFile(`[WhatsApp] Force-clearing lock file at ${lockPath}`);
+            fs.unlinkSync(lockPath);
+        }
+    } catch (e) {
+        logToFile(`[WhatsApp] Failed to clear lock file: ${e}`);
+    }
+    // Also try to clear the data directory lock if it exists (for newer puppeteer/chrome)
+    try {
+        const parentLock = path.join(process.cwd(), '.wwebjs_auth', `session-${clientId}`, 'lockfile');
+        if (fs.existsSync(parentLock)) {
+            logToFile(`[WhatsApp] Force-clearing parent lock file at ${parentLock}`);
+            fs.unlinkSync(parentLock);
+        }
+    } catch (e) { }
+};
 
 logToFile('[WhatsApp Manager] Module Loaded / Hot Reloaded');
 
@@ -46,22 +66,29 @@ interface CompanySession {
 class WhatsAppManager {
     private sessions: Map<string, CompanySession> = new Map();
 
+    constructor() {
+        logToFile('[WhatsApp Manager] New instance created (Constructor)');
+    }
+
     // Temporary fix for puppeteer executable path in different environments if needed
     private getPuppeteerOptions() {
         logToFile('[WhatsApp] Getting Puppeteer options...');
         return {
-            headless: true, // Newer versions of puppeteer use "new" logic by default for true
+            headless: true,
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
                 '--disable-dev-shm-usage',
                 '--disable-extensions',
+                '--disable-gpu',
+                '--disable-setuid-sandbox',
                 '--no-first-run',
                 '--no-zygote',
-                '--disable-gpu', // Recommended for headless on Windows
+                // Removed --single-process as it can cause deadlocks on Windows
             ],
-            // On Windows, sometimes you need to ignore specific errors
             ignoreHTTPSErrors: true,
+            // Timeout settings to prevent hangs
+            waitTimeout: 60000,
         };
     }
 
@@ -72,7 +99,7 @@ class WhatsAppManager {
         if (this.sessions.has(companyId)) {
             const existingSession = this.sessions.get(companyId)!;
             // If the session is stuck or disconnected, let's clear it to allow a retry
-            const isStuck = existingSession.status === 'CONNECTING' && (Date.now() - existingSession.lastUpdated > 60000);
+            const isStuck = existingSession.status === 'CONNECTING' && (Date.now() - existingSession.lastUpdated > 30000);
 
             if (existingSession.status === 'DISCONNECTED' || isStuck) {
                 logToFile(`[WhatsApp] Removing existing ${isStuck ? 'STUCK ' : ''}${existingSession.status} session for company ${companyId} to allow retry.`);
@@ -82,6 +109,7 @@ class WhatsAppManager {
                 } catch (e) { }
                 this.sessions.delete(companyId);
             } else {
+                logToFile(`[WhatsApp] Returning existing ${existingSession.status} session for company ${companyId}.`);
                 return existingSession;
             }
         }
@@ -165,8 +193,18 @@ class WhatsAppManager {
         });
 
         // Start the initialization process asynchronously without blocking
-        client.initialize().catch((err) => {
-            logToFile(`[WhatsApp] CRITICAL: Failed to initialize client for company ${companyId}. This is likely a Puppeteer or file system permissions issue: ${err}`);
+        logToFile(`[WhatsApp] Starting client.initialize() for company ${companyId}...`);
+        client.initialize().then(() => {
+            logToFile(`[WhatsApp] client.initialize() promise resolved for company ${companyId}`);
+        }).catch((err: any) => {
+            const isLockError = err?.message?.includes('The browser is already running');
+            logToFile(`[WhatsApp] ${isLockError ? 'LOCK ERROR' : 'CRITICAL'}: Failed to initialize client for company ${companyId}. Error: ${err?.message || err}`);
+
+            if (isLockError) {
+                logToFile(`[WhatsApp] Attempting to force-clear lock file and retry next time...`);
+                clearLockFile(`company-${companyId}-v2`);
+            }
+
             session.status = 'DISCONNECTED';
             session.qrCodeDataUrl = null;
             updateCompanyWhatsAppStatus(companyId, 'DISCONNECTED', null);
@@ -214,14 +252,34 @@ class WhatsAppManager {
     }
 }
 
+// --- CLEANUP FOR OLD SINGLETONS ---
+if (typeof global !== 'undefined') {
+    // Try to cleanup OLD versions of the manager to release locks
+    const oldManagers = [
+        (global as any).prismaWhatsAppManager,
+        (global as any).prismaWhatsAppManager_v2,
+        (global as any).prismaWhatsAppManager_v3,
+        (global as any).prismaWhatsAppManager_v4, // Self-cleanup if reloaded
+    ];
+
+    for (const oldManager of oldManagers) {
+        if (oldManager && typeof oldManager.cleanupSessions === 'function') {
+            logToFile('[WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...');
+            oldManager.cleanupSessions().catch((e: any) => logToFile(`[WhatsApp] Failed to cleanup old manager: ${e}`));
+        }
+    }
+}
+// ...
+logToFile('[WhatsApp Manager] Module Loaded (Force Fresh v4)');
+
 // Ensure non-blocking singleton in dev (hot reloads) and prod
 declare global {
-    var prismaWhatsAppManager_v2: WhatsAppManager | undefined;
+    var prismaWhatsAppManager_v4: WhatsAppManager | undefined;
 }
 
 export const whatsappManager =
-    global.prismaWhatsAppManager_v2 || new WhatsAppManager();
+    global.prismaWhatsAppManager_v4 || new WhatsAppManager();
 
 if (process.env.NODE_ENV !== 'production') {
-    global.prismaWhatsAppManager_v2 = whatsappManager;
+    global.prismaWhatsAppManager_v4 = whatsappManager;
 }

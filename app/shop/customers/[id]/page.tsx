@@ -12,11 +12,16 @@ import {
     DollarSign,
     TrendingUp,
     Edit,
-    Loader2
+    Loader2,
+    CreditCard,
+    X,
+    CheckCircle2,
+    Banknote
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { format } from 'date-fns';
+import { toast } from 'react-hot-toast';
 
 export default function CustomerProfilePage() {
     const params = useParams();
@@ -25,31 +30,109 @@ export default function CustomerProfilePage() {
     const [stats, setStats] = useState({
         totalSpent: 0,
         totalOrders: 0,
-        averageOrderValue: 0
+        averageOrderValue: 0,
+        totalDebt: 0
     });
     const [history, setHistory] = useState<any[]>([]);
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [accounts, setAccounts] = useState<any[]>([]);
+    const [paymentLoading, setPaymentLoading] = useState(false);
+    const [paymentData, setPaymentData] = useState({
+        amount: '',
+        accountId: '',
+        notes: ''
+    });
 
     useEffect(() => {
         if (params.id) {
             fetchCustomerData();
+            fetchAccounts();
         }
     }, [params.id]);
+
+    const fetchAccounts = async () => {
+        try {
+            const res = await fetch('/api/accounts');
+            const data = await res.json();
+            if (data.success) {
+                setAccounts(data.accounts || []);
+                if (data.accounts?.length > 0) {
+                    setPaymentData(prev => ({ ...prev, accountId: data.accounts[0].id }));
+                }
+            }
+        } catch (error) {
+            console.error('Failed to fetch accounts:', error);
+        }
+    };
 
     const fetchCustomerData = async () => {
         try {
             const response = await fetch(`/api/shop/customers/${params.id}`);
-            if (!response.ok) return; // Handle error
+            if (!response.ok) return;
             const data = await response.json();
 
             if (data.customer) {
                 setCustomer(data.customer);
-                setStats(data.analytics);
-                setHistory(data.history || []);
+
+                // Calculate total debt from history if not provided in analytics
+                const historyData = data.history || [];
+                const debt = historyData.reduce((sum: number, sale: any) => {
+                    const paid = sale.paidAmount || (sale.paymentStatus === 'Paid' ? sale.total : 0);
+                    const bal = sale.total - paid;
+                    return sum + Math.max(0, bal);
+                }, 0);
+
+                setStats({
+                    ...data.analytics,
+                    totalDebt: debt
+                });
+                setHistory(historyData);
             }
         } catch (error) {
             console.error(error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handlePaymentSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!paymentData.amount || Number(paymentData.amount) <= 0) {
+            toast.error('Please enter a valid amount');
+            return;
+        }
+        if (!paymentData.accountId) {
+            toast.error('Please select an account');
+            return;
+        }
+
+        setPaymentLoading(true);
+        try {
+            const res = await fetch('/api/shop/receivables/pay', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customerId: params.id,
+                    amount: Number(paymentData.amount),
+                    accountId: paymentData.accountId,
+                    notes: paymentData.notes
+                })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                toast.success('Payment recorded successfully!');
+                setIsPaymentModalOpen(false);
+                setPaymentData({ amount: '', accountId: accounts[0]?.id || '', notes: '' });
+                fetchCustomerData(); // Refresh history and debt
+            } else {
+                toast.error(data.error || 'Payment failed');
+            }
+        } catch (error) {
+            console.error('Payment Error:', error);
+            toast.error('Something went wrong');
+        } finally {
+            setPaymentLoading(false);
         }
     };
 
@@ -91,6 +174,14 @@ export default function CustomerProfilePage() {
                 </div>
 
                 <div className="flex gap-3">
+                    {stats.totalDebt > 0 && (
+                        <button
+                            onClick={() => setIsPaymentModalOpen(true)}
+                            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-green-600 shadow-lg shadow-green-500/30 text-white font-black hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2"
+                        >
+                            <Banknote size={18} /> Pay Debt
+                        </button>
+                    )}
                     <Link href={`/shop/customers/${params.id}/edit`} className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2">
                         <Edit size={18} /> Edit Customer
                     </Link>
@@ -199,9 +290,9 @@ export default function CustomerProfilePage() {
                                                     </td>
                                                     <td className="px-6 py-4 text-center">
                                                         <span className={`px-2 py-1 rounded-lg text-xs font-bold uppercase ${purchase.paymentStatus === 'Paid' ? 'bg-green-100 text-green-700' :
-                                                                purchase.paymentStatus === 'Credit' ? 'bg-red-100 text-red-700' :
-                                                                    purchase.paymentStatus === 'Partial' ? 'bg-orange-100 text-orange-700' :
-                                                                        'bg-gray-100 text-gray-600'
+                                                            purchase.paymentStatus === 'Credit' ? 'bg-red-100 text-red-700' :
+                                                                purchase.paymentStatus === 'Partial' ? 'bg-orange-100 text-orange-700' :
+                                                                    'bg-gray-100 text-gray-600'
                                                             }`}>
                                                             {purchase.paymentStatus || 'Paid'}
                                                         </span>
@@ -231,19 +322,31 @@ export default function CustomerProfilePage() {
 
                     {/* Total Debt (New) */}
                     {(() => {
-                        const totalDebt = history.reduce((sum, sale) => {
-                            const paid = sale.paidAmount || (sale.paymentStatus === 'Paid' ? sale.total : 0);
-                            const balance = sale.total - paid;
-                            return sum + Math.max(0, balance);
-                        }, 0);
+                        const totalDebt = stats.totalDebt;
 
                         return (
-                            <div className={`p-6 rounded-[2rem] shadow-xl relative overflow-hidden text-white ${totalDebt > 0 ? 'bg-gradient-to-br from-red-500 to-red-600 shadow-red-500/20' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
+                            <div className={`p-6 rounded-[2rem] shadow-xl relative overflow-hidden text-white transition-all duration-500 ${totalDebt > 0 ? 'bg-gradient-to-br from-red-500 to-red-600 shadow-red-500/20' : 'bg-gradient-to-br from-gray-400 to-gray-500'}`}>
                                 <div className="absolute -right-10 -top-10 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
                                 <div className="relative z-10">
-                                    <p className="text-red-100 text-xs font-bold uppercase tracking-wider mb-2">Total Debt</p>
-                                    <h2 className="text-4xl font-black mb-2">ETB {totalDebt.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
-                                    <p className="text-red-100 text-sm">{totalDebt > 0 ? 'Outstanding Balance' : 'No outstanding debt'}</p>
+                                    <div className="flex justify-between items-start mb-2">
+                                        <p className="text-red-100 text-xs font-bold uppercase tracking-wider">Total Debt</p>
+                                        {totalDebt > 0 && (
+                                            <button
+                                                onClick={() => setIsPaymentModalOpen(true)}
+                                                className="p-1 px-3 bg-white/20 hover:bg-white/30 rounded-lg text-white text-[10px] font-black uppercase tracking-widest transition-all"
+                                            >
+                                                Pay Now
+                                            </button>
+                                        )}
+                                    </div>
+                                    <h2 className="text-4xl font-black mb-2 animate-pulse-subtle">ETB {totalDebt.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
+                                    <p className="text-red-100 text-sm flex items-center gap-2">
+                                        {totalDebt > 0 ? (
+                                            <><TrendingUp size={14} /> Outstanding Balance</>
+                                        ) : (
+                                            <><CheckCircle2 size={14} /> No outstanding debt</>
+                                        )}
+                                    </p>
                                 </div>
                             </div>
                         );
@@ -289,6 +392,102 @@ export default function CustomerProfilePage() {
                 </div>
             </div>
 
+            {/* PAYMENT MODAL */}
+            {isPaymentModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="bg-white dark:bg-[#1f2937] w-full max-w-md rounded-[2.5rem] shadow-2xl shadow-black/40 overflow-hidden animate-in zoom-in-95 duration-300">
+                        {/* Modal Header */}
+                        <div className="p-8 pb-4 flex justify-between items-center bg-gradient-to-r from-green-500/10 to-transparent">
+                            <div>
+                                <h3 className="text-2xl font-black text-gray-900 dark:text-white">Pay Debt</h3>
+                                <p className="text-sm text-gray-500 mt-1 uppercase tracking-widest font-bold">New Payment Entry</p>
+                            </div>
+                            <button
+                                onClick={() => setIsPaymentModalOpen(false)}
+                                className="p-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-2xl transition-all text-gray-400"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handlePaymentSubmit} className="p-8 pt-4 space-y-6">
+                            {/* Total Debt Display */}
+                            <div className="p-5 bg-red-50 dark:bg-red-500/10 rounded-2xl border border-red-100 dark:border-red-500/20">
+                                <p className="text-xs font-bold text-red-500 uppercase tracking-widest mb-1">Max Outstanding</p>
+                                <p className="text-2xl font-black text-red-600 dark:text-red-400">ETB {stats.totalDebt.toLocaleString()}</p>
+                            </div>
+
+                            {/* Amount Input */}
+                            <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Amount to Pay (ETB)</label>
+                                <div className="relative group">
+                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-green-500 transition-colors">
+                                        <Banknote size={20} />
+                                    </div>
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        required
+                                        value={paymentData.amount}
+                                        onChange={(e) => setPaymentData({ ...paymentData, amount: e.target.value })}
+                                        placeholder="0.00"
+                                        className="w-full pl-12 pr-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 focus:border-green-500 focus:bg-white dark:focus:bg-gray-800 outline-none transition-all font-black text-lg"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Account Selector */}
+                            <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Destination Account</label>
+                                <div className="relative">
+                                    <select
+                                        required
+                                        value={paymentData.accountId}
+                                        onChange={(e) => setPaymentData({ ...paymentData, accountId: e.target.value })}
+                                        className="w-full px-4 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 outline-none appearance-none font-bold text-gray-700 dark:text-gray-200 cursor-pointer"
+                                    >
+                                        <option value="" disabled>Select an account</option>
+                                        {accounts.map(acc => (
+                                            <option key={acc.id} value={acc.id}>
+                                                {acc.name} - ({acc.balance.toLocaleString()} ETB)
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                                        <TrendingUp size={16} />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Notes */}
+                            <div>
+                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Notes (Optional)</label>
+                                <textarea
+                                    value={paymentData.notes}
+                                    onChange={(e) => setPaymentData({ ...paymentData, notes: e.target.value })}
+                                    placeholder="e.g. Received via Bank Transfer..."
+                                    className="w-full px-6 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 outline-none h-24 font-medium"
+                                />
+                            </div>
+
+                            {/* Submit Button */}
+                            <button
+                                type="submit"
+                                disabled={paymentLoading}
+                                className="w-full py-5 rounded-[1.5rem] bg-gradient-to-r from-green-600 to-green-500 text-white font-black text-lg shadow-xl shadow-green-600/30 hover:shadow-green-600/40 hover:-translate-y-1 active:translate-y-0 disabled:opacity-50 disabled:translate-y-0 transition-all flex items-center justify-center gap-3"
+                            >
+                                {paymentLoading ? (
+                                    <Loader2 className="animate-spin" />
+                                ) : (
+                                    <>
+                                        Confirm Payment <CheckCircle2 size={24} />
+                                    </>
+                                )}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -38,7 +38,29 @@ export async function GET(
             );
         }
 
-        return NextResponse.json({ sale });
+        // Fetch associated payment transactions based on the invoice number description
+        const payments = await prisma.transaction.findMany({
+            where: {
+                OR: [
+                    {
+                        description: {
+                            contains: `Invoice #${sale.invoiceNumber}`
+                        }
+                    },
+                    {
+                        note: `Ref Sale: ${sale.id}`
+                    }
+                ]
+            },
+            orderBy: { transactionDate: 'desc' },
+            include: {
+                account: {
+                    select: { name: true }
+                }
+            }
+        });
+
+        return NextResponse.json({ sale: { ...sale, payments } });
     } catch (error) {
         console.error('Error fetching sale details:', error);
         return NextResponse.json(

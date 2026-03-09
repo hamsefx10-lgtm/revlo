@@ -30,11 +30,26 @@ export async function GET(
             return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
         }
 
-        // Stats
-        const stats = await prisma.purchaseOrder.aggregate({
+        // Stats & Balances
+        const allPOs = await prisma.purchaseOrder.findMany({
             where: { vendorId: id },
-            _sum: { total: true },
-            _count: { id: true }
+            select: { total: true, paidAmount: true, currency: true }
+        });
+
+        let totalSpentETB = 0;
+        let balanceETB = 0;
+        let totalSpentUSD = 0;
+        let balanceUSD = 0;
+        let totalOrders = allPOs.length;
+
+        allPOs.forEach(po => {
+            if (po.currency === 'USD') {
+                totalSpentUSD += po.total;
+                balanceUSD += (po.total - po.paidAmount);
+            } else {
+                totalSpentETB += po.total;
+                balanceETB += (po.total - po.paidAmount);
+            }
         });
 
         return NextResponse.json({
@@ -44,8 +59,11 @@ export async function GET(
             },
             history: vendor.purchaseOrders,
             stats: {
-                totalSpent: stats._sum.total || 0,
-                totalOrders: stats._count.id || 0
+                totalSpentETB,
+                balanceETB,
+                totalSpentUSD,
+                balanceUSD,
+                totalOrders
             }
         });
 

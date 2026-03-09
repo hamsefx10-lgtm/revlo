@@ -4,6 +4,7 @@ import { whatsappManager } from '@/lib/whatsapp/manager';
 import prisma from '@/lib/db';
 import fs from 'fs';
 
+// Version: 2.0.1 - Force Reload
 const LOG_FILE = 'c:/Users/OMEN/projects/revlo-vr/whatsapp_logs.txt';
 function logToFile(msg: string) {
     fs.appendFileSync(LOG_FILE, `[${new Date().toISOString()}] [API] ${msg}\n`);

@@ -8,7 +8,13 @@ import {
     Download,
     Edit,
     Trash2,
-    Upload
+    Upload,
+    TrendingUp,
+    AlertTriangle,
+    Archive,
+    DollarSign,
+    MoreVertical,
+    Eye
 } from 'lucide-react';
 import Link from 'next/link';
 import StatusBadge from '@/components/shop/ui/StatusBadge';
@@ -24,6 +30,8 @@ interface InventoryItem {
     stock: number;
     status: 'In Stock' | 'Low Stock' | 'Out of Stock';
     lastUpdated: string;
+    costPrice: number;
+    costPriceUSD: number;
 }
 
 export default function InventoryPage() {
@@ -31,6 +39,8 @@ export default function InventoryPage() {
     const [search, setSearch] = useState('');
     const [products, setProducts] = useState<InventoryItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [exchangeRate, setExchangeRate] = useState<number>(1);
+    const [viewCurrency, setViewCurrency] = useState<'ETB' | 'USD'>('ETB');
     const { toast } = useToast();
 
     // Fetch products from API
@@ -53,6 +63,13 @@ export default function InventoryPage() {
 
             const data = await response.json();
             setProducts(data.products || []);
+
+            // Fetch exchange rate
+            const rateRes = await fetch('/api/settings/exchange-rate');
+            const rateData = await rateRes.json();
+            if (rateData.rate) {
+                setExchangeRate(rateData.rate.rate);
+            }
         } catch (error) {
             console.error('Error fetching products:', error);
             toast({
@@ -105,49 +122,138 @@ export default function InventoryPage() {
         <div className="min-h-screen animate-fade-in pb-20 font-sans w-full">
 
             {/* HEADER */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
                 <div>
-                    <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
-                        <div className="p-3 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 text-[#F39C12]">
-                            <Package size={28} />
+                    <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-4">
+                        <div className="p-3 bg-gradient-to-br from-[#F39C12] to-[#E67E22] rounded-2xl shadow-lg shadow-orange-500/20 text-white">
+                            <Package size={32} />
                         </div>
-                        Inventory Management
+                        Inventory <span className="text-[#3498DB]">Hub</span>
                     </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-2 ml-1 text-sm">Track stocks, manage pricing, and organize products.</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-2 ml-1 text-base font-medium">Precision tracking and valuation of your business assets.</p>
                 </div>
 
-                <div className="flex gap-3">
-                    <button className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2">
-                        <Download size={18} /> Export
+                <div className="flex flex-wrap gap-3">
+                    <button className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2 group">
+                        <Download size={18} className="group-hover:translate-y-0.5 transition-transform" /> Export
                     </button>
-                    <Link href="/shop/inventory/bulk-import" className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2">
-                        <Upload size={18} /> Import
+                    <Link href="/shop/inventory/bulk-import" className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2 group">
+                        <Upload size={18} className="group-hover:-translate-y-0.5 transition-transform" /> Import
                     </Link>
-                    <Link href="/shop/inventory/adjust" className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2">
-                        <Edit size={18} /> Adjust Stock
+                    <Link href="/shop/inventory/adjust" className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2 group">
+                        <Edit size={18} className="group-hover:rotate-12 transition-transform" /> Adjust Stock
                     </Link>
-                    <Link href="/shop/inventory/add" className="px-5 py-2.5 rounded-xl bg-[#3498DB] hover:bg-[#2980B9] text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all flex items-center gap-2">
-                        <Plus size={18} /> Add Product
+                    <Link href="/shop/inventory/add" className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#3498DB] to-[#2980B9] hover:from-[#2980B9] hover:to-[#3498DB] text-white font-bold shadow-xl shadow-blue-500/20 hover:shadow-blue-500/30 transition-all flex items-center gap-2 transform active:scale-95">
+                        <Plus size={20} strokeWidth={3} /> Add Product
                     </Link>
+                </div>
+            </div>
+
+            {/* STATS CARDS */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                {/* Total Products */}
+                <div className="bg-white dark:bg-[#151C2C] p-6 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm group hover:border-blue-500/50 transition-all">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-2xl group-hover:scale-110 transition-transform">
+                            <Archive size={24} />
+                        </div>
+                        <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Total SKU</span>
+                    </div>
+                    <h3 className="text-3xl font-black text-gray-900 dark:text-white">{products.length}</h3>
+                    <p className="text-sm text-gray-500 mt-1">Active inventory items</p>
+                </div>
+
+                {/* Stock Value */}
+                <div className="bg-white dark:bg-[#151C2C] p-6 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm group hover:border-green-500/50 transition-all">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="p-3 bg-green-50 dark:bg-green-900/20 text-green-600 rounded-2xl group-hover:scale-110 transition-transform">
+                            <DollarSign size={24} />
+                        </div>
+                        <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Stock Value</span>
+                    </div>
+                    <h3 className="text-3xl font-black text-gray-900 dark:text-white">
+                        {viewCurrency === 'USD' ? '$' : ''}
+                        {(products.reduce((acc, p) => {
+                            const cost = p.costPriceUSD > 0
+                                ? (viewCurrency === 'USD' ? p.costPriceUSD : p.costPriceUSD * exchangeRate)
+                                : (viewCurrency === 'USD' ? p.costPrice / exchangeRate : p.costPrice);
+                            return acc + (cost * p.stock);
+                        }, 0)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                        {viewCurrency === 'ETB' ? ' ETB' : ''}
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1">Total asset valuation</p>
+                </div>
+
+                {/* Low Stock */}
+                <div className="bg-white dark:bg-[#151C2C] p-6 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm group hover:border-yellow-500/50 transition-all">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 rounded-2xl group-hover:scale-110 transition-transform">
+                            <TrendingUp size={24} />
+                        </div>
+                        <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Low Stock</span>
+                    </div>
+                    <h3 className="text-3xl font-black text-gray-900 dark:text-white">
+                        {products.filter(p => p.status === 'Low Stock').length}
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1">Items needing reorder</p>
+                </div>
+
+                {/* Out of Stock */}
+                <div className="bg-white dark:bg-[#151C2C] p-6 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm group hover:border-red-500/50 transition-all">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-2xl group-hover:scale-110 transition-transform">
+                            <AlertTriangle size={24} />
+                        </div>
+                        <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Out of Stock</span>
+                    </div>
+                    <h3 className="text-3xl font-black text-gray-900 dark:text-white text-red-500">
+                        {products.filter(p => p.status === 'Out of Stock').length}
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1">Immediate action required</p>
                 </div>
             </div>
 
             {/* FILTER BAR */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 {/* Tabs */}
-                <div className="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl w-fit">
-                    {['All', 'Low Stock', 'Out of Stock'].map((tab) => (
+                {/* Tabs & Currency Toggle */}
+                <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                    <div className="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl w-fit">
+                        {['All', 'Low Stock', 'Out of Stock'].map((tab) => (
+                            <button
+                                key={tab}
+                                onClick={() => setFilter(tab as any)}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filter === tab
+                                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                                    }`}
+                            >
+                                {tab}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Currency Toggle */}
+                    <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-fit">
                         <button
-                            key={tab}
-                            onClick={() => setFilter(tab as any)}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filter === tab
-                                ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                            onClick={() => setViewCurrency('ETB')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${viewCurrency === 'ETB'
+                                ? 'bg-[#3498DB] text-white shadow-sm'
                                 : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                                 }`}
                         >
-                            {tab}
+                            ETB View
                         </button>
-                    ))}
+                        <button
+                            onClick={() => setViewCurrency('USD')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${viewCurrency === 'USD'
+                                ? 'bg-[#27AE60] text-white shadow-sm'
+                                : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                                }`}
+                        >
+                            USD View
+                        </button>
+                    </div>
                 </div>
 
                 {/* Search */}
@@ -184,12 +290,13 @@ export default function InventoryPage() {
                         <table className="w-full">
                             <thead>
                                 <tr className="bg-gray-50/50 dark:bg-gray-800/20 border-b border-gray-100 dark:border-gray-800">
-                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Product Name</th>
-                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Category</th>
-                                    <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Price (ETB)</th>
-                                    <th className="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Stock</th>
-                                    <th className="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Actions</th>
+                                    <th className="px-6 py-5 text-left text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Product Reference</th>
+                                    <th className="px-6 py-5 text-left text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Category</th>
+                                    <th className="px-6 py-5 text-right text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Acquisition Cost</th>
+                                    <th className="px-6 py-5 text-right text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Retail Price</th>
+                                    <th className="px-6 py-5 text-center text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Stock Count</th>
+                                    <th className="px-6 py-5 text-center text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Status</th>
+                                    <th className="px-6 py-5 text-right text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Operations</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -201,11 +308,30 @@ export default function InventoryPage() {
                                                 <span className="text-xs text-gray-400 font-mono">SKU: {item.sku}</span>
                                             </Link>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500">
-                                            {item.category}
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900 dark:text-white">
+                                            <div className="font-bold">
+                                                {viewCurrency === 'ETB' ? (
+                                                    (item.costPriceUSD > 0 ? item.costPriceUSD * exchangeRate : item.costPrice).toLocaleString()
+                                                ) : (
+                                                    (item.costPriceUSD > 0 ? item.costPriceUSD : item.costPrice / exchangeRate).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                )}
+                                            </div>
+                                            {item.costPriceUSD > 0 && viewCurrency === 'ETB' && (
+                                                <div className="text-[10px] text-blue-500 font-bold">
+                                                    USD {item.costPriceUSD.toLocaleString()}
+                                                </div>
+                                            )}
+                                            {item.costPriceUSD === 0 && viewCurrency === 'USD' && (
+                                                <div className="text-[10px] text-gray-400 font-bold">
+                                                    ETB {item.costPrice.toLocaleString()}
+                                                </div>
+                                            )}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-black text-gray-900 dark:text-white">
-                                            {item.sellingPrice.toLocaleString()}
+                                            {viewCurrency === 'ETB'
+                                                ? item.sellingPrice.toLocaleString()
+                                                : (item.sellingPrice / exchangeRate).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                            }
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-center">
                                             <span className={`font-bold text-sm ${item.stock < 10 ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'}`}>
@@ -216,13 +342,17 @@ export default function InventoryPage() {
                                             <StatusBadge status={item.status} />
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right">
-                                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Link href={`/shop/inventory/${item.id}/edit`} className="p-2 text-gray-400 hover:text-[#3498DB] hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
+                                            <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Link href={`/shop/inventory/${item.id}`} className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all" title="View Details">
+                                                    <Eye size={18} />
+                                                </Link>
+                                                <Link href={`/shop/inventory/${item.id}/edit`} className="p-2 text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-xl transition-all" title="Edit Product">
                                                     <Edit size={18} />
                                                 </Link>
                                                 <button
                                                     onClick={() => handleDelete(item.id, item.name)}
-                                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
+                                                    title="Delete Product"
                                                 >
                                                     <Trash2 size={18} />
                                                 </button>

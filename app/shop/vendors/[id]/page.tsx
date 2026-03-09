@@ -23,7 +23,10 @@ export default function VendorProfilePage() {
     const [loading, setLoading] = useState(true);
     const [vendor, setVendor] = useState<any>(null);
     const [stats, setStats] = useState({
-        totalSpent: 0,
+        totalSpentETB: 0,
+        balanceETB: 0,
+        totalSpentUSD: 0,
+        balanceUSD: 0,
         totalOrders: 0
     });
     const [history, setHistory] = useState<any[]>([]);
@@ -198,7 +201,7 @@ export default function VendorProfilePage() {
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 text-right text-sm font-black text-gray-900 dark:text-white">
-                                                    ETB {po.total.toLocaleString()}
+                                                    {po.currency === 'USD' ? '$' : 'ETB'} {po.total.toLocaleString()}
                                                 </td>
                                             </tr>
                                         ))
@@ -212,13 +215,29 @@ export default function VendorProfilePage() {
                 {/* RIGHT: Stats */}
                 <div className="space-y-6">
 
-                    {/* Total Spent */}
-                    <div className="bg-gradient-to-br from-[#3498DB] to-[#2980B9] p-6 rounded-[2rem] shadow-xl shadow-blue-500/20 text-white relative overflow-hidden">
+                    {/* Financial Overview Card */}
+                    <div className="bg-gradient-to-br from-[#3498DB] to-[#2980B9] p-6 rounded-[2rem] shadow-xl shadow-blue-500/20 text-white relative overflow-hidden space-y-4">
                         <div className="absolute -right-10 -top-10 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
-                        <div className="relative z-10">
-                            <p className="text-blue-100 text-xs font-bold uppercase tracking-wider mb-2">Total Paid</p>
-                            <h2 className="text-4xl font-black mb-2">ETB {stats.totalSpent.toLocaleString()}</h2>
-                            <p className="text-blue-100 text-sm">To this vendor</p>
+
+                        <div className="relative z-10 border-b border-white/20 pb-4">
+                            <p className="text-blue-100 text-xs font-bold uppercase tracking-wider mb-1">Total ETB Balance</p>
+                            <h2 className="text-3xl font-black">ETB {stats.balanceETB.toLocaleString()}</h2>
+                        </div>
+
+                        <div className="relative z-10 border-b border-white/20 pb-4">
+                            <p className="text-blue-100 text-xs font-bold uppercase tracking-wider mb-1">Total USD Balance</p>
+                            <h2 className="text-3xl font-black">${stats.balanceUSD.toLocaleString()}</h2>
+                        </div>
+
+                        <div className="relative z-10 pt-2 flex justify-between gap-4">
+                            <div>
+                                <p className="text-blue-100 text-[10px] font-bold uppercase tracking-wider">Lifetime ETB Spent</p>
+                                <p className="font-bold text-sm">ETB {stats.totalSpentETB.toLocaleString()}</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-blue-100 text-[10px] font-bold uppercase tracking-wider">Lifetime USD Spent</p>
+                                <p className="font-bold text-sm">${stats.totalSpentUSD.toLocaleString()}</p>
+                            </div>
                         </div>
                     </div>
 

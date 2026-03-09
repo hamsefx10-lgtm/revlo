@@ -40,8 +40,16 @@ export async function GET(req: NextRequest) {
         });
 
         // Calculate Stats
-        const totalRevenue = sales.reduce((sum, s) => sum + s.total, 0);
-        const totalTax = sales.reduce((sum, s) => sum + s.tax, 0);
+        const totalRevenue = sales.reduce((sum, s) => {
+            const saleTotalInETB = s.currency === 'USD' ? (s.total * (s.exchangeRate || 1)) : s.total;
+            return sum + saleTotalInETB;
+        }, 0);
+
+        const totalTax = sales.reduce((sum, s) => {
+            const taxInETB = s.currency === 'USD' ? (s.tax * (s.exchangeRate || 1)) : s.tax;
+            return sum + taxInETB;
+        }, 0);
+
         const transactionCount = sales.length;
         const avgTransaction = transactionCount > 0 ? totalRevenue / transactionCount : 0;
 
@@ -51,8 +59,11 @@ export async function GET(req: NextRequest) {
         const chartData = days.map(day => {
             const dayStr = format(day, 'yyyy-MM-dd');
             // Filter sales for this day
-            const daySales = sales.filter(s => format(s.createdAt, 'yyyy-MM-dd') === dayStr);
-            const dailyTotal = daySales.reduce((sum, s) => sum + s.total, 0);
+            const daySales = sales.filter(s => format(new Date(s.createdAt), 'yyyy-MM-dd') === dayStr);
+            const dailyTotal = daySales.reduce((sum, s) => {
+                const saleTotalInETB = s.currency === 'USD' ? (s.total * (s.exchangeRate || 1)) : s.total;
+                return sum + saleTotalInETB;
+            }, 0);
             return {
                 date: format(day, 'MMM dd'),
                 revenue: dailyTotal,

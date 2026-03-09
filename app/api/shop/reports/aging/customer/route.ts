@@ -21,8 +21,16 @@ export async function GET(req: Request) {
                 user: { companyId: user.companyId },
                 paymentStatus: { in: ['Unpaid', 'Partial'] }
             },
-            include: { customer: true }
+            include: { customer: true },
+            orderBy: { createdAt: 'desc' }
         });
+
+        // Get latest rate for current valuation
+        const latestRateObj = await prisma.exchangeRate.findFirst({
+            where: { companyId: user.companyId },
+            orderBy: { date: 'desc' }
+        });
+        const currentRate = latestRateObj?.rate || 1;
 
         const buckets = {
             '1-30': 0,
@@ -34,7 +42,10 @@ export async function GET(req: Request) {
         const details = invoices.map(inv => {
             const due = inv.dueDate ? new Date(inv.dueDate) : new Date(inv.createdAt);
             const overdueDays = Math.max(0, differenceInDays(new Date(), due));
-            const amountDue = inv.total - inv.paidAmount;
+
+            // Normalize to ETB for the global view
+            const rawDue = inv.total - inv.paidAmount;
+            const amountDue = inv.currency === 'USD' ? (rawDue * currentRate) : rawDue;
 
             if (overdueDays <= 30) buckets['1-30'] += amountDue;
             else if (overdueDays <= 60) buckets['31-60'] += amountDue;
@@ -44,7 +55,9 @@ export async function GET(req: Request) {
             return {
                 id: inv.id,
                 customer: inv.customer?.name || 'Walk-in',
-                amountDue,
+                amountDue, // in ETB
+                originalAmountDue: rawDue,
+                currency: inv.currency || 'ETB',
                 overdueDays,
                 invoiceNumber: inv.invoiceNumber
             };

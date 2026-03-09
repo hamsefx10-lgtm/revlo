@@ -32,6 +32,7 @@ export async function GET(req: Request) {
         const formatted = receivables.map(r => ({
             id: r.id,
             customer: r.customer?.name || 'Walk-in Customer',
+            customerPhone: r.customer?.phone || '',
             invoiceNumber: r.invoiceNumber,
             total: r.total,
             paid: r.paidAmount,

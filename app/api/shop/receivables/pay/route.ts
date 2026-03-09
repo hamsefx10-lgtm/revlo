@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import prisma from '@/lib/db';
+import { sendShopReceiptViaWhatsApp } from '@/lib/whatsapp/send-shop-receipt';
 
 // POST /api/shop/receivables/pay
 export async function POST(req: NextRequest) {
@@ -21,20 +22,21 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Destination account is required' }, { status: 400 });
         }
 
-        const user = await prisma.user.findUnique({
+        const currentUser = await prisma.user.findUnique({
             where: { id: session.user.id },
-            select: { companyId: true }
+            include: { company: true }
         });
 
-        if (!user?.companyId) {
+        if (!currentUser?.companyId) {
             return NextResponse.json({ error: 'Company not found' }, { status: 400 });
         }
 
-        await prisma.$transaction(async (tx) => {
+        const updatedSales = await prisma.$transaction(async (tx) => {
             let remainingAmount = Number(amount);
 
             // 1. Determine Invoices to Pay
             let invoicesToPay = [];
+            let successfullyUpdatedSales: any[] = [];
 
             if (invoiceId) {
                 const inv = await tx.sale.findUnique({ where: { id: invoiceId } }) as any;
@@ -64,13 +66,36 @@ export async function POST(req: NextRequest) {
                 const newPaid = (inv.paidAmount || 0) + pay;
                 const newStatus = newPaid >= inv.total ? 'Paid' : 'Partial';
 
-                await tx.sale.update({
+                const updatedSale = await tx.sale.update({
                     where: { id: inv.id },
                     data: {
                         // @ts-ignore
                         paidAmount: newPaid,
                         // @ts-ignore
                         paymentStatus: newStatus
+                    },
+                    include: {
+                        customer: true,
+                        items: true,
+                        user: true,
+                        company: true
+                    }
+                });
+
+                successfullyUpdatedSales.push({ sale: updatedSale, payAmount: pay });
+
+                // Record Ledger Transaction for this specific invoice payment
+                await tx.transaction.create({
+                    data: {
+                        description: notes ? `${notes} (Invoice #${inv.invoiceNumber})` : `Payment for Invoice #${inv.invoiceNumber}`,
+                        amount: Number(pay),
+                        type: 'INCOME',
+                        category: 'Accounts Receivable',
+                        accountId: accountId,
+                        companyId: currentUser.companyId,
+                        userId: session.user.id,
+                        transactionDate: new Date(),
+                        note: `Ref Sale: ${inv.id}`
                     }
                 });
 
@@ -88,21 +113,24 @@ export async function POST(req: NextRequest) {
                 where: { id: accountId },
                 data: { balance: { increment: Number(amount) } }
             });
-
-            // 4. Record Ledger Transaction
-            await tx.transaction.create({
-                data: {
-                    description: notes || `Debt Collection from ${customerId ? 'Customer' : 'Invoice'}`,
-                    amount: Number(amount),
-                    type: 'INCOME',
-                    category: 'Accounts Receivable',
-                    accountId: accountId,
-                    companyId: user.companyId,
-                    userId: session.user.id,
-                    transactionDate: new Date()
-                }
-            });
+            return successfullyUpdatedSales;
         });
+
+        // Trigger WhatsApp auto-send for all successfully updated invoices
+        for (const { sale, payAmount } of updatedSales) {
+            if (sale.customer && sale.customer.phone && currentUser.company?.name) {
+                sendShopReceiptViaWhatsApp(
+                    currentUser.companyId,
+                    currentUser.company.name,
+                    sale.customer.phone,
+                    sale,
+                    'PAYMENT',
+                    payAmount
+                ).catch(e => {
+                    console.error('Failed to auto-send WhatsApp for payment:', e);
+                });
+            }
+        }
 
         return NextResponse.json({ success: true });
 

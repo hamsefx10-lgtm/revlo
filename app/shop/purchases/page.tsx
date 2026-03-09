@@ -15,14 +15,12 @@ import {
     Trash2,
     CreditCard,
     X,
-    DollarSign,
-    Calendar,
-    Filter,
-    ArrowUpRight,
-    Briefcase,
-    Package,
-    ChevronRight,
-    FileText
+    FileText,
+    TrendingUp,
+    AlertCircle as AlertTriangle,
+    Clock,
+    DollarSign as CashIcon,
+    ArrowRight
 } from 'lucide-react';
 import StatusBadge from '@/components/shop/ui/StatusBadge';
 import { format } from 'date-fns';
@@ -39,6 +37,8 @@ interface PurchaseOrder {
     paidAmount: number;
     paymentStatus: 'Paid' | 'Unpaid' | 'Partial';
     status: 'Received' | 'Pending' | 'Ordered' | 'Cancelled';
+    currency: string;
+    exchangeRate: number;
     _count: { items: number };
 }
 
@@ -71,11 +71,23 @@ export default function PurchasesPage() {
     const [payAmount, setPayAmount] = useState('');
     const [accounts, setAccounts] = useState<Account[]>([]);
     const [selectedAccountId, setSelectedAccountId] = useState('');
+    const [exchangeRate, setExchangeRate] = useState<number>(1);
 
     useEffect(() => {
         fetchPurchases();
         fetchAccounts();
+        fetchExchangeRate();
     }, [filter, dateRange]); // Refetch on filter change
+
+    const fetchExchangeRate = async () => {
+        try {
+            const res = await fetch('/api/settings/exchange-rate');
+            const data = await res.json();
+            if (data.rate) setExchangeRate(data.rate.rate);
+        } catch (e) {
+            console.error('Error fetching rate', e);
+        }
+    };
 
     const fetchAccounts = async () => {
         try {
@@ -159,7 +171,15 @@ export default function PurchasesPage() {
     const openPaymentModal = (e: React.MouseEvent, po: PurchaseOrder) => {
         e.stopPropagation();
         setSelectedPo(po);
-        setPayAmount((po.total - po.paidAmount).toString()); // Default to remaining balance
+
+        // If it's a USD order, we might want to default to the USD balance
+        const balanceETB = po.total - po.paidAmount;
+        if (po.currency === 'USD') {
+            setPayAmount((balanceETB / po.exchangeRate).toFixed(2));
+        } else {
+            setPayAmount(balanceETB.toString());
+        }
+
         setPayModalOpen(true);
     };
 
@@ -175,7 +195,8 @@ export default function PurchasesPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     amount: parseFloat(payAmount),
-                    accountId: selectedAccountId
+                    accountId: selectedAccountId,
+                    exchangeRate: exchangeRate // Pass current rate for conversion
                 })
             });
 
@@ -234,26 +255,26 @@ export default function PurchasesPage() {
         <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0B1120] font-sans pb-20 w-full animate-fade-in">
 
             {/* HEADER */}
-            <div className="bg-white dark:bg-[#151C2C] border-b border-gray-100 dark:border-gray-800 sticky top-0 z-30 shadow-sm/50">
-                <div className="w-full px-4 md:px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-[#3498DB]">
-                            <Truck size={24} />
+            <div className="bg-white dark:bg-[#151C2C] border-b border-gray-100 dark:border-gray-800 sticky top-0 z-30 shadow-sm transition-all duration-300">
+                <div className="w-full px-4 md:px-8 py-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="flex items-center gap-5">
+                        <div className="p-4 bg-gradient-to-br from-[#3498DB] to-[#2980B9] rounded-2xl text-white shadow-lg shadow-blue-500/20 transform hover:rotate-3 transition-transform">
+                            <Truck size={32} />
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-none mb-1.5">Purchase Orders</h1>
-                            <p className="text-sm text-gray-500 font-medium">Manage incoming stock and supplier orders.</p>
+                            <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-none mb-2">Purchase <span className="text-[#3498DB]">Logistics</span></h1>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium tracking-wide uppercase text-[10px]">Supply Chain & Vendor Management</p>
                         </div>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex flex-wrap gap-3">
                         <button
                             onClick={handleExport}
-                            className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2 text-sm"
+                            className="px-6 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 font-black text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2 text-sm group"
                         >
-                            <Download size={18} /> Export
+                            <Download size={18} className="group-hover:translate-y-0.5 transition-transform" /> Export Data
                         </button>
-                        <Link href="/shop/purchases/add" className="px-5 py-2.5 rounded-xl bg-[#3498DB] hover:bg-[#2980B9] text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all flex items-center gap-2 text-sm">
-                            <Plus size={18} /> New Order
+                        <Link href="/shop/purchases/add" className="px-6 py-3 rounded-2xl bg-gradient-to-r from-[#3498DB] to-[#2980B9] hover:from-[#2980B9] hover:to-[#3498DB] text-white font-black shadow-xl shadow-blue-500/20 hover:shadow-blue-500/30 transition-all flex items-center gap-2 text-sm transform active:scale-95">
+                            <Plus size={20} strokeWidth={3} /> New Requisition
                         </Link>
                     </div>
                 </div>
@@ -262,34 +283,49 @@ export default function PurchasesPage() {
             <div className="w-full px-4 md:px-6 py-6 space-y-6">
 
                 {/* STATS CARDS */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-white dark:bg-[#151C2C] p-5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col justify-between">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Purchases</p>
-                        <div className="flex items-end justify-between mt-2">
-                            <p className="text-xl md:text-2xl font-black text-gray-900 dark:text-white">ETB {stats.total.toLocaleString()}</p>
-                            <div className="p-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-500"><DollarSign size={18} /></div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div className="bg-white dark:bg-[#151C2C] p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm group hover:border-blue-500/50 transition-all">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-2xl group-hover:scale-110 transition-transform">
+                                <FileText size={24} />
+                            </div>
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Gross Commit</span>
                         </div>
+                        <h3 className="text-2xl font-black text-gray-900 dark:text-white">ETB {stats.total.toLocaleString()}</h3>
+                        <p className="text-xs text-gray-500 mt-2 font-medium">Lifetime purchase volume</p>
                     </div>
-                    <div className="bg-white dark:bg-[#151C2C] p-5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col justify-between">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Paid Amount</p>
-                        <div className="flex items-end justify-between mt-2">
-                            <p className="text-xl md:text-2xl font-black text-green-500">ETB {stats.paid.toLocaleString()}</p>
-                            <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg text-green-500"><CheckCircle size={18} /></div>
+
+                    <div className="bg-white dark:bg-[#151C2C] p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm group hover:border-green-500/50 transition-all">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="p-3 bg-green-50 dark:bg-green-900/20 text-green-600 rounded-2xl group-hover:scale-110 transition-transform">
+                                <CheckCircle size={24} />
+                            </div>
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Liquidated</span>
                         </div>
+                        <h3 className="text-2xl font-black text-green-600">ETB {stats.paid.toLocaleString()}</h3>
+                        <p className="text-xs text-gray-500 mt-2 font-medium">Successfully paid out</p>
                     </div>
-                    <div className="bg-white dark:bg-[#151C2C] p-5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col justify-between">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Pending Orders</p>
-                        <div className="flex items-end justify-between mt-2">
-                            <p className="text-xl md:text-2xl font-black text-orange-500">{stats.pendingCount}</p>
-                            <div className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg text-orange-500"><Package size={18} /></div>
+
+                    <div className="bg-white dark:bg-[#151C2C] p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm group hover:border-orange-500/50 transition-all">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="p-3 bg-orange-50 dark:bg-orange-900/20 text-orange-600 rounded-2xl group-hover:scale-110 transition-transform">
+                                <Clock size={24} />
+                            </div>
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active Orders</span>
                         </div>
+                        <h3 className="text-2xl font-black text-orange-600">{stats.pendingCount}</h3>
+                        <p className="text-xs text-gray-500 mt-2 font-medium">Ordered & pending arrival</p>
                     </div>
-                    <div className="bg-white dark:bg-[#151C2C] p-5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm flex flex-col justify-between">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Balance Due</p>
-                        <div className="flex items-end justify-between mt-2">
-                            <p className="text-xl md:text-2xl font-black text-red-500">ETB {(stats.total - stats.paid).toLocaleString()}</p>
-                            <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-500"><CreditCard size={18} /></div>
+
+                    <div className="bg-white dark:bg-[#151C2C] p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm group hover:border-red-500/50 transition-all">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-2xl group-hover:scale-110 transition-transform">
+                                <CreditCard size={24} />
+                            </div>
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Liabilities</span>
                         </div>
+                        <h3 className="text-2xl font-black text-red-600">ETB {(stats.total - stats.paid).toLocaleString()}</h3>
+                        <p className="text-xs text-gray-500 mt-2 font-medium">Total outstanding balance</p>
                     </div>
                 </div>
 
@@ -298,7 +334,7 @@ export default function PurchasesPage() {
                     <div className="flex flex-col md:flex-row items-center gap-3 w-full xl:w-auto">
                         {/* Date Range */}
                         <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 p-2 rounded-xl border border-gray-200 dark:border-gray-700 w-full md:w-auto">
-                            <Calendar size={18} className="text-gray-400 ml-2" />
+                            <Clock size={18} className="text-gray-400 ml-2" />
                             <input
                                 type="date"
                                 value={dateRange.start}
@@ -355,13 +391,13 @@ export default function PurchasesPage() {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-gray-50/50 dark:bg-gray-800/20 border-b border-gray-100 dark:border-gray-800">
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Purchase Order</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Vendor</th>
-                                    <th className="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Items</th>
-                                    <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Amount</th>
-                                    <th className="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Payment</th>
-                                    <th className="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Actions</th>
+                                    <th className="px-6 py-5 text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Procurement ID</th>
+                                    <th className="px-6 py-5 text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Supplier Entity</th>
+                                    <th className="px-6 py-5 text-center text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Qty</th>
+                                    <th className="px-6 py-5 text-right text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Transaction Value</th>
+                                    <th className="px-6 py-5 text-center text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Financial State</th>
+                                    <th className="px-6 py-5 text-center text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Ops Status</th>
+                                    <th className="px-6 py-5 text-right text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Operations</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -389,7 +425,7 @@ export default function PurchasesPage() {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-2">
-                                                    <Briefcase size={16} className="text-gray-400" />
+                                                    <Truck size={16} className="text-gray-400" />
                                                     <span className="text-sm font-bold text-gray-700 dark:text-gray-300">{po.vendor?.name || 'Unknown Vendor'}</span>
                                                 </div>
                                             </td>
@@ -398,16 +434,24 @@ export default function PurchasesPage() {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right">
                                                 <div className="flex flex-col items-end">
-                                                    <span className="text-sm font-black text-gray-900 dark:text-white">{po.total.toLocaleString()}</span>
-                                                    {po.paidAmount < po.total && po.paidAmount > 0 && (
-                                                        <span className="text-[10px] text-red-500 font-bold">Due: {(po.total - po.paidAmount).toLocaleString()}</span>
-                                                    )}
+                                                    <span className="text-sm font-black text-gray-900 dark:text-white">
+                                                        {po.total.toLocaleString()}
+                                                        <span className="ml-1 text-[10px] font-bold text-gray-400">ETB</span>
+                                                    </span>
+                                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                                        {po.currency === 'USD' && (
+                                                            <span className="text-[9px] bg-blue-50 text-blue-600 px-1 py-0.5 rounded border border-blue-100 font-bold uppercase tracking-tight">USD</span>
+                                                        )}
+                                                        {po.paidAmount < po.total && po.paidAmount > 0 && (
+                                                            <span className="text-[10px] text-red-500 font-bold">Due: {(po.total - po.paidAmount).toLocaleString()}</span>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center">
                                                 <span className={`px-2 py-1 rounded text-[10px] uppercase font-black ${po.paymentStatus === 'Paid' ? 'bg-green-100 text-green-700' :
-                                                        po.paymentStatus === 'Partial' ? 'bg-orange-100 text-orange-700' :
-                                                            'bg-red-100 text-red-700'
+                                                    po.paymentStatus === 'Partial' ? 'bg-orange-100 text-orange-700' :
+                                                        'bg-red-100 text-red-700'
                                                     }`}>
                                                     {po.paymentStatus}
                                                 </span>
@@ -416,41 +460,40 @@ export default function PurchasesPage() {
                                                 <StatusBadge status={po.status} />
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right">
-                                                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
                                                     {(po.paymentStatus !== 'Paid') && (
                                                         <button
                                                             onClick={(e) => openPaymentModal(e, po)}
-                                                            className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                                            title="Record Payment"
+                                                            className="p-2 text-gray-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-xl transition-all"
+                                                            title="Settle Invoice"
                                                         >
-                                                            <CreditCard size={18} />
+                                                            <CashIcon size={18} />
                                                         </button>
                                                     )}
                                                     {processing === po.id ? (
                                                         <Loader2 size={18} className="animate-spin text-gray-400" />
                                                     ) : (
-
                                                         <>
                                                             {po.status !== 'Received' && (
                                                                 <button
                                                                     onClick={(e) => handleStatusUpdate(e, po.id, 'Received')}
-                                                                    className="p-2 text-gray-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
-                                                                    title="Mark as Received"
+                                                                    className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all"
+                                                                    title="Accept Delivery"
                                                                 >
                                                                     <CheckCircle size={18} />
                                                                 </button>
                                                             )}
                                                             <button
                                                                 onClick={(e) => handleDelete(e, po.id)}
-                                                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                                                title="Delete Order"
+                                                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
+                                                                title="Invalidate Order"
                                                             >
                                                                 <Trash2 size={18} />
                                                             </button>
                                                         </>
                                                     )}
                                                     <div className="p-2 text-gray-300">
-                                                        <ChevronRight size={18} />
+                                                        <ArrowRight size={18} />
                                                     </div>
                                                 </div>
                                             </td>
@@ -495,14 +538,19 @@ export default function PurchasesPage() {
                                     </div>
                                     <div className="bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg text-right">
                                         <p className="text-[10px] text-gray-400 uppercase font-bold">Total</p>
-                                        <p className="font-black text-gray-900 dark:text-white">{po.total.toLocaleString()}</p>
+                                        <div className="flex items-center justify-end gap-1">
+                                            <p className="font-black text-gray-900 dark:text-white">{po.total.toLocaleString()} <span className="text-[10px] text-gray-400">ETB</span></p>
+                                            {po.currency === 'USD' && (
+                                                <span className="text-[9px] bg-blue-50 text-blue-600 px-1 rounded border border-blue-100 font-bold">USD</span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
                                 <div className="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-3">
                                     <span className={`px-2 py-1 rounded text-[10px] font-bold ${po.paymentStatus === 'Paid' ? 'bg-green-100 text-green-700' :
-                                            po.paymentStatus === 'Partial' ? 'bg-orange-100 text-orange-700' :
-                                                'bg-red-100 text-red-700'
+                                        po.paymentStatus === 'Partial' ? 'bg-orange-100 text-orange-700' :
+                                            'bg-red-100 text-red-700'
                                         }`}>
                                         Payment: {po.paymentStatus}
                                     </span>
@@ -538,25 +586,39 @@ export default function PurchasesPage() {
                         </div>
 
                         <form onSubmit={handlePaymentSubmit} className="p-6 space-y-4">
-                            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                                <span className="text-sm font-medium text-gray-500">Remaining Balance</span>
-                                <span className="text-xl font-black text-gray-900 dark:text-white">
-                                    ETB {(selectedPo.total - selectedPo.paidAmount).toLocaleString()}
-                                </span>
+                            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 flex flex-col gap-2">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-xs font-bold text-gray-400 uppercase">Remaining Balance</span>
+                                    <span className="text-lg font-black text-gray-900 dark:text-white">
+                                        ETB {(selectedPo.total - selectedPo.paidAmount).toLocaleString()}
+                                    </span>
+                                </div>
+                                {selectedPo.currency === 'USD' && (
+                                    <div className="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-gray-700">
+                                        <span className="text-[10px] font-bold text-blue-500 uppercase">USD Equivalent</span>
+                                        <span className="text-sm font-black text-blue-500">
+                                            $ {((selectedPo.total - selectedPo.paidAmount) / selectedPo.exchangeRate).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
 
                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Amount to Pay</label>
+                                <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">
+                                    Amount to Pay ({selectedPo.currency === 'USD' ? 'USD' : 'ETB'})
+                                </label>
                                 <div className="relative">
-                                    <DollarSign className="absolute left-3 top-3 text-gray-400" size={18} />
+                                    <div className="absolute left-3 top-3 text-gray-400 font-bold">
+                                        {selectedPo.currency === 'USD' ? '$' : 'ETB'}
+                                    </div>
                                     <input
                                         type="number"
                                         required
-                                        min="1"
-                                        max={selectedPo.total - selectedPo.paidAmount}
+                                        min="0.01"
+                                        step="0.01"
                                         value={payAmount}
                                         onChange={(e) => setPayAmount(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none font-bold text-lg"
+                                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none font-bold text-lg"
                                     />
                                 </div>
                             </div>
@@ -572,17 +634,42 @@ export default function PurchasesPage() {
                                     <option value="">Select Account...</option>
                                     {accounts.map(acc => (
                                         <option key={acc.id} value={acc.id}>
-                                            {acc.name} ({acc.type}) - ETB {acc.balance.toLocaleString()}
+                                            {acc.name} ({acc.currency}) - {acc.currency} {acc.balance.toLocaleString()}
                                         </option>
                                     ))}
                                 </select>
-                                {accounts.find(a => a.id === selectedAccountId) && (
-                                    <p className={`text-xs font-bold mt-2 ${(accounts.find(a => a.id === selectedAccountId)?.balance || 0) < parseFloat(payAmount || '0')
-                                        ? 'text-red-500'
-                                        : 'text-green-500'
-                                        }`}>
-                                        Available Funds: ETB {accounts.find(a => a.id === selectedAccountId)?.balance.toLocaleString()}
-                                    </p>
+
+                                {selectedAccountId && (
+                                    <div className="mt-3 p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-900/30">
+                                        {(() => {
+                                            const acc = accounts.find(a => a.id === selectedAccountId);
+                                            if (!acc) return null;
+
+                                            const amount = parseFloat(payAmount || '0');
+                                            let deduction = amount;
+                                            let infoText = "";
+
+                                            if (acc.currency === 'ETB' && selectedPo.currency === 'USD') {
+                                                deduction = amount * exchangeRate;
+                                                infoText = `Converting $${amount} to ETB @ ${exchangeRate}`;
+                                            } else if (acc.currency === 'USD' && selectedPo.currency === 'ETB') {
+                                                deduction = amount / exchangeRate;
+                                                infoText = `Converting ETB ${amount} to USD @ ${exchangeRate}`;
+                                            }
+
+                                            return (
+                                                <div className="space-y-1">
+                                                    <div className="flex justify-between items-center text-xs font-bold">
+                                                        <span className="text-gray-500 uppercase">Will Deduct</span>
+                                                        <span className={acc.balance < deduction ? 'text-red-500' : 'text-blue-600'}>
+                                                            {acc.currency} {deduction.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                                        </span>
+                                                    </div>
+                                                    {infoText && <p className="text-[10px] text-gray-400 italic">{infoText}</p>}
+                                                </div>
+                                            );
+                                        })()}
+                                    </div>
                                 )}
                             </div>
 

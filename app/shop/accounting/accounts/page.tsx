@@ -268,7 +268,12 @@ export default function AccountsPage() {
                                             {getIcon(account.type)}
                                         </div>
                                         <div>
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{account.type}</p>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{account.type}</p>
+                                                {account.currency === 'USD' && (
+                                                    <span className="text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded border border-blue-100 font-bold uppercase tracking-tight">USD Account</span>
+                                                )}
+                                            </div>
                                             <h3 className="text-lg font-black text-gray-900 dark:text-white leading-tight">{account.name}</h3>
                                         </div>
                                     </div>
@@ -298,7 +303,7 @@ export default function AccountsPage() {
                                 {/* Body */}
                                 <div className="mb-6">
                                     <p className="text-3xl font-black text-gray-900 dark:text-white mb-1">
-                                        <span className="text-lg text-gray-400 align-top mr-1">ETB</span>
+                                        <span className="text-lg text-gray-400 align-top mr-1">{account.currency}</span>
                                         {account.balance.toLocaleString()}
                                     </p>
                                     <div className="flex items-center gap-2 text-green-500 text-xs font-bold">
@@ -370,9 +375,18 @@ export default function AccountsPage() {
                                     ))}
                                 </div>
                             </div>
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Initial Balance</label>
-                                <input type="number" placeholder="0.00" value={newAccount.balance} onChange={e => setNewAccount({ ...newAccount, balance: e.target.value })} className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none font-bold text-gray-900 dark:text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all" />
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Currency</label>
+                                    <select value={newAccount.currency} onChange={e => setNewAccount({ ...newAccount, currency: e.target.value })} className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none font-bold text-gray-900 dark:text-white appearance-none cursor-pointer">
+                                        <option value="ETB">ETB (Birr)</option>
+                                        <option value="USD">USD (Dollar)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Initial Balance</label>
+                                    <input type="number" placeholder="0.00" value={newAccount.balance} onChange={e => setNewAccount({ ...newAccount, balance: e.target.value })} className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none font-bold text-gray-900 dark:text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all" />
+                                </div>
                             </div>
                             <button type="submit" disabled={isSubmitting} className="w-full py-4 rounded-xl bg-blue-500 hover:bg-blue-600 text-white font-bold shadow-lg shadow-blue-500/20 active:scale-95 transition-all disabled:opacity-70 flex justify-center">{isSubmitting ? <Loader2 className="animate-spin" /> : 'Create Account'}</button>
                         </form>
@@ -443,11 +457,20 @@ export default function AccountsPage() {
                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Account Name</label>
                                 <input required type="text" value={editAccount.name} onChange={e => setEditAccount({ ...editAccount, name: e.target.value })} className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none font-bold text-gray-900 dark:text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all" />
                             </div>
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Account Type</label>
-                                <select value={editAccount.type} onChange={e => setEditAccount({ ...editAccount, type: e.target.value })} className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none font-bold text-gray-900 dark:text-white">
-                                    {['Bank', 'Cash', 'Mobile Money'].map(t => <option key={t} value={t}>{t}</option>)}
-                                </select>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Account Type</label>
+                                    <select value={editAccount.type} onChange={e => setEditAccount({ ...editAccount, type: e.target.value })} className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none font-bold text-gray-900 dark:text-white">
+                                        {['Bank', 'Cash', 'Mobile Money'].map(t => <option key={t} value={t}>{t}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Currency</label>
+                                    <select value={editAccount.currency} onChange={e => setEditAccount({ ...editAccount, currency: e.target.value })} className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none font-bold text-gray-900 dark:text-white appearance-none cursor-pointer">
+                                        <option value="ETB">ETB (Birr)</option>
+                                        <option value="USD">USD (Dollar)</option>
+                                    </select>
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Description</label>

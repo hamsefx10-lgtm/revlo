@@ -91,7 +91,8 @@ export async function GET(req: NextRequest) {
         let totalCOGS = 0;
         sales.forEach(sale => {
             sale.items.forEach(item => {
-                totalCOGS += (item.quantity * item.product.costPrice);
+                const cost = item.costPrice || (item.product?.costPrice || 0);
+                totalCOGS += (item.quantity * cost);
             });
         });
 

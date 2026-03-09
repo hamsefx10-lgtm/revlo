@@ -20,15 +20,23 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { fromAccountId, toAccountId, amount, date, description } = body;
+        const { fromAccountId, toAccountId, amount: amountStr, date, description } = body;
+        const amount = parseFloat(amountStr);
 
-        if (!fromAccountId || !toAccountId || !amount || amount <= 0) {
+        if (!fromAccountId || !toAccountId || isNaN(amount) || amount <= 0) {
             return NextResponse.json({ error: 'Invalid transfer details' }, { status: 400 });
         }
 
         if (fromAccountId === toAccountId) {
             return NextResponse.json({ error: 'Cannot transfer to same account' }, { status: 400 });
         }
+
+        // Fetch Exchange Rate just in case it's a cross-currency transfer
+        const exchangeRateRecord = await prisma.exchangeRate.findFirst({
+            where: { companyId: user.companyId },
+            orderBy: { date: 'desc' }
+        });
+        const exchangeRate = exchangeRateRecord?.rate || 1;
 
         // Perform Transfer Transaction
         await prisma.$transaction(async (tx) => {
@@ -41,6 +49,16 @@ export async function POST(req: NextRequest) {
             const toAccount = await tx.account.findUnique({ where: { id: toAccountId } });
             if (!toAccount) throw new Error('Destination account not found');
 
+            let creditAmount = amount;
+
+            // Handle Currency Conversion
+            if (fromAccount.currency === 'USD' && toAccount.currency === 'ETB') {
+                creditAmount = amount * exchangeRate;
+            } else if (fromAccount.currency === 'ETB' && toAccount.currency === 'USD') {
+                if (exchangeRate === 0) throw new Error('Exchange rate is zero');
+                creditAmount = amount / exchangeRate;
+            }
+
             // 2. Debit Source
             await tx.account.update({
                 where: { id: fromAccountId },
@@ -50,7 +68,7 @@ export async function POST(req: NextRequest) {
             // 3. Credit Destination
             await tx.account.update({
                 where: { id: toAccountId },
-                data: { balance: { increment: amount } }
+                data: { balance: { increment: creditAmount } }
             });
 
             // 4. Create Transaction Records (Linked if possible, but distinct mostly)
@@ -59,16 +77,15 @@ export async function POST(req: NextRequest) {
             // Outgoing
             await tx.transaction.create({
                 data: {
-                    type: 'EXPENSE', // Or 'TRANSFER_OUT' if enum allows. Using EXPENSE for now as it reduces balance.
+                    type: 'EXPENSE', // Or 'TRANSFER_OUT' if enum allows.
                     category: 'Transfer Out',
                     amount: amount,
                     description: description || `Transfer to ${toAccount.name}`,
                     accountId: fromAccountId,
-                    // date: new Date(date || Date.now()), // 'date' field does not exist on Transaction model
                     transactionDate: new Date(date || Date.now()),
                     companyId: user.companyId,
                     userId: session.user.id,
-                    note: `Ref: ${transferRef}`
+                    note: `Ref: ${transferRef}` + (fromAccount.currency !== toAccount.currency ? ` (Rate: ${exchangeRate})` : '')
                 }
             });
 
@@ -77,13 +94,13 @@ export async function POST(req: NextRequest) {
                 data: {
                     type: 'INCOME', // Or 'TRANSFER_IN'
                     category: 'Transfer In',
-                    amount: amount,
+                    amount: creditAmount,
                     description: description || `Transfer from ${fromAccount.name}`,
                     accountId: toAccountId,
                     transactionDate: new Date(date || Date.now()),
                     companyId: user.companyId,
                     userId: session.user.id,
-                    note: `Ref: ${transferRef}`
+                    note: `Ref: ${transferRef}` + (fromAccount.currency !== toAccount.currency ? ` (Rate: ${exchangeRate})` : '')
                 }
             });
         });

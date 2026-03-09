@@ -20,7 +20,11 @@ export async function GET(
             where: { id },
             include: {
                 vendor: true,
-                items: true,
+                items: {
+                    include: {
+                        product: true
+                    }
+                },
                 expenses: true
             }
         });
@@ -73,6 +77,107 @@ export async function DELETE(
     }
 }
 
+// PUT /api/shop/purchases/[id] - Full Update PO
+export async function PUT(
+    req: NextRequest,
+    { params }: { params: { id: string } }
+) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const { id } = params;
+        const body = await req.json();
+        const {
+            vendorId,
+            items,
+            notes,
+            expectedDelivery,
+            currency,
+            exchangeRate,
+            shippingCost,
+            customsFee,
+            otherExpenses
+        } = body;
+
+        const existingPO = await prisma.purchaseOrder.findUnique({
+            where: { id },
+            include: { items: true }
+        });
+
+        if (!existingPO) {
+            return NextResponse.json({ error: 'PO not found' }, { status: 404 });
+        }
+
+        if (existingPO.status === 'Received') {
+            return NextResponse.json({ error: 'Cannot edit a received order. Please cancel or return it first.' }, { status: 400 });
+        }
+
+        // Calculate Totals
+        const subtotal = items.reduce((sum: number, item: any) => sum + (item.quantity * item.unitCost), 0);
+        const total = subtotal + (shippingCost || 0) + (customsFee || 0) + (otherExpenses || 0);
+
+        const updatedPO = await prisma.$transaction(async (tx) => {
+            // 1. Delete existing items
+            await tx.purchaseOrderItem.deleteMany({
+                where: { poId: id }
+            });
+
+            // 2. Create new items
+            const newItems = items.map((item: any) => ({
+                poId: id,
+                productId: item.productId,
+                productName: item.productName,
+                sku: item.sku || null,
+                quantity: parseInt(item.quantity) || 0,
+                unitCost: parseFloat(item.unitCost) || 0,
+                unitCostUSD: parseFloat(item.unitCostUSD) || (currency === 'USD' ? parseFloat(item.unitCost) : null),
+                sellingPrice: parseFloat(item.sellingPrice) || null,
+                total: (parseInt(item.quantity) || 0) * (parseFloat(item.unitCost) || 0)
+            }));
+
+            await tx.purchaseOrderItem.createMany({
+                data: newItems
+            });
+
+            // 3. Update PO
+            return await tx.purchaseOrder.update({
+                where: { id },
+                data: {
+                    vendorId,
+                    notes,
+                    expectedDelivery: expectedDelivery ? new Date(expectedDelivery) : null,
+                    currency,
+                    exchangeRate,
+                    shippingCost,
+                    customsFee,
+                    otherExpenses,
+                    subtotal,
+                    total,
+                    // Re-calculate tax if needed, currently 0 in logic
+                    tax: 0
+                },
+                include: {
+                    vendor: true,
+                    items: {
+                        include: {
+                            product: true
+                        }
+                    }
+                }
+            });
+        });
+
+        return NextResponse.json({ purchaseOrder: updatedPO });
+
+    } catch (error) {
+        console.error('Error updating purchase order:', error);
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
+}
+
 // PATCH /api/shop/purchases/[id] - Update Status (e.g. Receive)
 export async function PATCH(
     req: NextRequest,
@@ -116,9 +221,11 @@ export async function PATCH(
                         where: { id: item.productId },
                         data: {
                             stock: { increment: item.quantity },
-                            // Update cost price automatically?? Maybe weighted average?
-                            // For simplicity, let's update cost price to latest
-                            costPrice: item.unitCost
+                            // Update cost price automatically (Weighted average or Latest)
+                            // For now, update to latest as per current project pattern
+                            costPrice: item.unitCost,
+                            costPriceUSD: item.unitCostUSD || (po.currency === 'USD' ? item.unitCost : undefined),
+                            ...(item.sellingPrice && { sellingPrice: item.sellingPrice })
                         }
                     });
 

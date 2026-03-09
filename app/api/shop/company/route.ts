@@ -38,7 +38,7 @@ export async function PATCH(req: NextRequest) {
         const body = await req.json();
         const {
             name, phone, address, email, website, currency,
-            taxId, taxRate, receiptHeader, receiptFooter
+            taxId, taxRate, receiptHeader, receiptFooter, requireReceiptNumber
         } = body;
 
         const user = await prisma.user.findUnique({
@@ -61,7 +61,8 @@ export async function PATCH(req: NextRequest) {
                 taxId,
                 taxRate: taxRate ? parseFloat(taxRate) : undefined,
                 receiptHeader,
-                receiptFooter
+                receiptFooter,
+                ...(requireReceiptNumber !== undefined && { requireReceiptNumber: Boolean(requireReceiptNumber) })
             }
         });
 

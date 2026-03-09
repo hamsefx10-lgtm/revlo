@@ -1,0 +1,11 @@
+app/api/ai/chat/route.ts(39,40): error TS2353: Object literal may only specify known properties, and 'name' does not exist in type 'UserSelect<DefaultArgs>'.
+app/api/ai/chat/route.ts(69,66): error TS2353: Object literal may only specify known properties, and 'salePrice' does not exist in type 'ProductSelect<DefaultArgs>'.
+app/api/ai/chat/route.ts(101,36): error TS2339: Property 'name' does not exist on type '{ status: string; id: string; email: string; emailVerified: Date | null; password: string; fullName: string; role: Role; createdAt: Date; updatedAt: Date; companyId: string; ... 7 more ...; resetTokenExpires: Date | null; }'.
+app/api/ai/chat/route.ts(119,56): error TS2339: Property 'name' does not exist on type '{ status: string; id: string; email: string; emailVerified: Date | null; password: string; fullName: string; role: Role; createdAt: Date; updatedAt: Date; companyId: string; ... 7 more ...; resetTokenExpires: Date | null; }'.
+app/api/shop/purchases/[id]/route.ts(227,29): error TS2322: Type 'number | null' is not assignable to type 'number | FloatFieldUpdateOperationsInput | undefined'.
+  Type 'null' is not assignable to type 'number | FloatFieldUpdateOperationsInput | undefined'.
+app/api/shop/sales/[id]/whatsapp/route.ts(2,10): error TS2305: Module '"next-auth"' has no exported member 'getServerSession'.
+app/api/shop/sales/[id]/whatsapp/route.ts(3,10): error TS2459: Module '"@/app/api/auth/[...nextauth]/route"' declares 'authOptions' locally, but it is not exported.
+app/shop/accounting/receivables/page.tsx(98,21): error TS2353: Object literal may only specify known properties, and 'className' does not exist in type 'Omit<Toast, "id">'.
+app/shop/dashboard/page.tsx(517,42): error TS2365: Operator '<' cannot be applied to types 'string' and 'number'.
+app/shop/purchases/create/page.tsx(49,5): error TS2304: Cannot find name 'useEffect'.

@@ -154,6 +154,16 @@ export default function SettingsOverviewPage() {
             <p className="text-xs text-mediumGray dark:text-gray-400">Xidh WhatsApp-kaaga si aad u dirto rasiidhyada macaamiisha iyo iibiyayaasha.</p>
           </div>
         </Link>
+        {/* Currency & Rates - New Addition */}
+        <Link href="/settings/currency" className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 flex items-center space-x-6 group border border-blue-500/20">
+          <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-500 p-4 rounded-full group-hover:bg-blue-500 group-hover:text-white transition-colors duration-200">
+            <Globe size={32} />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-darkGray dark:text-gray-100 mb-1">Currency & Rates</h3>
+            <p className="text-xs text-mediumGray dark:text-gray-400">Daily USD/ETB exchange rate & multi-currency settings.</p>
+          </div>
+        </Link>
         {/* Recycle Bin - New Addition */}
         <Link href="/recycle-bin" className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 flex items-center space-x-6 group">
           <div className="bg-red-50 dark:bg-red-900/20 text-red-500 p-4 rounded-full group-hover:bg-red-500 group-hover:text-white transition-colors duration-200">
