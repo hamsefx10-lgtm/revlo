@@ -3,6 +3,62 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
+// GET /api/shop/accounts/[id] - Get Account Details & Summary
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+        const { id } = params;
+
+        const account = await prisma.account.findUnique({
+            where: { id },
+            include: {
+                transactions: {
+                    orderBy: { transactionDate: 'desc' },
+                    take: 10, // Just a preview, the page will fetch more if needed
+                    include: {
+                        project: { select: { name: true } },
+                        customer: { select: { name: true } },
+                        vendor: { select: { name: true } },
+                        employee: { select: { fullName: true } }
+                    }
+                }
+            }
+        });
+
+        if (!account) return NextResponse.json({ error: 'Account not found' }, { status: 404 });
+
+        // Calculate Summaries
+        // NOTE: This usually would be better done via aggregation but this works for now
+        const allTrx = await prisma.transaction.findMany({
+            where: { accountId: id },
+            select: { amount: true, type: true }
+        });
+
+        let totalIn = 0;
+        let totalOut = 0;
+
+        allTrx.forEach((t: any) => {
+            const amount = Number(t.amount);
+            if (t.type === 'INCOME') totalIn += amount;
+            else if (t.type === 'EXPENSE') totalOut += amount;
+            // Note: Transfers are handled by INCOME/EXPENSE types on each side
+        });
+
+        return NextResponse.json({
+            account,
+            summary: {
+                totalIn,
+                totalOut,
+                netFlow: totalIn - totalOut
+            }
+        });
+    } catch (error) {
+        return NextResponse.json({ error: 'Failed to fetch account details' }, { status: 500 });
+    }
+}
+
 // PUT /api/shop/accounts/[id] - Update Account
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
     try {

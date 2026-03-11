@@ -259,7 +259,7 @@ export default function AccountsPage() {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in-up">
                         {filteredAccounts.map(account => (
-                            <div key={account.id} className="bg-white dark:bg-[#151C2C] rounded-[24px] p-6 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group relative">
+                            <Link key={account.id} href={`/shop/accounting/accounts/${account.id}`} className="bg-white dark:bg-[#151C2C] rounded-[24px] p-6 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group relative block">
 
                                 {/* Header */}
                                 <div className="flex justify-between items-start mb-8">
@@ -335,7 +335,7 @@ export default function AccountsPage() {
                                         Deposit
                                     </button>
                                 </div>
-                            </div>
+                            </Link>
                         ))}
 
                         {/* Register New Card */}

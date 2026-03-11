@@ -20,6 +20,8 @@ import {
     ScanLine,
     UploadCloud,
     X,
+    Info,
+    PlusCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -41,10 +43,19 @@ interface POItem {
     sku: string;
     quantity: number;
     unitCost: number;
+    specificTransport?: number; // New: Item-specific transport cost
     sellingPrice: number;
     total: number;
     isNew?: boolean;
     originalAiName?: string;
+    prevCost?: number; // Added to track price changes
+}
+
+interface Employee {
+    id: string;
+    fullName: string;
+    phone: string;
+    role: string;
 }
 
 export default function AddPurchaseOrderPage() {
@@ -66,8 +77,14 @@ export default function AddPurchaseOrderPage() {
 
     // Landed Cost State
     const [shippingCost, setShippingCost] = useState<number>(0);
-    const [customsFee, setCustomsFee] = useState<number>(0);
-    const [otherExpenses, setOtherExpenses] = useState<number>(0);
+    const [customsTax, setCustomsTax] = useState<number>(0);
+    const [localTransport, setLocalTransport] = useState<number>(0);
+    const [otherDirectCosts, setOtherDirectCosts] = useState<number>(0);
+
+    // WhatsApp Notification State
+    const [employees, setEmployees] = useState<Employee[]>([]);
+    const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<string[]>([]);
+    const [sendWhatsApp, setSendWhatsApp] = useState(false);
 
     // AI Receipt Scanner State
     const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -77,6 +94,8 @@ export default function AddPurchaseOrderPage() {
     // Quick Add State (The Draft Row)
     const [searchProduct, setSearchProduct] = useState('');
     const [blurTimeout, setBlurTimeout] = useState<NodeJS.Timeout | null>(null);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
 
     // Modal State
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -108,7 +127,7 @@ export default function AddPurchaseOrderPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     companyName: newVendorData.companyName,
-                    contactName: newVendorData.contactPerson,
+                    contactPerson: newVendorData.contactPerson,
                     phone: newVendorData.phone
                 })
             });
@@ -286,8 +305,8 @@ export default function AddPurchaseOrderPage() {
     };
 
     const subTotal = items.reduce((sum, item) => sum + item.total, 0);
-    const totalAdditionalCosts = shippingCost + customsFee + otherExpenses;
-    const grandTotal = subTotal + totalAdditionalCosts;
+    const totalAdditionalCosts = shippingCost + customsTax + localTransport + otherDirectCosts;
+    const finalTotal = subTotal + totalAdditionalCosts;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -315,8 +334,12 @@ export default function AddPurchaseOrderPage() {
                     currency,
                     exchangeRate,
                     shippingCost,
-                    customsFee,
-                    otherExpenses,
+                    customsTax,
+                    localTransport,
+                    otherDirectCosts,
+                    // WhatsApp Notification
+                    notifyEmployeeIds: sendWhatsApp ? selectedEmployeeIds : [],
+                    sendWhatsApp,
                     // Payment info removed - will be handled separately
                     paidAmount: 0,
                     paymentMethod: null
@@ -408,10 +431,46 @@ export default function AddPurchaseOrderPage() {
     };
 
     // Filter products
-    const filteredProducts = products.filter(p =>
-        p.name.toLowerCase().includes(searchProduct.toLowerCase()) ||
-        p.sku.toLowerCase().includes(searchProduct.toLowerCase())
-    ).slice(0, 5);
+    const filteredProducts = searchProduct
+        ? products.filter(p =>
+            p.name.toLowerCase().includes(searchProduct.toLowerCase()) ||
+            p.sku.toLowerCase().includes(searchProduct.toLowerCase())
+        ).slice(0, 20)
+        : products.slice(0, 20);
+
+    const toggleProductSelection = (id: string) => {
+        setSelectedProductIds(prev =>
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
+
+    const addSelectedItems = () => {
+        const itemsToAdd: POItem[] = [];
+        selectedProductIds.forEach(id => {
+            const product = products.find(p => p.id === id);
+            if (product && !items.find(i => i.productId === id)) {
+                itemsToAdd.push({
+                    productId: product.id,
+                    productName: product.name,
+                    sku: product.sku,
+                    quantity: 1,
+                    unitCost: product.costPrice || 0,
+                    prevCost: product.costPrice || 0,
+                    specificTransport: 0,
+                    sellingPrice: (product as any).sellingPrice || 0,
+                    total: product.costPrice || 0
+                });
+            }
+        });
+
+        if (itemsToAdd.length > 0) {
+            setItems(prev => [...prev.filter(item => item.productId !== ''), ...itemsToAdd]);
+            toast.success(`${itemsToAdd.length} items added to order`);
+        }
+        setSelectedProductIds([]);
+        setIsDropdownOpen(false);
+        setSearchProduct('');
+    };
 
     if (pageLoading) {
         return (
@@ -440,9 +499,9 @@ export default function AddPurchaseOrderPage() {
                     <div className="flex items-center gap-6">
                         <div className="hidden md:block text-right">
                             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Estimated Total (BIRR)</p>
-                            <p className="text-2xl font-black text-[#2ECC71] tracking-tight">ETB {(currency === 'USD' ? grandTotal * exchangeRate : grandTotal).toLocaleString()}</p>
+                            <p className="text-2xl font-black text-[#2ECC71] tracking-tight">ETB {(currency === 'USD' ? finalTotal * exchangeRate : finalTotal).toLocaleString()}</p>
                             {currency === 'USD' && (
-                                <p className="text-[10px] font-bold text-blue-500 mt-0.5">USD {grandTotal.toLocaleString()} (+ Costs)</p>
+                                <p className="text-[10px] font-bold text-blue-500 mt-0.5">USD {finalTotal.toLocaleString()} (+ Costs)</p>
                             )}
                         </div>
                         <div className="flex bg-gray-100 dark:bg-[#0F1623] p-1 rounded-xl">
@@ -547,7 +606,7 @@ export default function AddPurchaseOrderPage() {
 
                 {/* LEFT COLUMN: Items Table */}
                 <div className="lg:col-span-8">
-                    <div className="bg-white dark:bg-[#151C2C] rounded-[24px] shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden min-h-[600px] flex flex-col">
+                    <div className="bg-white dark:bg-[#151C2C] rounded-[24px] shadow-sm border border-gray-100 dark:border-gray-800 min-h-[600px] flex flex-col">
 
                         {/* Table Header */}
                         <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-[#1a2333]/50 flex justify-between items-center">
@@ -568,6 +627,7 @@ export default function AddPurchaseOrderPage() {
                                         <th className="px-6 py-4 text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider">Product Info</th>
                                         <th className="px-6 py-4 text-center text-[11px] font-bold text-gray-400 uppercase tracking-wider w-24">Qty</th>
                                         <th className="px-6 py-4 text-right text-[11px] font-bold text-gray-400 uppercase tracking-wider w-32">Unit Cost ({currency})</th>
+                                        <th className="px-6 py-4 text-right text-[11px] font-bold text-gray-400 uppercase tracking-wider w-24">Specific Tr.</th>
                                         <th className="px-6 py-4 text-right text-[11px] font-bold text-gray-400 uppercase tracking-wider w-32">True Landed</th>
                                         <th className="px-6 py-4 text-right text-[11px] font-bold text-gray-400 uppercase tracking-wider w-32">New Sell Price</th>
                                         <th className="px-6 py-4 text-right text-[11px] font-bold text-gray-400 uppercase tracking-wider w-32">Total</th>
@@ -614,23 +674,61 @@ export default function AddPurchaseOrderPage() {
                                                         )}
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-right">
+                                                <td className="px-6 py-4">
+                                                    <div className="relative">
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            step="0.01"
+                                                            placeholder="0"
+                                                            value={item.specificTransport || ''}
+                                                            onChange={(e) => updateItem(index, 'specificTransport', parseFloat(e.target.value) || 0)}
+                                                            className="w-full bg-white dark:bg-[#0F1623] border border-gray-100 dark:border-gray-800 rounded-xl py-2 px-2 text-right font-medium focus:ring-2 focus:ring-blue-500/10 focus:border-[#3498DB] outline-none transition-all text-gray-600 dark:text-gray-400 text-[12px] shadow-sm"
+                                                        />
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 text-right group/landed relative">
                                                     {(() => {
                                                         const baseUnitCostETB = currency === 'USD' ? item.unitCost * exchangeRate : item.unitCost;
-                                                        const itemTotalBase = item.quantity * baseUnitCostETB;
                                                         const proportion = subTotal > 0 ? (item.quantity * item.unitCost) / subTotal : 0;
                                                         const landedAllocation = totalAdditionalCosts * proportion;
-                                                        const landedCostPerUnit = item.quantity > 0
-                                                            ? (baseUnitCostETB + (landedAllocation / item.quantity))
-                                                            : baseUnitCostETB;
+                                                        const sharedLandedPerUnit = item.quantity > 0 ? (landedAllocation / item.quantity) : 0;
+                                                        const specificTransportPerUnit = item.specificTransport || 0;
+                                                        const landedCostPerUnit = baseUnitCostETB + sharedLandedPerUnit + specificTransportPerUnit;
 
                                                         return (
-                                                            <div>
-                                                                <div className="text-sm font-black text-gray-900 dark:text-white">
-                                                                    {landedCostPerUnit.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+                                                            <>
+                                                                <div>
+                                                                    <div className="text-sm font-black text-gray-900 dark:text-white flex items-center justify-end gap-1.5">
+                                                                        {landedCostPerUnit.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+                                                                        <Info size={12} className="text-gray-300 dark:text-gray-600 cursor-help" />
+                                                                    </div>
+                                                                    <div className="text-[9px] text-gray-400 font-bold uppercase tracking-tighter">ETB / UNIT</div>
                                                                 </div>
-                                                                <div className="text-[9px] text-gray-400 font-bold">ETB / UNIT</div>
-                                                            </div>
+                                                                
+                                                                {/* Math Tooltip */}
+                                                                <div className="absolute right-0 bottom-full mb-2 w-48 bg-[#0F1623] text-white p-3 rounded-2xl shadow-2xl border border-gray-800 z-[110] opacity-0 group-hover/landed:opacity-100 pointer-events-none transition-all scale-95 group-hover/landed:scale-100">
+                                                                    <p className="text-[10px] font-black uppercase text-gray-500 mb-2 border-b border-gray-800 pb-1.5 tracking-widest">Landed Breakdown</p>
+                                                                    <div className="space-y-1.5">
+                                                                        <div className="flex justify-between items-center text-[11px]">
+                                                                            <span className="text-gray-400">Base Cost:</span>
+                                                                            <span className="font-mono">{baseUnitCostETB.toFixed(1)}</span>
+                                                                        </div>
+                                                                        <div className="flex justify-between items-center text-[11px]">
+                                                                            <span className="text-gray-400">Shared Share:</span>
+                                                                            <span className="font-mono text-blue-400">+{sharedLandedPerUnit.toFixed(1)}</span>
+                                                                        </div>
+                                                                        <div className="flex justify-between items-center text-[11px]">
+                                                                            <span className="text-gray-400">Specific Tr.:</span>
+                                                                            <span className="font-mono text-orange-400">+{specificTransportPerUnit.toFixed(1)}</span>
+                                                                        </div>
+                                                                        <div className="flex justify-between items-center text-[11px] pt-1.5 border-t border-gray-800 mt-1.5 font-black">
+                                                                            <span>Total ETB:</span>
+                                                                            <span className="text-[#3498DB]">{landedCostPerUnit.toFixed(1)}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </>
                                                         );
                                                     })()}
                                                 </td>
@@ -696,8 +794,14 @@ export default function AddPurchaseOrderPage() {
                                                     className="w-full pl-11 pr-4 py-3 rounded-xl bg-white dark:bg-[#0F1623] border border-blue-200 dark:border-blue-800/50 focus:border-[#3498DB] focus:ring-4 focus:ring-blue-500/10 outline-none font-medium text-sm text-gray-900 dark:text-white shadow-sm transition-all placeholder:text-gray-400"
                                                     value={searchProduct}
                                                     onChange={(e) => setSearchProduct(e.target.value)}
+                                                    onFocus={() => {
+                                                        if (blurTimeout) clearTimeout(blurTimeout);
+                                                        setIsDropdownOpen(true);
+                                                    }}
                                                     onBlur={() => {
                                                         const tm = setTimeout(() => {
+                                                            setIsDropdownOpen(false);
+                                                            // Auto-trigger creation modal if no match found on exit
                                                             if (searchProduct.trim()) {
                                                                 const exactMatch = products.find(p => p.name.toLowerCase() === searchProduct.toLowerCase());
                                                                 if (!exactMatch) {
@@ -708,36 +812,74 @@ export default function AddPurchaseOrderPage() {
                                                         }, 200);
                                                         setBlurTimeout(tm);
                                                     }}
-                                                    onFocus={() => {
-                                                        if (blurTimeout) clearTimeout(blurTimeout);
-                                                    }}
                                                 />
                                                 {/* Autocomplete Dropdown */}
-                                                {searchProduct && filteredProducts.length > 0 && (
-                                                    <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1a2333] rounded-2xl shadow-xl shadow-gray-900/20 border border-gray-100 dark:border-gray-700 overflow-hidden z-20 animate-in fade-in zoom-in-95 duration-100">
-                                                        <div className="p-1.5 ">
-                                                            {filteredProducts.map(p => (
-                                                                <button
-                                                                    key={p.id}
-                                                                    onClick={() => {
-                                                                        if (blurTimeout) clearTimeout(blurTimeout);
-                                                                        addItem(p.id);
-                                                                        setSearchProduct('');
-                                                                    }}
-                                                                    className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-xl flex items-center justify-between group transition-colors"
-                                                                >
-                                                                    <div>
-                                                                        <p className="font-bold text-gray-900 dark:text-white text-sm group-hover:text-[#3498DB] transition-colors">{p.name}</p>
-                                                                        <p className="text-xs text-gray-500 font-mono mt-0.5">{p.sku}</p>
+                                                {isDropdownOpen && (
+                                                    <div 
+                                                        className="absolute top-full left-0 right-0 mt-2 bg-white/95 dark:bg-[#1a2333]/95 rounded-[20px] shadow-2xl shadow-gray-900/40 border border-gray-100 dark:border-gray-700 overflow-hidden z-[100] animate-in fade-in zoom-in-95 duration-200 max-h-[480px] flex flex-col translate-y-1 backdrop-blur-xl"
+                                                        onMouseDown={(e) => e.preventDefault()} // Prevent blur when clicking inside
+                                                    >
+                                                        {selectedProductIds.length > 0 && (
+                                                            <div className="p-3 border-b border-gray-50 dark:border-gray-800 bg-blue-50/40 dark:bg-blue-900/10 flex items-center justify-between">
+                                                                <div className="flex items-center gap-1.5 pl-1">
+                                                                    <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white font-black text-[10px]">
+                                                                        {selectedProductIds.length}
                                                                     </div>
-                                                                    <div className="text-right">
-                                                                        <p className="text-xs font-bold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700">ETB {p.costPrice.toLocaleString()}</p>
-                                                                        {currency === 'USD' && (
-                                                                            <p className="text-[10px] font-bold text-blue-500 mt-1">~ USD {(p.costPrice / exchangeRate).toFixed(2).toLocaleString()}</p>
-                                                                        )}
+                                                                    <span className="text-[10px] font-bold text-blue-900 dark:text-blue-300 uppercase tracking-widest pl-1">Selected</span>
+                                                                </div>
+                                                                <button 
+                                                                    onClick={addSelectedItems}
+                                                                    className="px-4 py-1.5 bg-gradient-to-r from-[#3498DB] to-[#2980B9] hover:from-[#2980B9] hover:to-[#2574A9] text-white text-[9px] font-black rounded-lg shadow-lg shadow-blue-500/20 transition-all active:scale-95 flex items-center gap-1.5"
+                                                                >
+                                                                    <Plus size={12} /> ADD ITEMS
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                        <div className="p-1 overflow-y-auto custom-scrollbar">
+                                                            {filteredProducts.length > 0 ? (
+                                                                filteredProducts.map(p => (
+                                                                    <div
+                                                                        key={p.id}
+                                                                        className={`w-full flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50/80 dark:hover:bg-gray-800/50 rounded-xl group transition-colors cursor-pointer ${selectedProductIds.includes(p.id) ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''}`}
+                                                                        onClick={() => toggleProductSelection(p.id)}
+                                                                    >
+                                                                        <div className={`w-4.5 h-4.5 rounded border flex items-center justify-center transition-all ${selectedProductIds.includes(p.id) ? 'bg-[#3498DB] border-[#3498DB]' : 'border-gray-200 dark:border-gray-700'}`}>
+                                                                            {selectedProductIds.includes(p.id) && <Plus size={12} className="text-white" />}
+                                                                        </div>
+                                                                        <div className="flex-1">
+                                                                            <p className="font-bold text-gray-900 dark:text-white text-[13px] group-hover:text-[#3498DB] transition-colors line-clamp-1">{p.name}</p>
+                                                                            <p className="text-[10px] text-gray-500 font-mono mt-0.5">{p.sku}</p>
+                                                                        </div>
+                                                                        <div className="text-right">
+                                                                            <p className="text-[11px] font-bold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-md border border-gray-200 dark:border-gray-700">ETB {p.costPrice.toLocaleString()}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                ))
+                                                            ) : (
+                                                                <div className="p-8 text-center">
+                                                                    <p className="text-sm text-gray-400 font-medium italic">No products found.</p>
+                                                                </div>
+                                                            )}
+                                                            
+                                                            {/* CREATE NEW OPTION */}
+                                                            {searchProduct && !products.find(p => p.name.toLowerCase() === searchProduct.toLowerCase()) && (
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setNewProductData(prev => ({ ...prev, name: searchProduct }));
+                                                                        setIsCreateModalOpen(true);
+                                                                        setIsDropdownOpen(false);
+                                                                    }}
+                                                                    className="w-full text-left px-4 py-4 mt-2 border-t border-dashed border-gray-100 dark:border-gray-800 hover:bg-orange-50 dark:hover:bg-orange-900/10 transition-all flex items-center gap-3 group"
+                                                                >
+                                                                    <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600">
+                                                                        <Plus size={20} />
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="font-black text-gray-900 dark:text-white text-sm">Create "{searchProduct}"</p>
+                                                                        <p className="text-[10px] text-orange-600 font-bold uppercase tracking-widest">Register as new product</p>
                                                                     </div>
                                                                 </button>
-                                                            ))}
+                                                            )}
                                                         </div>
                                                     </div>
                                                 )}
@@ -815,19 +957,30 @@ export default function AddPurchaseOrderPage() {
                                 <input
                                     type="number"
                                     min="0"
-                                    value={customsFee || ''}
-                                    onChange={(e) => setCustomsFee(parseFloat(e.target.value) || 0)}
+                                    value={customsTax || ''}
+                                    onChange={(e) => setCustomsTax(parseFloat(e.target.value) || 0)}
                                     className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#0F1623] border border-gray-200 dark:border-gray-700 outline-none font-medium text-gray-900 dark:text-white text-sm focus:border-[#3498DB] focus:ring-2 focus:ring-blue-500/20 transition-all text-right"
                                     placeholder="0.00"
                                 />
                             </div>
                             <div>
-                                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">Other Expenses ({currency})</label>
+                                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">Local Transport (ETB)</label>
                                 <input
                                     type="number"
                                     min="0"
-                                    value={otherExpenses || ''}
-                                    onChange={(e) => setOtherExpenses(parseFloat(e.target.value) || 0)}
+                                    value={localTransport || ''}
+                                    onChange={(e) => setLocalTransport(parseFloat(e.target.value) || 0)}
+                                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#0F1623] border border-gray-200 dark:border-gray-700 outline-none font-medium text-gray-900 dark:text-white text-sm focus:border-[#3498DB] focus:ring-2 focus:ring-blue-500/20 transition-all text-right"
+                                    placeholder="0.00"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">Other Direct Costs (ETB)</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={otherDirectCosts || ''}
+                                    onChange={(e) => setOtherDirectCosts(parseFloat(e.target.value) || 0)}
                                     className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#0F1623] border border-gray-200 dark:border-gray-700 outline-none font-medium text-gray-900 dark:text-white text-sm focus:border-[#3498DB] focus:ring-2 focus:ring-blue-500/20 transition-all text-right"
                                     placeholder="0.00"
                                 />
@@ -845,7 +998,7 @@ export default function AddPurchaseOrderPage() {
                                 </div>
                                 <div className="flex justify-between items-center pt-2 border-t border-gray-50 dark:border-gray-800">
                                     <span className="text-sm font-black text-gray-900 dark:text-white">Grand Total:</span>
-                                    <span className="text-lg font-black text-[#2ECC71]">{currency === 'USD' ? '$' : 'ETB'} {grandTotal.toLocaleString()}</span>
+                                    <span className="text-lg font-black text-[#2ECC71]">{currency === 'USD' ? '$' : 'ETB'} {finalTotal.toLocaleString()}</span>
                                 </div>
                             </div>
                         </div>
@@ -872,10 +1025,18 @@ export default function AddPurchaseOrderPage() {
                                     <select
                                         className="w-full pl-4 pr-10 py-3.5 rounded-xl bg-gray-50 dark:bg-[#0F1623] border border-gray-200 dark:border-gray-700 outline-none font-medium text-gray-900 dark:text-white text-sm focus:border-[#3498DB] focus:ring-2 focus:ring-blue-500/20 appearance-none transition-all"
                                         value={selectedVendorId}
-                                        onChange={(e) => setSelectedVendorId(e.target.value)}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            if (val === 'NEW_VENDOR') {
+                                                setIsVendorModalOpen(true);
+                                            } else {
+                                                setSelectedVendorId(val);
+                                            }
+                                        }}
                                     >
                                         <option value="">Choose Supplier...</option>
                                         {vendors.map(v => <option key={v.id} value={v.id}>{v.companyName}</option>)}
+                                        <option value="NEW_VENDOR" className="font-bold text-blue-600">+ Add New Supplier...</option>
                                     </select>
                                     <ChevronDown className="absolute right-4 top-4 text-gray-400 pointer-events-none" size={16} />
                                 </div>
@@ -906,6 +1067,70 @@ export default function AddPurchaseOrderPage() {
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    {/* WhatsApp Notification Card */}
+                    <div className="bg-white dark:bg-[#151C2C] rounded-[24px] shadow-sm border border-gray-100 dark:border-gray-800 p-6">
+                        <div className="flex items-center justify-between mb-5 pb-4 border-b border-gray-50 dark:border-gray-800">
+                            <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide flex items-center gap-2.5">
+                                <Globe size={18} className="text-[#25D366]" />
+                                Notify Team
+                            </h3>
+                            <button 
+                                onClick={() => setSendWhatsApp(!sendWhatsApp)}
+                                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${sendWhatsApp ? 'bg-[#25D366]' : 'bg-gray-200 dark:bg-gray-700'}`}
+                            >
+                                <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${sendWhatsApp ? 'translate-x-5' : 'translate-x-0'}`} />
+                            </button>
+                        </div>
+
+                        {sendWhatsApp && (
+                            <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                <p className="text-[11px] text-gray-500 font-medium">Select employees to receive price updates via WhatsApp.</p>
+                                <div className="max-h-[200px] overflow-y-auto custom-scrollbar space-y-2 pr-1">
+                                    {employees.length > 0 ? (
+                                        employees.map(emp => (
+                                            <div 
+                                                key={emp.id}
+                                                onClick={() => {
+                                                    setSelectedEmployeeIds(prev => 
+                                                        prev.includes(emp.id) ? prev.filter(id => id !== emp.id) : [...prev, emp.id]
+                                                    );
+                                                }}
+                                                className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                                                    selectedEmployeeIds.includes(emp.id) 
+                                                        ? 'bg-green-50/50 dark:bg-green-900/10 border-[#25D366]' 
+                                                        : 'bg-gray-50/30 dark:bg-gray-800/20 border-gray-100 dark:border-gray-800 hover:border-gray-200'
+                                                }`}
+                                            >
+                                                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
+                                                    selectedEmployeeIds.includes(emp.id) ? 'bg-[#25D366] border-[#25D366]' : 'border-gray-300'
+                                                }`}>
+                                                    {selectedEmployeeIds.includes(emp.id) && <Plus size={12} className="text-white" />}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-xs font-bold text-gray-900 dark:text-white truncate">{emp.fullName}</p>
+                                                    <p className="text-[10px] text-gray-500 font-mono">{emp.phone}</p>
+                                                </div>
+                                                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-500 uppercase">{emp.role}</span>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="p-4 text-center border border-dashed border-gray-100 dark:border-gray-800 rounded-xl">
+                                            <p className="text-[10px] text-gray-400">No employees with phone numbers found.</p>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="p-3 bg-blue-50/30 dark:bg-blue-900/10 rounded-xl border border-blue-100/50 dark:border-blue-900/10 flex gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-blue-100/50 dark:bg-blue-900/30 flex items-center justify-center text-blue-500 shrink-0">
+                                        <Info size={14} />
+                                    </div>
+                                    <p className="text-[10px] text-blue-700 dark:text-blue-300 leading-relaxed font-medium">
+                                        They will receive a summary of new product costs and price changes compared to previous records.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* PAYMENT INFO NOTE */}

@@ -4416,3 +4416,206 @@
 [2026-03-09T19:47:07.725Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
 [2026-03-09T19:47:07.728Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
 [2026-03-09T19:47:07.728Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-09T19:53:48.960Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-09T19:53:48.965Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-09T19:53:48.967Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-09T19:53:48.980Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-09T19:53:48.981Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-09T19:53:48.982Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-09T19:53:48.984Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-09T19:53:48.987Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-09T19:53:48.987Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-09T19:53:48.985Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-09T19:53:48.988Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-09T19:53:48.988Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-09T19:53:48.989Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-09T19:53:48.989Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-09T19:53:48.991Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-09T19:53:48.991Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-09T19:53:48.988Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-09T19:53:48.992Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-09T19:53:48.994Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-09T19:53:48.996Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-09T19:53:48.994Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-09T19:53:48.998Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-09T19:53:49.000Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-09T19:53:49.002Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-09T19:53:49.001Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-09T19:53:49.007Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-09T19:53:49.008Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-09T19:53:49.008Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-09T19:53:49.013Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-09T19:53:49.015Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-09T19:54:02.399Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-09T19:54:02.401Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-09T19:54:02.402Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-09T19:54:02.424Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-09T19:54:02.425Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-09T19:54:02.426Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-09T19:54:02.427Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-09T19:54:02.428Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-09T19:54:02.428Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-09T19:54:02.474Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-09T19:54:02.476Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-09T19:54:02.477Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-09T19:54:02.768Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-09T19:54:02.771Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-09T19:54:02.772Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-10T14:45:49.266Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-10T14:45:49.268Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-10T14:45:49.269Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-10T14:45:50.728Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-10T14:45:50.729Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-10T14:45:50.730Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-10T14:45:50.731Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-11T07:32:03.842Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-11T07:32:03.843Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-11T07:32:03.844Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-11T07:42:16.588Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-11T07:42:16.591Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-11T07:42:16.592Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-11T07:42:16.594Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-11T07:42:16.613Z] [Company Expenses API] POST request received
+[2026-03-11T07:42:16.629Z] [Company Expenses API] Session User: {"userId":"14a1010e-6621-4163-bfb7-095755e5150e","companyId":"081fb675-b41e-4cea-92f7-50a5eb3e6f1e"}
+[2026-03-11T07:42:17.977Z] [WhatsApp Debug] Checking trigger conditions (Company): vendorId=caaf83dd-225f-4d4f-831d-4d4865efdf44, paymentStatus=PAID, finalStatus=PAID, hasExpense=true
+[2026-03-11T07:42:18.717Z] [WhatsApp Debug] Vendor found: true, Company found: true, Phone: null
+[2026-03-11T07:42:18.719Z] [WhatsApp Debug] Conditions not met for sending: phone=false, company=true
+[2026-03-11T07:43:21.857Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-11T07:43:21.859Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-11T07:43:21.861Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-11T07:43:21.862Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-11T07:43:21.877Z] [Project Expenses API] POST request received
+[2026-03-11T07:43:21.902Z] [Project Expenses API] Session User: {"userId":"14a1010e-6621-4163-bfb7-095755e5150e","companyId":"081fb675-b41e-4cea-92f7-50a5eb3e6f1e"}
+[2026-03-11T07:43:25.548Z] [WhatsApp Debug] Checking trigger conditions: vendorId=undefined, paymentStatus=PAID, finalStatus=PAID, hasExpense=true
+[2026-03-11T07:44:33.956Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-11T07:44:33.957Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-11T07:44:33.958Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-11T07:44:33.960Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-11T07:44:33.966Z] [Company Expenses API] POST request received
+[2026-03-11T07:44:33.991Z] [Company Expenses API] Session User: {"userId":"14a1010e-6621-4163-bfb7-095755e5150e","companyId":"081fb675-b41e-4cea-92f7-50a5eb3e6f1e"}
+[2026-03-11T07:44:35.055Z] [WhatsApp Debug] Checking trigger conditions (Company): vendorId=undefined, paymentStatus=PAID, finalStatus=PAID, hasExpense=true
+[2026-03-11T07:45:20.793Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-11T07:45:20.794Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-11T07:45:20.796Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-11T07:45:20.796Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-11T07:45:20.802Z] [Company Expenses API] POST request received
+[2026-03-11T07:45:20.812Z] [Company Expenses API] Session User: {"userId":"14a1010e-6621-4163-bfb7-095755e5150e","companyId":"081fb675-b41e-4cea-92f7-50a5eb3e6f1e"}
+[2026-03-11T07:45:21.935Z] [WhatsApp Debug] Checking trigger conditions (Company): vendorId=undefined, paymentStatus=PAID, finalStatus=PAID, hasExpense=true
+[2026-03-11T07:46:04.107Z] [Company Expenses API] POST request received
+[2026-03-11T07:46:04.112Z] [Company Expenses API] Session User: {"userId":"14a1010e-6621-4163-bfb7-095755e5150e","companyId":"081fb675-b41e-4cea-92f7-50a5eb3e6f1e"}
+[2026-03-11T07:46:05.242Z] [WhatsApp Debug] Checking trigger conditions (Company): vendorId=undefined, paymentStatus=PAID, finalStatus=PAID, hasExpense=true
+[2026-03-11T08:34:35.359Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-11T08:34:35.361Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-11T08:34:35.363Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-11T08:34:35.364Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-11T08:37:57.808Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-11T08:37:57.809Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-11T08:37:57.811Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-11T08:37:57.812Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-11T08:39:30.223Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-11T08:39:30.227Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-11T08:39:30.229Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-11T08:39:30.230Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-11T08:42:28.497Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-11T08:42:28.499Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-11T08:42:28.500Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-11T08:42:28.501Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-11T08:42:28.504Z] [API] GET /api/settings/whatsapp
+[2026-03-11T08:42:28.526Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-11T08:42:28.528Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-11T08:42:28.531Z] [WhatsApp] Starting client.initialize() for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e...
+[2026-03-11T08:42:28.545Z] [API] Session Status: CONNECTING
+[2026-03-11T08:42:28.875Z] [API] GET /api/settings/whatsapp
+[2026-03-11T08:42:28.879Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-11T08:42:28.880Z] [WhatsApp] Returning existing CONNECTING session for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e.
+[2026-03-11T08:42:28.881Z] [API] Session Status: CONNECTING
+[2026-03-11T08:42:28.949Z] [API] GET /api/settings/whatsapp
+[2026-03-11T08:42:28.954Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-11T08:42:28.955Z] [WhatsApp] Returning existing CONNECTING session for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e.
+[2026-03-11T08:42:28.956Z] [API] Session Status: CONNECTING
+[2026-03-11T08:42:33.880Z] [API] GET /api/settings/whatsapp
+[2026-03-11T08:42:33.896Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-11T08:42:33.897Z] [WhatsApp] Returning existing CONNECTING session for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e.
+[2026-03-11T08:42:33.898Z] [API] Session Status: CONNECTING
+[2026-03-11T08:42:38.841Z] [API] GET /api/settings/whatsapp
+[2026-03-11T08:42:38.845Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-11T08:42:38.846Z] [WhatsApp] Returning existing CONNECTING session for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e.
+[2026-03-11T08:42:38.848Z] [API] Session Status: CONNECTING
+[2026-03-11T08:42:43.881Z] [API] GET /api/settings/whatsapp
+[2026-03-11T08:42:43.892Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-11T08:42:43.893Z] [WhatsApp] Returning existing CONNECTING session for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e.
+[2026-03-11T08:42:43.894Z] [API] Session Status: CONNECTING
+[2026-03-11T08:42:48.828Z] [API] GET /api/settings/whatsapp
+[2026-03-11T08:42:48.833Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-11T08:42:48.833Z] [WhatsApp] Returning existing CONNECTING session for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e.
+[2026-03-11T08:42:48.834Z] [API] Session Status: CONNECTING
+[2026-03-11T08:42:52.566Z] [WhatsApp] client.initialize() promise resolved for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-11T08:42:53.847Z] [API] GET /api/settings/whatsapp
+[2026-03-11T08:42:53.854Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-11T08:42:53.855Z] [WhatsApp] Returning existing CONNECTING session for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e.
+[2026-03-11T08:42:53.857Z] [API] Session Status: CONNECTING
+[2026-03-11T08:42:54.393Z] [WhatsApp] Authenticated for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-11T08:42:54.702Z] [WhatsApp] Client is ready for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-11T08:42:58.830Z] [API] GET /api/settings/whatsapp
+[2026-03-11T08:42:58.834Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-11T08:42:58.835Z] [WhatsApp] Returning existing CONNECTED session for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e.
+[2026-03-11T08:42:58.836Z] [API] Session Status: CONNECTED
+[2026-03-11T08:42:58.947Z] [API] GET /api/settings/whatsapp
+[2026-03-11T08:42:58.969Z] [API] Company ID: 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-11T08:42:58.969Z] [WhatsApp] Returning existing CONNECTED session for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e.
+[2026-03-11T08:42:58.971Z] [API] Session Status: CONNECTED
+[2026-03-11T08:43:37.086Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-11T08:43:37.088Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-11T08:43:37.089Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-11T08:43:37.090Z] [WhatsApp Manager] Destroying session for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e...
+[2026-03-11T08:43:37.093Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-11T08:43:37.161Z] [WhatsApp] Returning existing CONNECTED session for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e.
+[2026-03-11T08:43:54.247Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-11T08:43:54.249Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-11T08:43:54.251Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-11T08:43:54.252Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-11T08:43:54.365Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-11T08:43:54.368Z] [WhatsApp] Starting client.initialize() for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e...
+[2026-03-11T08:43:58.370Z] [WhatsApp] client.initialize() promise resolved for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-11T08:44:00.418Z] [WhatsApp] Authenticated for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-11T08:44:00.669Z] [WhatsApp] Client is ready for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-11T08:47:31.555Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-11T08:47:31.557Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-11T08:47:31.558Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-11T08:47:31.559Z] [WhatsApp Manager] Destroying session for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e...
+[2026-03-11T08:47:31.562Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-11T08:47:31.583Z] [Project Expenses API] POST request received
+[2026-03-11T08:47:31.615Z] [Project Expenses API] Session User: {"userId":"14a1010e-6621-4163-bfb7-095755e5150e","companyId":"081fb675-b41e-4cea-92f7-50a5eb3e6f1e"}
+[2026-03-11T08:47:36.258Z] [WhatsApp Debug] Checking trigger conditions: vendorId=7a106acd-7659-4d8f-8289-3f3e683e89a0, paymentStatus=PARTIAL, finalStatus=PARTIAL, hasExpense=true
+[2026-03-11T08:47:36.977Z] [WhatsApp Debug] Vendor found: true, Company found: true, Phone: 0915080789
+[2026-03-11T08:47:36.978Z] [Project Expenses API] Triggering WhatsApp receipt for expense cbd21fe7-d18c-42fa-a035-9dbd36a908aa to vendor Barako compeny
+[2026-03-11T08:47:37.348Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-11T08:47:37.360Z] [WhatsApp] Starting client.initialize() for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e...
+[2026-03-11T08:47:37.364Z] [WhatsApp] Session for 081fb675-b41e-4cea-92f7-50a5eb3e6f1e is CONNECTING, waiting (max 15s)...
+[2026-03-11T08:47:38.380Z] [WhatsApp] Returning existing CONNECTING session for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e.
+[2026-03-11T08:47:39.387Z] [WhatsApp] Returning existing CONNECTING session for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e.
+[2026-03-11T08:47:40.389Z] [WhatsApp] Returning existing CONNECTING session for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e.
+[2026-03-11T08:47:40.862Z] [WhatsApp] client.initialize() promise resolved for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-11T08:47:41.395Z] [WhatsApp] Returning existing CONNECTING session for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e.
+[2026-03-11T08:47:42.397Z] [WhatsApp] Returning existing CONNECTING session for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e.
+[2026-03-11T08:47:42.403Z] [WhatsApp] Authenticated for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-11T08:47:43.141Z] [WhatsApp] Client is ready for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-11T08:47:43.404Z] [WhatsApp] Returning existing CONNECTED session for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e.
+[2026-03-11T08:47:43.406Z] [WhatsApp] Session for 081fb675-b41e-4cea-92f7-50a5eb3e6f1e became CONNECTED after 6s
+[2026-03-11T08:47:43.410Z] [WhatsApp] Sending link-based receipt to 251915080789@c.us
+[2026-03-11T08:47:43.865Z] [WhatsApp] Message received for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e from 107138261217500@lid: 
+[2026-03-11T08:47:43.936Z] [WhatsApp] Link-based receipt sent successfully to 251915080789@c.us
+[2026-03-11T08:47:59.338Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-11T08:47:59.340Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-11T08:47:59.341Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-11T08:47:59.343Z] [WhatsApp Manager] Destroying session for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e...
+[2026-03-11T08:47:59.345Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-11T10:30:33.868Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-11T10:30:33.871Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-11T10:30:33.872Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-11T10:30:33.874Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-11T10:30:33.918Z] [WhatsApp] Getting Puppeteer options...
+[2026-03-11T10:30:33.922Z] [WhatsApp] Starting client.initialize() for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e...
+[2026-03-11T10:30:51.871Z] [WhatsApp] client.initialize() promise resolved for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-11T10:30:53.450Z] [WhatsApp] Authenticated for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-11T10:31:01.035Z] [WhatsApp] Client is ready for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e

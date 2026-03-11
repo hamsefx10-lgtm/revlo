@@ -7,7 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Layout from '@/components/layouts/Layout';
 import {
   ArrowLeft, User as UserIcon, Building, Mail, Phone, MapPin, MessageSquare, Briefcase, DollarSign, Calendar,
-  Eye, Edit, Trash2, Loader2, Info as InfoIcon, CheckCircle, XCircle, Plus, Tag as TagIcon, ShoppingCart, Package, Printer
+  Eye, Edit, Trash2, Loader2, Info as InfoIcon, CheckCircle, CheckCircle2, XCircle, Plus, Tag as TagIcon, ShoppingCart, Package, Printer, Search
 } from 'lucide-react';
 import Toast from '@/components/common/Toast';
 import VendorPaymentModal from '@/components/modals/VendorPaymentModal';
@@ -18,10 +18,12 @@ interface Vendor {
   type: string;
   contactPerson?: string;
   phone?: string;
+  phoneNumber?: string;
   email?: string;
   address?: string;
   productsServices?: string;
   notes?: string;
+  status?: string;
   createdAt: string;
   updatedAt: string;
   purchaseOrders: {
@@ -169,221 +171,363 @@ export default function VendorDetailsPage() {
           </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-          <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-            <p className="text-sm text-gray-500 mb-1">Total Purchases</p>
-            <p className="text-2xl font-bold text-darkGray dark:text-white">Br{(vendor.summary?.totalPurchases || 0).toLocaleString()}</p>
+        {/* Stats Grid - Premium Glassmorphism */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+          <div className="relative overflow-hidden bg-white/40 dark:bg-gray-800/40 backdrop-blur-md p-5 rounded-2xl border border-white/20 dark:border-gray-700/30 shadow-xl group transition-all duration-300 hover:translate-y-[-4px]">
+            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+              <ShoppingCart size={40} className="text-primary" />
+            </div>
+            <p className="text-xs uppercase tracking-wider text-gray-500 font-bold mb-1">Wadarta Iibsiga</p>
+            <p className="text-2xl font-black text-darkGray dark:text-white">Br{(vendor.summary?.totalPurchases || 0).toLocaleString()}</p>
+            <div className="mt-2 h-1 w-12 bg-primary/30 rounded-full"></div>
           </div>
-          <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-            <p className="text-sm text-gray-500 mb-1">Total Paid</p>
-            <p className="text-2xl font-bold text-green-600">Br{(vendor.summary?.totalPaid || 0).toLocaleString()}</p>
+
+          <div className="relative overflow-hidden bg-white/40 dark:bg-gray-800/40 backdrop-blur-md p-5 rounded-2xl border border-white/20 dark:border-gray-700/30 shadow-xl group transition-all duration-300 hover:translate-y-[-4px]">
+            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+              <CheckCircle size={40} className="text-green-600" />
+            </div>
+            <p className="text-xs uppercase tracking-wider text-gray-500 font-bold mb-1">Wadarta la Bixiyay</p>
+            <p className="text-2xl font-black text-green-600">Br{(vendor.summary?.totalPaid || 0).toLocaleString()}</p>
+            <div className="mt-2 h-1 w-12 bg-green-500/30 rounded-full"></div>
           </div>
-          <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-            <p className="text-sm text-gray-500 mb-1">Balance We Owe</p>
-            <p className="text-2xl font-bold text-redError">Br{(vendor.summary?.totalUnpaid || 0).toLocaleString()}</p>
+
+          <div className="relative overflow-hidden bg-white/40 dark:bg-gray-800/40 backdrop-blur-md p-5 rounded-2xl border border-white/20 dark:border-gray-700/30 shadow-xl group transition-all duration-300 hover:translate-y-[-4px]">
+            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+              <DollarSign size={40} className="text-redError" />
+            </div>
+            <p className="text-xs uppercase tracking-wider text-gray-500 font-bold mb-1">Baaki dhiman (Dayn)</p>
+            <p className="text-2xl font-black text-redError">Br{(vendor.summary?.totalUnpaid || 0).toLocaleString()}</p>
+            <div className="mt-2 h-1 w-12 bg-red-500/30 rounded-full"></div>
           </div>
-          <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-            <p className="text-sm text-gray-500 mb-1">Vendor Owes Us</p>
-            <p className="text-2xl font-bold text-green-600">Br{(vendor.summary?.vendorOwesUs || 0).toLocaleString()}</p>
+
+          <div className="relative overflow-hidden bg-white/40 dark:bg-gray-800/40 backdrop-blur-md p-5 rounded-2xl border border-white/20 dark:border-gray-700/30 shadow-xl group transition-all duration-300 hover:translate-y-[-4px]">
+            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+              <InfoIcon size={40} className="text-blue-500" />
+            </div>
+            <p className="text-xs uppercase tracking-wider text-gray-500 font-bold mb-1">Lacag aan ku leenahay</p>
+            <p className="text-2xl font-black text-blue-600">Br{(vendor.summary?.vendorOwesUs || 0).toLocaleString()}</p>
+            <div className="mt-2 h-1 w-12 bg-blue-500/30 rounded-full"></div>
           </div>
-          <div className={`bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border-2 ${(vendor.summary?.netBalance || 0) > 0 ? 'border-red-300' : 'border-green-300'}`}>
-            <p className="text-sm text-gray-500 mb-1">Net Balance</p>
-            <p className={`text-2xl font-bold ${(vendor.summary?.netBalance || 0) > 0 ? 'text-redError' : 'text-green-600'}`}>
+
+          <div className={`relative overflow-hidden backdrop-blur-lg p-5 rounded-2xl border-2 shadow-2xl transition-all duration-500 hover:scale-[1.02] ${
+            (vendor.status === 'Active' || (vendor.summary?.netBalance || 0) <= 0) 
+            ? 'bg-green-50/50 border-green-200/50 dark:bg-green-900/10 dark:border-green-800/20' 
+            : 'bg-red-50/50 border-red-200/50 dark:bg-red-900/10 dark:border-red-800/20'
+          }`}>
+            <p className="text-xs uppercase tracking-wider text-gray-500 font-bold mb-1">Xaaladda Guud</p>
+            <p className={`text-2xl font-black ${(vendor.summary?.netBalance || 0) > 0 ? 'text-redError' : 'text-green-600'}`}>
               Br{Math.abs(vendor.summary?.netBalance || 0).toLocaleString()}
             </p>
-            <p className="text-xs text-gray-400 mt-1">
-              {(vendor.summary?.netBalance || 0) > 0 ? 'We owe vendor' : 'Vendor owes us'}
-            </p>
+            <div className="flex items-center gap-1.5 mt-2">
+              <div className={`w-2 h-2 rounded-full animate-pulse ${
+                (vendor.summary?.netBalance || 0) > 0 ? 'bg-red-500' : 'bg-green-500'
+              }`}></div>
+              <p className="text-xs font-bold uppercase tracking-tight opacity-70">
+                {(vendor.summary?.netBalance || 0) > 0 ? 'Dayn ayaa nagu maqan' : 'Xisaabtu waa nadiif'}
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden min-h-[500px]">
-          <div className="border-b border-lightGray dark:border-gray-700 px-6">
-            <nav className="flex space-x-8">
-              {['Overview', 'Transactions', 'Expenses', 'Purchase Orders', 'Material History', 'Projects'].map(tab => (
+        {/* Tabs & Content */}
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/30 overflow-hidden min-h-[600px]">
+          <div className="border-b border-gray-100 dark:border-gray-700 px-6 pt-2">
+            <nav className="flex space-x-1">
+              {[
+                { id: 'Overview', label: 'Guud ahaan' },
+                { id: 'Transactions', label: 'Dhaqdhaqaaqa' },
+                { id: 'Material History', label: 'Alaabta' },
+                { id: 'Projects', label: 'Mashaariicda' }
+              ].map(tab => (
                 <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`py-4 border-b-2 font-medium text-sm transition-colors ${activeTab === tab
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                    }`}
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-6 py-4 relative font-bold text-sm transition-all duration-300 ${
+                    activeTab === tab.id
+                      ? 'text-primary'
+                      : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
+                  }`}
                 >
-                  {tab}
+                  {tab.label}
+                  {activeTab === tab.id && (
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full shadow-[0_-4px_10px_rgba(30,64,175,0.3)]"></div>
+                  )}
                 </button>
               ))}
             </nav>
           </div>
 
-          <div className="p-6">
+          <div className="p-8">
             {activeTab === 'Overview' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                    <Building size={20} className="text-gray-400" /> Contact Info
-                  </h3>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-2">
-                      <span className="text-gray-500">Contact Person</span>
-                      <span className="font-medium text-darkGray dark:text-white">{vendor.contactPerson || '-'}</span>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                <div className="lg:col-span-2 space-y-8">
+                  <div>
+                    <h3 className="text-lg font-black text-darkGray dark:text-white mb-6 flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                        <Building size={18} />
+                      </div>
+                      Vendor Profile
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                      {[
+                        { label: 'Contact Person', value: vendor.contactPerson, icon: <UserIcon size={14} /> },
+                        { label: 'Phone Number', value: vendor.phone || vendor.phoneNumber, icon: <Phone size={14} /> },
+                        { label: 'Email Address', value: vendor.email, icon: <Mail size={14} /> },
+                        { label: 'Office Address', value: vendor.address, icon: <MapPin size={14} /> }
+                      ].map((item, i) => (
+                        <div key={i} className="group transition-all">
+                          <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-1 flex items-center gap-1.5">
+                            {item.icon} {item.label}
+                          </p>
+                          <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 group-hover:text-primary transition-colors">
+                            {item.value || 'N/A'}
+                          </p>
+                        </div>
+                      ))}
                     </div>
-                    <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-2">
-                      <span className="text-gray-500">Phone</span>
-                      <span className="font-medium text-darkGray dark:text-white">{vendor.phone || '-'}</span>
-                    </div>
-                    <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-2">
-                      <span className="text-gray-500">Email</span>
-                      <span className="font-medium text-darkGray dark:text-white">{vendor.email || '-'}</span>
-                    </div>
-                    <div className="flex justify-between border-b border-gray-100 dark:border-gray-700 pb-2">
-                      <span className="text-gray-500">Address</span>
-                      <span className="font-medium text-darkGray dark:text-white">{vendor.address || '-'}</span>
+                  </div>
+
+                  <div className="pt-4">
+                    <h3 className="text-lg font-black text-darkGray dark:text-white mb-6 flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-500">
+                        <MessageSquare size={18} />
+                      </div>
+                      Business Details
+                    </h3>
+                    <div className="bg-gray-50/50 dark:bg-gray-900/30 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 space-y-4">
+                      <div>
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Core Products & Services</p>
+                        <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">{vendor.productsServices || 'No services listed.'}</p>
+                      </div>
+                      <div className="pt-2">
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Internal Notes</p>
+                        <p className="text-sm italic text-gray-500 dark:text-gray-500">{vendor.notes || 'No private notes.'}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                    <InfoIcon size={20} className="text-gray-400" /> Additional Info
-                  </h3>
-                  <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg text-sm text-gray-600 dark:text-gray-300">
-                    <p className="font-semibold mb-1">Products/Services:</p>
-                    <p className="mb-4">{vendor.productsServices || 'No details provided.'}</p>
-                    <p className="font-semibold mb-1">Notes:</p>
-                    <p>{vendor.notes || 'No notes.'}</p>
+
+                <div className="space-y-6">
+                  <div className="bg-primary/5 dark:bg-primary/10 rounded-3xl p-6 border border-primary/10">
+                    <h4 className="font-black text-primary text-sm uppercase tracking-tighter mb-4">Financial Velocity</h4>
+                    <div className="space-y-4">
+                      {[
+                        { label: 'Last Purchase', value: vendor.summary?.lastPurchaseDate ? new Date(vendor.summary.lastPurchaseDate).toLocaleDateString() : 'Never', color: 'text-blue-600' },
+                        { label: 'Last Payment', value: vendor.summary?.lastPaymentDate ? new Date(vendor.summary.lastPaymentDate).toLocaleDateString() : 'Never', color: 'text-green-600' },
+                        { label: 'Unpaid Items', value: `${vendor.summary?.unpaidCount || 0} Records`, color: 'text-red-500' }
+                      ].map((stat, i) => (
+                        <div key={i} className="flex justify-between items-center text-xs">
+                          <span className="text-gray-400 font-bold uppercase">{stat.label}</span>
+                          <span className={`font-black ${stat.color}`}>{stat.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="p-6 bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                    <h4 className="font-black text-gray-400 text-[10px] uppercase tracking-widest mb-4">Quick Analysis</h4>
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1">
+                        <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-green-500" 
+                            style={{ width: `${Math.min(100, (vendor.summary?.totalPaid || 0) / (vendor.summary?.totalPurchases || 1) * 100)}%` }}
+                          ></div>
+                        </div>
+                        <p className="text-[10px] text-gray-400 mt-2 font-bold uppercase">Payback Progress: {Math.round((vendor.summary?.totalPaid || 0) / (vendor.summary?.totalPurchases || 1) * 100)}%</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
+
             {activeTab === 'Transactions' && (
-              <div>
+              <div className="space-y-6">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gray-50/50 dark:bg-gray-900/30 p-4 rounded-2xl border border-gray-100 dark:border-gray-800">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 text-primary rounded-lg">
+                      <Search size={18} />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-black text-darkGray dark:text-white uppercase tracking-tight">Transaction Ledger</h4>
+                      <p className="text-[10px] text-gray-400 font-bold">Comprehensive history of all financial activities</p>
+                    </div>
+                  </div>
+                </div>
+
                 {!vendor.transactions || vendor.transactions.length === 0 ? (
-                  <div className="text-center py-10 text-gray-400">No transactions found.</div>
+                  <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+                    <Loader2 size={40} className="mb-4 opacity-20" />
+                    <p className="font-bold uppercase tracking-widest text-xs">No activity found</p>
+                  </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                      <thead className="bg-gray-50 dark:bg-gray-700 text-gray-500 font-medium">
+                  <div className="overflow-x-auto rounded-2xl border border-gray-100 dark:border-gray-700">
+                    <table className="w-full text-sm text-left border-collapse">
+                      <thead className="bg-gray-50/50 dark:bg-gray-900/50 text-[10px] uppercase tracking-widest text-gray-400 font-black">
                         <tr>
-                          <th className="px-4 py-3">Date</th>
-                          <th className="px-4 py-3">Type</th>
-                          <th className="px-4 py-3">Description</th>
-                          <th className="px-4 py-3">Account</th>
-                          <th className="px-4 py-3 text-right">Amount</th>
-                          <th className="px-4 py-3 text-center">Status</th>
+                          <th className="px-6 py-4">Transaction Date</th>
+                          <th className="px-4 py-4">Category</th>
+                          <th className="px-6 py-4">Description</th>
+                          <th className="px-4 py-4">Source Account</th>
+                          <th className="px-6 py-4 text-right">Raw Amount</th>
+                          <th className="px-6 py-4 text-center">Settlement Status</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                      <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
                         {vendor.transactions.map(trans => {
                           const isMoneyOut = ['EXPENSE', 'DEBT_REPAID', 'MONEY_OUT', 'TRANSFER_OUT'].includes(trans.type);
-                          const isMoneyIn = ['INCOME', 'DEBT_TAKEN', 'MONEY_IN', 'TRANSFER_IN'].includes(trans.type); // DEBT_TAKEN is money given to customer (out) BUT for vendor it implies we owe them? Wait. 
-                          // Vendor context:
-                          // DEBT_TAKEN = "Credit Purchase" / "Unpaid Bill". We owe vendor. No money moved yet.
-                          // EXPENSE / DEBT_REPAID = We paid vendor. Money moved OUT.
-
-                          // Correct visual logic:
-                          // EXPENSE/DEBT_REPAID: Red (Money Out)
-                          // DEBT_TAKEN (Credit): Gray/Neutral (Amount matches Expense, but no cash flow). 
-                          // But wait, the standard transaction table treats DEBT_TAKEN as 'money in' or 'money out' depending on context?
-                          // In app/api/expenses/route.ts:
-                          // DEBT_TAKEN for Vendor = "Unpaid". transaction amount is positive.
-                          // Let's stick to simple:
-                          // If it's a payment (EXPENSE, DEBT_REPAID) -> Red -, "Paid"
-                          // If it's accrual (DEBT_TAKEN) -> Blue/Gray, "Credit"
+                          const isDebt = trans.type === 'DEBT_TAKEN';
+                          
+                          // Clean description: remove the hardcoded dates that look ugly
+                          const cleanDescription = (trans.description || '').replace(/\s*-\s*\d{4}-\d{2}-\d{2}/, '');
 
                           return (
-                            <tr key={trans.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                              <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
-                                {new Date(trans.transactionDate).toLocaleDateString()}
+                            <tr key={trans.id} className="hover:bg-primary/[0.02] dark:hover:bg-primary/[0.05] transition-colors group">
+                              <td className="px-6 py-5">
+                                <p className="font-bold text-gray-700 dark:text-gray-300">{new Date(trans.transactionDate).toLocaleDateString()}</p>
+                                <p className="text-[10px] text-gray-400 font-medium">{new Date(trans.transactionDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                               </td>
-                              <td className="px-4 py-3">
-                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${isMoneyOut ? 'bg-red-100 text-red-700' :
-                                  trans.type === 'DEBT_TAKEN' ? 'bg-blue-100 text-blue-700' :
-                                    'bg-green-100 text-green-700'
-                                  }`}>
-                                  {trans.type === 'EXPENSE' ? 'Expense' :
+                              <td className="px-4 py-5">
+                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${
+                                  isMoneyOut ? 'bg-red-50 text-red-600 border border-red-100' :
+                                  isDebt ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' :
+                                  'bg-green-50 text-green-600 border border-green-100'
+                                }`}>
+                                  {trans.type === 'EXPENSE' ? 'Direct Purchase' :
                                     trans.type === 'DEBT_REPAID' ? 'Payment' :
-                                      trans.type === 'DEBT_TAKEN' ? 'Credit/Bill' :
+                                      trans.type === 'DEBT_TAKEN' ? 'Credit Bill' :
                                         trans.type}
                                 </span>
                               </td>
-                              <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
-                                {trans.description}
+                              <td className="px-6 py-5">
+                                <p className="font-semibold text-gray-800 dark:text-gray-200 capitalize">{cleanDescription || 'Alaab aan la magacaabin'}</p>
                                 {trans.expense && (
-                                  <Link href={`/projects/expenses/${trans.expense.id}`} className="block text-xs text-primary hover:underline mt-1 flex items-center gap-1">
-                                    <Eye size={10} /> View details
+                                  <Link href={`/projects/expenses/${trans.expense.id}`} className="text-[10px] text-primary hover:underline font-bold uppercase inline-flex items-center gap-1 mt-1">
+                                    <Eye size={10} /> Track Detail
                                   </Link>
                                 )}
                               </td>
-                              <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
-                                {trans.account?.name || trans.fromAccount?.name || '-'}
+                              <td className="px-4 py-5">
+                                {trans.account || trans.fromAccount ? (
+                                  <div className="flex items-center gap-2">
+                                    <div className={`w-2 h-2 rounded-full ${['Bank', 'Investment'].includes(trans.account?.type || '') ? 'bg-blue-500' : 'bg-orange-400'}`}></div>
+                                    <p className="font-bold text-xs text-gray-600 dark:text-gray-400">{trans.account?.name || trans.fromAccount?.name}</p>
+                                  </div>
+                                ) : (
+                                  <span className="text-[10px] font-black text-gray-300 uppercase italic">Non-Cash (Credit)</span>
+                                )}
                               </td>
-                              <td className={`px-4 py-3 text-right font-medium ${isMoneyOut ? 'text-red-600' : 'text-gray-800 dark:text-gray-200'}`}>
-                                {isMoneyOut ? '-' : ''}Br{Math.abs(Number(trans.amount)).toLocaleString()}
-                              </td>
-                              <td className="px-4 py-3 text-center">
-                                {trans.expense ? (
-                                  trans.expense.paymentStatus === 'PAID' ? (
-                                    <span className="inline-flex items-center gap-1 text-green-600 font-medium text-xs bg-green-50 px-2 py-1 rounded-full border border-green-200">
-                                      <CheckCircle size={12} /> Paid
-                                    </span>
+                              <td className={`px-6 py-5 text-right font-black ${isMoneyOut ? 'text-red-500' : 'text-gray-800 dark:text-gray-200'}`}>
+                                <div className="flex flex-col items-end">
+                                  <span>{isMoneyOut ? '↓' : isDebt ? '•' : '↑'} Br{Math.abs(Number(trans.amount)).toLocaleString()}</span>
+                                  {trans.expense ? (
+                                    <div className="flex flex-col items-end mt-1 space-y-0.5 opacity-90">
+                                       <div className="flex gap-2 text-[10px] uppercase font-bold tracking-tighter">
+                                          <span className="text-gray-400">Totalka: Br{(trans.expense.amount || 0).toLocaleString()}</span>
+                                          <span className="text-green-600">Bixiyay: Br{(trans.expense.paidAmount || 0).toLocaleString()}</span>
+                                       </div>
+                                       <div className="text-[11px] text-indigo-600 font-black bg-indigo-50 dark:bg-indigo-900/20 px-2 py-0.5 rounded-md mt-1 border border-indigo-100 dark:border-indigo-800/30">
+                                          Baqi: Br{Math.max(0, (trans.expense.amount || 0) - (trans.expense.paidAmount || 0)).toLocaleString()}
+                                       </div>
+                                    </div>
                                   ) : (
-                                    <div className="flex flex-col items-center gap-1">
-                                      {trans.expense.paymentStatus === 'PARTIAL' && (
-                                        <span className="inline-flex items-center gap-1 text-yellow-600 font-medium text-xs bg-yellow-50 px-2 py-1 rounded-full border border-yellow-200">
-                                          Partial
-                                        </span>
-                                      )}
-                                      {trans.expense.paymentStatus === 'UNPAID' && (
-                                        <span className="inline-flex items-center gap-1 text-red-600 font-medium text-xs bg-red-50 px-2 py-1 rounded-full border border-red-200">
-                                          Unpaid
-                                        </span>
-                                      )}
-                                      <div className="flex justify-center gap-2 mt-1">
-                                        {/* Show PAY button for Debt Records (DEBT_TAKEN) OR if it's a PARTIAL payment (to pay the remainder) */}
-                                        {(trans.type === 'DEBT_TAKEN' || trans.expense?.paymentStatus === 'PARTIAL') && (
+                                    isDebt && <span className="text-[10px] text-indigo-400/70 font-bold uppercase tracking-tighter">Accountable Debt</span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-6 py-5">
+                                <div className="flex flex-col items-center justify-center gap-2">
+                                  {trans.expense ? (
+                                    <>
+                                      {trans.expense.paymentStatus === 'PAID' ? (
+                                        <div className="flex items-center gap-1.5 text-green-600 font-black text-[10px] uppercase bg-green-50/50 px-2 py-1 rounded-md border border-green-100">
+                                          <CheckCircle2 size={12} /> Settled
+                                        </div>
+                                      ) : (
+                                        <div className="flex flex-col items-center gap-2">
+                                          <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
+                                            trans.expense.paymentStatus === 'PARTIAL' ? 'text-orange-500 bg-orange-50' : 'text-red-500 bg-red-50'
+                                          }`}>
+                                            {trans.expense.paymentStatus}
+                                          </span>
                                           <button
-                                            onClick={() => {
-                                              const expenseAmount = Number(trans.expense?.amount || 0);
-                                              const paidAmount = Number(trans.expense?.paidAmount || 0);
-                                              const currentRemaining = expenseAmount > 0 ? Math.max(0, expenseAmount - paidAmount) : Math.abs(trans.amount);
+                                              onClick={() => {
+                                                const expenseAmount = Number(trans.expense?.amount || 0);
+                                                const paidAmount = Number(trans.expense?.paidAmount || 0);
+                                                const currentRemaining = expenseAmount > 0 ? Math.max(0, expenseAmount - paidAmount) : Math.abs(trans.amount);
 
-                                              setSelectedExpenseForPayment({
-                                                id: trans.expense!.id,
-                                                amount: currentRemaining,
-                                                description: trans.expense!.description,
-                                                projectId: (trans.expense as any)?.projectId || undefined
-                                              });
-                                              setIsPaymentModalOpen(true);
-                                            }}
-                                            className="text-white bg-primary hover:bg-blue-700 px-3 py-1 rounded text-xs font-medium transition-colors shadow-sm"
-                                          >
-                                            Pay
+                                                setSelectedExpenseForPayment({
+                                                  id: trans.expense!.id,
+                                                  amount: currentRemaining,
+                                                  description: trans.expense!.description,
+                                                  projectId: (trans.expense as any)?.projectId || undefined
+                                                });
+                                                setIsPaymentModalOpen(true);
+                                              }}
+                                              className="w-full bg-primary text-white text-[10px] font-black py-1 px-3 rounded-lg hover:bg-blue-700 transition shadow-sm hover:shadow-md active:scale-95"
+                                            >
+                                              CONFIRM PAY
                                           </button>
-                                        )}
-                                        <Link
-                                          href={`/projects/expenses/${trans.expense.id}`}
-                                          className="text-gray-500 bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded text-xs font-medium transition-colors border border-gray-200"
-                                        >
-                                          View
-                                        </Link>
-                                      </div>
-                                      {/* Receipt Button for Payments */}
-                                      {['EXPENSE', 'DEBT_REPAID'].includes(trans.type) && (
-                                        <div className="mt-1 flex justify-center">
-                                          <Link
-                                            href={`/projects/accounting/transactions/${trans.id}/receipt`}
-                                            className="text-gray-500 hover:text-primary text-xs flex items-center gap-1"
-                                          >
-                                            <Printer size={12} /> Receipt
-                                          </Link>
                                         </div>
                                       )}
+                                    </>
+                                  ) : (
+                                    <span className="text-gray-300 italic">-</span>
+                                  )}
+                                  
+                                  {/* WhatsApp Quick Link */}
+                                  {['EXPENSE', 'DEBT_REPAID'].includes(trans.type) && (
+                                    <div className="flex flex-col items-center gap-1.5 border-t border-gray-50 dark:border-gray-800/50 pt-2 w-full">
+                                      <Link
+                                        href={`/projects/accounting/transactions/${trans.id}/receipt`}
+                                        className="text-[9px] font-bold text-gray-400 hover:text-primary transition-colors flex items-center gap-1 group/wa"
+                                      >
+                                        <Printer size={10} className="group-hover/wa:scale-110 transition-transform" /> E-Receipt
+                                      </Link>
+                                      
+                                      <button
+                                        onClick={async () => {
+                                          try {
+                                            const res = await fetch(`/api/projects/accounting/transactions/${trans.id}/whatsapp`, { method: 'POST' });
+                                            const data = await res.json();
+                                            if (data.success) {
+                                              setToastMessage({ message: 'Rasidka waxaa loo diray WhatsApp!', type: 'success' });
+                                            } else {
+                                              setToastMessage({ message: data.error || 'Waa la soo diri waayay', type: 'error' });
+                                            }
+                                          } catch (error) {
+                                            setToastMessage({ message: 'Cilad ayaa dhacday', type: 'error' });
+                                          }
+                                        }}
+                                        className="text-[9px] font-black text-green-500 hover:text-green-700 transition-colors flex items-center gap-1 bg-green-50/30 px-2 py-0.5 rounded-full"
+                                      >
+                                        <MessageSquare size={10} /> Dir WhatsApp
+                                      </button>
+                                      
+                                      <button
+                                        onClick={async () => {
+                                          if (!confirm('Ma hubtaa inaad tirtirto dhaqdhaqaaqan? Xisaabtu dib ayay isku xisaabin doontaa.')) return;
+                                          try {
+                                            const res = await fetch(`/api/projects/accounting/transactions/${trans.id}`, { method: 'DELETE' });
+                                            const data = await res.json();
+                                            if (res.ok) {
+                                              setToastMessage({ message: 'Dhaqdhaqaaqa waa la tirtiray!', type: 'success' });
+                                              window.location.reload();
+                                            } else {
+                                              setToastMessage({ message: data.message || 'Waa la tirtiri waayay', type: 'error' });
+                                            }
+                                          } catch (error) {
+                                            setToastMessage({ message: 'Cilad ayaa dhacday', type: 'error' });
+                                          }
+                                        }}
+                                        className="text-[9px] font-black text-red-400 hover:text-red-600 transition-colors flex items-center gap-1 bg-red-50/10 px-2 py-0.5 rounded-full"
+                                      >
+                                        <Trash2 size={10} /> Tirtir
+                                      </button>
                                     </div>
-                                  )
-                                ) : (
-                                  <span className="text-gray-400">-</span>
-                                )}
+                                  )}
+                                </div>
                               </td>
                             </tr>
                           );
@@ -395,150 +539,82 @@ export default function VendorDetailsPage() {
               </div>
             )}
 
-            {activeTab === 'Expenses' && (
-              <div>
-                {!vendor.expenses || vendor.expenses.length === 0 ? (
-                  <div className="text-center py-10 text-gray-400">No expenses found.</div>
+            {activeTab === 'Material History' && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-3 bg-blue-50/50 dark:bg-blue-900/10 p-5 rounded-3xl border border-blue-100 dark:border-blue-800/30">
+                   <div className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
+                     <Package size={24} />
+                   </div>
+                   <div>
+                     <h3 className="text-lg font-black text-darkGray dark:text-white uppercase tracking-tighter">Material Supply Chain</h3>
+                     <p className="text-xs text-gray-500 font-bold">List of all items supplied by {vendor.name}</p>
+                   </div>
+                </div>
+
+                {vendor.materialPurchases.length === 0 ? (
+                  <div className="text-center py-20 text-gray-400 font-bold uppercase tracking-widest text-xs">No supply records</div>
                 ) : (
-                  <div className="space-y-3">
-                    {vendor.expenses.map(expense => (
-                      <div key={expense.id} className="flex justify-between items-center bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border border-gray-100 dark:border-gray-700">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <p className="font-medium text-darkGray dark:text-white">{expense.description}</p>
-                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${expense.paymentStatus === 'PAID' ? 'bg-green-100 text-green-700' :
-                              expense.paymentStatus === 'PARTIAL' ? 'bg-yellow-100 text-yellow-700' :
-                                'bg-red-100 text-red-700'
-                              }`}>
-                              {expense.paymentStatus || 'UNPAID'}
-                            </span>
-                          </div>
-                          <div className="flex gap-4 text-xs text-gray-500">
-                            <span>📅 {new Date(expense.expenseDate).toLocaleDateString()}</span>
-                            <span>📂 {expense.category}</span>
-                            <span>💳 {expense.paidFrom}</span>
-                            {expense.project && <span>🎯 {expense.project.name}</span>}
-                          </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {vendor.materialPurchases.map(mat => (
+                      <div key={mat.id} className="relative group bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
+                        <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                          <Package size={40} />
                         </div>
-                        <div className="text-right">
-                          <p className="text-xl font-bold text-darkGray dark:text-white">Br{Number(expense.amount).toLocaleString()}</p>
-                          {(expense.paymentStatus === 'PARTIAL' || expense.paymentStatus === 'UNPAID') && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const paidVal = typeof expense.paidAmount === 'number' ? expense.paidAmount : 0;
-                                const remaining = Math.max(0, Number(expense.amount) - paidVal);
-                                setSelectedExpenseForPayment({
-                                  id: expense.id,
-                                  amount: remaining,
-                                  description: expense.description,
-                                  projectId: expense.project?.id || undefined
-                                });
-                                setIsPaymentModalOpen(true);
-                              }}
-                              className="mt-2 text-xs bg-primary text-white px-3 py-1 rounded hover:bg-blue-700 transition"
-                            >
-                              Pay Remaining
-                            </button>
-                          )}
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <p className="text-xs font-black text-primary uppercase tracking-widest mb-1">{mat.unit || 'Items'}</p>
+                            <h4 className="text-lg font-black text-darkGray dark:text-white">{mat.materialName}</h4>
+                          </div>
+                          <p className="text-xl font-black text-darkGray dark:text-white">Br{Number(mat.totalPrice).toLocaleString()}</p>
+                        </div>
+                        <div className="flex justify-between items-center pt-4 border-t border-gray-50 dark:border-gray-700">
+                          <div className="flex items-center gap-2">
+                             <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center font-bold text-xs">
+                               {mat.quantity}
+                             </div>
+                             <span className="text-xs text-gray-400 font-bold uppercase">Volume supplied</span>
+                          </div>
+                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                            {new Date(mat.purchaseDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </p>
                         </div>
                       </div>
                     ))}
                   </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'Purchase Orders' && (
-              <div>
-                {vendor.purchaseOrders.length === 0 ? (
-                  <div className="text-center py-10 text-gray-400">No purchase orders found.</div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                      <thead className="bg-gray-50 dark:bg-gray-700 text-gray-500 font-medium">
-                        <tr>
-                          <th className="px-4 py-3">Order #</th>
-                          <th className="px-4 py-3">Date</th>
-                          <th className="px-4 py-3">Project</th>
-                          <th className="px-4 py-3">Status</th>
-                          <th className="px-4 py-3 text-right">Amount</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                        {vendor.purchaseOrders.map(po => (
-                          <tr key={po.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                            <td className="px-4 py-3 font-medium text-primary">
-                              <Link href={`/shop/purchases/${po.id}`}>{po.orderNumber}</Link>
-                            </td>
-                            <td className="px-4 py-3">{new Date(po.createdAt).toLocaleDateString()}</td>
-                            <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
-                              {po.project
-                                ? <Link href={`/projects/main/${po.project.id}`} className="hover:underline">{po.project.name}</Link>
-                                : po.expenses?.[0]?.project
-                                  ? <Link href={`/projects/main/${po.expenses[0].project.id}`} className="hover:underline">{po.expenses[0].project.name}</Link>
-                                  : '-'
-                              }
-                            </td>
-                            <td className="px-4 py-3">
-                              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${po.status === 'Received' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                                }`}>
-                                {po.status}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-right font-medium text-darkGray dark:text-white">
-                              Br{Number(po.totalAmount).toLocaleString()}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'Material History' && (
-              <div>
-                {vendor.materialPurchases.length === 0 ? (
-                  <div className="text-center py-10 text-gray-400">No material purchases found.</div>
-                ) : (
-                  <ul className="space-y-3">
-                    {vendor.materialPurchases.map(mat => (
-                      <li key={mat.id} className="flex justify-between items-center bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
-                        <div className="flex items-center gap-3">
-                          <div className="bg-blue-100 text-blue-600 p-2 rounded-lg">
-                            <Package size={18} />
-                          </div>
-                          <div>
-                            <p className="font-medium text-darkGray dark:text-white">{mat.materialName}</p>
-                            <p className="text-xs text-gray-500">{new Date(mat.purchaseDate).toLocaleDateString()}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-darkGray dark:text-white">Br{Number(mat.totalPrice).toLocaleString()}</p>
-                          <p className="text-xs text-gray-500">{mat.quantity} {mat.unit}</p>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
                 )}
               </div>
             )}
 
             {activeTab === 'Projects' && (
-              <div>
+              <div className="space-y-8">
+                <div className="max-w-md">
+                   <h3 className="text-lg font-black text-darkGray dark:text-white mb-2 flex items-center gap-2 uppercase tracking-tighter">
+                     <Briefcase className="text-primary" /> Supported Projects
+                   </h3>
+                   <p className="text-sm text-gray-400 mb-8">Visualization of projects that rely on this vendor's supplies.</p>
+                </div>
+
                 {vendor.summary?.projects && vendor.summary.projects.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {vendor.summary.projects.map((projName, idx) => (
-                      <div key={idx} className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm flex items-center justify-between">
-                        <span className="font-medium text-darkGray">{projName}</span>
-                        <Briefcase size={16} className="text-gray-400" />
+                      <div key={idx} className="bg-white dark:bg-gray-800 p-6 rounded-2xl border-l-4 border-primary shadow-sm hover:translate-x-2 transition-transform cursor-default">
+                        <div className="flex justify-between items-center">
+                          <div className="space-y-1">
+                            <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Active Partner</p>
+                            <h4 className="text-md font-black text-darkGray dark:text-white">{projName}</h4>
+                          </div>
+                          <div className="p-3 bg-primary/10 text-primary rounded-xl">
+                            <Briefcase size={20} />
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-10 text-gray-400">Currently not associated with any active projects.</div>
+                  <div className="flex flex-col items-center justify-center py-20 bg-gray-50/50 dark:bg-gray-900/30 rounded-3xl border-2 border-dashed border-gray-100 dark:border-gray-800">
+                    <Briefcase size={40} className="text-gray-300 mb-4" />
+                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">No project associations found</p>
+                  </div>
                 )}
               </div>
             )}

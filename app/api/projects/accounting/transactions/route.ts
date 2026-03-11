@@ -247,7 +247,10 @@ export async function POST(request: Request) {
 
     // Recalculate for the primary account
     if (accountId) {
+      const { recalculateAccountBalance, updateProjectAdvancePaid, updateEmployeeSalaryStats } = await import('@/lib/accounting');
       await recalculateAccountBalance(accountId);
+      if (projectId) await updateProjectAdvancePaid(projectId);
+      if (employeeId) await updateEmployeeSalaryStats(employeeId);
     }
 
     // Recalculate for transfer-related accounts
@@ -271,33 +274,11 @@ export async function POST(request: Request) {
     // Update Expense Payment Status and send WhatsApp Receipt if applicable
     if (expenseId && type === 'DEBT_REPAID') {
       try {
-        const expense = await prisma.expense.findFirst({ where: { id: expenseId } });
-        if (expense) {
-          // Calculate total amount paid for this expense
-          const relatedTransactions = await prisma.transaction.findMany({
-            where: {
-              expenseId: expenseId,
-              type: { in: ['EXPENSE', 'DEBT_REPAID'] }
-            }
-          });
-          const totalPaid = relatedTransactions.reduce((sum, t) => sum + Math.abs(Number(t.amount || 0)), 0);
-          const expAmount = Number(expense.amount || 0);
-
-          let newStatus = 'UNPAID';
-          if (expAmount > 0 && totalPaid >= expAmount) {
-            newStatus = 'PAID';
-          } else if (totalPaid > 0 && totalPaid < expAmount) {
-            newStatus = 'PARTIAL';
-          }
-
-          // Update expense status
-          const updatedExpense = await prisma.expense.update({
-            where: { id: expenseId },
-            data: { paymentStatus: newStatus }
-          });
+          const { updateExpenseStatus } = await import('@/lib/accounting');
+          const updatedExpense = await updateExpenseStatus(expenseId);
 
           // Trigger WhatsApp receipt if vendor is linked
-          if (vendorId) {
+          if (vendorId && updatedExpense) {
             const company = await prisma.company.findUnique({ where: { id: companyId } });
             const vendor = await prisma.shopVendor.findUnique({ where: { id: vendorId } });
             if (company && vendor?.phoneNumber) {
@@ -307,7 +288,6 @@ export async function POST(request: Request) {
               sendReceiptViaWhatsApp(company.id, company.name, vendor.phoneNumber, expenseWithVendor);
             }
           }
-        }
       } catch (expErr) {
         console.error('[Transaction API] Failed to update expense status or send receipt', expErr);
       }

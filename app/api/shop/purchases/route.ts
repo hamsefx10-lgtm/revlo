@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
+import { sendPurchaseNotification } from '@/lib/whatsapp/send-purchase-notification';
 
 // GET /api/shop/purchases - List POs
 export async function GET(req: NextRequest) {
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { vendorId, items, notes, expectedDelivery, paidAmount, paymentMethod, shippingCost, customsFee, otherExpenses } = body;
+        const { vendorId, items, notes, expectedDelivery, paidAmount, paymentMethod, shippingCost, customsFee, otherExpenses, notifyEmployeeIds, sendWhatsApp } = body;
 
         if (!vendorId || !items || items.length === 0) {
             return NextResponse.json({ error: 'Vendor and items are required' }, { status: 400 });
@@ -204,6 +205,14 @@ export async function POST(req: NextRequest) {
 
             return purchaseOrder;
         });
+
+        // If WhatsApp notification is requested, trigger it in background
+        if (sendWhatsApp && notifyEmployeeIds?.length > 0) {
+            // We don't await this to keep the API response fast
+            sendPurchaseNotification(user.companyId, result.id, notifyEmployeeIds).catch(err => {
+                console.error('WhatsApp notification failed:', err);
+            });
+        }
 
         return NextResponse.json({ purchaseOrder: result }, { status: 201 });
 

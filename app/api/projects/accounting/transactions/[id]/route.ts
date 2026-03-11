@@ -185,6 +185,21 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       await recalculateAccountBalance(accId);
     }
 
+    // Capture expense ID to update status if needed
+    if (updatedTransaction.expenseId) {
+      const { updateExpenseStatus, updateProjectAdvancePaid, updateEmployeeSalaryStats } = await import('@/lib/accounting');
+      await updateExpenseStatus(updatedTransaction.expenseId);
+      if (updatedTransaction.projectId) await updateProjectAdvancePaid(updatedTransaction.projectId);
+      if (updatedTransaction.employeeId) await updateEmployeeSalaryStats(updatedTransaction.employeeId);
+    }
+    // Also consider the OLD expense/project/employee if they changed
+    if (oldTrx) {
+       const { updateExpenseStatus, updateProjectAdvancePaid, updateEmployeeSalaryStats } = await import('@/lib/accounting');
+       if (oldTrx.expenseId && oldTrx.expenseId !== updatedTransaction.expenseId) await updateExpenseStatus(oldTrx.expenseId);
+       if (oldTrx.projectId && oldTrx.projectId !== updatedTransaction.projectId) await updateProjectAdvancePaid(oldTrx.projectId);
+       if (oldTrx.employeeId && oldTrx.employeeId !== updatedTransaction.employeeId) await updateEmployeeSalaryStats(oldTrx.employeeId);
+    }
+
     return NextResponse.json(
       { message: 'Dhaqdhaqaaqa lacagta si guul leh ayaa loo cusboonaysiiyay!', transaction: updatedTransaction },
       { status: 200 } // OK
@@ -224,7 +239,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     });
 
     // Cusboonaysii balance-ka accounts-ka
-    const { recalculateAccountBalance } = await import('@/lib/accounting');
+    const { recalculateAccountBalance, updateExpenseStatus } = await import('@/lib/accounting');
 
     const affectedAccountIds = new Set<string>();
     if (existingTransaction.accountId) affectedAccountIds.add(existingTransaction.accountId);
@@ -235,7 +250,22 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       await recalculateAccountBalance(accId);
     }
 
-    // Notify about transaction deletion for real-time updates
+    // Update Expense Status if linked
+    if (existingTransaction.expenseId) {
+       await updateExpenseStatus(existingTransaction.expenseId);
+    }
+
+    // Update Project Status if linked
+    if (existingTransaction.projectId) {
+       await updateProjectAdvancePaid(existingTransaction.projectId);
+    }
+
+    // Update Employee Status if linked
+    if (existingTransaction.employeeId) {
+       await updateEmployeeSalaryStats(existingTransaction.employeeId);
+    }
+
+    // Notify about transaction deletion
     const transactionEvent = {
       id: id,
       projectId: existingTransaction.projectId,

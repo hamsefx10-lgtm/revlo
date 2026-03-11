@@ -73,3 +73,110 @@ export async function recalculateAccountBalance(accountId: string, upToDate?: Da
 
     return currentBalance;
 }
+
+export async function updateExpenseStatus(expenseId: string) {
+    if (!expenseId) return;
+
+    const expense = await prisma.expense.findUnique({
+        where: { id: expenseId }
+    });
+
+    if (!expense) return;
+
+    // Calculate total amount paid for this expense from all transactions
+    const relatedTransactions = await prisma.transaction.findMany({
+        where: {
+            expenseId: expenseId,
+            type: { in: ['EXPENSE', 'DEBT_REPAID'] }
+        }
+    });
+
+    const totalPaid = relatedTransactions.reduce((sum, t) => sum + Math.abs(Number(t.amount || 0)), 0);
+    const expAmount = Number(expense.amount || 0);
+
+    let newStatus = 'UNPAID';
+    if (expAmount > 0 && totalPaid >= expAmount) {
+        newStatus = 'PAID';
+    } else if (totalPaid > 0 && totalPaid < expAmount) {
+        newStatus = 'PARTIAL';
+    }
+
+    // Update expense record
+    return await prisma.expense.update({
+        where: { id: expenseId },
+        data: { 
+            paymentStatus: newStatus,
+            // We could also store paidAmount if we had that field, but we rely on transactions
+        }
+    });
+}
+
+export async function updateProjectAdvancePaid(projectId: string) {
+    if (!projectId) return;
+
+    // Sum all transactions linked to this project that are advance payments
+    // Based on the pattern found in project creation API
+    const advanceTransactions = await prisma.transaction.findMany({
+        where: {
+            projectId: projectId,
+            type: 'INCOME',
+            description: {
+                contains: 'Advance Payment for Project'
+            }
+        }
+    });
+
+    const totalAdvance = advanceTransactions.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+
+    const project = await prisma.project.findUnique({ where: { id: projectId } });
+    if (!project) return;
+
+    const agreementAmount = Number(project.agreementAmount || 0);
+    const remainingAmount = agreementAmount - totalAdvance;
+
+    return await prisma.project.update({
+        where: { id: projectId },
+        data: {
+            advancePaid: totalAdvance,
+            remainingAmount: remainingAmount
+        }
+    });
+}
+
+export async function updateEmployeeSalaryStats(employeeId: string) {
+    if (!employeeId) return;
+
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    // Sum all salary-related transactions for this employee THIS MONTH
+    const monthlyTransactions = await prisma.transaction.findMany({
+        where: {
+            employeeId: employeeId,
+            transactionDate: { gte: startOfMonth },
+            OR: [
+                { type: 'EXPENSE' },
+                { type: 'DEBT_REPAID' }
+            ],
+            // Only count if it's salary related or linked to a salary expense
+            // For now, if it's linked to the employee, we treat it as salary payment
+        }
+    });
+
+    const totalPaidThisMonth = monthlyTransactions.reduce((sum, t) => sum + Math.abs(Number(t.amount || 0)), 0);
+
+    // Update last payment date if any
+    const lastTrx = await prisma.transaction.findFirst({
+        where: { employeeId: employeeId },
+        orderBy: { transactionDate: 'desc' }
+    });
+
+    return await prisma.employee.update({
+        where: { id: employeeId },
+        data: {
+            salaryPaidThisMonth: totalPaidThisMonth,
+            lastPaymentDate: lastTrx?.transactionDate || null
+        }
+    });
+}
+

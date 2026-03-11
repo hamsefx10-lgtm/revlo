@@ -165,20 +165,23 @@ export async function GET(
     // Total purchases now uses allExpenses (so it includes the discovered ones)
     const totalPurchases = allExpenses.reduce((sum: number, exp: any) => sum + Number(exp.amount || 0), 0);
 
-    // Total paid: sum of MONEY_OUT transactions to this vendor
+    // Total paid: sum of MONEY_OUT transactions to this vendor (Real money moved out)
     const totalPaid = transactions
       .filter((t: any) => MONEY_OUT_TYPES.includes(t.type as TransactionType))
       .reduce((sum: number, t: any) => sum + Math.abs(Number(t.amount || 0)), 0);
 
-    // Total received: sum of MONEY_IN transactions from this vendor (vendor owes us)
+    // Total received: sum of MONEY_IN transactions FROM vendor (e.g. Refunds or returns)
+    // IMPORTANT: Exclude DEBT_TAKEN from "Vendor Owes Us" because DEBT_TAKEN for a Vendor 
+    // means WE took a debt (accrual purchase), it doesn't mean they owe us money.
     const vendorOwesUs = transactions
-      .filter((t: any) => MONEY_IN_TYPES.includes(t.type as TransactionType))
+      .filter((t: any) => t.type === 'INCOME' || t.type === 'TRANSFER_IN')
       .reduce((sum: number, t: any) => sum + Number(t.amount || 0), 0);
 
-    // Balance we owe = purchases - paid
+    // Balance we owe (Payable) = purchases - paid
     const totalUnpaid = totalPurchases - totalPaid;
 
     // Net balance: positive = we owe vendor, negative = vendor owes us
+    // Logic: Net debt = (Total Purchases - Total Paid) - (Any money they owe us like refunds)
     const netBalance = totalUnpaid - vendorOwesUs;
 
     // Find last purchase and payment dates
