@@ -309,10 +309,10 @@ const translations: Record<Language, Translations> = {
     },
     reports: {
       debtsOverview: 'Warbixinta Deymaha',
-      companyPayables: 'Company Payables',
-      projectReceivables: 'Project Receivables',
+      companyPayables: 'Daymaha Shirkadda (Vendors)',
+      projectReceivables: 'Lacagaha Mashaariicda (Contractual)',
       projectPayables: 'Project Payables',
-      customerReceivables: 'Customer Receivables',
+      customerReceivables: 'Daymaha Macaamiisha (Direct Loans)',
       totalPayables: 'Wadarta Payables',
       totalReceivables: 'Wadarta Receivables',
       paid: 'La Bixiyay',

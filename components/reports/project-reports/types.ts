@@ -1,3 +1,14 @@
+export interface ProjectMaterial {
+    id: string;
+    name: string;
+    quantityUsed: number;
+    unit: string;
+    costPerUnit: number;
+    leftoverQty: number;
+    dateUsed?: string | Date;
+    projectId: string;
+}
+
 export interface ProjectReport {
     id: string;
     name: string;
@@ -23,6 +34,8 @@ export interface ProjectReport {
     expenseCount: number;
     transactionCount: number;
     paymentCount: number;
+    receivables: number;
+    projectedProfit: number;
     expenses: Array<{
         id: string;
         category: string;
@@ -31,12 +44,8 @@ export interface ProjectReport {
         date: string;
         subCategory?: string | null;
         note?: string | null;
-        rentalPeriod?: string | null;
-        transportType?: string | null;
-        consultancyType?: string | null;
-        consultantName?: string | null;
-        supplierName?: string | null;
         employeeName?: string | null;
+        supplierName?: string | null;
         materials?: any;
     }>;
     transactions: Array<{
@@ -52,6 +61,7 @@ export interface ProjectReport {
         date: string;
         description: string;
     }>;
+    materialsUsed?: ProjectMaterial[];
 }
 
 export interface ProjectReportsData {
@@ -68,6 +78,10 @@ export interface ProjectReportsData {
         totalRevenue: number;
         totalExpenses: number;
         totalProfit: number;
+        totalRemainingAgreement: number;
+        totalLosses: number;
+        totalReceivables: number;
+        totalProjectValue: number;
         averageProfitMargin: number;
     };
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Loader2, DollarSign, Calendar, CreditCard, FileText } from 'lucide-react';
+import { X, Loader2, DollarSign, Calendar, CreditCard, FileText, Briefcase } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
 interface VendorPaymentModalProps {
@@ -18,6 +18,7 @@ interface PaymentFormData {
     amount: number;
     paymentDate: string;
     accountId: string;
+    projectId: string; // Manually select project
     paymentMethod: string;
     reference?: string;
     note?: string;
@@ -36,6 +37,7 @@ const VendorPaymentModal: React.FC<VendorPaymentModalProps> = ({
 }) => {
     const [loading, setLoading] = useState(false);
     const [accounts, setAccounts] = useState<{ id: string; name: string; type: string }[]>([]);
+    const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
     const [error, setError] = useState<string | null>(null);
 
     const { register, handleSubmit, setValue, reset, watch, formState: { errors } } = useForm<PaymentFormData>({
@@ -43,6 +45,7 @@ const VendorPaymentModal: React.FC<VendorPaymentModalProps> = ({
             amount: expenseAmount || 0,
             paymentDate: new Date().toISOString().split('T')[0],
             paymentMethod: 'Cash',
+            projectId: projectId || '',
         }
     });
 
@@ -53,13 +56,27 @@ const VendorPaymentModal: React.FC<VendorPaymentModalProps> = ({
                 amount: expenseAmount || 0,
                 paymentDate: new Date().toISOString().split('T')[0],
                 paymentMethod: 'Cash',
-                accountId: '',
+                accountId: watch('accountId') || '',
+                projectId: projectId || '',
                 reference: '',
                 note: expenseDescription ? `Payment for: ${expenseDescription}` : '',
             });
             fetchAccounts();
+            fetchProjects();
         }
-    }, [isOpen, expenseAmount, expenseDescription, reset]);
+    }, [isOpen, expenseAmount, expenseDescription, projectId, reset]);
+
+    const fetchProjects = async () => {
+        try {
+            const response = await fetch('/api/projects');
+            if (response.ok) {
+                const data = await response.json();
+                setProjects(data.projects || []);
+            }
+        } catch (err) {
+            console.error('Failed to fetch projects', err);
+        }
+    };
 
     const fetchAccounts = async () => {
         try {
@@ -93,7 +110,7 @@ const VendorPaymentModal: React.FC<VendorPaymentModalProps> = ({
                 reference: data.reference,
                 note: data.note,
                 expenseId: expenseId,
-                projectId: projectId, // Link to project if expense is project-linked
+                projectId: data.projectId || null, // Use manually selected project or fallback to initial
                 type: 'DEBT_REPAID'
             };
 
@@ -204,7 +221,7 @@ const VendorPaymentModal: React.FC<VendorPaymentModalProps> = ({
                                 </div>
                                 <select
                                     {...register('accountId', { required: 'Account is required' })}
-                                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors text-sm"
                                 >
                                     <option value="">Select Account</option>
                                     {accounts.map(acc => (
@@ -213,6 +230,24 @@ const VendorPaymentModal: React.FC<VendorPaymentModalProps> = ({
                                 </select>
                             </div>
                             {errors.accountId && <p className="mt-1 text-xs text-red-500">{errors.accountId.message}</p>}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Link to Project (Optional)</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Briefcase size={16} className="text-gray-400" />
+                                </div>
+                                <select
+                                    {...register('projectId')}
+                                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors text-sm"
+                                >
+                                    <option value="">No Project (General Debt)</option>
+                                    {projects.map(proj => (
+                                        <option key={proj.id} value={proj.id}>{proj.name}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
 
                         <div>

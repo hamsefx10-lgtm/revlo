@@ -39,133 +39,137 @@ async function exportPDF(data: ProjectReportsData, showDetails: boolean) {
   };
 
   const renderDocument = (logoDataUrl?: string) => {
-    // === Modern Header Design ===
+    // === Page 1: Executive Summary ===
     const companyName = data.companyName || 'MAGACA SHIRKADDA';
-    const reportTitle = 'WARBIXINTA MASHAARIICDA';
-
-    // Header Section (Height ~30mm)
-    // Logo (Top Left)
-    if (logoDataUrl) {
-      try {
-        doc.addImage(logoDataUrl, 'PNG', 15, 10, 25, 15, undefined, 'FAST');
-      } catch {
-        // Fallback Logo
-        doc.setFillColor(30, 41, 59);
-        doc.circle(25, 17, 8, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'bold');
-        doc.text(companyName.slice(0, 2).toUpperCase(), 25, 19, { align: 'center' });
-      }
-    }
-
-    // Company & Report Info (Top Right)
-    doc.setTextColor(30, 41, 59); // Dark Slate
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(16);
-    doc.text(companyName.toUpperCase(), 282, 16, { align: 'right' });
-
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
+    const reportTitle = 'WARBIXINTA HANTIDA MASHAARIICDA (EXECUTIVE SUMMARY)';
     const dateRange = data.startDate && data.endDate
       ? `${new Date(data.startDate).toLocaleDateString('so-SO')} - ${new Date(data.endDate).toLocaleDateString('so-SO')}`
       : 'Dhammaan Mashaariicda';
+    const printDate = new Date().toLocaleString('so-SO');
 
-    doc.setTextColor(100, 116, 139); // Slate 500
-    doc.text(reportTitle, 282, 22, { align: 'right' });
-    doc.text(`Muddo: ${dateRange}`, 282, 27, { align: 'right' });
+    // Branding & Header
+    doc.setFillColor(15, 23, 42); // Navy Dark
+    doc.rect(0, 0, 297, 45, 'F');
 
-    // Decorative Line (Brand Accent)
-    doc.setDrawColor(30, 41, 59); // Slate 800 (Or Primary Color check theme)
-    doc.setLineWidth(0.5);
-    doc.line(15, 32, 282, 32);
+    if (logoDataUrl) {
+      doc.addImage(logoDataUrl, 'PNG', 15, 10, 25, 25, undefined, 'FAST');
+    }
 
-    let yPos = 45;
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(24);
+    doc.text(companyName.toUpperCase(), 50, 22);
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(reportTitle, 50, 32);
+    doc.text(`Muddo: ${dateRange}`, 282, 22, { align: 'right' });
+    doc.text(`La daabacay: ${printDate}`, 282, 32, { align: 'right' });
 
-    // === Summary Stats Cards ===
-    const drawCard = (x: number, title: string, value: string, sub: string, color: [number, number, number]) => {
-      // ... (Keep existing card logic, maybe tweak Y pos if needed)
+    // Summary Cards (Big Row)
+    const drawBigCard = (x: number, y: number, title: string, value: number, color: [number, number, number], label: string) => {
       doc.setFillColor(255, 255, 255);
       doc.setDrawColor(226, 232, 240);
-      doc.roundedRect(x, yPos, 60, 28, 2, 2, 'FD');
-
-      // Left Border Strip
+      doc.roundedRect(x, y, 52, 45, 3, 3, 'FD');
+      
       doc.setFillColor(...color);
-      doc.rect(x, yPos, 2, 28, 'F');
+      doc.rect(x + 5, y + 8, 8, 1, 'F'); // Accent line
 
       doc.setTextColor(100, 116, 139);
-      doc.setFontSize(8);
+      doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
-      doc.text(title.toUpperCase(), x + 6, yPos + 8);
+      doc.text(title, x + 5, y + 15);
 
       doc.setTextColor(15, 23, 42);
-      doc.setFontSize(14);
-      doc.text(value, x + 6, yPos + 18);
+      doc.setFontSize(16);
+      doc.text(formatCurrency(value), x + 5, y + 28);
 
-      doc.setTextColor(148, 163, 184);
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'normal');
-      doc.text(sub, x + 6, yPos + 24);
+      doc.setTextColor(color[0], color[1], color[2]);
+      doc.setFontSize(8);
+      doc.text(label, x + 5, y + 38);
     };
 
-    drawCard(15, 'DAKHLIGA', `${formatCurrency(data.summary.totalRevenue)}`, 'ETB', [16, 185, 129]);
-    drawCard(85, 'KHARASHYADA', `${formatCurrency(data.summary.totalExpenses)}`, 'ETB', [239, 68, 68]);
-    drawCard(155, 'FAA\'IIDADA', `${formatCurrency(data.summary.totalProfit)}`, 'ETB', [59, 130, 246]);
-    drawCard(225, 'MARGIN', `${data.summary.averageProfitMargin.toFixed(2)}%`, 'Average', [99, 102, 241]);
+    let cardY = 60;
+    drawBigCard(15, cardY, 'TOTAL REVENUE', data.summary.totalRevenue, [16, 185, 129], 'Dakhliga Guud');
+    drawBigCard(70, cardY, 'TOTAL EXPENSES', data.summary.totalExpenses, [239, 68, 68], 'Kharashyada Guud');
+    drawBigCard(125, cardY, 'CASH PROFIT', data.summary.totalProfit, [59, 130, 246], 'Faa\'iidada Dhabta ah');
+    drawBigCard(180, cardY, 'CONTRACT BALANCE', (data.summary as any).totalRemainingAgreement || 0, [99, 102, 241], 'Daynta Heshiiska');
+    drawBigCard(235, cardY, 'CASH DEFICIT', data.summary.totalReceivables, [245, 158, 11], 'Lacagta Maqan');
 
-    yPos += 38;
-
-    // === Projects Table ===
+    // Secondary Summary (Row 2)
+    doc.setTextColor(15, 23, 42);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
-    doc.setTextColor(30, 41, 59);
-    doc.text('FAAHFAAHINTA MASHAARIICDA', 15, yPos);
-    yPos += 5;
+    doc.setFontSize(14);
+    doc.text('SHIRKADDA XAALADDEEDA GUUD (OPERATIONAL OVERVIEW)', 15, 130);
+    
+    doc.setDrawColor(226, 232, 240);
+    doc.line(15, 133, 282, 133);
 
-    // Updated Headers with "Kharashyada", "La Bixiyay", "Dayn"
-    const projectHeaders = [['Mashruuc', 'Macmiil', 'Xaalad', 'Qiimaha', 'Kharashyada', 'La Bixiyay', 'Dayn', 'Faa\'iidada', '%']];
+    const drawInfoBit = (x: number, y: number, label: string, value: string) => {
+      doc.setTextColor(100, 116, 139);
+      doc.setFontSize(10);
+      doc.text(label, x, y);
+      doc.setTextColor(15, 23, 42);
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text(value, x, y + 7);
+      doc.setFont('helvetica', 'normal');
+    };
+
+    drawInfoBit(15, 145, 'Mashaariicda Guud', data.summary.totalProjects.toString());
+    drawInfoBit(70, 145, 'Mashaariicda Socda', (data.summary as any).activeProjects?.toString() || '0');
+    drawInfoBit(125, 145, 'Completed', (data.summary as any).completedProjects?.toString() || '0');
+    drawInfoBit(180, 145, 'Profit Margin (Avg)', `${data.summary.averageProfitMargin.toFixed(2)}%`);
+
+    // Footer for Page 1
+    doc.setTextColor(148, 163, 184);
+    doc.setFontSize(8);
+    doc.text(`Bogga 1  |  ${companyName} - Warbixinta Mashaariicda`, 148, 200, { align: 'center' });
+
+    // === Page 2: Projects Overview Table ===
+    doc.addPage();
+    doc.setFillColor(30, 41, 59); // Slate 800
+    doc.rect(0, 0, 297, 20, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('FAAHFAAHINTA MASHAARIICDA (DETAILED PROJECT INVENTORY)', 15, 13);
+
+    const projectHeaders = [['Mashruuc', 'Macmiil', 'Xaalad', 'Qiimaha', 'Kharashyada', 'La Bixiyay', 'Haraaga', 'Maqan', 'Margin', '%']];
     const projectRows = data.projects.map(p => [
       p.name,
       p.customer,
       p.status,
       formatCurrency(p.projectValue),
       formatCurrency(p.totalExpenses),
-      formatCurrency(p.totalRevenue), // Paid (Revenue)
-      formatCurrency(p.remainingRevenue), // Debt (Remaining)
+      formatCurrency(p.totalRevenue),
+      formatCurrency(p.remainingRevenue),
+      p.receivables > 0 ? formatCurrency(p.receivables) : '-',
       formatCurrency(p.grossProfit),
       `${p.profitMargin.toFixed(1)}%`
     ]);
 
     autoTable(doc, {
-      startY: yPos,
       head: projectHeaders,
       body: projectRows,
-      theme: 'grid',
-      styles: {
-        fontSize: 8,
-        cellPadding: 3,
-        textColor: 60,
-        lineColor: [226, 232, 240],
-        lineWidth: 0.1
-      },
-      headStyles: {
-        fillColor: [241, 245, 249],
-        textColor: [20, 30, 40], // Darker text for readability
-        fontStyle: 'bold',
-        lineWidth: 0
-      },
-      alternateRowStyles: {
-        fillColor: [255, 255, 255]
-      },
-      margin: { left: 15, right: 15 },
+      startY: 25,
+      styles: { fontSize: 8, cellPadding: 3, textColor: 40, lineColor: [226, 232, 240], lineWidth: 0.1 },
+      headStyles: { fillColor: [248, 250, 252], textColor: [15, 23, 42], fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [255, 255, 255] },
       columnStyles: {
-        3: { halign: 'right' },
+        3: { halign: 'right', fontStyle: 'bold' },
         4: { halign: 'right' },
-        5: { halign: 'right', textColor: [22, 163, 74] }, // Green for Paid
-        6: { halign: 'right', textColor: [225, 29, 72] }, // Red for Debt
-        7: { halign: 'right', fontStyle: 'bold' }, // Profit
-        8: { halign: 'right' }, // Margin
+        5: { halign: 'right', textColor: [22, 163, 74] },
+        6: { halign: 'right', textColor: [225, 29, 72] },
+        7: { halign: 'right', textColor: [245, 158, 11], fontStyle: 'bold' },
+        8: { halign: 'right' },
+        9: { halign: 'right' },
       },
+      didDrawPage: (data) => {
+        doc.setTextColor(148, 163, 184);
+        doc.setFontSize(8);
+        doc.text(`Bogga ${doc.getNumberOfPages()}  |  Confidential Financial Report`, 148, 205, { align: 'center' });
+      }
     });
 
     // === Detailed Breakdown if requested ===
@@ -173,31 +177,53 @@ async function exportPDF(data: ProjectReportsData, showDetails: boolean) {
       data.projects.forEach((project) => {
         doc.addPage();
 
-        // Project Header
-        doc.setFillColor(30, 41, 59);
-        doc.rect(0, 0, 297, 20, 'F');
+        // Project Health Header
+        doc.setFillColor(15, 23, 42);
+        doc.rect(0, 0, 297, 25, 'F');
+        
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
-        doc.text(project.name, 15, 12);
-        doc.setFontSize(10);
+        doc.text(project.name.toUpperCase(), 15, 12);
+        
+        doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
-        doc.text(`${project.customer}  |  ${project.status}`, 200, 12, { align: 'right' });
+        doc.text(`Macmiil: ${project.customer}  |  Xaalad: ${project.status}  |  Bilowga: ${project.startDate}`, 15, 18);
 
-        let detailY = 30;
+        // Circular Progress / Health Indicator (Top Right)
+        const marginColor = project.profitMargin >= 20 ? [22, 163, 74] : project.profitMargin >= 0 ? [59, 130, 246] : [225, 29, 72];
+        doc.setFillColor(...marginColor);
+        doc.roundedRect(240, 5, 42, 15, 2, 2, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(7);
+        doc.text('MARGIN', 245, 10);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${project.profitMargin.toFixed(1)}%`, 245, 16);
 
-        // Stats row
-        doc.setFontSize(9);
-        doc.setTextColor(100);
-        doc.text(`Wadarta Mashruuca: ${formatCurrency(project.projectValue)}`, 15, detailY);
-        doc.text(`Dakhliga: ${formatCurrency(project.totalRevenue)}`, 85, detailY);
-        doc.text(`Kharashka: ${formatCurrency(project.totalExpenses)}`, 155, detailY);
-        doc.text(`Faa'iidada: ${formatCurrency(project.grossProfit)}`, 225, detailY);
+        let detailY = 40;
 
-        // Draw a line
-        doc.setDrawColor(200);
-        doc.line(15, detailY + 3, 282, detailY + 3);
-        detailY += 10;
+        // Key Financial Metrics Grid
+        const drawMiniStat = (x: number, y: number, label: string, value: number, isCurrency = true) => {
+          doc.setTextColor(100, 116, 139);
+          doc.setFontSize(7);
+          doc.setFont('helvetica', 'bold');
+          doc.text(label.toUpperCase(), x, y);
+          doc.setTextColor(15, 23, 42);
+          doc.setFontSize(10);
+          doc.text(isCurrency ? formatCurrency(value) : value.toString(), x, y + 6);
+        };
+
+        drawMiniStat(15, detailY, 'Agreement', project.projectValue);
+        drawMiniStat(65, detailY, 'Collected', project.totalRevenue);
+        drawMiniStat(115, detailY, 'Spent', project.totalExpenses);
+        drawMiniStat(165, detailY, 'Remaining', project.remainingRevenue);
+        drawMiniStat(215, detailY, 'Receivables', project.receivables);
+        drawMiniStat(255, detailY, 'Current Profit', project.grossProfit);
+
+        doc.setDrawColor(226, 232, 240);
+        doc.line(15, detailY + 10, 282, detailY + 10);
+        detailY += 20;
 
         // 1. Group Expenses by Category
         const expensesByCategory: { [key: string]: typeof project.expenses } = {};
@@ -211,61 +237,94 @@ async function exportPDF(data: ProjectReportsData, showDetails: boolean) {
           categoryTotals[cat] = (categoryTotals[cat] || 0) + Number(e.amount);
         });
 
-        // Sort categories by Total Amount Descending
         const sortedCategories = Object.keys(categoryTotals).sort((a, b) => categoryTotals[b] - categoryTotals[a]);
 
-        // 2. Iterate Categories and Render Tables
         sortedCategories.forEach(category => {
-          // Check if we need a new page
           if (detailY > 180) {
             doc.addPage();
             detailY = 20;
           }
 
-          doc.setFontSize(11);
-          doc.setTextColor(30, 41, 59);
+          doc.setFontSize(10);
+          doc.setTextColor(15, 23, 42);
           doc.setFont('helvetica', 'bold');
-          // Category Header with Total
-          doc.text(`${category} (Wadarta: ${formatCurrency(categoryTotals[category])})`, 15, detailY);
+          doc.text(`${category.toUpperCase()}`, 15, detailY);
+          doc.setFontSize(8);
+          doc.setTextColor(100, 116, 139);
+          doc.text(`Sub-total: ${formatCurrency(categoryTotals[category])}`, 282, detailY, { align: 'right' });
           detailY += 4;
 
           const categoryExpenses = expensesByCategory[category];
-          // Headers and Rows Configuration based on Category
-          let tableHeaders = [['Taariikh', 'Sharaxaad', 'Qiimaha']]; // Default
+          let tableHeaders = [['Taariikh', 'Sharaxaad', 'Qiimaha']];
           let tableRows = categoryExpenses.map(e => [
             e.date,
-            // For Material, parse detailed items if description contains them or handled differently
-            // The original code handled sub-items by appending them to description text
-            // We will keep similar logic of appending details to description column
             e.description + (e.materials && Array.isArray(e.materials) ?
               '\n' + e.materials.map((m: any) => `- ${m.name} (${m.quantity} ${m.unit} x ${formatCurrency(m.price)})`).join('\n')
               : ''),
             formatCurrency(e.amount)
           ]);
 
-          // Custom Configuration for LABOR
           if (category === 'Labor') {
             tableHeaders = [['Taariikh', 'Sharaxaad', 'Qofka', 'Qiimaha']];
             tableRows = categoryExpenses.map(e => [
               e.date,
               e.description,
-              e.employeeName || e.supplierName || '-', // Show Employee or Supplier Name
+              e.employeeName || e.supplierName || '-',
               formatCurrency(e.amount)
             ]);
           }
 
-          // Custom Configuration for MATERIAL
           if (category === 'Material') {
-            tableHeaders = [['Taariikh', 'Sharaxaad', 'Faahfaahinta Agabka', 'Qiimaha']];
-            tableRows = categoryExpenses.map(e => [
-              e.date,
-              e.description.replace(/\s-\s\d{4}-\d{2}-\d{2}$/, ''), // Clean description
-              // Parse materials for detailed column
-              (e.materials && Array.isArray(e.materials) ?
-                e.materials.map((m: any) => `• ${m.name}\n   (${m.quantity} ${m.unit} x ${formatCurrency(m.price)})`).join('\n\n')
-                : '-'),
-              formatCurrency(e.amount)
-            ]);
+            tableHeaders = [['Taariikh', 'Sharaxaad', 'Agabka', 'Qty', 'Unit Price', 'Total']];
+            tableRows = [];
+            
+            // 1. Add Expenses (with potential breakdown)
+            categoryExpenses.forEach(e => {
+              const description = e.description.replace(/\s-\s\d{4}-\d{2}-\d{2}$/, '');
+              if (e.materials && Array.isArray(e.materials) && e.materials.length > 0) {
+                e.materials.forEach((m: any, idx: number) => {
+                  const qty = Number((m.qty ?? m.quantity) || 0);
+                  const price = Number(m.price || 0);
+                  const total = qty * price;
+                  
+                  tableRows.push([
+                    idx === 0 ? e.date : '',
+                    idx === 0 ? description : '',
+                    m.name,
+                    `${qty} ${m.unit || ''}`,
+                    formatCurrency(price),
+                    formatCurrency(total)
+                  ]);
+                });
+              } else {
+                // FALLBACK: Use description as name if no breakdown exists
+                tableRows.push([
+                  e.date,
+                  'Material Expense',
+                  description,
+                  '1',
+                  formatCurrency(Number(e.amount)),
+                  formatCurrency(Number(e.amount))
+                ]);
+              }
+            });
+
+            // 2. Add ProjectMaterial records (if any)
+            if (project.materialsUsed && project.materialsUsed.length > 0) {
+              project.materialsUsed.forEach((m: any) => {
+                const qty = Number(m.quantityUsed || 0);
+                const price = Number(m.costPerUnit || 0);
+                const total = qty * price;
+                tableRows.push([
+                  m.dateUsed ? new Date(m.dateUsed).toISOString().split('T')[0] : '-',
+                  'Project Material',
+                  m.name,
+                  `${qty} ${m.unit || ''}`,
+                  formatCurrency(price),
+                  formatCurrency(total)
+                ]);
+              });
+            }
           }
 
           autoTable(doc, {
@@ -273,25 +332,10 @@ async function exportPDF(data: ProjectReportsData, showDetails: boolean) {
             head: tableHeaders,
             body: tableRows,
             theme: 'grid',
-            styles: { fontSize: 8, cellPadding: 3, valign: 'middle' },
-            headStyles: { fillColor: [241, 245, 249], textColor: [71, 85, 105] },
+            styles: { fontSize: 7, cellPadding: 2, valign: 'middle' },
+            headStyles: { fillColor: [248, 250, 252], textColor: [15, 23, 42] },
             columnStyles: {
-              // Dynamic styles based on category
-              ...(category === 'Labor' ? {
-                0: { cellWidth: 25 },
-                1: { cellWidth: 'auto' },
-                2: { cellWidth: 40 },
-                3: { halign: 'right', cellWidth: 30 },
-              } : category === 'Material' ? {
-                0: { cellWidth: 25 },
-                1: { cellWidth: 40 },
-                2: { cellWidth: 'auto' }, // Details column gets clear space
-                3: { halign: 'right', cellWidth: 30 },
-              } : {
-                0: { cellWidth: 25 },
-                1: { cellWidth: 'auto' },
-                2: { halign: 'right', cellWidth: 40 },
-              })
+              ...(category === 'Labor' ? { 3: { halign: 'right' } } : category === 'Material' ? { 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' } } : { 2: { halign: 'right' } })
             },
             margin: { left: 15, right: 15 },
           });
@@ -299,24 +343,21 @@ async function exportPDF(data: ProjectReportsData, showDetails: boolean) {
           detailY = (doc as any).lastAutoTable.finalY + 10;
         });
 
-        // 3. Payments Table (Combined with Income transactions)
+        // 3. Payments Table
         if (project.payments.length > 0) {
-          // Check page break
           if (detailY > 180) {
             doc.addPage();
             detailY = 20;
           }
 
-          doc.setFontSize(11);
-          doc.setTextColor(30, 41, 59);
+          doc.setFontSize(10);
+          doc.setTextColor(15, 23, 42);
           doc.setFont('helvetica', 'bold');
-          doc.text('Lacagaha & Dakhliga', 15, detailY);
+          doc.text('LACAGAHA & DAKHLIGA', 15, detailY);
           detailY += 4;
 
           const paymentRows = project.payments.map(p => [
             p.date,
-            // p.description can be handled if we extended the type in API or filtered description
-            // But in the new API we populate description
             (p as any).description || 'Invoice Payment',
             formatCurrency(p.amount)
           ]);
@@ -326,14 +367,19 @@ async function exportPDF(data: ProjectReportsData, showDetails: boolean) {
             head: [['Taariikh', 'Sharaxaad', 'Qiimaha']],
             body: paymentRows,
             theme: 'grid',
-            styles: { fontSize: 8, cellPadding: 2 },
-            headStyles: { fillColor: [241, 245, 249], textColor: [71, 85, 105] },
+            styles: { fontSize: 7, cellPadding: 2 },
+            headStyles: { fillColor: [248, 250, 252], textColor: [15, 23, 42] },
             columnStyles: { 2: { halign: 'right' } },
             margin: { left: 15, right: 15 },
           });
 
           detailY = (doc as any).lastAutoTable.finalY + 10;
         }
+
+        // Project Footer
+        doc.setTextColor(148, 163, 184);
+        doc.setFontSize(8);
+        doc.text(`Project: ${project.name}  |  Confidential  |  Page ${doc.internal.getNumberOfPages()}`, 148, 205, { align: 'center' });
       });
     }
 
@@ -492,10 +538,15 @@ function ProjectReportsContent() {
               (acc, p) => {
                 acc.totalRevenue += p.totalRevenue;
                 acc.totalExpenses += p.totalExpenses;
-                acc.totalProfit += p.grossProfit;
+                // Summary Profit remains Cash-based (Collected - Spent) for consistency with cards
+                acc.totalProfit += (p.totalRevenue - p.totalExpenses); 
+                if (p.remainingRevenue > 0) acc.totalRemainingAgreement += p.remainingRevenue;
+                if ((p.totalRevenue - p.totalExpenses) < 0) acc.totalLosses += Math.abs(p.totalRevenue - p.totalExpenses);
+                acc.totalReceivables += p.receivables;
+                acc.totalProjectValue += p.projectValue;
                 return acc;
               },
-              { totalRevenue: 0, totalExpenses: 0, totalProfit: 0 }
+              { totalRevenue: 0, totalExpenses: 0, totalProfit: 0, totalRemainingAgreement: 0, totalLosses: 0, totalReceivables: 0, totalProjectValue: 0 }
             );
 
             const dataForExport: ProjectReportsData = {
@@ -507,6 +558,10 @@ function ProjectReportsContent() {
                 totalRevenue: exportSummary.totalRevenue,
                 totalExpenses: exportSummary.totalExpenses,
                 totalProfit: exportSummary.totalProfit,
+                totalRemainingAgreement: exportSummary.totalRemainingAgreement,
+                totalLosses: exportSummary.totalLosses,
+                totalReceivables: exportSummary.totalReceivables,
+                totalProjectValue: exportSummary.totalProjectValue,
                 averageProfitMargin:
                   exportSummary.totalRevenue > 0
                     ? (exportSummary.totalProfit / exportSummary.totalRevenue) * 100

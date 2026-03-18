@@ -6,7 +6,8 @@ import Link from 'next/link';
 import Layout from '@/components/layouts/Layout'; // Layout for sidebar
 import {
   Plus, Search, Filter, Eye, Edit, Trash2, LayoutGrid, List, Calendar, CheckCircle, Clock, XCircle, ChevronRight,
-  Loader2, Info, Bell, FileX2, MoreVertical, DollarSign, User, Hash, AlertTriangle, Upload, TrendingUp, Download
+  Loader2, Info, Bell, FileX2, MoreVertical, DollarSign, User, Hash, AlertTriangle, Upload, TrendingUp, Download,
+  RotateCcw
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import Toast from '@/components/common/Toast'; // Import Toast component
@@ -54,9 +55,10 @@ const getStatusProps = (status: Project['status']) => {
 interface ProjectRowProps {
   project: Project;
   onDelete: (id: string) => void;
+  onUpdateStatus: (id: string, newStatus: Project['status']) => void;
 }
 
-const ProjectRow: React.FC<ProjectRowProps> = ({ project, onDelete }) => {
+const ProjectRow: React.FC<ProjectRowProps> = ({ project, onDelete, onUpdateStatus }) => {
   const { class: statusClass, icon: statusIcon } = getStatusProps(project.status);
   const isPAYG = project.agreementAmount === 0;
   const progress = !isPAYG && project.agreementAmount > 0 ? (project.advancePaid / project.agreementAmount) * 100 : 0;
@@ -110,6 +112,31 @@ const ProjectRow: React.FC<ProjectRowProps> = ({ project, onDelete }) => {
       {/* Actions are grouped and hidden on mobile, shown on desktop */}
       <td className="p-3 md:p-4 md:table-cell text-right">
         <div className="flex items-center justify-end space-x-2">
+          {project.status !== 'Completed' ? (
+            <button 
+              onClick={() => {
+                if (window.confirm('Ma hubtaa inaad mashruucan u calaamadiso inuu dhamaaday?')) {
+                  onUpdateStatus(project.id, 'Completed');
+                }
+              }} 
+              className="p-2 rounded-full bg-secondary/10 text-secondary hover:bg-secondary hover:text-white transition-colors duration-200" 
+              title="Mark as Completed"
+            >
+              <CheckCircle size={18} />
+            </button>
+          ) : (
+            <button 
+              onClick={() => {
+                if (window.confirm('Ma hubtaa inaad mashruucan dib ugu soo celiso Active?')) {
+                  onUpdateStatus(project.id, 'Active');
+                }
+              }} 
+              className="p-2 rounded-full bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white transition-colors duration-200" 
+              title="Revert to Active"
+            >
+              <RotateCcw size={18} />
+            </button>
+          )}
           <Link href={`/projects/main/${project.id}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View Details">
             <Eye size={18} />
           </Link>
@@ -201,9 +228,29 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ project, onDelete, onUpdateStat
         )}
 
         <div className="flex justify-end space-x-2 mt-4">
-          {project.status !== 'Completed' && (
-            <button onClick={() => onUpdateStatus(project.id, 'Completed')} className="p-2 rounded-full bg-secondary/10 text-secondary hover:bg-secondary hover:text-white transition-colors duration-200" title="Mark as Completed">
+          {project.status !== 'Completed' ? (
+            <button 
+              onClick={() => {
+                if (window.confirm('Ma hubtaa inaad mashruucan u calaamadiso inuu dhamaaday?')) {
+                  onUpdateStatus(project.id, 'Completed');
+                }
+              }} 
+              className="p-2 rounded-full bg-secondary/10 text-secondary hover:bg-secondary hover:text-white transition-colors duration-200" 
+              title="Mark as Completed"
+            >
               <CheckCircle size={16} />
+            </button>
+          ) : (
+            <button 
+              onClick={() => {
+                if (window.confirm('Ma hubtaa inaad mashruucan dib ugu soo celiso Active?')) {
+                  onUpdateStatus(project.id, 'Active');
+                }
+              }} 
+              className="p-2 rounded-full bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white transition-colors duration-200" 
+              title="Revert to Active"
+            >
+              <RotateCcw size={16} />
             </button>
           )}
           <Link href={`/projects/main/${project.id}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View Details">
@@ -600,7 +647,7 @@ export default function ProjectsPage() {
           <table className="min-w-full">
             <tbody className="md:divide-y md:divide-lightGray dark:md:divide-gray-700">
               {filteredProjects.map(project => (
-                <ProjectRow key={project.id} project={project} onDelete={handleDeleteProject} />
+                <ProjectRow key={project.id} project={project} onDelete={handleDeleteProject} onUpdateStatus={handleUpdateStatus} />
               ))}
             </tbody>
           </table>

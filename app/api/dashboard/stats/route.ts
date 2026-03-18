@@ -178,15 +178,15 @@ export async function GET(request: Request) {
       }
     }
 
-    // Also add unpaid Project Agreements to Receivables (Total Agreement - Advance Paid - Income Received)
+    // Also add unpaid Project Agreements AND Cash Deficits to Receivables
     const projectsWithDebts = await prisma.project.findMany({
       where: { companyId },
-      select: {
-        agreementAmount: true,
-        advancePaid: true,
+      include: {
+        expenses: { select: { amount: true } },
+        laborRecords: { select: { paidAmount: true } },
         transactions: {
           where: { type: { in: ['INCOME', 'DEBT_REPAID'] } },
-          select: { amount: true, description: true }
+          select: { amount: true, type: true, description: true, vendorId: true, expenseId: true }
         }
       }
     });
@@ -195,14 +195,29 @@ export async function GET(request: Request) {
       const agreement = Number(proj.agreementAmount) || 0;
       const advance = Math.abs(Number(proj.advancePaid) || 0);
 
-      // Filter out auto-generated advance transactions to avoid double counting
-      const repayments = proj.transactions.filter(t =>
-        !(t.description || '').toLowerCase().includes('advance payment')
-      ).reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
+      // 1. Calculate Revenue Collected (Advance + Customer Repayments)
+      const customerRepayments = proj.transactions
+        .filter(t => (t.type === 'DEBT_REPAID' && !t.vendorId) && !(t.description || '').toLowerCase().includes('advance payment'))
+        .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
+      const totalCollected = advance + customerRepayments;
 
-      const remaining = agreement - (advance + repayments);
-      if (remaining > 0) {
-        totalReceivables += remaining;
+      // 2. Calculate Total Expenses Spent (Direct + Labor + Unlinked Vendor Repayments)
+      const directExpenses = proj.expenses.reduce((sum, e) => sum + Number(e.amount), 0);
+      const laborExpenses = proj.laborRecords.reduce((sum, l) => sum + Number(l.paidAmount), 0);
+      const vendorRepayments = proj.transactions
+        .filter(t => t.type === 'DEBT_REPAID' && t.vendorId && !t.expenseId)
+        .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
+      const totalSpent = directExpenses + laborExpenses + vendorRepayments;
+
+      // Logic: Receivable is the LARGER of (Agreement - Collected) vs (Spent - Collected)
+      // This ensures we track both unpaid contract value AND actual cash out-of-pocket.
+      const contractReceivable = agreement - totalCollected;
+      const cashReceivable = totalSpent - totalCollected;
+      
+      const projectReceivable = Math.max(0, contractReceivable, cashReceivable);
+      
+      if (projectReceivable > 0) {
+        totalReceivables += projectReceivable;
       }
     }
 

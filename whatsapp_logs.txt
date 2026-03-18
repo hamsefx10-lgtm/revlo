@@ -4619,3 +4619,42 @@
 [2026-03-11T10:30:51.871Z] [WhatsApp] client.initialize() promise resolved for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
 [2026-03-11T10:30:53.450Z] [WhatsApp] Authenticated for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
 [2026-03-11T10:31:01.035Z] [WhatsApp] Client is ready for company 081fb675-b41e-4cea-92f7-50a5eb3e6f1e
+[2026-03-12T14:00:51.808Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-12T14:00:51.811Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-12T14:00:51.812Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-12T14:48:06.994Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-12T14:48:06.996Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-12T14:48:06.997Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-12T20:13:16.788Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-12T20:13:16.791Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-12T20:13:16.794Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-12T20:13:16.795Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-13T12:20:21.618Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-13T12:20:21.621Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-13T12:20:21.622Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-13T12:20:25.170Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-13T12:20:25.171Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-13T12:20:25.172Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-13T12:20:25.173Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-13T12:29:27.487Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-13T12:29:27.489Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-13T12:29:27.489Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-13T12:29:27.490Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-13T12:32:29.075Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-13T12:32:29.078Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-13T12:32:29.080Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-13T12:32:29.081Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-13T12:49:48.733Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-13T12:49:48.734Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-13T12:49:48.736Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-13T12:49:48.736Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-14T10:39:41.846Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-14T10:39:41.848Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-14T10:39:41.848Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-16T05:18:25.812Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-16T05:18:25.815Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)
+[2026-03-16T05:18:25.816Z] [WhatsApp Manager] New instance created (Constructor)
+[2026-03-16T05:18:32.574Z] [WhatsApp Manager] Module Loaded / Hot Reloaded
+[2026-03-16T05:18:32.575Z] [WhatsApp Manager] Cleaning up sessions from an OLD singleton instance...
+[2026-03-16T05:18:32.577Z] [WhatsApp Manager] Cleaning up all active sessions...
+[2026-03-16T05:18:32.578Z] [WhatsApp Manager] Module Loaded (Force Fresh v4)

@@ -42,7 +42,14 @@ export async function GET(request: Request) {
                     include: { employee: true }
                 },
                 transactions: dateFilter ? { where: { transactionDate: dateFilter } } : true,
+                laborRecords: dateFilter ? { 
+                    where: { dateWorked: dateFilter },
+                    include: { employee: true }
+                } : {
+                    include: { employee: true }
+                },
                 customer: true,
+                materialsUsed: true,
             },
         });
 
@@ -52,6 +59,11 @@ export async function GET(request: Request) {
         let summaryTotalRevenue = 0;
         let summaryTotalExpenses = 0;
         let summaryTotalProfit = 0;
+        let totalRemainingAgreement = 0;
+        let totalLosses = 0;
+        let totalReceivables = 0;
+        let totalProjectValue = 0;
+        let totalProfitMarginSum = 0;
         let activeProjectsCount = 0;
         let completedProjectsCount = 0;
         let onHoldProjectsCount = 0;
@@ -62,26 +74,27 @@ export async function GET(request: Request) {
             if (project.status === 'Completed') completedProjectsCount++;
             if (project.status === 'On Hold') onHoldProjectsCount++;
 
+            const proj = project as any;
             // Check if project should be included.
             // Requirement: "include everything that had income/outflow this month, without excluding active projects"
             let hasActivity = false;
 
             // It's active, always include if requested (or we can just always include if no date filter)
-            if (!dateFilter || project.status === 'Active') {
+            if (!dateFilter || proj.status === 'Active') {
                 hasActivity = true;
             } else if (dateFilter) {
                 // If there's a date filter and it's NOT active, only include if it had activity
-                if (project.expenses.length > 0 || project.transactions.length > 0) {
+                if (proj.expenses.length > 0 || proj.transactions.length > 0) {
                     hasActivity = true;
                 }
                 // Or if it was created/completed in this window
-                if (project.createdAt >= startDate! && project.createdAt <= endDate!) hasActivity = true;
-                if (project.actualCompletionDate && project.actualCompletionDate >= startDate! && project.actualCompletionDate <= endDate!) hasActivity = true;
+                if (proj.createdAt >= startDate! && proj.createdAt <= endDate!) hasActivity = true;
+                if (proj.actualCompletionDate && proj.actualCompletionDate >= startDate! && proj.actualCompletionDate <= endDate!) hasActivity = true;
             }
 
             if (!hasActivity) continue; // Skip if no relevant data for this period and not active
 
-            const projectValue = Number(project.agreementAmount) || 0;
+            const projectValue = Number(proj.agreementAmount) || 0;
 
             // Calculate Expenses
             let materialCosts = 0;
@@ -92,7 +105,7 @@ export async function GET(request: Request) {
             let consultancyCosts = 0;
             let totalExpenses = 0;
 
-            const mappedExpenses = project.expenses.map(exp => {
+            const mappedExpenses: any[] = proj.expenses.map((exp: any) => {
                 const amt = Number(exp.amount) || 0;
                 totalExpenses += amt;
 
@@ -106,64 +119,102 @@ export async function GET(request: Request) {
                 return {
                     id: exp.id,
                     category: exp.category,
+                    subCategory: exp.subCategory,
                     description: exp.description,
                     amount: amt,
                     date: exp.expenseDate.toISOString().split('T')[0],
                     employeeName: exp.employee?.fullName || exp.supplierName || null,
-                    // Additional info mapping could go here if Prisma schema has them
+                    materials: exp.materials,
                 };
             });
 
-            // Calculate Revenue / Transactions
-            let totalRevenue = (Number(project.advancePaid) || 0); // Always count advance if no filter? 
-            // Better: transactions hold the exact data of inflows!
-            let totalTransactions = 0;
+            // Add Labor Records
+            for (const lr of (proj.laborRecords || [])) {
+                const amt = Number(lr.paidAmount || 0);
+                laborCosts += amt;
+                totalExpenses += amt;
+                mappedExpenses.push({
+                    id: lr.id,
+                    category: 'Labor',
+                    description: `Labor: ${lr.description || 'Shaqo'}`,
+                    amount: amt,
+                    date: (lr.dateWorked as Date).toISOString().split('T')[0],
+                    employeeName: lr.employee?.fullName || 'Shaqaale'
+                });
+            }
+
+            // Calculate Revenue / Transactions logic synced with Project ID page
+            const advancePaid = Number(proj.advancePaid) || 0;
+            let totalRevenueFromTransactions = 0;
             let mappedTransactions = [];
             let mappedPayments = [];
+            let unlinkedVendorRepayments = 0;
 
-            for (const trx of project.transactions) {
-                const amt = Number(trx.amount) || 0;
-                totalTransactions += amt;
+            for (const trx of (proj.transactions || [])) {
+                const amt = Math.abs(Number(trx.amount) || 0);
 
                 mappedTransactions.push({
                     id: trx.id,
                     type: trx.type,
                     description: trx.description || '',
-                    amount: amt,
+                    amount: Number(trx.amount),
                     date: trx.transactionDate.toISOString().split('T')[0]
                 });
 
-                // If it's an inflow to the project (customer paying us)
-                if (trx.type === 'INCOME' || (trx.type === 'DEBT_REPAID' && !!trx.customerId)) {
-                    totalRevenue += amt;
+                // Customer Income (REPAID DEBT) - Skip INCOME type to avoid double-counting advance
+                if (trx.type === 'DEBT_REPAID' && (trx.customerId || !trx.vendorId)) {
+                    totalRevenueFromTransactions += amt;
                     mappedPayments.push({
                         id: trx.id,
                         amount: amt,
                         date: trx.transactionDate.toISOString().split('T')[0],
-                        description: trx.description || 'Lacag bixin'
+                        description: trx.description || 'Gidka Daynta (Customer)'
+                    });
+                }
+
+                // Unlinked Vendor Repayments
+                if (trx.type === 'DEBT_REPAID' && trx.vendorId && !trx.expenseId) {
+                    unlinkedVendorRepayments += amt;
+                    totalExpenses += amt;
+                    mappedExpenses.push({
+                        id: trx.id,
+                        category: 'Debt Repayment',
+                        description: trx.description || 'Gidka Daynta (Vendor)',
+                        amount: amt,
+                        date: trx.transactionDate.toISOString().split('T')[0],
+                        employeeName: 'Vendor'
                     });
                 }
             }
 
-            // Since advancePaid is often not strictly recorded as a transaction DATE inside the project filter, 
-            // if we are looking at ALL time (no date filter), we just use advancePaid + incomes. 
-            // Actually, if we use transactions, advancePaid is usually captured as an 'INCOME' transaction.
-            // Let's rely strictly on the transactions collected during this period for totalRevenue.
+            // Total Revenue = Advance (Base) + Customer debt repayments
+            const totalRevenue = advancePaid + totalRevenueFromTransactions;
 
-            // Wait, if no date filter, we use the project's overall advancePaid + incomes.
-            if (!dateFilter) {
-                totalRevenue = Number(project.advancePaid) || 0;
-                // add other incomes if they aren't part of advancePaid, but let's assume they are stored in transactions properly now.
-            }
-
-            const remainingRevenue = Math.max(0, projectValue - totalRevenue);
+            // Remaining Revenue correctly allows negative for overpayment
+            const remainingRevenue = projectValue - totalRevenue;
+            
+            // ACTUAL PROFIT: Cash-based (Revenue Collected - Expenses)
             const grossProfit = totalRevenue - totalExpenses;
+            
+            // PROJECTED PROFIT: Contract-based (Agreement - Expenses)
+            const projectedProfit = projectValue - totalExpenses;
+
             const profitMargin = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
             const completionPercentage = projectValue > 0 ? (totalRevenue / projectValue) * 100 : 0;
 
             summaryTotalRevenue += totalRevenue;
             summaryTotalExpenses += totalExpenses;
-            summaryTotalProfit += grossProfit;
+            // Summary Profit remains Cash-based (Collected - Spent) for tax/cashflow purposes
+            summaryTotalProfit += (totalRevenue - totalExpenses);
+
+            const receivables = Math.max(0, totalExpenses - totalRevenue);
+            totalReceivables += receivables;
+            totalProjectValue += projectValue;
+
+            if (!isNaN(remainingRevenue) && remainingRevenue > 0) {
+                totalRemainingAgreement += remainingRevenue;
+            }
+            if (grossProfit < 0) totalLosses += Math.abs(grossProfit);
 
             reportProjects.push({
                 id: project.id,
@@ -190,9 +241,10 @@ export async function GET(request: Request) {
                 expenseCount: mappedExpenses.length,
                 transactionCount: mappedTransactions.length,
                 paymentCount: mappedPayments.length,
-                expenses: mappedExpenses,
-                transactions: mappedTransactions,
-                payments: mappedPayments
+                receivables,
+                projectedProfit,
+                payments: mappedPayments,
+                materialsUsed: proj.materialsUsed || []
             });
         }
 
@@ -214,6 +266,10 @@ export async function GET(request: Request) {
                 totalRevenue: summaryTotalRevenue,
                 totalExpenses: summaryTotalExpenses,
                 totalProfit: summaryTotalProfit,
+                totalRemainingAgreement: Number(totalRemainingAgreement || 0),
+                totalLosses,
+                totalReceivables,
+                totalProjectValue,
                 averageProfitMargin
             }
         });

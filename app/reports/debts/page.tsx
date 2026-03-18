@@ -32,6 +32,7 @@ export interface Receivable {
   status: 'Paid' | 'Overdue' | 'Upcoming' | 'Pending';
   dueDate: string;
   project: string;
+  projectId?: string;
   projectStatus: string;
   phoneNumber?: string;
   companyName?: string;
@@ -533,16 +534,24 @@ export default function DebtsOverviewReportPage() {
   }
 
 
-  // Filter Logic matching the 3 Tabs
-  const projectDebts = debts.filter(d => d.projectId || d.project);
-  const companyDebts = debts.filter(d => !d.projectId && !d.project);
+  // Filter Logic matching the 3 Tabs (Consolidated)
+  const allPayables = debts.filter(d => d.isLiability);
+  const allReceivables = debts.filter(d => !d.isLiability);
+
+  const vendorDebts = allPayables; // All entities we owe
+  const projectReceivables = allReceivables.filter(r => r.projectId || r.project); // All project-related money owed to us
+  const directLoans = allReceivables.filter(r => !r.projectId && !r.project); // Direct loans given to customers
 
   const getCurrentData = () => {
     switch (activeTab) {
-      case 'Company Debts': return companyDebts;
-      case 'Project Debts': return projectDebts;
-      case 'Receivables': return receivables;
-      default: return companyDebts;
+      case 'Company Debts': 
+        return vendorDebts;
+      case 'Project Debts': 
+        return projectReceivables;
+      case 'Receivables': 
+        return directLoans;
+      default: 
+        return vendorDebts;
     }
   };
 
@@ -575,28 +584,28 @@ export default function DebtsOverviewReportPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow border-l-4 border-redError">
           <h4 className="text-gray-500">{t.reports.totalPayables}</h4>
-          <p className="text-2xl font-bold text-redError">${debts.reduce((s, d) => s + d.remaining, 0).toLocaleString()}</p>
+          <p className="text-2xl font-bold text-redError">${allPayables.reduce((s: number, d: any) => s + d.remaining, 0).toLocaleString()}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow border-l-4 border-primary">
           <h4 className="text-gray-500">{t.reports.totalReceivables}</h4>
-          <p className="text-2xl font-bold text-primary">${receivables.reduce((s, r) => s + r.remaining, 0).toLocaleString()}</p>
+          <p className="text-2xl font-bold text-primary">${allReceivables.reduce((s: number, r: any) => s + r.remaining, 0).toLocaleString()}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow border-l-4 border-orange-500">
           <h4 className="text-gray-500">{t.reports.overdue}</h4>
-          <p className="text-2xl font-bold text-orange-500">${debts.filter(d => d.status === 'Overdue').reduce((s, d) => s + d.remaining, 0).toLocaleString()}</p>
+          <p className="text-2xl font-bold text-orange-500">${[...allPayables, ...allReceivables].filter(d => d.status === 'Overdue').reduce((s: number, d: any) => s + d.remaining, 0).toLocaleString()}</p>
         </div>
       </div>
 
       {/* Tabs */}
       <div className="flex space-x-1 bg-white dark:bg-gray-800 p-1 rounded-lg shadow mb-6 w-fit">
         <button onClick={() => setActiveTab('Company Debts')} className={`px-4 py-2 rounded-lg ${activeTab === 'Company Debts' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
-          {t.reports.companyPayables} ({companyDebts.length})
+          {t.reports.companyPayables} ({vendorDebts.length})
         </button>
         <button onClick={() => setActiveTab('Project Debts')} className={`px-4 py-2 rounded-lg ${activeTab === 'Project Debts' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
-          {t.reports.projectPayables} ({projectDebts.length})
+          {t.reports.projectReceivables} ({projectReceivables.length})
         </button>
         <button onClick={() => setActiveTab('Receivables')} className={`px-4 py-2 rounded-lg ${activeTab === 'Receivables' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
-          {t.reports.projectReceivables} / {t.reports.customerReceivables} ({receivables.length})
+          {t.reports.customerReceivables} ({directLoans.length})
         </button>
       </div>
 
@@ -606,7 +615,9 @@ export default function DebtsOverviewReportPage() {
           <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{activeTab === 'Receivables' ? t.reports.client : t.reports.lender}</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  {activeTab === 'Receivables' ? t.reports.client : (activeTab === 'Project Debts' ? `${t.reports.client} / ${t.reports.lender}` : t.reports.lender)}
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t.reports.type}</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">{activeTab === 'Receivables' ? t.reports.received : t.reports.paid}</th>
@@ -617,8 +628,9 @@ export default function DebtsOverviewReportPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {getCurrentData().map((item) => (
-                activeTab === 'Receivables' ? (
+              {getCurrentData().map((item) => {
+                const isReceivable = 'client' in item;
+                return isReceivable ? (
                   <ReceivableRow
                     key={item.id}
                     receivable={item as Receivable}
@@ -636,8 +648,8 @@ export default function DebtsOverviewReportPage() {
                     onView={() => { }}
                     isOverdue={item.status === 'Overdue'}
                   />
-                )
-              ))}
+                );
+              })}
               {getCurrentData().length === 0 && (
                 <tr>
                   <td colSpan={8} className="p-8 text-center text-gray-500">

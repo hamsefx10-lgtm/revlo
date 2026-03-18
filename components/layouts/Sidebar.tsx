@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -319,14 +319,42 @@ const Sidebar: React.FC<SidebarProps> = ({
   const role = currentUser?.role?.toUpperCase() as keyof typeof menuConfig;
   let menuStructure = menuConfig[role] || menuConfig['VIEWER'];
 
-  // Filter menu items based on planType
+  // Filter menu items based on planType AND User Role
   const filterMenuByPlan = (menu: any) => {
-    if (planType === 'FACTORIES_ONLY') {
-      // STRICT Factory OS Menu
+    // 1. Priority: If user has a specific module role, show ONLY that module
+    if (role === 'SHOP_ADMIN') {
       return {
-        main: [
-          { name: 'Factory OS', href: '/manufacturing', icon: <Factory />, group: 'Main' }, // Main Dashboard
+        main: [{ name: 'Shop Dashboard', href: '/shop/dashboard', icon: <LayoutDashboard />, group: 'Main' }],
+        business: [{ name: 'Retail Shop', href: '/shop', icon: <ShoppingCart />, group: 'Business' }],
+        financial: [{ name: 'Shop Inventory', href: '/shop/inventory', icon: <Package />, group: 'Financial' }],
+        reports: [{ name: 'Reports', href: '/reports', icon: <BarChart3 />, group: 'Analytics' }],
+        admin: menu.admin || []
+      };
+    }
+
+    if (role === 'PROJECTS_ADMIN') {
+      return {
+        main: [{ name: 'Projects Dashboard', href: '/dashboard', icon: <LayoutDashboard />, group: 'Main' }],
+        business: [
+          { name: 'Projects', href: '/projects/main', icon: <Briefcase />, group: 'Operations' },
+          { name: 'Employees', href: '/projects/employees', icon: <UserCogIcon />, group: 'Operations' },
+          { name: 'Vendors', href: '/projects/vendors', icon: <Truck />, group: 'Operations' },
+          { name: 'Customers', href: '/projects/customers', icon: <Users />, group: 'Operations' },
         ],
+        financial: [
+          { name: 'Expenses', href: '/projects/expenses', icon: <DollarSign />, group: 'Finance' },
+          { name: 'Accounting', href: '/projects/accounting', icon: <Landmark />, group: 'Finance' },
+          { name: 'Inventory', href: '/projects/inventory', icon: <Warehouse />, group: 'Finance' },
+        ],
+        reports: [{ name: 'Reports', href: '/reports', icon: <BarChart3 />, group: 'Analytics' }],
+        admin: menu.admin || []
+      };
+    }
+
+    // 2. Secondary: If limited by PlanType
+    if (planType === 'FACTORIES_ONLY' || role === 'MANUFACTURING_ADMIN') {
+      return {
+        main: [{ name: 'Factory OS', href: '/manufacturing', icon: <Factory />, group: 'Main' }],
         business: [
           { name: 'Production', href: '/manufacturing/production-orders', icon: <ClipboardList />, group: 'Operations' },
           { name: 'Inventory', href: '/manufacturing/inventory', icon: <Package />, group: 'Operations' },
@@ -334,20 +362,16 @@ const Sidebar: React.FC<SidebarProps> = ({
         ],
         financial: [
           { name: 'Purchases', href: '/manufacturing/material-purchases', icon: <Truck />, group: 'Finance' },
-          // Expenses might still be relevant
           { name: 'Expenses', href: '/manufacturing/expenses', icon: <DollarSign />, group: 'Finance' },
         ],
-        reports: [
-          { name: 'Reports', href: '/manufacturing/reports', icon: <BarChart3 />, group: 'Analytics' },
-        ],
-        admin: menu.admin || [] // Keep admin if they have it
+        reports: [{ name: 'Reports', href: '/manufacturing/reports', icon: <BarChart3 />, group: 'Analytics' }],
+        admin: menu.admin || []
       };
-    } else if (planType === 'PROJECTS_ONLY') {
-      // Structured like FACTORIES_ONLY — separate operations vs financial
+    }
+
+    if (planType === 'PROJECTS_ONLY') {
       return {
-        main: [
-          { name: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard />, group: 'Main' },
-        ],
+        main: [{ name: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard />, group: 'Main' }],
         business: [
           { name: 'Projects', href: '/projects/main', icon: <Briefcase />, group: 'Operations' },
           { name: 'Employees', href: '/projects/employees', icon: <UserCogIcon />, group: 'Operations' },
@@ -360,34 +384,13 @@ const Sidebar: React.FC<SidebarProps> = ({
           { name: 'Accounting', href: '/projects/accounting', icon: <Landmark />, group: 'Finance' },
           { name: 'Inventory', href: '/projects/inventory', icon: <Warehouse />, group: 'Finance' },
         ],
-        reports: [
-          { name: 'Reports', href: '/reports', icon: <BarChart3 />, group: 'Analytics' },
-        ],
-        admin: menu.admin || [],
+        reports: [{ name: 'Reports', href: '/reports', icon: <BarChart3 />, group: 'Analytics' }],
+        admin: menu.admin || []
       };
     }
-    // Default fallback (old COMBINED or unrecognized) → same as PROJECTS_ONLY
-    return {
-      main: [
-        { name: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard />, group: 'Main' },
-      ],
-      business: [
-        { name: 'Projects', href: '/projects/main', icon: <Briefcase />, group: 'Operations' },
-        { name: 'Employees', href: '/projects/employees', icon: <UserCogIcon />, group: 'Operations' },
-        { name: 'Project Vendors', href: '/projects/vendors', icon: <Truck />, group: 'Operations' },
-        { name: 'Project Customers', href: '/projects/customers', icon: <Users />, group: 'Operations' },
-        { name: 'Workshop', href: '/workshop', icon: <Hammer />, group: 'Operations' },
-      ],
-      financial: [
-        { name: 'Project Expenses', href: '/projects/expenses', icon: <DollarSign />, group: 'Finance' },
-        { name: 'Accounting', href: '/projects/accounting', icon: <Landmark />, group: 'Finance' },
-        { name: 'Project Store', href: '/projects/inventory', icon: <Warehouse />, group: 'Finance' },
-      ],
-      reports: [
-        { name: 'Reports', href: '/reports', icon: <BarChart3 />, group: 'Analytics' },
-      ],
-      admin: menu.admin || [],
-    };
+    
+    // 3. Fallback: Return original menu (combined) as defined in menuConfig
+    return menu;
   };
 
   menuStructure = filterMenuByPlan(menuStructure);

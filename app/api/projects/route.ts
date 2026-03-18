@@ -152,7 +152,15 @@ export async function GET(request: Request) {
               { type: 'DEBT_REPAID' }
             ]
           },
-          select: { id: true, amount: true, type: true, description: true, transactionDate: true }
+          select: { 
+            id: true, 
+            amount: true, 
+            type: true, 
+            description: true, 
+            transactionDate: true,
+            vendorId: true,
+            customerId: true
+          }
         }
       },
       orderBy: { createdAt: 'desc' },
@@ -163,12 +171,12 @@ export async function GET(request: Request) {
       const agreementAmount = Number(project.agreementAmount || 0);
       const advancePaid = Number(project.advancePaid || 0);
 
-      // Deduplication Logic: The advancePaid field is the single source of truth for the advance payment.
-      // We explicitly exclude INCOME transactions (to avoid duplicate counting),
-      // and only include subsequent payments which are recorded as DEBT_REPAID.
+      // Deduplication & Party Logic:
+      // 1. advancePaid is the base amount (Advance).
+      // 2. We ONLY add DEBT_REPAID transactions that are NOT vendor-linked (meaning they are customer repayments).
       const totalRepaidViaTransactions = project.transactions
-        .filter((t: any) => t.type === 'DEBT_REPAID')
-        .reduce((sum: number, t: any) => sum + Number(t.amount || 0), 0);
+        .filter((t: any) => t.type === 'DEBT_REPAID' && !t.vendorId)
+        .reduce((sum: number, t: any) => sum + Math.abs(Number(t.amount || 0)), 0);
 
       const totalPaid = advancePaid + totalRepaidViaTransactions;
       const remainingAmount = agreementAmount - totalPaid; // Allow negative for credit
@@ -177,7 +185,6 @@ export async function GET(request: Request) {
         ...project,
         advancePaid: totalPaid, // Override static with dynamic total
         remainingAmount: remainingAmount, // Override static with dynamic total
-        // Keep original for reference if needed? No, frontend expects these names.
       };
     });
 

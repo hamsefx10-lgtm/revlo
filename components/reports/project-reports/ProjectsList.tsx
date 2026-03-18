@@ -36,12 +36,19 @@ const ProjectRow: React.FC<{
     return (
         <div className="group transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/30">
             <div
-                className="grid grid-cols-12 gap-4 p-4 items-center cursor-pointer"
+                className="grid grid-cols-[repeat(13,minmax(0,1fr))] gap-4 p-4 items-center cursor-pointer"
                 onClick={onToggle}
             >
                 {/* Project Name & Date */}
                 <div className="col-span-2">
-                    <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm truncate" title={project.name}>{project.name}</div>
+                    <div className="flex items-center gap-2">
+                        <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm truncate" title={project.name}>{project.name}</div>
+                        {project.receivables > 5000 && (
+                            <span className="px-1.5 py-0.5 bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 text-[10px] font-bold rounded uppercase tracking-wider animate-pulse">
+                                Priority
+                            </span>
+                        )}
+                    </div>
                     <div className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                         <Clock size={10} />
                         {project.startDate ? new Date(project.startDate).toLocaleDateString('so-SO') : '-'}
@@ -83,16 +90,29 @@ const ProjectRow: React.FC<{
 
                 {/* Debt (Outstanding Balance) */}
                 <div className="col-span-1 text-right">
-                    <div className="text-sm font-bold text-rose-600 dark:text-rose-400">
+                    <div className={`text-sm font-bold ${project.remainingRevenue > 0 ? 'text-rose-600 dark:text-rose-400' : project.remainingRevenue < 0 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'}`}>
                         {project.remainingRevenue.toLocaleString()}
+                        {project.remainingRevenue < 0 && <span className="text-[10px] ml-1 uppercase opacity-70">(Credit)</span>}
                     </div>
                 </div>
 
-                {/* Profit */}
+                {/* Profit (Actual Cash & Projected) */}
                 <div className="col-span-2 text-right text-sm font-bold">
                     <span className={project.grossProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}>
                         {project.grossProfit.toLocaleString()}
+                        {project.grossProfit < 0 && <span className="text-[10px] ml-1 uppercase opacity-70">(Maqan)</span>}
                     </span>
+                    <div className="text-[9px] text-gray-400 font-normal">
+                        Faa'ido: {project.projectedProfit.toLocaleString()} (H)
+                    </div>
+                </div>
+
+                {/* Receivables (Cash missing) */}
+                <div className="col-span-1 text-right">
+                    <div className={`text-sm font-bold ${project.receivables > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-gray-300'}`}>
+                        {project.receivables > 0 ? project.receivables.toLocaleString() : '-'}
+                        {project.receivables > 0 && <span className="text-[10px] ml-1 uppercase opacity-70">(Maqan)</span>}
+                    </div>
                 </div>
 
                 {/* Margin & Action */}
@@ -177,16 +197,42 @@ const ProjectRow: React.FC<{
                                                         {cleanDescription(expense.description)}
                                                     </td>
                                                     <td className="px-4 py-3 text-xs text-gray-500">
-                                                        {expense.category === 'Material' && expense.materials && Array.isArray(expense.materials) && expense.materials.length > 0 ? (
-                                                            <div className="flex flex-col gap-1">
-                                                                {expense.materials.map((m: any, idx: number) => (
-                                                                    <div key={idx} className="flex justify-between items-center text-[10px] bg-gray-50 dark:bg-gray-700/50 px-2 py-1 rounded border border-gray-100 dark:border-gray-600">
-                                                                        <span className="font-medium text-gray-700 dark:text-gray-300">{m.name}</span>
-                                                                        <span className="text-gray-500 dark:text-gray-400 font-mono">
-                                                                            {Number(m.qty ?? m.quantity).toLocaleString()} {m.unit} x {Number(m.price).toLocaleString()}
-                                                                        </span>
-                                                                    </div>
-                                                                ))}
+                                                        {expense.category === 'Material' ? (
+                                                            <div className="flex flex-col gap-2 p-1">
+                                                                <table className="w-full text-[10px] border-collapse">
+                                                                    <thead>
+                                                                        <tr className="border-b border-gray-100 dark:border-gray-700 text-gray-400">
+                                                                            <th className="text-left font-medium pb-1">Agabka</th>
+                                                                            <th className="text-right font-medium pb-1">Tirada</th>
+                                                                            <th className="text-right font-medium pb-1">Qiimaha</th>
+                                                                            <th className="text-right font-medium pb-1">Total</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+                                                                        {expense.materials && Array.isArray(expense.materials) && expense.materials.length > 0 ? (
+                                                                            expense.materials.map((m: any, idx: number) => {
+                                                                                const qty = Number((m.qty ?? m.quantity) || 0);
+                                                                                const price = Number(m.price || 0);
+                                                                                const total = qty * price;
+                                                                                return (
+                                                                                    <tr key={idx} className="text-gray-600 dark:text-gray-300">
+                                                                                        <td className="py-1.5 font-medium">{m.name}</td>
+                                                                                        <td className="py-1.5 text-right font-mono">{qty.toLocaleString()} {m.unit}</td>
+                                                                                        <td className="py-1.5 text-right font-mono">{price.toLocaleString()}</td>
+                                                                                        <td className="py-1.5 text-right font-bold text-gray-900 dark:text-gray-100">{total.toLocaleString()}</td>
+                                                                                    </tr>
+                                                                                );
+                                                                            })
+                                                                        ) : (
+                                                                            <tr className="text-gray-600 dark:text-gray-300">
+                                                                                <td className="py-1.5 font-medium">{expense.description}</td>
+                                                                                <td className="py-1.5 text-right font-mono">1</td>
+                                                                                <td className="py-1.5 text-right font-mono">{Number(expense.amount).toLocaleString()}</td>
+                                                                                <td className="py-1.5 text-right font-bold text-gray-900 dark:text-gray-100">{Number(expense.amount).toLocaleString()}</td>
+                                                                            </tr>
+                                                                        )}
+                                                                    </tbody>
+                                                                </table>
                                                             </div>
                                                         ) : (
                                                             <div className="flex flex-wrap gap-1">
@@ -310,15 +356,16 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
     return (
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
             {/* Table Header */}
-            <div className="grid grid-cols-12 gap-4 p-4 bg-gray-50/50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            <div className="grid grid-cols-[repeat(13,minmax(0,1fr))] gap-4 p-4 bg-gray-50/50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 <div className="col-span-2">Mashruuc</div>
                 <div className="col-span-1">Macmiil</div>
                 <div className="col-span-1">Xaalad</div>
                 <div className="col-span-2 text-right">Qiimaha</div>
                 <div className="col-span-1 text-right">Kharashka</div>
                 <div className="col-span-1 text-right text-emerald-600 dark:text-emerald-400">La Bixiyay</div>
-                <div className="col-span-1 text-right text-rose-600 dark:text-rose-400">Dayn</div>
-                <div className="col-span-2 text-right">Faa'iidada</div>
+                <div className="col-span-1 text-right text-rose-600 dark:text-rose-400">Haraaga</div>
+                <div className="col-span-2 text-right">Faa'iidada (Cash)</div>
+                <div className="col-span-1 text-right text-orange-600 dark:text-orange-400">Maqan</div>
                 <div className="col-span-1 text-right">%</div>
             </div>
 
@@ -337,8 +384,8 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
                 {/* Summary Footer */}
                 {visibleProjects.length > 0 && (
                     <div className="bg-gray-50 dark:bg-gray-800/80 p-4 border-t border-gray-200 dark:border-gray-700">
-                        <div className="grid grid-cols-12 gap-4 items-center">
-                            <div className="col-span-5 font-bold text-gray-700 dark:text-gray-200 uppercase text-xs tracking-wider">
+                        <div className="grid grid-cols-[repeat(13,minmax(0,1fr))] gap-4 items-center">
+                            <div className="col-span-4 font-bold text-gray-700 dark:text-gray-200 uppercase text-xs tracking-wider">
                                 Wadarta Guud
                             </div>
                             <div className="col-span-2 text-right font-bold text-gray-900 dark:text-white text-sm">
@@ -350,13 +397,18 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
                             <div className="col-span-1 text-right font-bold text-emerald-600 dark:text-emerald-400 text-sm">
                                 {visibleProjects.reduce((sum, p) => sum + p.totalRevenue, 0).toLocaleString()}
                             </div>
-                            <div className="col-span-1 text-right font-bold text-rose-600 dark:text-rose-400 text-sm">
-                                {visibleProjects.reduce((sum, p) => sum + p.remainingRevenue, 0).toLocaleString()}
+                            <div className="col-span-1 text-right font-bold text-sm">
+                                <span className={visibleProjects.reduce((sum, p) => sum + p.remainingRevenue, 0) > 0 ? 'text-rose-600' : visibleProjects.reduce((sum, p) => sum + p.remainingRevenue, 0) < 0 ? 'text-blue-600' : 'text-gray-400'}>
+                                    {visibleProjects.reduce((sum, p) => sum + p.remainingRevenue, 0).toLocaleString()}
+                                </span>
                             </div>
                             <div className="col-span-2 text-right font-bold text-gray-900 dark:text-white text-sm">
                                 <span className={visibleProjects.reduce((sum, p) => sum + p.grossProfit, 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'}>
                                     {visibleProjects.reduce((sum, p) => sum + p.grossProfit, 0).toLocaleString()}
                                 </span>
+                            </div>
+                            <div className="col-span-1 text-right font-bold text-orange-600 dark:text-orange-400 text-sm">
+                                {visibleProjects.reduce((sum, p) => sum + p.receivables, 0).toLocaleString()}
                             </div>
                             <div className="col-span-1"></div>
                         </div>

@@ -49,6 +49,9 @@ interface Project {
     employeeId?: string;
     employee?: { id: string; fullName?: string };
     projectId?: string;
+    vendorId?: string;
+    customerId?: string;
+    expenseId?: string;
   }[];
   payments: { id: string; amount: number; paymentDate: string; paymentType: string; receivedIn: string; }[];
   documents: { id: string; name: string; fileUrl: string; fileType: string; uploadedAt: string; }[];
@@ -153,25 +156,48 @@ const ProjectDetailsPage: React.FC = () => {
   const totalValue = typeof project.agreementAmount === 'number' ? project.agreementAmount : parseFloat(project.agreementAmount as any) || 0;
   const totalAdvance = typeof project.advancePaid === 'number' ? project.advancePaid : parseFloat(project.advancePaid as any) || 0;
 
-  // FIX: advancePaid is the single source of truth for the advance payment.
   // INCOME transactions are excluded because the advance is ALREADY captured in advancePaid.
-  // Only DEBT_REPAID (later customer debt repayments after delivery) are added on top.
+  // We distinguish between Customer Debt Repayments (Income) and Vendor Debt Repayments (Expense).
   const totalRepaidViaDebt = (project.transactions || [])
-    .filter(t => t.type === 'DEBT_REPAID')
-    .reduce((sum, t) => sum + (typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any) || 0), 0);
+    .filter(t => t.type === 'DEBT_REPAID' && !t.vendorId) // Customer repaid us
+    .reduce((sum, t) => sum + Math.abs(typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any) || 0), 0);
+
+  const totalVendorDebtRepayments = (project.transactions || [])
+    .filter(t => t.type === 'DEBT_REPAID' && t.vendorId) // We repaid a vendor
+    .reduce((sum, t) => sum + Math.abs(typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any) || 0), 0);
+
+  // Unlinked vendor repayments (transactions NOT linked to an existing project expense record)
+  // These are rare but should be counted as 'Other Expenses' to avoid missing data.
+  const totalUnlinkedVendorRepayments = (project.transactions || [])
+    .filter(t => t.type === 'DEBT_REPAID' && t.vendorId && !t.expenseId)
+    .reduce((sum, t) => sum + Math.abs(typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any) || 0), 0);
 
   // Total Paid = Advance (DB field) + customer debt repayments only
   const totalPaid = totalAdvance + totalRepaidViaDebt;
-  const remainingAmount = Math.max(0, totalValue - totalPaid);
+  
+  // Remaining Amount: Allow negative to show overpayment correctly
+  const remainingAmount = totalValue - totalPaid;
   const tabs = ['Overview', 'Expenses', 'Materials', 'Labor', 'Payments', 'Documents', 'Financials'];
 
-  // Calculate total expenses (for this project only) - combining both direct expenses and labor payments
-  const totalDirectExpenses = project?.expenses?.reduce((sum, expense) => sum + (typeof expense.amount === 'number' ? expense.amount : parseFloat(expense.amount as any) || 0), 0) || 0;
-  const totalLaborPaid = (project?.laborRecords || []).reduce((sum, l) => sum + (typeof l.paidAmount === 'number' ? l.paidAmount : parseFloat(l.paidAmount as any) || 0), 0) || 0;
-  const totalExpenses = totalDirectExpenses + totalLaborPaid;
+  // Calculate total expenses (for this project only) - combining both direct expenses, labor, and ONLY UNLINKED vendor debt repayments
+  // This avoids double-counting if a debt repayment is already linked to a project expense record.
+  const totalDirectExpenses = project?.expenses?.reduce((sum, expense) => sum + Math.abs(typeof expense.amount === 'number' ? expense.amount : parseFloat(expense.amount as any) || 0), 0) || 0;
+  const totalLaborPaid = (project?.laborRecords || []).reduce((sum, l) => sum + Math.abs(typeof l.paidAmount === 'number' ? l.paidAmount : parseFloat(l.paidAmount as any) || 0), 0) || 0;
+  const totalExpenses = totalDirectExpenses + totalLaborPaid + totalUnlinkedVendorRepayments;
 
-  // Group expenses by category
-  const expensesByCategory = (project?.expenses || []).reduce((acc, exp) => {
+  // Group expenses by category (including UNLINKED vendor debt repayments)
+  const expensesByCategory = [
+    ...(project?.expenses || []),
+    ...(project?.transactions || [])
+      .filter(t => t.type === 'DEBT_REPAID' && t.vendorId && !t.expenseId)
+      .map(t => ({
+        id: t.id,
+        description: t.description || 'Gidka Daynta (Vendor)',
+        amount: typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any) || 0,
+        expenseDate: t.transactionDate,
+        category: 'Debt Repayment'
+      }))
+  ].reduce((acc, exp) => {
     if (!acc[exp.category]) acc[exp.category] = [];
     acc[exp.category].push(exp);
     return acc;
@@ -406,17 +432,39 @@ const ProjectDetailsPage: React.FC = () => {
                         </p>
                       </div>
                       <div className="space-y-2">
-                        {exps.map(exp => (
-                          <div key={exp.id} className='bg-lightGray/30 dark:bg-gray-700/30 p-3 rounded-lg'>
-                            <div className="flex justify-between items-start">
-                              <div className="flex-1 min-w-0">
-                                <p className='font-bold text-darkGray dark:text-gray-100'>{exp.description}</p>
-                                <p className='text-xs text-mediumGray dark:text-gray-400 mt-1'>{new Date(exp.expenseDate).toLocaleDateString()}</p>
+                        {exps.map(exp => {
+                          const linkedTransactions = (project.transactions || []).filter(t => t.expenseId === exp.id);
+                          const paidOnThis = linkedTransactions.reduce((s, t) => s + Math.abs(typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any) || 0), 0);
+                          const remainingOnThis = Math.max(0, exp.amount - paidOnThis);
+
+                          return (
+                            <div key={exp.id} className='bg-lightGray/30 dark:bg-gray-700/30 p-3 rounded-lg flex flex-col gap-2'>
+                              <div className="flex justify-between items-start">
+                                <div className="flex-1 min-w-0">
+                                  <p className='font-bold text-darkGray dark:text-gray-100'>{exp.description}</p>
+                                  <p className='text-xs text-mediumGray dark:text-gray-400 mt-1'>{new Date(exp.expenseDate).toLocaleDateString()}</p>
+                                </div>
+                                <p className='font-bold text-lg text-redError ml-3 flex-shrink-0'>-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</p>
                               </div>
-                              <p className='font-bold text-lg text-redError ml-3 flex-shrink-0'>-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</p>
+                              
+                              {/* Settlement Progress */}
+                              <div className="mt-1 pt-2 border-t border-dashed border-gray-200 dark:border-gray-700">
+                                <div className="flex justify-between items-center text-[10px] mb-1">
+                                  <span className="text-mediumGray dark:text-gray-400 font-medium">Paid: Br{paidOnThis.toLocaleString()}</span>
+                                  <span className={`${remainingOnThis > 0 ? 'text-orange-600' : 'text-green-600'} font-bold`}>
+                                    {remainingOnThis > 0 ? `Left: Br${remainingOnThis.toLocaleString()}` : 'Settled'}
+                                  </span>
+                                </div>
+                                <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1 overflow-hidden">
+                                  <div
+                                    className={`h-full transition-all duration-500 ${remainingOnThis <= 0 ? 'bg-green-500' : 'bg-orange-500'}`}
+                                    style={{ width: `${Math.min(100, (paidOnThis / exp.amount) * 100)}%` }}
+                                  />
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   );
@@ -745,7 +793,7 @@ const ProjectDetailsPage: React.FC = () => {
                       });
 
                       // Merge legacy payments and new transactions
-                      const relevantTransactions = (project.transactions || []).filter(t => (t.type === 'INCOME' || t.type === 'DEBT_REPAID') && t.id !== advanceTransaction?.id);
+                      const relevantTransactions = (project.transactions || []).filter(t => (t.type === 'INCOME' || (t.type === 'DEBT_REPAID' && !t.vendorId)) && t.id !== advanceTransaction?.id);
                       const legacyPayments = project.payments || [];
 
                       const allIncomings = [
@@ -839,8 +887,18 @@ const ProjectDetailsPage: React.FC = () => {
             <div>
               <h4 className="font-bold text-lg mb-3 text-redError">Kharashaadka Mashruuca (Project Expenses)</h4>
               {(() => {
-                // Filter out labor expenses (already shown above) and show other expenses
-                const otherExpenses = (project.expenses || []).filter((e: any) => e.category !== 'Labor');
+                // Filter out labor expenses (already shown above) and show other expenses including vendor debt repayments
+                const otherExpenses = [
+                  ...(project.expenses || []).filter((e: any) => e.category !== 'Labor'),
+                  ...(project.transactions || []).filter(t => t.type === 'DEBT_REPAID' && t.vendorId).map(t => ({
+                    id: t.id,
+                    description: t.description || 'Gidka Daynta (Vendor)',
+                    amount: typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any) || 0,
+                    expenseDate: t.transactionDate,
+                    category: 'Debt Repayment'
+                  }))
+                ].sort((a, b) => new Date(b.expenseDate).getTime() - new Date(a.expenseDate).getTime());
+
                 if (otherExpenses.length === 0) {
                   return <EmptyState message="Lama diiwaan gelin wax kharash mashruuc ah." />;
                 }
@@ -872,22 +930,24 @@ const ProjectDetailsPage: React.FC = () => {
                 <h4 className="font-bold text-lg mb-3 text-primary">Dhaqdhaqaaqa Lacagta (Transactions)</h4>
                 <div className="space-y-2">
                   {project.transactions.map((trx: any) => (
-                    <div key={trx.id} className={`bg-white dark:bg-gray-800 p-3 rounded-lg flex justify-between items-center shadow-sm border-l-4 ${trx.type === 'INCOME' || trx.type === 'DEBT_REPAID' ? 'border-secondary' : 'border-redError'
-                      }`}>
+                    <div key={trx.id} className={`bg-white dark:bg-gray-800 p-3 rounded-lg flex justify-between items-center shadow-sm border-l-4 ${(trx.type === 'INCOME' || (trx.type === 'DEBT_REPAID' && !trx.vendorId)) ? 'border-secondary' : 'border-redError'}`}>
                       <div className="flex-1">
-                        <p className="font-bold text-darkGray dark:text-gray-100">{trx.description || '-'}</p>
+                        <div className="flex items-center flex-wrap gap-2">
+                          <p className="font-bold text-darkGray dark:text-gray-100">{trx.description || '-'}</p>
+                          {trx.vendorId && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-50 text-red-600 font-normal border border-red-100">Vendor</span>}
+                          {trx.customerId && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-50 text-green-600 font-normal border border-green-100">Customer</span>}
+                        </div>
                         <p className="text-xs text-mediumGray dark:text-gray-400">{new Date(trx.transactionDate).toLocaleDateString()}</p>
                         <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-semibold ${trx.type === 'INCOME' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200' :
-                          trx.type === 'EXPENSE' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200' :
+                          trx.type === 'EXPENSE' || (trx.type === 'DEBT_REPAID' && trx.vendorId) ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200' :
                             trx.type === 'DEBT_TAKEN' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-200' :
                               'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200'
                           }`}>
                           {trx.type}
                         </span>
                       </div>
-                      <p className={`font-bold text-lg ${trx.type === 'INCOME' || trx.type === 'DEBT_REPAID' ? 'text-secondary' : 'text-redError'
-                        }`}>
-                        {trx.type === 'INCOME' || trx.type === 'DEBT_REPAID' ? '+' : '-'}Br{Math.abs(typeof trx.amount === 'number' ? trx.amount : parseFloat(trx.amount) || 0).toLocaleString()}
+                      <p className={`font-bold text-lg ${(trx.type === 'INCOME' || (trx.type === 'DEBT_REPAID' && !trx.vendorId)) ? 'text-secondary' : 'text-redError'}`}>
+                        {(trx.type === 'INCOME' || (trx.type === 'DEBT_REPAID' && !trx.vendorId)) ? '+' : '-'}Br{Math.abs(typeof trx.amount === 'number' ? trx.amount : parseFloat(trx.amount) || 0).toLocaleString()}
                       </p>
                     </div>
                   ))}
@@ -1043,15 +1103,40 @@ const ProjectDetailsPage: React.FC = () => {
                                 <span className="font-semibold text-darkGray dark:text-gray-100 text-sm">Total: <span className="text-redError">-Br{exps.reduce((s, e) => s + (typeof e.amount === 'number' ? e.amount : parseFloat(e.amount as any) || 0), 0).toLocaleString()}</span></span>
                               </div>
                               <div className="space-y-2">
-                                {exps.map(exp => (
-                                  <div key={exp.id} className='bg-lightGray/30 dark:bg-gray-700/30 p-3 rounded-lg flex justify-between items-center hover:bg-lightGray/50 dark:hover:bg-gray-700/50 transition-colors'>
-                                    <div>
-                                      <p className='font-bold text-darkGray dark:text-gray-100'>{exp.description}</p>
-                                      <p className='text-xs text-mediumGray dark:text-gray-400'>{new Date(exp.expenseDate).toLocaleDateString()}</p>
+                                {exps.map(exp => {
+                                  const linkedTransactions = (project.transactions || []).filter(t => t.expenseId === exp.id);
+                                  const paidOnThis = linkedTransactions.reduce((s, t) => s + Math.abs(typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any) || 0), 0);
+                                  const remainingOnThis = Math.max(0, exp.amount - paidOnThis);
+                                  const progress = Math.min(100, (paidOnThis / exp.amount) * 100);
+
+                                  return (
+                                    <div key={exp.id} className='bg-lightGray/30 dark:bg-gray-700/30 p-3 rounded-lg hover:bg-lightGray/50 dark:hover:bg-gray-700/50 transition-colors'>
+                                      <div className='flex justify-between items-center mb-2'>
+                                        <div>
+                                          <p className='font-bold text-darkGray dark:text-gray-100'>{exp.description}</p>
+                                          <p className='text-xs text-mediumGray dark:text-gray-400'>{new Date(exp.expenseDate).toLocaleDateString()}</p>
+                                        </div>
+                                        <p className='font-bold text-lg text-redError'>-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</p>
+                                      </div>
+
+                                      {/* Progress Bar & Settlement Info */}
+                                      <div className="space-y-1">
+                                        <div className="flex justify-between text-[10px]">
+                                          <span className="text-mediumGray dark:text-gray-400">Paid: Br{paidOnThis.toLocaleString()}</span>
+                                          <span className={`${remainingOnThis > 0 ? 'text-orange-600 font-bold' : 'text-green-600 font-bold'}`}>
+                                            {remainingOnThis > 0 ? `Remaining: Br${remainingOnThis.toLocaleString()}` : 'Settled'}
+                                          </span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1 overflow-hidden">
+                                          <div
+                                            className={`h-full transition-all duration-500 ${remainingOnThis <= 0 ? 'bg-green-500' : 'bg-orange-500'}`}
+                                            style={{ width: `${progress}%` }}
+                                          />
+                                        </div>
+                                      </div>
                                     </div>
-                                    <p className='font-bold text-lg text-redError'>-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</p>
-                                  </div>
-                                ))}
+                                  );
+                                })}
                               </div>
                             </div>
                           );
@@ -1071,13 +1156,39 @@ const ProjectDetailsPage: React.FC = () => {
                               <span className="font-semibold text-darkGray dark:text-gray-100 text-sm">Total: <span className="text-redError">-Br{exps.reduce((s, e) => s + (typeof e.amount === 'number' ? e.amount : parseFloat(e.amount as any) || 0), 0).toLocaleString()}</span></span>
                             </div>
                             <div className="space-y-2">
-                              {exps.map(exp => (
-                                <div key={exp.id} className="bg-lightGray/30 dark:bg-gray-700/30 p-3 rounded-lg flex flex-col gap-1 hover:bg-lightGray/50 dark:hover:bg-gray-700/50 transition-colors">
-                                  <span className="font-bold text-darkGray dark:text-gray-100">{exp.description}</span>
-                                  <span className="text-xs text-mediumGray dark:text-gray-400">{new Date(exp.expenseDate).toLocaleDateString()}</span>
-                                  <span className="text-right font-semibold text-redError">-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</span>
-                                </div>
-                              ))}
+                              {exps.map(exp => {
+                                const linkedTransactions = (project.transactions || []).filter(t => t.expenseId === exp.id);
+                                const paidOnThis = linkedTransactions.reduce((s, t) => s + Math.abs(typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any) || 0), 0);
+                                const remainingOnThis = Math.max(0, exp.amount - paidOnThis);
+
+                                return (
+                                  <div key={exp.id} className="bg-lightGray/30 dark:bg-gray-700/30 p-3 rounded-lg flex flex-col gap-2 hover:bg-lightGray/50 dark:hover:bg-gray-700/50 transition-colors">
+                                    <div className="flex justify-between items-start">
+                                      <div className="flex flex-col">
+                                        <span className="font-bold text-darkGray dark:text-gray-100">{exp.description}</span>
+                                        <span className="text-xs text-mediumGray dark:text-gray-400">{new Date(exp.expenseDate).toLocaleDateString()}</span>
+                                      </div>
+                                      <span className="font-bold text-redError">-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</span>
+                                    </div>
+
+                                    {/* Mini Settlement Status */}
+                                    <div className="bg-white/50 dark:bg-black/20 p-1.5 rounded-md border border-lightGray dark:border-gray-600">
+                                      <div className="flex justify-between text-[9px] mb-1">
+                                        <span className="text-mediumGray dark:text-gray-400">Br{paidOnThis.toLocaleString()} Paid</span>
+                                        <span className={remainingOnThis > 0 ? 'text-orange-600 font-bold' : 'text-green-600 font-bold'}>
+                                          {remainingOnThis > 0 ? `Br${remainingOnThis.toLocaleString()} Left` : 'Paid'}
+                                        </span>
+                                      </div>
+                                      <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1 overflow-hidden">
+                                        <div
+                                          className={`h-full transition-all duration-300 ${remainingOnThis <= 0 ? 'bg-green-500' : 'bg-orange-500'}`}
+                                          style={{ width: `${Math.min(100, (paidOnThis / exp.amount) * 100)}%` }}
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
                         );
@@ -1396,13 +1507,13 @@ const ProjectDetailsPage: React.FC = () => {
                   <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
                     <p className="text-sm text-green-600 dark:text-green-400 mb-1">Lacagaha La Helay</p>
                     <p className="text-2xl font-bold text-green-700 dark:text-green-300">
-                      Br{(typeof project.advancePaid === 'number' ? project.advancePaid : parseFloat(project.advancePaid as any) || 0).toLocaleString()}
+                      Br{totalPaid.toLocaleString()}
                     </p>
                   </div>
                   <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
                     <p className="text-sm text-orange-600 dark:text-orange-400 mb-1">Ku Dhiman</p>
-                    <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">
-                      Br{(typeof project.remainingAmount === 'number' ? project.remainingAmount : parseFloat(project.remainingAmount as any) || 0).toLocaleString()}
+                    <p className={`text-2xl font-bold ${remainingAmount <= 0 ? 'text-green-700 dark:text-green-300' : 'text-orange-700 dark:text-orange-300'}`}>
+                      Br{remainingAmount.toLocaleString()}
                     </p>
                   </div>
                   <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-800">
@@ -1414,7 +1525,7 @@ const ProjectDetailsPage: React.FC = () => {
                   <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
                     <p className="text-sm text-blue-600 dark:text-blue-400 mb-1">Heshiiska</p>
                     <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">
-                      Br{(typeof project.agreementAmount === 'number' ? project.agreementAmount : parseFloat(project.agreementAmount as any) || 0).toLocaleString()}
+                      Br{totalValue.toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -1546,10 +1657,16 @@ const ProjectDetailsPage: React.FC = () => {
                         <tbody className="bg-white dark:bg-gray-800 divide-y divide-lightGray dark:divide-gray-700">
                           {project.transactions.map((trx: any) => (
                             <tr key={trx.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                              <td className="px-4 py-3 text-sm text-darkGray dark:text-gray-100">{trx.description || '-'}</td>
+                              <td className="px-4 py-3 text-sm text-darkGray dark:text-gray-100">
+                                <div className="flex items-center gap-2">
+                                  <span>{trx.description || '-'}</span>
+                                  {trx.vendorId && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-50 text-red-600 font-normal border border-red-100">Vendor</span>}
+                                  {trx.customerId && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-50 text-green-600 font-normal border border-green-100">Customer</span>}
+                                </div>
+                              </td>
                               <td className="px-4 py-3 text-sm">
                                 <span className={`px-2 py-1 rounded text-xs font-semibold ${trx.type === 'INCOME' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200' :
-                                  trx.type === 'EXPENSE' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200' :
+                                  trx.type === 'EXPENSE' || (trx.type === 'DEBT_REPAID' && trx.vendorId) ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-200' :
                                     trx.type === 'DEBT_TAKEN' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-200' :
                                       'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200'
                                   }`}>
@@ -1557,9 +1674,8 @@ const ProjectDetailsPage: React.FC = () => {
                                 </span>
                               </td>
                               <td className="px-4 py-3 text-sm text-mediumGray dark:text-gray-400">{new Date(trx.transactionDate).toLocaleDateString()}</td>
-                              <td className={`px-4 py-3 text-right text-sm font-bold ${trx.type === 'INCOME' || trx.type === 'DEBT_REPAID' ? 'text-secondary' : 'text-redError'
-                                }`}>
-                                {trx.type === 'INCOME' || trx.type === 'DEBT_REPAID' ? '+' : '-'}Br{Math.abs(typeof trx.amount === 'number' ? trx.amount : parseFloat(trx.amount) || 0).toLocaleString()}
+                              <td className={`px-4 py-3 text-right text-sm font-bold ${(trx.type === 'INCOME' || (trx.type === 'DEBT_REPAID' && !trx.vendorId)) ? 'text-secondary' : 'text-redError'}`}>
+                                {(trx.type === 'INCOME' || (trx.type === 'DEBT_REPAID' && !trx.vendorId)) ? '+' : '-'}Br{Math.abs(typeof trx.amount === 'number' ? trx.amount : parseFloat(trx.amount) || 0).toLocaleString()}
                               </td>
                             </tr>
                           ))}

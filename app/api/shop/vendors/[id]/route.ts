@@ -30,10 +30,35 @@ export async function GET(
             return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
         }
 
-        // Stats & Balances
+        // 5. Unified Balance Calculation
+        // A vendor's true balance is the sum of:
+        // - Unpaid Purchase Orders
+        // - Unpaid Expenses NOT linked to a PO
+        // - Active Core Loans (DEBT_TAKEN - DEBT_REPAID) NOT linked to an expense
+
         const allPOs = await prisma.purchaseOrder.findMany({
             where: { vendorId: id },
-            select: { total: true, paidAmount: true, currency: true }
+            select: { total: true, paidAmount: true, currency: true, id: true }
+        });
+
+        // Fetch Unpaid Expenses not linked to a PO
+        const unpaidExpenses = await prisma.expense.findMany({
+            where: { 
+                vendorId: id, 
+                purchaseOrderId: null,
+                paymentStatus: { not: 'PAID' }
+            },
+            select: { amount: true }
+        });
+
+        // Fetch Loans/Transactions not linked to an expense
+        const loanTransactions = await prisma.transaction.findMany({
+            where: {
+                vendorId: id,
+                expenseId: null,
+                type: { in: ['DEBT_TAKEN', 'DEBT_REPAID', 'DEBT_RECEIVED'] }
+            },
+            select: { amount: true, type: true }
         });
 
         let totalSpentETB = 0;
@@ -42,13 +67,32 @@ export async function GET(
         let balanceUSD = 0;
         let totalOrders = allPOs.length;
 
+        // PO Balances
         allPOs.forEach(po => {
+            const amt = po.total;
+            const bal = (po.total - po.paidAmount);
             if (po.currency === 'USD') {
-                totalSpentUSD += po.total;
-                balanceUSD += (po.total - po.paidAmount);
+                totalSpentUSD += amt;
+                balanceUSD += bal;
             } else {
-                totalSpentETB += po.total;
-                balanceETB += (po.total - po.paidAmount);
+                totalSpentETB += amt;
+                balanceETB += bal;
+            }
+        });
+
+        // Add Unpaid Expenses (treating as ETB by default if no currency, usually expenses are ETB in this system)
+        unpaidExpenses.forEach(e => {
+            balanceETB += Number(e.amount);
+            totalSpentETB += Number(e.amount);
+        });
+
+        // Add Standalone Loans
+        loanTransactions.forEach(t => {
+            const amt = Math.abs(Number(t.amount));
+            if (t.type === 'DEBT_TAKEN' || t.type === 'DEBT_RECEIVED') {
+                balanceETB += amt;
+            } else if (t.type === 'DEBT_REPAID') {
+                balanceETB -= amt;
             }
         });
 

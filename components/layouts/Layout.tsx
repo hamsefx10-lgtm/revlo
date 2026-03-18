@@ -8,6 +8,7 @@ import { NotificationProvider } from '../../contexts/NotificationContext';
 import { LanguageProvider } from '../../contexts/LanguageContext';
 import { Loader2 } from 'lucide-react';
 import FloatingChat from '../common/FloatingChat';
+import GlobalCalculator from '../common/GlobalCalculator';
 import PWAInstallPrompt from '../common/PWAInstallPrompt';
 
 interface LayoutProps {
@@ -128,6 +129,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
           {/* Floating Chat */}
           <FloatingChat />
+
+          {/* Global Calculator */}
+          <GlobalCalculator />
 
           {/* PWA Install Prompt */}
           <PWAInstallPrompt />

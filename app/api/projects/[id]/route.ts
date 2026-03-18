@@ -20,6 +20,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
         transactions: {
           include: {
             employee: { select: { id: true, fullName: true } },
+            vendor: { select: { id: true, name: true } },
+            customer: { select: { id: true, name: true } },
           },
           orderBy: { transactionDate: 'desc' }
         },
@@ -114,15 +116,15 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       customerId: body.customerId,
     };
 
-    // Handle dates properly
+    // Handle dates properly with T12:00:00Z normalization to prevent timezone shifts
     if (body.startDate) {
-      updateData.startDate = new Date(body.startDate); // ✅ Save startDate
+      updateData.startDate = new Date(`${body.startDate}T12:00:00Z`); // ✅ Standardized parsing
     }
     if (body.expectedCompletionDate) {
-      updateData.expectedCompletionDate = new Date(body.expectedCompletionDate);
+      updateData.expectedCompletionDate = new Date(`${body.expectedCompletionDate}T12:00:00Z`);
     }
     if (body.actualCompletionDate) {
-      updateData.actualCompletionDate = new Date(body.actualCompletionDate);
+      updateData.actualCompletionDate = new Date(`${body.actualCompletionDate}T12:00:00Z`);
     }
 
     console.log('Update data:', updateData);
@@ -138,12 +140,13 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
     // ✅ If startDate changed, update advance payment transaction dates
     if (body.startDate && existingProject.startDate) {
-      const oldStartDate = new Date(existingProject.startDate);
-      const newStartDate = new Date(body.startDate);
+      const oldDateStr = existingProject.startDate.toISOString().split('T')[0];
+      const newDateStr = body.startDate;
 
       // Only update if dates are different
-      if (oldStartDate.getTime() !== newStartDate.getTime()) {
-        console.log(`Updating transaction dates from ${oldStartDate} to ${newStartDate}`);
+      if (oldDateStr !== newDateStr) {
+        const newStartDate = new Date(`${newDateStr}T12:00:00Z`);
+        console.log(`Updating transaction dates for project ${id} to ${newStartDate}`);
 
         // Find and update advance payment transactions
         // (Those created at project creation with description matching pattern)

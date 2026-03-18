@@ -1,6 +1,6 @@
 import React from 'react';
 import { ProjectReportsData } from './types';
-import { ArrowUpRight, ArrowDownRight, TrendingUp, DollarSign, Wallet } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, TrendingUp, DollarSign, Wallet, AlertCircle } from 'lucide-react';
 
 interface ReportsSummaryStatsProps {
     summary: ProjectReportsData['summary'];
@@ -31,9 +31,27 @@ export const ReportsSummaryStats: React.FC<ReportsSummaryStatsProps> = ({ summar
             value: summary.totalProfit,
             type: 'currency',
             icon: TrendingUp,
+            color: summary.totalProfit >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-rose-600 dark:text-rose-400',
+            bg: summary.totalProfit >= 0 ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-rose-50 dark:bg-rose-900/20',
+            border: summary.totalProfit >= 0 ? 'border-blue-100 dark:border-blue-800' : 'border-rose-100 dark:border-rose-800',
+        },
+        {
+            title: 'Daynta Heshiiska (Remaining)',
+            value: Number(summary.totalRemainingAgreement || 0),
+            type: 'currency',
+            icon: Wallet,
             color: 'text-blue-600 dark:text-blue-400',
             bg: 'bg-blue-50 dark:bg-blue-900/20',
             border: 'border-blue-100 dark:border-blue-800',
+        },
+        {
+            title: 'Lacagta Maqan (Receivables)',
+            value: summary.totalReceivables,
+            type: 'currency',
+            icon: AlertCircle,
+            color: 'text-orange-600 dark:text-orange-400',
+            bg: 'bg-orange-50 dark:bg-orange-900/20',
+            border: 'border-orange-200 dark:border-orange-800',
         },
         {
             title: 'Faa\'iidada Dhexe',

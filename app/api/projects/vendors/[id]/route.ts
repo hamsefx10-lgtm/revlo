@@ -123,9 +123,8 @@ export async function GET(
     const allExpenses = Array.from(allExpensesMap.values());
 
     allExpenses.forEach((exp: any) => {
-      // Find all payments for this expense (from the vendor's transaction list)
-      const relatedTransactions = transactions.filter((t: any) =>
-        t.expense?.id === exp.id &&
+      // Find all payments for this expense (from the expense's own transaction list)
+      const relatedTransactions = (exp.transactions || []).filter((t: any) =>
         ['EXPENSE', 'DEBT_REPAID'].includes(t.type)
       );
 
@@ -161,28 +160,32 @@ export async function GET(
       }
     });
 
-    // Calculate financial summary
-    // Total purchases now uses allExpenses (so it includes the discovered ones)
-    const totalPurchases = allExpenses.reduce((sum: number, exp: any) => sum + Number(exp.amount || 0), 0);
+    // --- UNIFIED BALANCE CALCULATION ---
+    // 1. PO Balance
+    const totalUnpaidPOs = purchaseOrders.reduce((sum: number, po: any) => 
+      sum + (Number(po.totalAmount || 0) - (Number(po.paidAmount || 0))), 0);
+    const totalPOTotal = purchaseOrders.reduce((sum: number, po: any) => 
+      sum + Number(po.totalAmount || 0), 0);
 
-    // Total paid: sum of MONEY_OUT transactions to this vendor (Real money moved out)
-    const totalPaid = transactions
-      .filter((t: any) => MONEY_OUT_TYPES.includes(t.type as TransactionType))
-      .reduce((sum: number, t: any) => sum + Math.abs(Number(t.amount || 0)), 0);
+    // 2. Unpaid Expenses (NOT linked to a PO)
+    const nonPOUnpaidExpenses = allExpenses.filter(e => !e.purchaseOrderId && e.paymentStatus !== 'PAID');
+    const totalUnpaidExpenses = nonPOUnpaidExpenses.reduce((sum: number, exp: any) => sum + (Number(exp.amount || 0) - Number(exp.paidAmount || 0)), 0);
+    const totalNonPOExpenseTotal = allExpenses.filter(e => !e.purchaseOrderId).reduce((sum: number, exp: any) => sum + Number(exp.amount || 0), 0);
 
-    // Total received: sum of MONEY_IN transactions FROM vendor (e.g. Refunds or returns)
-    // IMPORTANT: Exclude DEBT_TAKEN from "Vendor Owes Us" because DEBT_TAKEN for a Vendor 
-    // means WE took a debt (accrual purchase), it doesn't mean they owe us money.
-    const vendorOwesUs = transactions
-      .filter((t: any) => t.type === 'INCOME' || t.type === 'TRANSFER_IN')
-      .reduce((sum: number, t: any) => sum + Number(t.amount || 0), 0);
+    // 3. Standalone Loans (NOT linked to an expense)
+    const standaloneLoans = transactions.filter((t: any) => !t.expenseId && (t.type === 'DEBT_TAKEN' || t.type === 'DEBT_REPAID' || t.type === 'DEBT_RECEIVED' || t.type === 'DEBT_GIVEN'));
+    const netLoanBalance = standaloneLoans.reduce((sum: number, t: any) => {
+      const amt = Math.abs(Number(t.amount || 0));
+      if (t.type === 'DEBT_TAKEN' || t.type === 'DEBT_RECEIVED') return sum + amt;
+      if (t.type === 'DEBT_REPAID' || t.type === 'DEBT_GIVEN') return sum - amt;
+      return sum;
+    }, 0);
 
-    // Balance we owe (Payable) = purchases - paid
-    const totalUnpaid = totalPurchases - totalPaid;
-
-    // Net balance: positive = we owe vendor, negative = vendor owes us
-    // Logic: Net debt = (Total Purchases - Total Paid) - (Any money they owe us like refunds)
-    const netBalance = totalUnpaid - vendorOwesUs;
+    // 4. Summaries
+    const totalPurchases = totalPOTotal + totalNonPOExpenseTotal;
+    const totalUnpaid = totalUnpaidPOs + totalUnpaidExpenses + netLoanBalance;
+    const totalPaid = totalPurchases - (totalUnpaidPOs + totalUnpaidExpenses); // Actual payments against purchases
+    const netBalance = totalUnpaid; // Total amount the company owes this vendor
 
     // Find last purchase and payment dates
     const lastPurchaseDate = allExpenses.length > 0 ? allExpenses[0].expenseDate : null;
@@ -217,13 +220,13 @@ export async function GET(
           totalPurchases: Number(totalPurchases),
           totalPaid: Number(totalPaid),
           totalUnpaid: Number(totalUnpaid),
-          vendorOwesUs: Number(vendorOwesUs),
           netBalance: Number(netBalance),
           lastPurchaseDate,
           lastPaymentDate,
           oldestUnpaidDate,
           unpaidCount,
-          projects: projectNames
+          projects: projectNames,
+          vendorStatus: netBalance > 0 ? 'OWED' : (netBalance < 0 ? 'CREDIT' : 'CLEARED')
         }
       }
     });

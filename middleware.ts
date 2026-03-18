@@ -54,25 +54,48 @@ export default withAuth(
             return NextResponse.redirect(new URL('/manufacturing/dashboard?error=Unauthorized', req.url));
         }
 
-        // --- 3. Module-Scoped Admin Protection (new roles) ---
-        // PROJECTS_ADMIN / SHOP_ADMIN / MANUFACTURING_ADMIN can only access their own module.
-        // Existing roles (ADMIN, SUPER_ADMIN, MANAGER, MEMBER, VIEWER) are NOT affected.
-
-        const moduleAllowedPaths: Record<string, string[]> = {
-            PROJECTS_ADMIN: ['/dashboard', '/projects', '/reports', '/settings'],
-            SHOP_ADMIN: ['/dashboard', '/shop', '/reports', '/settings'],
-            MANUFACTURING_ADMIN: ['/dashboard', '/manufacturing', '/reports', '/settings'],
+        // --- 3. Module-Scoped Admin Protection (Strict Shell Isolation) ---
+        const rolePermissions: Record<string, { allowedPrefixes: string[], home: string }> = {
+            PROJECTS_ADMIN: {
+                allowedPrefixes: ['/projects', '/workshop', '/dashboard', '/reports'],
+                home: '/dashboard'
+            },
+            SHOP_ADMIN: {
+                allowedPrefixes: ['/shop', '/reports'],
+                home: '/shop/dashboard'
+            },
+            MANUFACTURING_ADMIN: {
+                allowedPrefixes: ['/manufacturing', '/reports'],
+                home: '/manufacturing/dashboard'
+            },
+            MEMBER: {
+                allowedPrefixes: ['/dashboard', '/shop', '/projects'],
+                home: '/dashboard'
+            }
         };
 
-        const modulePaths = moduleAllowedPaths[role ?? ''];
-        if (modulePaths) {
-            const allowed = modulePaths.some(p => path.startsWith(p));
-            if (!allowed) {
-                const home =
-                    role === 'SHOP_ADMIN' ? '/shop' :
-                        role === 'MANUFACTURING_ADMIN' ? '/manufacturing' :
-                            '/dashboard';
-                return NextResponse.redirect(new URL(home, req.url));
+        const permissions = rolePermissions[role ?? ''];
+        if (permissions) {
+            const isPathAllowed = permissions.allowedPrefixes.some(prefix => path.startsWith(prefix));
+            
+            // If the path is NOT in the allowed list for this role, redirect to their home
+            if (!isPathAllowed) {
+                return NextResponse.redirect(new URL(permissions.home, req.url));
+            }
+
+            // Prevent cross-module access for specific admin roles
+            if (role === 'SHOP_ADMIN' && (path.startsWith('/projects') || path.startsWith('/manufacturing'))) {
+                return NextResponse.redirect(new URL('/shop/dashboard', req.url));
+            }
+            if (role === 'PROJECTS_ADMIN' && (path.startsWith('/shop') || path.startsWith('/manufacturing'))) {
+                return NextResponse.redirect(new URL('/dashboard', req.url));
+            }
+        }
+
+        // --- 4. Admin-Only Protection (Strictly SUPER_ADMIN) ---
+        if (path.startsWith('/admin')) {
+            if (role !== 'SUPER_ADMIN') {
+               return NextResponse.redirect(new URL('/dashboard?error=Unauthorized', req.url));
             }
         }
 
@@ -91,6 +114,8 @@ export const config = {
         "/dashboard/:path*",
         "/shop/:path*",
         "/projects/:path*",
-        "/manufacturing/:path*"
+        "/manufacturing/:path*",
+        "/admin",
+        "/admin/:path*"
     ],
 };

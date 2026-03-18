@@ -33,7 +33,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (session?.user) {
-      setUser({
+      const newUser = {
         id: (session.user as any).id ?? '',
         fullName: session.user.name || '',
         email: session.user.email ?? '',
@@ -42,11 +42,44 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         companyName: (session.user as any).companyName,
         avatar: (session.user as any).avatar,
         companyLogoUrl: (session.user as any).companyLogoUrl,
-      });
+      };
+
+      // Detect session mismatch (multi-tab login)
+      if (user && user.id !== newUser.id) {
+        console.warn('Session mismatch detected. Reloading...');
+        window.location.reload();
+      }
+
+      setUser(newUser);
     } else if (status === 'unauthenticated') {
+      if (user) {
+        // If we had a user but now we don't (logout in another tab)
+        window.location.reload();
+      }
       setUser(null);
     }
   }, [session, status]);
+
+  // Sync session on focus/visibility change to catch tab changes immediately
+  useEffect(() => {
+    const handleSync = () => {
+      // Small delay to let cookies settle if a login just happened
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          // Trigger a session refresh from next-auth
+          const event = new Event('storage');
+          window.dispatchEvent(event);
+        }
+      }, 500);
+    };
+
+    window.addEventListener('focus', handleSync);
+    window.addEventListener('visibilitychange', handleSync);
+    return () => {
+      window.removeEventListener('focus', handleSync);
+      window.removeEventListener('visibilitychange', handleSync);
+    };
+  }, []);
 
   const logout = () => {
     setUser(null);
