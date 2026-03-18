@@ -4,7 +4,7 @@ import qrcode from 'qrcode';
 import path from 'path';
 import fs from 'fs';
 
-const LOG_FILE = 'c:/Users/OMEN/projects/revlo-vr/whatsapp_logs.txt';
+const LOG_FILE = path.join(process.cwd(), 'whatsapp_logs.txt');
 
 export function logToFile(message: string) {
     const timestamp = new Date().toISOString();
@@ -19,7 +19,8 @@ export function logToFile(message: string) {
 
 const clearLockFile = (clientId: string) => {
     try {
-        const lockPath = path.join(process.cwd(), '.wwebjs_auth', `session-${clientId}`, 'SingletonLock');
+        const authPath = path.join(process.cwd(), '.wwebjs_auth');
+        const lockPath = path.join(authPath, `session-${clientId}`, 'SingletonLock');
         if (fs.existsSync(lockPath)) {
             logToFile(`[WhatsApp] Force-clearing lock file at ${lockPath}`);
             fs.unlinkSync(lockPath);
@@ -29,7 +30,8 @@ const clearLockFile = (clientId: string) => {
     }
     // Also try to clear the data directory lock if it exists (for newer puppeteer/chrome)
     try {
-        const parentLock = path.join(process.cwd(), '.wwebjs_auth', `session-${clientId}`, 'lockfile');
+        const authPath = path.join(process.cwd(), '.wwebjs_auth');
+        const parentLock = path.join(authPath, `session-${clientId}`, 'lockfile');
         if (fs.existsSync(parentLock)) {
             logToFile(`[WhatsApp] Force-clearing parent lock file at ${parentLock}`);
             fs.unlinkSync(parentLock);

@@ -58,7 +58,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       }
       setUser(null);
     }
-  }, [session, status]);
+  }, [session, status, user]);
 
   // Sync session on focus/visibility change to catch tab changes immediately
   useEffect(() => {

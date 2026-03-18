@@ -29,7 +29,7 @@ export default function AdminToolsPage() {
   const [sudoError, setSudoError] = React.useState('');
   
   const { data: stats, error, isLoading, mutate } = useSWR(
-    status === 'authenticated' && session?.user?.role === 'SUPER_ADMIN' && isSudoVerified
+    status === 'authenticated' && (session?.user as any)?.role === 'SUPER_ADMIN' && isSudoVerified
       ? '/api/admin/dashboard-stats' 
       : null, 
     fetcher, 
@@ -43,7 +43,7 @@ export default function AdminToolsPage() {
   React.useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
-    } else if (status === 'authenticated' && session?.user?.role !== 'SUPER_ADMIN') {
+    } else if (status === 'authenticated' && (session?.user as any)?.role !== 'SUPER_ADMIN') {
       router.push('/dashboard?error=Unauthorized');
     }
   }, [status, session, router]);
@@ -71,7 +71,7 @@ export default function AdminToolsPage() {
     }
   };
 
-  if (status === 'loading' || (status === 'authenticated' && session?.user?.role !== 'SUPER_ADMIN')) {
+  if (status === 'loading' || (status === 'authenticated' && (session?.user as any)?.role !== 'SUPER_ADMIN')) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-white dark:bg-[#0f172a]">
         <RevloLoader />
