@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { getSessionCompanyUser } from '@/lib/auth';
@@ -105,7 +106,10 @@ export async function GET(request: Request) {
             let consultancyCosts = 0;
             let totalExpenses = 0;
 
-            const mappedExpenses: any[] = proj.expenses.map((exp: any) => {
+            const mappedExpenses: any[] = [];
+            const processedLaborExpenseIds = new Set();
+
+            proj.expenses.forEach((exp: any) => {
                 const amt = Number(exp.amount) || 0;
                 totalExpenses += amt;
 
@@ -116,7 +120,7 @@ export async function GET(request: Request) {
                 if (exp.category === 'Utilities') utilitiesCosts += amt;
                 if (exp.category === 'Consultancy' || exp.category === 'Subcontractor') consultancyCosts += amt;
 
-                return {
+                mappedExpenses.push({
                     id: exp.id,
                     category: exp.category,
                     subCategory: exp.subCategory,
@@ -125,22 +129,48 @@ export async function GET(request: Request) {
                     date: exp.expenseDate.toISOString().split('T')[0],
                     employeeName: exp.employee?.fullName || exp.supplierName || null,
                     materials: exp.materials,
-                };
+                });
             });
 
-            // Add Labor Records
+            // Add Labor Records ONLY if they are not already counted in expenses
+            // Note: ProjectLabor usually tracks what's agreed/paid to a worker, 
+            // while Expense tracks the actual money leaving the account.
+            // If the user already recorded an Expense for a labor payment, 
+            // adding the LR paidAmount is a double-count.
+            // For now, we prioritize Expenses as the source of truth for 'Total Expenses',
+            // and only add LR paidAmount if the direct labor costs in Expenses are 0
+            // OR if the LR record explicitly represents a DIFFERENT payment.
+            // SIMPLIFIED FIX: In this system, Labor Expenses are the primary record.
+            // We will NOT add LR paidAmount to totalExpenses if laborExpenses already exist,
+            // or we will only add the difference if LR is higher.
+            
+            // Actually, let's treat LR as a record of commitment, and Expenses as truth.
+            // If LR has paidAmount but there's no corresponding Labor expense, then add it.
             for (const lr of (proj.laborRecords || [])) {
                 const amt = Number(lr.paidAmount || 0);
-                laborCosts += amt;
-                totalExpenses += amt;
-                mappedExpenses.push({
-                    id: lr.id,
-                    category: 'Labor',
-                    description: `Labor: ${lr.description || 'Shaqo'}`,
-                    amount: amt,
-                    date: (lr.dateWorked as Date).toISOString().split('T')[0],
-                    employeeName: lr.employee?.fullName || 'Shaqaale'
-                });
+                
+                // If we already have labor expenses, we assume they cover these payments
+                // UNLESS the labor record description doesn't match any labor expense.
+                // For a safe fix that doesn't miss data: 
+                // We'll ONLY add LR paidAmount if total Labor category expenses are 0
+                // OR if the LR is specifically for an employee who has NO labor expenses.
+                
+                const employeeHasExpense = proj.expenses.some((e: any) => 
+                    e.category === 'Labor' && (e.employeeId === lr.employeeId || e.description.toLowerCase().includes(lr.employee?.fullName?.toLowerCase() || ''))
+                );
+
+                if (amt > 0 && !employeeHasExpense) {
+                    laborCosts += amt;
+                    totalExpenses += amt;
+                    mappedExpenses.push({
+                        id: lr.id,
+                        category: 'Labor',
+                        description: `Labor: ${lr.description || 'Shaqo'}`,
+                        amount: amt,
+                        date: (lr.dateWorked as Date).toISOString().split('T')[0],
+                        employeeName: lr.employee?.fullName || 'Shaqaale'
+                    });
+                }
             }
 
             // Calculate Revenue / Transactions logic synced with Project ID page
@@ -172,7 +202,7 @@ export async function GET(request: Request) {
                     });
                 }
 
-                // Unlinked Vendor Repayments
+                // Unlinked Vendor Repayments (Expenses)
                 if (trx.type === 'DEBT_REPAID' && trx.vendorId && !trx.expenseId) {
                     unlinkedVendorRepayments += amt;
                     totalExpenses += amt;
@@ -243,6 +273,8 @@ export async function GET(request: Request) {
                 paymentCount: mappedPayments.length,
                 receivables,
                 projectedProfit,
+                expenses: mappedExpenses,
+                transactions: mappedTransactions,
                 payments: mappedPayments,
                 materialsUsed: proj.materialsUsed || []
             });

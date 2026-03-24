@@ -1,4 +1,5 @@
 
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getSessionCompanyId } from '@/app/api/admin/auth';
 import { createBackup, listBackups, BACKUP_DIR } from '@/lib/backup';

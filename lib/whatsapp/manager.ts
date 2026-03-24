@@ -4,7 +4,38 @@ import qrcode from 'qrcode';
 import path from 'path';
 import fs from 'fs';
 
-const LOG_FILE = path.join(process.cwd(), 'whatsapp_logs.txt');
+import os from 'os';
+
+const getAuthPath = () => {
+    const homeDir = os.homedir();
+    const basePath = process.env.APPDATA || process.env.LOCALAPPDATA || (process.platform === 'darwin' ? path.join(homeDir, 'Library/Application Support') : path.join(homeDir, '.local/share'));
+    const authPath = path.join(basePath, 'revlo-whatsapp-auth');
+    if (!fs.existsSync(authPath)) {
+        try { fs.mkdirSync(authPath, { recursive: true }); } catch(e) {}
+    }
+    return authPath;
+};
+
+const getSystemChromePath = () => {
+    if (process.platform === 'win32') {
+        const paths = [
+            'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+            'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+            'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+            'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe'
+        ];
+        for (const p of paths) {
+            if (fs.existsSync(p)) return p;
+        }
+    } else if (process.platform === 'darwin') {
+        return '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+    } else {
+        return '/usr/bin/google-chrome';
+    }
+    return undefined;
+};
+
+const LOG_FILE = path.join(getAuthPath(), 'whatsapp_logs.txt');
 
 export function logToFile(message: string) {
     const timestamp = new Date().toISOString();
@@ -19,7 +50,7 @@ export function logToFile(message: string) {
 
 const clearLockFile = (clientId: string) => {
     try {
-        const authPath = path.join(process.cwd(), '.wwebjs_auth');
+        const authPath = getAuthPath();
         const lockPath = path.join(authPath, `session-${clientId}`, 'SingletonLock');
         if (fs.existsSync(lockPath)) {
             logToFile(`[WhatsApp] Force-clearing lock file at ${lockPath}`);
@@ -30,7 +61,7 @@ const clearLockFile = (clientId: string) => {
     }
     // Also try to clear the data directory lock if it exists (for newer puppeteer/chrome)
     try {
-        const authPath = path.join(process.cwd(), '.wwebjs_auth');
+        const authPath = getAuthPath();
         const parentLock = path.join(authPath, `session-${clientId}`, 'lockfile');
         if (fs.existsSync(parentLock)) {
             logToFile(`[WhatsApp] Force-clearing parent lock file at ${parentLock}`);
@@ -72,11 +103,14 @@ class WhatsAppManager {
         logToFile('[WhatsApp Manager] New instance created (Constructor)');
     }
 
-    // Temporary fix for puppeteer executable path in different environments if needed
     private getPuppeteerOptions() {
         logToFile('[WhatsApp] Getting Puppeteer options...');
+        const executablePath = getSystemChromePath();
+        if (executablePath) logToFile(`[WhatsApp] Using system Chrome: ${executablePath}`);
+        
         return {
             headless: true,
+            executablePath: executablePath,
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
@@ -116,12 +150,26 @@ class WhatsAppManager {
             }
         }
 
+        if (process.env.DISABLE_WHATSAPP === 'true') {
+            logToFile(`[WhatsApp] WhatsApp integration is disabled via environment variable DISABLE_WHATSAPP.`);
+            // Return a dummy disconnected session so the rest of the app doesn't crash
+            const dummySession: CompanySession = {
+                client: null as any,
+                qrCodeDataUrl: null,
+                status: 'DISCONNECTED',
+                phoneNumber: null,
+                lastUpdated: Date.now(),
+            };
+            this.sessions.set(companyId, dummySession);
+            return dummySession;
+        }
+
         // Set up a new client instance
         const client = new Client({
             authStrategy: new LocalAuth({
                 clientId: `company-${companyId}-v2`,
                 // Store sessions in a reliable path
-                dataPath: path.join(process.cwd(), '.wwebjs_auth')
+                dataPath: getAuthPath()
             }),
             puppeteer: this.getPuppeteerOptions(),
         });

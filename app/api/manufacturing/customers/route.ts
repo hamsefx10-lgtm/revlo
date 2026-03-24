@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { requireManufacturingAccess } from '@/app/api/manufacturing/auth';
 

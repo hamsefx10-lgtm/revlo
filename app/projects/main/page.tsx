@@ -1,16 +1,17 @@
 // app/projects/page.tsx - Project List Page (DESIGN UPDATE)
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Layout from '@/components/layouts/Layout'; // Layout for sidebar
 import {
   Plus, Search, Filter, Eye, Edit, Trash2, LayoutGrid, List, Calendar, CheckCircle, Clock, XCircle, ChevronRight,
   Loader2, Info, Bell, FileX2, MoreVertical, DollarSign, User, Hash, AlertTriangle, Upload, TrendingUp, Download,
-  RotateCcw
+  RotateCcw, ChevronDown
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import Toast from '@/components/common/Toast'; // Import Toast component
+import Toast from '@/components/common/Toast'; 
+import { generateProjectExcelWorkbook } from '@/lib/project-export-utils';
 // --- Project Data Interface (No Changes) ---
 interface Project {
   id: string;
@@ -278,8 +279,13 @@ export default function ProjectsPage() {
   const [filterType, setFilterType] = useState('All');
   const [filterDateRange, setFilterDateRange] = useState('All');
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
-  const [cardsReflectFilters, setCardsReflectFilters] = useState(false);
+  const [cardsReflectFilters, setCardsReflectFilters] = useState(true);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // --- Fetch Projects (unchanged) ---
   const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Derived unique customers from projects list
   const customerNames = ['All', ...Array.from(new Set(projects.map(p => p.customer.name).filter(Boolean)))];
@@ -360,7 +366,18 @@ export default function ProjectsPage() {
     };
 
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowExportDropdown(false); // Changed from setShowExportMenu to setShowExportDropdown
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   const filteredProjects = projects.filter(project => {
@@ -387,43 +404,6 @@ export default function ProjectsPage() {
     return matchesSearch && matchesStatus && matchesCustomer && matchesType && matchesDate;
   });
 
-  const exportToExcel = () => {
-    const dataToExport = filteredProjects.map((proj, index) => ({
-      '#': index + 1,
-      'Project': proj.name,
-      'Client': proj.customer.name,
-      'Amount (Br)': proj.agreementAmount,
-      'Paid (Br)': proj.advancePaid,
-      'Remaining (Br)': proj.remainingAmount,
-      'Status': proj.status,
-      'Type': proj.projectType === 'PAYG' ? 'Pay As You Go' : 'Fixed Price',
-      'Created': new Date(proj.createdAt).toLocaleDateString()
-    }));
-
-    // Calculate totals for export
-    const totalAmount = dataToExport.reduce((sum, p) => sum + (Number(p['Amount (Br)']) || 0), 0);
-    const totalPaid = dataToExport.reduce((sum, p) => sum + (Number(p['Paid (Br)']) || 0), 0);
-    const totalRemaining = dataToExport.reduce((sum, p) => sum + (Number(p['Remaining (Br)']) || 0), 0);
-
-    // Add total row
-    dataToExport.push({
-      '#': '' as any,
-      'Project': 'TOTAL',
-      'Client': '',
-      'Amount (Br)': totalAmount,
-      'Paid (Br)': totalPaid,
-      'Remaining (Br)': totalRemaining,
-      'Status': '' as any,
-      'Type': '',
-      'Created': ''
-    });
-
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Projects');
-    XLSX.writeFile(workbook, `Projects_${new Date().toISOString().split('T')[0]}.xlsx`);
-  };
-
   // --- Project Statistics ---
   const statsSource = cardsReflectFilters ? filteredProjects : projects;
   const activeProjectsCount = statsSource.filter(p => p.status === 'Active').length;
@@ -449,6 +429,103 @@ export default function ProjectsPage() {
     'Cancelled': filteredProjects.filter(p => p.status === 'Cancelled'),
   };
 
+  // NEW: Dual Export Handlers
+  const handleExportCombined = async () => {
+    setShowExportDropdown(false);
+    if (filteredProjects.length === 0) return;
+    
+    setToastMessage({ message: 'Excelka waa la diyaarinayaa...', type: 'info' });
+    
+    try {
+      // For combined, we fetch detail for each to get full data (expenses, etc)
+      const fullProjects = await Promise.all(
+        filteredProjects.map(async (p) => {
+          const res = await fetch(`/api/projects/${p.id}`);
+          const data = await res.json();
+          return data.project;
+        })
+      );
+
+      const workbook = XLSX.utils.book_new();
+      const combinedSummary: any[] = [];
+      const combinedTransactions: any[] = [];
+      const combinedMaterials: any[] = [];
+
+      fullProjects.forEach(project => {
+        const pWorkbook = generateProjectExcelWorkbook(project);
+        
+        // Add summary row
+        const summarySheet = pWorkbook.Sheets['Guudmar'];
+        const summaryData = XLSX.utils.sheet_to_json(summarySheet)[0] as any;
+        combinedSummary.push(summaryData);
+
+        // Add transactions
+        if (pWorkbook.Sheets['Dhaqdhaqaaqaadka']) {
+          const trxData = XLSX.utils.sheet_to_json(pWorkbook.Sheets['Dhaqdhaqaaqaadka']);
+          trxData.forEach((t: any) => {
+            if (t['Sharaxaad (Description)'] !== 'WADARTA (TOTAL)') {
+              combinedTransactions.push({ 'Mashruuca': project.name, ...t });
+            }
+          });
+        }
+
+        // Add materials
+        if (pWorkbook.Sheets['Agabka']) {
+          const matData = XLSX.utils.sheet_to_json(pWorkbook.Sheets['Agabka']);
+          matData.forEach((m: any) => {
+            if (m['Magaca Agabka (Material)'] !== 'WADARTA (TOTAL)') {
+              combinedMaterials.push({ 'Mashruuca': project.name, ...m });
+            }
+          });
+        }
+      });
+
+      // Append Combined Sheets
+      const wsSum = XLSX.utils.json_to_sheet(combinedSummary);
+      XLSX.utils.book_append_sheet(workbook, wsSum, 'Guudmar_Mashaariicda');
+      
+      if (combinedTransactions.length > 0) {
+        const wsTrx = XLSX.utils.json_to_sheet(combinedTransactions);
+        XLSX.utils.book_append_sheet(workbook, wsTrx, 'Dhaqdhaqaaqa_Dhan');
+      }
+
+      if (combinedMaterials.length > 0) {
+        const wsMat = XLSX.utils.json_to_sheet(combinedMaterials);
+        XLSX.utils.book_append_sheet(workbook, wsMat, 'Agabka_Dhan');
+      }
+
+      XLSX.writeFile(workbook, `Mashaariicda_Isku_Dhafka_ah_${new Date().toISOString().split('T')[0]}.xlsx`);
+      setToastMessage({ message: 'Excel-kii guud waa la soo dejiyay.', type: 'success' });
+    } catch (error) {
+      setToastMessage({ message: 'Cilad ayaa ku timid soo dejinta Excel-ka.', type: 'error' });
+    }
+  };
+
+  const handleExportIndividual = async () => {
+    setShowExportDropdown(false);
+    if (filteredProjects.length === 0) return;
+
+    setToastMessage({ message: `Soo dejinta ${filteredProjects.length} mashaariicood ayaa bilaabatay...`, type: 'info' });
+
+    try {
+      for (const p of filteredProjects) {
+        // Fetch full detail for each
+        const res = await fetch(`/api/projects/${p.id}`);
+        const data = await res.json();
+        const fullProject = data.project;
+        
+        const workbook = generateProjectExcelWorkbook(fullProject);
+        XLSX.writeFile(workbook, `Project_${fullProject.name.replace(/\s+/g, '_')}.xlsx`);
+        
+        // Small delay to prevent browser from blocking multiple downloads
+        await new Promise(r => setTimeout(r, 500));
+      }
+      setToastMessage({ message: 'Dhamaan mashaariicdii waa la soo dejiyay.', type: 'success' });
+    } catch (error) {
+      setToastMessage({ message: 'Cilad ayaa ku timid soo dejinta.', type: 'error' });
+    }
+  };
+
   // --- Loading State ---
   if (pageLoading) {
     return (
@@ -471,18 +548,55 @@ export default function ProjectsPage() {
           <p className="text-mediumGray dark:text-gray-400 mt-1">Manage all your projects from one place.</p>
         </div>
         <div className="flex gap-3 self-start md:self-center">
-          <button
-            onClick={exportToExcel}
-            className="p-3 bg-green-100/50 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200/50 dark:hover:bg-green-900/50 rounded-xl transition-all shadow-sm flex items-center justify-center border border-green-200 dark:border-green-800/50"
-            title="Export to Excel"
-          >
-            <Download size={18} strokeWidth={2.5} />
-          </button>
+          <div className="flex items-center gap-3">
+          {/* Dual Export Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setShowExportDropdown(!showExportDropdown)}
+              className="bg-secondary text-white py-2 px-4 rounded-lg font-semibold flex items-center gap-2 shadow-lg hover:shadow-xl transition-all active:scale-95"
+            >
+              <Download size={20} />
+              <span>Daji Excel</span>
+              <ChevronDown size={16} className={`transition-transform ${showExportDropdown ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {showExportDropdown && (
+              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-lightGray dark:border-gray-700 z-50 overflow-hidden animate-fade-in">
+                <button
+                  onClick={handleExportCombined}
+                  className="w-full text-left px-4 py-3 hover:bg-lightGray dark:hover:bg-gray-700 flex items-center gap-3 transition-colors text-darkGray dark:text-gray-100"
+                >
+                  <div className="bg-primary/10 p-2 rounded-lg text-primary">
+                    <LayoutGrid size={18} />
+                  </div>
+                  <div>
+                    <p className="font-bold text-sm">Hal Excel (Combined)</p>
+                    <p className="text-[10px] text-mediumGray">Dhammaan mashaariicda oo hal meel ah</p>
+                  </div>
+                </button>
+                <div className="border-t border-lightGray dark:border-gray-700"></div>
+                <button
+                  onClick={handleExportIndividual}
+                  className="w-full text-left px-4 py-3 hover:bg-lightGray dark:hover:bg-gray-700 flex items-center gap-3 transition-colors text-darkGray dark:text-gray-100"
+                >
+                  <div className="bg-secondary/10 p-2 rounded-lg text-secondary">
+                    <Plus size={18} />
+                  </div>
+                  <div>
+                    <p className="font-bold text-sm">Mid Mid (Individual)</p>
+                    <p className="text-[10px] text-mediumGray">Mashruuc kasta goonidiisa u daji</p>
+                  </div>
+                </button>
+              </div>
+            )}
+          </div>
+
           <Link href="/projects/main/add" className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-lg hover:shadow-primary/40 flex items-center gap-2">
-            <Plus size={20} /> Add New Project
+            <Plus size={20} /> <span className="hidden sm:inline">Add New Project</span><span className="sm:hidden">Add</span>
           </Link>
         </div>
       </div>
+    </div>
 
       {/* --- Project Statistics Cards --- */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8 animate-fade-in-up">

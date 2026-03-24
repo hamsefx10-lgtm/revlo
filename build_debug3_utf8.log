@@ -246,35 +246,36 @@ s/invalid-next-config
 info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
 Failed to compile.
 
-./app/projects/main/[id]/pag
-e.tsx:255:11
-Type error: Variable 
-'allExpenses' implicitly 
-has type 'any[]' in some 
-locations where its type 
-cannot be determined.
+./app/reports/project-report
+s/page.tsx:171:31
+Type error: Property 
+'getNumberOfPages' does not 
+exist on type 'jsPDF'.
 
-[0m [90m 253 |[39m[0m
-[0m [90m 254 |[39m     
-[90m// 2. Kharashaadka 
-(Expenses)[39m[0m
+[0m [90m 169 |[39m       
+  doc[33m.[39msetTextColor
+([35m148[39m[33m,[39m 
+[35m163[39m[33m,[39m [3
+5m184[39m)[33m;[39m[0m
+[0m [90m 170 |[39m       
+  doc[33m.[39msetFontSize(
+[35m8[39m)[33m;[39m[0m
 [0m[31m[1m>[22m[39m[90
-m 255 |[39m     
-[36mconst[39m allExpenses 
-[33m=[39m 
-[][33m;[39m[0m
+m 171 |[39m         doc[33
+m.[39mtext([32m`Bogga 
+${doc.getNumberOfPages()}  
+|  Confidential Financial 
+Report`[39m[33m,[39m 
+[35m148[39m[33m,[39m 
+[35m205[39m[33m,[39m { 
+align[33m:[39m 
+[32m'center'[39m 
+})[33m;[39m[0m
 [0m [90m     |[39m       
-    [31m[1m^[22m[39m[0m
-[0m [90m 256 |[39m     [
-33mObject[39m[33m.[39ment
-ries(expensesByCategory)[33
-m.[39mforEach(([category[3
-3m,[39m exps]) 
-[33m=>[39m {[0m
-[0m [90m 257 |[39m       
-exps[33m.[39mforEach((exp
-[33m:[39m any) 
-[33m=>[39m {[0m
-[0m [90m 258 |[39m       
-  allExpenses[33m.[39mpush
-({[0m
+                        
+[31m[1m^[22m[39m[0m
+[0m [90m 172 |[39m       
+}[0m
+[0m [90m 173 |[39m     
+})[33m;[39m[0m
+[0m [90m 174 |[39m[0m

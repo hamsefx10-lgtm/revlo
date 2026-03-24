@@ -168,7 +168,7 @@ async function exportPDF(data: ProjectReportsData, showDetails: boolean) {
       didDrawPage: (data) => {
         doc.setTextColor(148, 163, 184);
         doc.setFontSize(8);
-        doc.text(`Bogga ${doc.getNumberOfPages()}  |  Confidential Financial Report`, 148, 205, { align: 'center' });
+        doc.text(`Bogga ${(doc as any).internal.getNumberOfPages()}  |  Confidential Financial Report`, 148, 205, { align: 'center' });
       }
     });
 
@@ -191,7 +191,7 @@ async function exportPDF(data: ProjectReportsData, showDetails: boolean) {
         doc.text(`Macmiil: ${project.customer}  |  Xaalad: ${project.status}  |  Bilowga: ${project.startDate}`, 15, 18);
 
         // Circular Progress / Health Indicator (Top Right)
-        const marginColor = project.profitMargin >= 20 ? [22, 163, 74] : project.profitMargin >= 0 ? [59, 130, 246] : [225, 29, 72];
+        const marginColor: [number, number, number] = project.profitMargin >= 20 ? [22, 163, 74] : project.profitMargin >= 0 ? [59, 130, 246] : [225, 29, 72];
         doc.setFillColor(...marginColor);
         doc.roundedRect(240, 5, 42, 15, 2, 2, 'F');
         doc.setTextColor(255, 255, 255);
@@ -379,7 +379,7 @@ async function exportPDF(data: ProjectReportsData, showDetails: boolean) {
         // Project Footer
         doc.setTextColor(148, 163, 184);
         doc.setFontSize(8);
-        doc.text(`Project: ${project.name}  |  Confidential  |  Page ${doc.internal.getNumberOfPages()}`, 148, 205, { align: 'center' });
+        doc.text(`Project: ${project.name}  |  Confidential  |  Page ${(doc as any).internal.getNumberOfPages()}`, 148, 205, { align: 'center' });
       });
     }
 

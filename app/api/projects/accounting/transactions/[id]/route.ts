@@ -239,7 +239,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     });
 
     // Cusboonaysii balance-ka accounts-ka
-    const { recalculateAccountBalance, updateExpenseStatus } = await import('@/lib/accounting');
+    const { recalculateAccountBalance, updateExpenseStatus, updateProjectAdvancePaid, updateEmployeeSalaryStats } = await import('@/lib/accounting');
 
     const affectedAccountIds = new Set<string>();
     if (existingTransaction.accountId) affectedAccountIds.add(existingTransaction.accountId);

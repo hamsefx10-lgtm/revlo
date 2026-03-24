@@ -1,0 +1,4723 @@
+﻿
+> revlo-app@0.1.0 build
+> next build
+
+node.exe :  ΓÜá Invalid 
+next.config.js options 
+detected: 
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+    + CategoryInfo          
+    : NotSpecified: ( ΓÜá   
+  Invalid ne...ions detec   
+ ted: :String) [], Remot    
+eException
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 
+ ΓÜá     Unrecognized 
+key(s) in object: 
+'serverExternalPackages' at 
+"experimental"
+ ΓÜá See more info here: htt
+ps://nextjs.org/docs/message
+s/invalid-next-config
+  Γû▓ Next.js 14.2.5
+  - Environments: .env
+
+   Creating an optimized production build ...
+> [PWA] Compile server
+> [PWA] Compile server
+> [PWA] Compile client (static)
+> [PWA] Auto register service worker with: C:\Users\OMEN\projects\revlo-vr\node_modules\next-pwa\register.js
+> [PWA] Service worker: C:\Users\OMEN\projects\revlo-vr\public\sw.js
+> [PWA]   url: /sw.js
+> [PWA]   scope: /
+ Γ£ô Compiled successfully
+   Linting and checking validity of types ...
+
+./app/admin/contact-messages/page.tsx
+30:6  Warning: React Hook useEffect has a missing dependency: 'fetchMessages'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/error-logs/page.tsx
+55:6  Warning: React Hook useEffect has a missing dependency: 'fetchErrorLogs'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/fiscal-years/[id]/reports/page.tsx
+60:6  Warning: React Hook useEffect has a missing dependency: 'fetchReports'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/live-transactions/page.tsx
+62:6  Warning: React Hook useEffect has a missing dependency: 'fetchLiveData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/maintenance/page.tsx
+107:6  Warning: React Hook useEffect has a missing dependency: 'fetchMaintenanceData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/performance-metrics/page.tsx
+66:6  Warning: React Hook useEffect has a missing dependency: 'fetchMetrics'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/admin/security/page.tsx
+104:6  Warning: React Hook useEffect has a missing dependency: 'fetchSecurityData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/chat/page.tsx
+351:199  Warning: Image elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+
+./app/manufacturing/bom/page.tsx
+48:8  Warning: React Hook useEffect has a missing dependency: 'router'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/manufacturing/customers/page.tsx
+38:8  Warning: React Hook useEffect has a missing dependency: 'fetchCustomers'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/manufacturing/customers/[id]/page.tsx
+23:8  Warning: React Hook useEffect has a missing dependency: 'fetchCustomer'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/manufacturing/factories/[id]/page.tsx
+61:6  Warning: React Hook useEffect has a missing dependency: 'fetchFactoryDetails'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/manufacturing/inventory/page.tsx
+54:8  Warning: React Hook useEffect has a missing dependency: 'fetchInventory'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/manufacturing/material-purchases/page.tsx
+32:6  Warning: React Hook useEffect has a missing dependency: 'fetchPurchases'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/manufacturing/production-orders/[id]/page.tsx
+75:6  Warning: React Hook useEffect has a missing dependency: 'fetchProductionOrder'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/manufacturing/products/edit/[id]/page.tsx
+34:6  Warning: React Hook useEffect has a missing dependency: 'fetchProduct'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/manufacturing/products/page.tsx
+34:6  Warning: React Hook useEffect has a missing dependency: 'fetchProducts'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/manufacturing/reports/page.tsx
+46:6  Warning: React Hook useEffect has a missing dependency: 'fetchReport'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/manufacturing/vendors/[id]/page.tsx
+129:6  Warning: React Hook useEffect has a missing dependency: 'fetchVendorDetails'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/projects/accounting/accounts/[id]/page.tsx
+146:6  Warning: React Hook useEffect has a missing dependency: 'fetchAccountDetails'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/projects/accounting/transactions/[id]/page.tsx
+91:6  Warning: React Hook useEffect has a missing dependency: 'fetchTransactionDetails'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/projects/customers/payments/page.tsx
+80:6  Warning: React Hook useEffect has missing dependencies: 'fetchCustomerPayments' and 'fetchProjectsForCustomer'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/projects/customers/[id]/page.tsx
+79:6  Warning: React Hook useEffect has a missing dependency: 'fetchCustomerDetails'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+96:6  Warning: React Hook useEffect has a missing dependency: 'fetchCustomerDetails'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+114:6  Warning: React Hook useEffect has a missing dependency: 'fetchCustomerDetails'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+138:6  Warning: React Hook useEffect has a missing dependency: 'fetchCustomerDetails'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/projects/employees/page.tsx
+437:6  Warning: React Hook useEffect has a missing dependency: 'refreshData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+557:6  Warning: React Hook useEffect has a missing dependency: 'viewMode'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/projects/employees/[id]/page.tsx
+483:6  Warning: React Hook useEffect has a missing dependency: 'refreshData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+500:6  Warning: React Hook useEffect has missing dependencies: 'fetchEmployeeDetails', 'fetchSalaryExpenses', and 'fetchSalarySummary'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/projects/inventory/manufacturing/page.tsx
+180:6  Warning: React Hook useEffect has a missing dependency: 'fetchManufacturingUsed'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/projects/inventory/projects/page.tsx
+156:6  Warning: React Hook useEffect has a missing dependency: 'fetchProjectMaterialUsages'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+169:6  Warning: React Hook useEffect has a missing dependency: 'fetchProjectMaterialUsages'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+189:6  Warning: React Hook useEffect has a missing dependency: 'fetchProjectMaterialUsages'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/projects/main/edit/[id]/page.tsx
+145:6  Warning: React Hook useEffect has a missing dependency: 'fetchProject'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/projects/vendors/[id]/page.tsx
+131:6  Warning: React Hook useEffect has a missing dependency: 'fetchVendorDetails'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/reports/company-report/page.tsx
+358:8  Warning: React Hook useEffect has a missing dependency: 'fetchReport'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/reports/project-reports/page.tsx
+476:6  Warning: React Hook useEffect has a missing dependency: 'getDateRange'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/sales/edit/[id]/page.tsx
+43:8  Warning: React Hook useEffect has a missing dependency: 'fetchInitialData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/sales/[id]/page.tsx
+26:8  Warning: React Hook useEffect has a missing dependency: 'fetchSaleDetails'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/settings/notifications/page.tsx
+145:6  Warning: React Hook useEffect has a missing dependency: 'fetchNotifications'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/settings/personalization/page.tsx
+221:21  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/settings/security/page.tsx
+80:15  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/settings/users/page.tsx
+496:53  Warning: React Hook useEffect has a missing dependency: 'fetchUsers'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/settings/whatsapp/page.tsx
+215:37  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/shop/accounting/page.tsx
+101:8  Warning: React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/shop/accounting/transactions/page.tsx
+68:8  Warning: React Hook useEffect has a missing dependency: 'fetchTransactions'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+72:8  Warning: React Hook useEffect has a missing dependency: 'fetchTransactions'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/shop/customers/page.tsx
+40:8  Warning: React Hook useEffect has a missing dependency: 'fetchCustomers'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/shop/customers/[id]/page.tsx
+51:8  Warning: React Hook useEffect has a missing dependency: 'fetchCustomerData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/shop/employees/[id]/page.tsx
+73:8  Warning: React Hook useEffect has a missing dependency: 'fetchEmployee'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/shop/inventory/add/page.tsx
+141:8  Warning: React Hook useEffect has a missing dependency: 'toast'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/shop/inventory/page.tsx
+49:8  Warning: React Hook useEffect has a missing dependency: 'fetchProducts'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/shop/manual-entry/page.tsx
+136:8  Warning: React Hook useEffect has a missing dependency: 'processReceiptFile'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/shop/pos/page.tsx
+298:8  Warning: React Hook useEffect has a missing dependency: 'handleScan'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/shop/purchases/add/page.tsx
+265:8  Warning: React Hook useEffect has a missing dependency: 'processReceiptFile'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/shop/purchases/page.tsx
+80:8  Warning: React Hook useEffect has a missing dependency: 'fetchPurchases'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/shop/reports/categories/page.tsx
+29:8  Warning: React Hook useEffect has a missing dependency: 'fetchData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/shop/reports/finance/page.tsx
+58:8  Warning: React Hook useEffect has a missing dependency: 'fetchReport'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/shop/reports/ledger/page.tsx
+23:8  Warning: React Hook useEffect has a missing dependency: 'fetchLedger'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/shop/reports/page.tsx
+72:8  Warning: React Hook useEffect has a missing dependency: 'fetchOverviewStats'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/shop/reports/sales/page.tsx
+24:8  Warning: React Hook useEffect has a missing dependency: 'fetchReport'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/shop/sales/page.tsx
+92:8  Warning: React Hook useEffect has a missing dependency: 'fetchSales'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/shop/settings/whatsapp/page.tsx
+215:33  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./app/shop/vendors/page.tsx
+38:8  Warning: React Hook useEffect has a missing dependency: 'fetchVendors'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/shop/vendors/[id]/page.tsx
+38:8  Warning: React Hook useEffect has a missing dependency: 'fetchVendorData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/telegram-expenses/page.tsx
+55:6  Warning: React Hook useEffect has a missing dependency: 'fetchPendingExpenses'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/common/FloatingChat.tsx
+47:6  Warning: React Hook useEffect has a missing dependency: 'fetchChatRoom'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+354:17  Warning: Image elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+
+./components/common/GlobalCalculator.tsx
+81:6  Warning: React Hook useEffect has a missing dependency: 'deleteLast'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/expenses/MaterialExpenseForm.tsx
+100:8  Warning: React Hook useEffect has a missing dependency: 'processReceiptFile'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/expenses/VendorSelect.tsx
+36:8  Warning: React Hook useEffect has a missing dependency: 'fetchVendors'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/modals/VendorPaymentModal.tsx
+67:8  Warning: React Hook useEffect has missing dependencies: 'fetchAccounts' and 'watch'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
+   Collecting page data ...
+Report Scheduler initialized
+[WhatsApp Manager] Module Loaded / Hot Reloaded
+[WhatsApp Manager] Module Loaded (Force Fresh v4)
+[WhatsApp Manager] New instance created (Constructor)
+[WhatsApp Manager] Module Loaded / Hot Reloaded
+[WhatsApp Manager] Module Loaded (Force Fresh v4)
+[WhatsApp Manager] New instance created (Constructor)
+[WhatsApp Manager] Module Loaded / Hot Reloaded
+[WhatsApp Manager] Module Loaded (Force Fresh v4)
+[WhatsApp Manager] Module Loaded / Hot Reloaded
+[WhatsApp Manager] New instance created (Constructor)
+[WhatsApp Manager] Module Loaded (Force Fresh v4)
+[WhatsApp Manager] Module Loaded / Hot Reloaded
+[WhatsApp Manager] New instance created (Constructor)
+[WhatsApp Manager] Module Loaded (Force Fresh v4)
+[WhatsApp Manager] New instance created (Constructor)
+[WhatsApp Manager] Module Loaded / Hot Reloaded
+[WhatsApp Manager] Module Loaded (Force Fresh v4)
+[WhatsApp Manager] Module Loaded / Hot Reloaded
+[WhatsApp Manager] New instance created (Constructor)
+[WhatsApp Manager] Module Loaded (Force Fresh v4)
+[WhatsApp Manager] Module Loaded / Hot Reloaded
+[WhatsApp Manager] New instance created (Constructor)
+[WhatsApp Manager] Module Loaded (Force Fresh v4)
+[WhatsApp Manager] New instance created (Constructor)
+[WhatsApp Manager] Module Loaded / Hot Reloaded
+[WhatsApp Manager] Module Loaded / Hot Reloaded
+[WhatsApp Manager] Module Loaded (Force Fresh v4)
+[WhatsApp Manager] Module Loaded (Force Fresh v4)
+[WhatsApp Manager] New instance created (Constructor)
+[WhatsApp Manager] New instance created (Constructor)
+[WhatsApp Manager] Module Loaded / Hot Reloaded
+[WhatsApp Manager] Module Loaded (Force Fresh v4)
+[WhatsApp Manager] New instance created (Constructor)
+[WhatsApp Manager] Module Loaded / Hot Reloaded
+[WhatsApp Manager] Module Loaded (Force Fresh v4)
+[WhatsApp Manager] New instance created (Constructor)
+   Generating static pages (0/332) ...
+Error fetching security 
+events: n [Error]: Dynamic 
+server usage: Route 
+/api/admin/security/events 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\66454.js:1:187)
+    at u (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\security\events
+\route.js:1:1270)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093) {
+  description: "Route 
+/api/admin/security/events 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching data issues: 
+n [Error]: Dynamic server 
+usage: Route 
+/api/admin/data-issues 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at t (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\security\users\
+[id]\route.js:1:2657)
+    at u (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\data-issues\rou
+te.js:1:1283)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093) {
+  description: "Route 
+/api/admin/data-issues 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching security 
+settings: n [Error]: 
+Dynamic server usage: Route 
+/api/admin/security/settings
+ couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\maintenance\tas
+ks\route.js:1:4737)
+    at c (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\security\settin
+gs\route.js:1:1287)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919 {
+  description: "Route /api/a
+dmin/security/settings 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching system 
+health: n [Error]: Dynamic 
+server usage: Route 
+/api/admin/system-health 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at a (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\security\settin
+gs\route.js:1:3001)
+    at u (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\system-health\r
+oute.js:1:1277)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093) {
+  description: "Route 
+/api/admin/system-health 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching live 
+transactions: n [Error]: 
+Dynamic server usage: Route 
+/api/admin/live-transactions
+ couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at t (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\error-logs\[id]
+\route.js:1:2263)
+    at u (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\live-transactio
+ns\route.js:1:1286)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919 {
+  description: "Route /api/a
+dmin/live-transactions 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Γ¥î Error checking 
+transactions: n [Error]: 
+Dynamic server usage: Route 
+/api/admin/check-transaction
+s couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at u (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\accounts\route.js:1:4
+886)
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\check-transacti
+ons\route.js:1:1287)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919 {
+  description: "Route /api/a
+dmin/check-transactions 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching transaction 
+stats: n [Error]: Dynamic 
+server usage: Route /api/adm
+in/transaction-stats 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\data-issues\rou
+te.js:12:2438)
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\transaction-sta
+ts\route.js:1:1286)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919 {
+  description: "Route /api/a
+dmin/transaction-stats 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching system 
+status: n [Error]: Dynamic 
+server usage: Route /api/adm
+in/maintenance/status 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at n (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\restore\route.j
+s:1:2510)
+    at u (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\maintenance\sta
+tus\route.js:1:1270)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919 {
+  description: "Route /api/a
+dmin/maintenance/status 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching error logs: 
+n [Error]: Dynamic server 
+usage: Route 
+/api/admin/error-logs 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at o (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\restore-jobs\ro
+ute.js:1:2755)
+    at m (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\error-logs\rout
+e.js:1:1270)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093) {
+  description: "Route 
+/api/admin/error-logs 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching error stats: 
+n [Error]: Dynamic server 
+usage: Route 
+/api/admin/error-stats 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\backups\[id]\ro
+ute.js:1:2236)
+    at u (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\error-stats\rou
+te.js:1:1277)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+prisma:info Starting a postgresql pool with 33 connections.
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919 {
+  description: "Route 
+/api/admin/error-stats 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching dashboard 
+stats: n [Error]: Dynamic 
+server usage: Route /api/man
+ufacturing/dashboard 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at i (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\93728.js:1:204)
+    at c (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\manufacturing\dashboa
+rd\route.js:1:1280)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919 {
+  description: "Route /api/m
+anufacturing/dashboard 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching transaction 
+metrics: n [Error]: Dynamic 
+server usage: Route /api/adm
+in/transaction-metrics 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\maintenance\tas
+ks\route.js:1:4737)
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\transaction-met
+rics\route.js:1:1286)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919 {
+  description: "Route /api/a
+dmin/transaction-metrics 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching accounting 
+stats: n [Error]: Dynamic 
+server usage: Route /api/man
+ufacturing/accounting/stats 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at i (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\93728.js:1:204)
+    at p (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\manufacturing\account
+ing\stats\route.js:1:1280)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093) {
+  description: "Route /api/m
+anufacturing/accounting/stat
+s couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching users: n 
+[Error]: Dynamic server 
+usage: Route 
+/api/admin/security/users 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\maintenance\tas
+ks\[id]\run\route.js:1:2366)
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\security\users\
+route.js:1:1270)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093) {
+  description: "Route 
+/api/admin/security/users 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching performance 
+metrics: n [Error]: Dynamic 
+server usage: Route /api/adm
+in/performance-metrics 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at o (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\performance-met
+rics\route.js:1:3522)
+    at u (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\performance-met
+rics\route.js:1:1270)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093) {
+  description: "Route /api/a
+dmin/performance-metrics 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Cilad ayaa dhacday marka 
+warbixinta bangiga la soo 
+gelinayay: q [Error]: 
+Dynamic server usage: Route 
+/api/projects/accounting/rep
+orts/bank couldn't be 
+rendered statically because 
+it used `request.url`. See 
+more info here: https://next
+js.org/docs/messages/dynamic
+-server-error
+    at W (C:\Users\OMEN\proj
+ects\revlo-vr\node_modules\n
+ext\dist\compiled\next-serve
+r\app-route.runtime.prod.js:
+6:21106)
+    at Object.get (C:\Users\
+OMEN\projects\revlo-vr\node_
+modules\next\dist\compiled\n
+ext-server\app-route.runtime
+.prod.js:6:28459)
+    at u (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\projects\accounting\r
+eports\bank\route.js:1:1295)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103 {
+  description: "Route /api/p
+rojects/accounting/reports/b
+ank couldn't be rendered 
+statically because it used 
+`request.url`. See more 
+info here: https://nextjs.or
+g/docs/messages/dynamic-serv
+er-error",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching report: n 
+[Error]: Dynamic server 
+usage: Route 
+/api/manufacturing/reports 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at i (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\93728.js:1:204)
+    at c (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\manufacturing\reports
+\route.js:1:1280)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919 {
+  description: "Route 
+/api/manufacturing/reports 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching restore 
+jobs: n [Error]: Dynamic 
+server usage: Route 
+/api/admin/restore-jobs 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at o (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\error-logs\rout
+e.js:1:4650)
+    at c (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\restore-jobs\ro
+ute.js:1:1270)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919 {
+  description: "Route 
+/api/admin/restore-jobs 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+prisma:info Starting a postgresql pool with 33 connections.
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."transactions"."_id" FROM "public"."transactions" WHERE 1=1 OFFSET $1) AS "sub"
+Found 0 expenses to fix.
+Error fetching factories: n 
+[Error]: Dynamic server 
+usage: Route /api/manufactur
+ing/factories couldn't be 
+rendered statically because 
+it used `headers`. See more 
+info here: https://nextjs.or
+g/docs/messages/dynamic-serv
+er-error
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at p (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\manufacturing\factori
+es\route.js:1:1311)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854) {
+  description: "Route /api/m
+anufacturing/factories 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Cilad ayaa dhacday marka 
+jadwalka lacagaha la soo 
+gelinayay: q [Error]: 
+Dynamic server usage: Route 
+/api/projects/accounting/rep
+orts/payment-schedule 
+couldn't be rendered 
+statically because it used 
+`request.url`. See more 
+info here: https://nextjs.or
+g/docs/messages/dynamic-serv
+er-error
+    at W (C:\Users\OMEN\proj
+ects\revlo-vr\node_modules\n
+ext\dist\compiled\next-serve
+r\app-route.runtime.prod.js:
+6:21106)
+    at Object.get (C:\Users\
+OMEN\projects\revlo-vr\node_
+modules\next\dist\compiled\n
+ext-server\app-route.runtime
+.prod.js:6:28459)
+    at p (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\projects\accounting\r
+eports\payment-schedule\rout
+e.js:1:605)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919
+    at 
+AsyncLocalStorage.run (node:
+internal/async_local_storage
+/async_context_frame:63:14)
+    at Object.wrap (C:\Users
+\OMEN\projects\revlo-vr\node
+_modules\next\dist\compiled\
+next-server\app-route.runtim
+e.prod.js:6:22491) {
+  description: "Route /api/p
+rojects/accounting/reports/p
+ayment-schedule couldn't be 
+rendered statically because 
+it used `request.url`. See 
+more info here: https://next
+js.org/docs/messages/dynamic
+-server-error",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Company Operations Report 
+API Error: n [Error]: 
+Dynamic server usage: Route 
+/api/projects/accounting/rep
+orts/company-comprehensive 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at u (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\error-logs\[id]
+\route.js:1:4375)
+    at p (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\projects\accounting\r
+eports\company-comprehensive
+\route.js:1:1441)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919 {
+  description: "Route /api/p
+rojects/accounting/reports/c
+ompany-comprehensive 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Cilad ayaa dhacday marka 
+warbixinta kharashyada la 
+soo gelinayay: q [Error]: 
+Dynamic server usage: Route 
+/api/projects/accounting/rep
+orts/expenses couldn't be 
+rendered statically because 
+it used `request.url`. See 
+more info here: https://next
+js.org/docs/messages/dynamic
+-server-error
+    at W (C:\Users\OMEN\proj
+ects\revlo-vr\node_modules\n
+ext\dist\compiled\next-serve
+r\app-route.runtime.prod.js:
+6:21106)
+    at Object.get (C:\Users\
+OMEN\projects\revlo-vr\node_
+modules\next\dist\compiled\n
+ext-server\app-route.runtime
+.prod.js:6:28459)
+    at u (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\projects\accounting\r
+eports\expenses\route.js:1:6
+03)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103 {
+  description: "Route /api/p
+rojects/accounting/reports/e
+xpenses couldn't be 
+rendered statically because 
+it used `request.url`. See 
+more info here: https://next
+js.org/docs/messages/dynamic
+-server-error",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Overview API error: n 
+[Error]: Dynamic server 
+usage: Route /api/projects/a
+ccounting/reports/overview 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at c (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\restore-jobs\ro
+ute.js:1:4867)
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\projects\accounting\r
+eports\overview\route.js:1:1
+287)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093) {
+  description: "Route /api/p
+rojects/accounting/reports/o
+verview couldn't be 
+rendered statically because 
+it used `headers`. See more 
+info here: https://nextjs.or
+g/docs/messages/dynamic-serv
+er-error",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching company 
+labors: n [Error]: Dynamic 
+server usage: Route /api/pro
+jects/expenses/company-labor
+s couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at m (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\error-logs\rout
+e.js:1:6762)
+    at c (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\projects\expenses\com
+pany-labors\route.js:1:1287)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919 {
+  description: "Route /api/p
+rojects/expenses/company-lab
+ors couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+BalanceSheet_Error: n 
+[Error]: Dynamic server 
+usage: Route /api/projects/a
+ccounting/reports/financial-
+summary/balance-sheet 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\projects\accounting\r
+eports\financial-summary\bal
+ance-sheet\route.js:1:1459)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854) {
+  description: "Route /api/p
+rojects/accounting/reports/f
+inancial-summary/balance-she
+et couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Redirect error: q [Error]: 
+Dynamic server usage: Route 
+/api/projects/accounting/rep
+orts/debts couldn't be 
+rendered statically because 
+it used `request.url`. See 
+more info here: https://next
+js.org/docs/messages/dynamic
+-server-error
+    at W (C:\Users\OMEN\proj
+ects\revlo-vr\node_modules\n
+ext\dist\compiled\next-serve
+r\app-route.runtime.prod.js:
+6:21106)
+    at Object.get (C:\Users\
+OMEN\projects\revlo-vr\node_
+modules\next\dist\compiled\n
+ext-server\app-route.runtime
+.prod.js:6:28459)
+    at i (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\projects\accounting\r
+eports\debts\route.js:1:534)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919
+    at 
+AsyncLocalStorage.run (node:
+internal/async_local_storage
+/async_context_frame:63:14)
+    at Object.wrap (C:\Users
+\OMEN\projects\revlo-vr\node
+_modules\next\dist\compiled\
+next-server\app-route.runtim
+e.prod.js:6:22491) {
+  description: "Route /api/p
+rojects/accounting/reports/d
+ebts couldn't be rendered 
+statically because it used 
+`request.url`. See more 
+info here: https://nextjs.or
+g/docs/messages/dynamic-serv
+er-error",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+FinancialSummary_Error: n 
+[Error]: Dynamic server 
+usage: Route /api/projects/a
+ccounting/reports/financial-
+summary couldn't be 
+rendered statically because 
+it used `headers`. See more 
+info here: https://nextjs.or
+g/docs/messages/dynamic-serv
+er-error
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\projects\accounting\r
+eports\financial-summary\rou
+te.js:1:1459)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919
+    at 
+AsyncLocalStorage.run (node:
+internal/async_local_storage
+/async_context_frame:63:14) 
+{
+  description: "Route /api/p
+rojects/accounting/reports/f
+inancial-summary couldn't 
+be rendered statically 
+because it used `headers`. 
+See more info here: https://
+nextjs.org/docs/messages/dyn
+amic-server-error",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Project reports error: n 
+[Error]: Dynamic server 
+usage: Route /api/projects/a
+ccounting/reports/projects 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\live-transactio
+ns\route.js:1:4811)
+    at c (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\projects\accounting\r
+eports\projects\route.js:1:1
+297)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093) {
+  description: "Route /api/p
+rojects/accounting/reports/p
+rojects couldn't be 
+rendered statically because 
+it used `headers`. See more 
+info here: https://nextjs.or
+g/docs/messages/dynamic-serv
+er-error",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Cilad ayaa dhacday marka 
+warbixinta inventory-ga la 
+soo gelinayay: q [Error]: 
+Dynamic server usage: Route 
+/api/projects/accounting/rep
+orts/inventory couldn't be 
+rendered statically because 
+it used `request.url`. See 
+more info here: https://next
+js.org/docs/messages/dynamic
+-server-error
+    at W (C:\Users\OMEN\proj
+ects\revlo-vr\node_modules\n
+ext\dist\compiled\next-serve
+r\app-route.runtime.prod.js:
+6:21106)
+    at Object.get (C:\Users\
+OMEN\projects\revlo-vr\node_
+modules\next\dist\compiled\n
+ext-server\app-route.runtime
+.prod.js:6:28459)
+    at u (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\projects\accounting\r
+eports\inventory\route.js:1:
+605)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103 {
+  description: "Route /api/p
+rojects/accounting/reports/i
+nventory couldn't be 
+rendered statically because 
+it used `request.url`. See 
+more info here: https://next
+js.org/docs/messages/dynamic
+-server-error",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+prisma:info Starting a postgresql pool with 33 connections.
+Error fetching project 
+labors: n [Error]: Dynamic 
+server usage: Route /api/pro
+jects/expenses/project-labor
+s couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at u (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\check-transacti
+ons\route.js:1:5625)
+    at c (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\projects\expenses\pro
+ject-labors\route.js:1:1287)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093) {
+  description: "Route /api/p
+rojects/expenses/project-lab
+ors couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+   Generating static pages (83/332) 
+Error fetching 
+manufacturing usage data: n 
+[Error]: Dynamic server 
+usage: Route /api/projects/i
+nventory/manufacturing 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at p (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\projects\inventory\ma
+nufacturing\route.js:1:1312)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919
+    at 
+AsyncLocalStorage.run (node:
+internal/async_local_storage
+/async_context_frame:63:14) 
+{
+  description: "Route /api/p
+rojects/inventory/manufactur
+ing couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Profit & Loss API Error: n 
+[Error]: Dynamic server 
+usage: Route /api/projects/a
+ccounting/reports/profit-los
+s couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at c (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\restore-jobs\ro
+ute.js:1:4867)
+    at u (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\projects\accounting\r
+eports\profit-loss\route.js:
+1:1287)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093) {
+  description: "Route /api/p
+rojects/accounting/reports/p
+rofit-loss couldn't be 
+rendered statically because 
+it used `headers`. See more 
+info here: https://nextjs.or
+g/docs/messages/dynamic-serv
+er-error",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+prisma:query SELECT "public"."transactions"."_id", "public"."transactions"."description", "public"."transactions"."amount", "public"."transactions"."type"::text, "public"."transactions"."transactionDate", "public"."transactions"."note", "public"."transactions"."createdAt", "public"."transactions"."updatedAt", "public"."transactions"."accountId", "public"."transactions"."fromAccountId", "public"."transactions"."toAccountId", "public"."transactions"."projectId", "public"."transactions"."expenseId", "public"."transactions"."customerId", "public"."transactions"."vendorId", "public"."transactions"."userId", "public"."transactions"."employeeId", "public"."transactions"."category", "public"."transactions"."companyId", "public"."transactions"."fiscalYearId", "public"."transactions"."shareholderId", "public"."transactions"."fixedAssetId" FROM "public"."transactions" WHERE ("public"."transactions"."transactionDate" >= $1 AND "public"."transactions"."transactionDate" < $2) OFFSET $3
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."projects"."_id" FROM "public"."projects" WHERE ("public"."projects"."createdAt" >= $1 AND "public"."projects"."createdAt" < $2) OFFSET $3) AS "sub"
+Error fetching assets 
+register: n [Error]: 
+Dynamic server usage: Route 
+/api/settings/assets-registe
+r couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\data-issues\rou
+te.js:12:4550)
+    at p (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\settings\assets-regis
+ter\route.js:1:1286)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919 {
+  description: "Route /api/s
+ettings/assets-register 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+prisma:info Starting a postgresql pool with 33 connections.
+prisma:info Starting a postgresql pool with 33 connections.
+Cilad ayaa dhacday marka 
+profile-ka shirkadda la soo 
+gelinayay: n [Error]: 
+Dynamic server usage: Route 
+/api/settings/company 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at c (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\settings\company\rout
+e.js:1:1328)
+    at m (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\settings\company\rout
+e.js:1:1483)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919 {
+  description: "Route 
+/api/settings/company 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."users"."_id" FROM "public"."users" WHERE 1=1 OFFSET $1) AS "sub"
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."audit_logs"."_id" FROM "public"."audit_logs" WHERE 1=1 OFFSET $1) AS "sub"
+prisma:query SELECT 1
+Error fetching 
+transactions: n [Error]: 
+Dynamic server usage: Route 
+/api/shop/accounting/transac
+tions couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at p (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\shop\accounting\trans
+actions\route.js:1:1313)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854) {
+  description: "Route /api/s
+hop/accounting/transactions 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching receivables: 
+n [Error]: Dynamic server 
+usage: Route /api/shop/accou
+nting/receivables couldn't 
+be rendered statically 
+because it used `headers`. 
+See more info here: https://
+nextjs.org/docs/messages/dyn
+amic-server-error
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at p (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\shop\accounting\recei
+vables\route.js:1:1313)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919
+    at 
+AsyncLocalStorage.run (node:
+internal/async_local_storage
+/async_context_frame:63:14) 
+{
+  description: "Route /api/s
+hop/accounting/receivables 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching payables: n 
+[Error]: Dynamic server 
+usage: Route /api/shop/accou
+nting/payables couldn't be 
+rendered statically because 
+it used `headers`. See more 
+info here: https://nextjs.or
+g/docs/messages/dynamic-serv
+er-error
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at c (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\shop\accounting\payab
+les\route.js:1:1313)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854) {
+  description: "Route /api/s
+hop/accounting/payables 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching tax data: n 
+[Error]: Dynamic server 
+usage: Route 
+/api/shop/accounting/tax 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at p (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\shop\accounting\tax\r
+oute.js:1:1313)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919
+    at 
+AsyncLocalStorage.run (node:
+internal/async_local_storage
+/async_context_frame:63:14) 
+{
+  description: "Route 
+/api/shop/accounting/tax 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Cilad ayaa dhacday marka 
+xogta warbixinada la soo 
+gelinayay: n [Error]: 
+Dynamic server usage: Route 
+/api/projects/accounting/rep
+orts couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at c (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\maintenance\tas
+ks\route.js:1:6849)
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\projects\accounting\r
+eports\route.js:1:1287)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919 {
+  description: "Route /api/p
+rojects/accounting/reports 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching 
+personalization settings: n 
+[Error]: Dynamic server 
+usage: Route /api/settings/p
+ersonalization couldn't be 
+rendered statically because 
+it used `headers`. See more 
+info here: https://nextjs.or
+g/docs/messages/dynamic-serv
+er-error
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\admin\fix-accounting-
+data\route.js:1:5580)
+    at p (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\settings\personalizat
+ion\route.js:1:1296)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093) {
+  description: "Route /api/s
+ettings/personalization 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."projects"."_id" FROM "public"."projects" WHERE ("public"."projects"."actualCompletionDate" >= $1 AND "public"."projects"."actualCompletionDate" < $2) OFFSET $3) AS "sub"
+Error fetching accounting 
+chart: n [Error]: Dynamic 
+server usage: Route 
+/api/shop/accounting/chart 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at m (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\shop\accounting\chart
+\route.js:1:1338)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919
+    at 
+AsyncLocalStorage.run (node:
+internal/async_local_storage
+/async_context_frame:63:14) 
+{
+  description: "Route 
+/api/shop/accounting/chart 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching categories: 
+n [Error]: Dynamic server 
+usage: Route 
+/api/shop/categories 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at p (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\shop\categories\route
+.js:1:1312)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919
+    at 
+AsyncLocalStorage.run (node:
+internal/async_local_storage
+/async_context_frame:63:14) 
+{
+  description: "Route 
+/api/shop/categories 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching dashboard 
+analytics: n [Error]: 
+Dynamic server usage: Route 
+/api/shop/analytics/dashboar
+d couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at m (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\shop\analytics\dashbo
+ard\route.js:1:1328)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919
+    at 
+AsyncLocalStorage.run (node:
+internal/async_local_storage
+/async_context_frame:63:14) 
+{
+  description: "Route /api/s
+hop/analytics/dashboard 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching receivables: 
+n [Error]: Dynamic server 
+usage: Route 
+/api/shop/receivables 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at c (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\shop\receivables\rout
+e.js:1:1313)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919
+    at 
+AsyncLocalStorage.run (node:
+internal/async_local_storage
+/async_context_frame:63:14) 
+{
+  description: "Route 
+/api/shop/receivables 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error checking till status: 
+n [Error]: Dynamic server 
+usage: Route 
+/api/shop/till/status 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at c (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\shop\till\status\rout
+e.js:1:1311)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919
+    at 
+AsyncLocalStorage.run (node:
+internal/async_local_storage
+/async_context_frame:63:14) 
+{
+  description: "Route 
+/api/shop/till/status 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching telegram 
+user links n [Error]: 
+Dynamic server usage: Route 
+/api/telegram/users 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at u (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\accounts\route.js:1:4
+886)
+    at p (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\telegram\users\route.
+js:1:1286)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919 {
+  description: "Route 
+/api/telegram/users 
+couldn't be rendered 
+statically because it used 
+`headers`. See more info 
+here: https://nextjs.org/doc
+s/messages/dynamic-server-er
+ror",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+Error fetching products: n 
+[Error]: Dynamic server 
+usage: Route 
+/api/shop/products couldn't 
+be rendered statically 
+because it used `headers`. 
+See more info here: https://
+nextjs.org/docs/messages/dyn
+amic-server-error
+    at l (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\38948.js:1:37251)
+    at d (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:26094)
+    at s (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\c
+hunks\45609.js:30:19236)
+    at c (C:\Users\OMEN\proj
+ects\revlo-vr\.next\server\a
+pp\api\shop\products\route.j
+s:1:1313)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:3
+6264
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:140:36
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at 
+NoopTracer.startActiveSpan (
+C:\Users\OMEN\projects\revlo
+-vr\node_modules\next\dist\c
+ompiled\@opentelemetry\api\i
+ndex.js:1:18093)
+    at 
+ProxyTracer.startActiveSpan 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+compiled\@opentelemetry\api\
+index.js:1:18854)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\server\lib\trace\trace
+r.js:122:103
+    at 
+NoopContextManager.with (C:\
+Users\OMEN\projects\revlo-vr
+\node_modules\next\dist\comp
+iled\@opentelemetry\api\inde
+x.js:1:7062)
+    at ContextAPI.with (C:\U
+sers\OMEN\projects\revlo-vr\
+node_modules\next\dist\compi
+led\@opentelemetry\api\index
+.js:1:518)
+    at NextTracerImpl.trace 
+(C:\Users\OMEN\projects\revl
+o-vr\node_modules\next\dist\
+server\lib\trace\tracer.js:1
+22:28)
+    at C:\Users\OMEN\project
+s\revlo-vr\node_modules\next
+\dist\compiled\next-server\a
+pp-route.runtime.prod.js:6:2
+8919
+    at 
+AsyncLocalStorage.run (node:
+internal/async_local_storage
+/async_context_frame:63:14) 
+{
+  description: "Route 
+/api/shop/products couldn't 
+be rendered statically 
+because it used `headers`. 
+See more info here: https://
+nextjs.org/docs/messages/dyn
+amic-server-error",
+  digest: 
+'DYNAMIC_SERVER_USAGE'
+}
+prisma:query SELECT "public"."projects"."_id", "public"."projects"."createdAt" FROM "public"."projects" WHERE 1=1 OFFSET $1
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."users"."_id" FROM "public"."users" WHERE ("public"."users"."createdAt" >= $1 AND "public"."users"."createdAt" < $2) OFFSET $3) AS "sub"
+   Generating static pages (166/332) 
+prisma:query SELECT "public"."projects"."_id", "public"."projects"."actualCompletionDate" FROM "public"."projects" WHERE "public"."projects"."status" = $1 OFFSET $2
+prisma:query SELECT "public"."users"."_id", "public"."users"."fullName", "public"."users"."email", "public"."users"."phone", "public"."users"."role"::text, "public"."users"."status", "public"."users"."TwoFAEnabled", "public"."users"."createdAt", "public"."users"."updatedAt" FROM "public"."users" WHERE ("public"."users"."_id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."shop_vendors"."_id" FROM "public"."shop_vendors" WHERE 1=1 OFFSET $1
+prisma:query SELECT "public"."expenses"."_id", "public"."expenses"."vendorId" FROM "public"."expenses" WHERE "public"."expenses"."vendorId" IS NOT NULL OFFSET $1
+   Generating static pages (249/332) 
+[WhatsApp Manager] Module Loaded / Hot Reloaded
+[WhatsApp Manager] Module Loaded (Force Fresh v4)
+[WhatsApp Manager] New instance created (Constructor)
+[WhatsApp Manager] Module Loaded / Hot Reloaded
+[WhatsApp Manager] Module Loaded (Force Fresh v4)
+[WhatsApp Manager] New instance created (Constructor)
+ Γ£ô Generating static pages (332/332)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                                           Size     First Load JS
+Γöî Γùï /                                                                 22.9 kB         176 kB
+Γö£ Γùï /_not-found                                                       878 B          88.4 kB
+Γö£ Γùï /about                                                            4.46 kB         104 kB
+Γö£ Γùï /accounting                                                       12.8 kB         289 kB
+Γö£ Γùï /admin                                                            5.96 kB         185 kB
+Γö£ Γùï /admin/backup-restore                                             4.83 kB         176 kB
+Γö£ Γùï /admin/check-transactions                                         4.67 kB         169 kB
+Γö£ Γùï /admin/companies                                                  3.69 kB         175 kB
+Γö£ Γùï /admin/contact-messages                                           4.78 kB         169 kB
+Γö£ Γùï /admin/error-logs                                                 5.98 kB         170 kB
+Γö£ Γùï /admin/fiscal-years                                               4.32 kB         168 kB
+Γö£ ╞Æ /admin/fiscal-years/[id]/reports                                  4.23 kB         168 kB
+Γö£ Γùï /admin/fix-data                                                   5.21 kB         169 kB
+Γö£ Γùï /admin/live-transactions                                          6.04 kB         170 kB
+Γö£ Γùï /admin/maintenance                                                6.64 kB         171 kB
+Γö£ Γùï /admin/performance-metrics                                        5.66 kB         170 kB
+Γö£ Γùï /admin/security                                                   6.81 kB         171 kB
+Γö£ ╞Æ /api/accounts                                                     0 B                0 B
+Γö£ ╞Æ /api/admin/backups                                                0 B                0 B
+Γö£ ╞Æ /api/admin/backups/[id]                                           0 B                0 B
+Γö£ ╞Æ /api/admin/backups/[id]/download                                  0 B                0 B
+Γö£ Γùï /api/admin/check-expenses                                         0 B                0 B
+Γö£ ╞Æ /api/admin/check-transactions                                     0 B                0 B
+Γö£ ╞Æ /api/admin/companies                                              0 B                0 B
+Γö£ ╞Æ /api/admin/companies/[id]                                         0 B                0 B
+Γö£ Γùï /api/admin/dashboard-stats                                        0 B                0 B
+Γö£ ╞Æ /api/admin/data-issues                                            0 B                0 B
+Γö£ ╞Æ /api/admin/error-logs                                             0 B                0 B
+Γö£ ╞Æ /api/admin/error-logs/[id]                                        0 B                0 B
+Γö£ ╞Æ /api/admin/error-logs/[id]/resolve                                0 B                0 B
+Γö£ ╞Æ /api/admin/error-stats                                            0 B                0 B
+Γö£ ╞Æ /api/admin/fix-accounting-data                                    0 B                0 B
+Γö£ ╞Æ /api/admin/fix-data/[issueId]                                     0 B                0 B
+Γö£ ╞Æ /api/admin/fix-data/bulk                                          0 B                0 B
+Γö£ Γùï /api/admin/fix-expenses                                           0 B                0 B
+Γö£ ╞Æ /api/admin/fix-transaction-links                                  0 B                0 B
+Γö£ ╞Æ /api/admin/live-transactions                                      0 B                0 B
+Γö£ ╞Æ /api/admin/maintenance/status                                     0 B                0 B
+Γö£ ╞Æ /api/admin/maintenance/tasks                                      0 B                0 B
+Γö£ ╞Æ /api/admin/maintenance/tasks/[id]                                 0 B                0 B
+Γö£ ╞Æ /api/admin/maintenance/tasks/[id]/run                             0 B                0 B
+Γö£ ╞Æ /api/admin/performance-metrics                                    0 B                0 B
+Γö£ ╞Æ /api/admin/restore                                                0 B                0 B
+Γö£ ╞Æ /api/admin/restore-jobs                                           0 B                0 B
+Γö£ ╞Æ /api/admin/security/events                                        0 B                0 B
+Γö£ ╞Æ /api/admin/security/settings                                      0 B                0 B
+Γö£ ╞Æ /api/admin/security/users                                         0 B                0 B
+Γö£ ╞Æ /api/admin/security/users/[id]                                    0 B                0 B
+Γö£ ╞Æ /api/admin/security/users/[id]/reset-password                     0 B                0 B
+Γö£ ╞Æ /api/admin/security/users/[id]/status                             0 B                0 B
+Γö£ ╞Æ /api/admin/system-health                                          0 B                0 B
+Γö£ ╞Æ /api/admin/transaction-metrics                                    0 B                0 B
+Γö£ ╞Æ /api/admin/transaction-stats                                      0 B                0 B
+Γö£ ╞Æ /api/admin/verify-sudo                                            0 B                0 B
+Γö£ ╞Æ /api/ai/chat                                                      0 B                0 B
+Γö£ ╞Æ /api/analyze-receipt                                              0 B                0 B
+Γö£ ╞Æ /api/auth/[...nextauth]                                           0 B                0 B
+Γö£ ╞Æ /api/auth/2fa/setup                                               0 B                0 B
+Γö£ ╞Æ /api/auth/2fa/verify                                              0 B                0 B
+Γö£ ╞Æ /api/auth/forgot-password                                         0 B                0 B
+Γö£ ╞Æ /api/auth/login                                                   0 B                0 B
+Γö£ ╞Æ /api/auth/logout                                                  0 B                0 B
+Γö£ ╞Æ /api/auth/password-reset                                          0 B                0 B
+Γö£ ╞Æ /api/auth/register                                                0 B                0 B
+Γö£ ╞Æ /api/auth/verify-device                                           0 B                0 B
+Γö£ ╞Æ /api/chat/messages                                                0 B                0 B
+Γö£ ╞Æ /api/chat/rooms                                                   0 B                0 B
+Γö£ ╞Æ /api/chat/upload                                                  0 B                0 B
+Γö£ ╞Æ /api/company/plan-type                                            0 B                0 B
+Γö£ ╞Æ /api/contact                                                      0 B                0 B
+Γö£ ╞Æ /api/dashboard/stats                                              0 B                0 B
+Γö£ ╞Æ /api/debts                                                        0 B                0 B
+Γö£ Γùï /api/debug/fix-vendors                                            0 B                0 B
+Γö£ ╞Æ /api/download/[platform]                                          0 B                0 B
+Γö£ ╞Æ /api/fiscal-years                                                 0 B                0 B
+Γö£ ╞Æ /api/fiscal-years/[id]/close                                      0 B                0 B
+Γö£ ╞Æ /api/fiscal-years/[id]/reports                                    0 B                0 B
+Γö£ ╞Æ /api/manufacturing/accounting/stats                               0 B                0 B
+Γö£ ╞Æ /api/manufacturing/bill-of-materials                              0 B                0 B
+Γö£ ╞Æ /api/manufacturing/bill-of-materials/[id]                         0 B                0 B
+Γö£ ╞Æ /api/manufacturing/bom                                            0 B                0 B
+Γö£ ╞Æ /api/manufacturing/bom/[id]                                       0 B                0 B
+Γö£ ╞Æ /api/manufacturing/cost-tracking                                  0 B                0 B
+Γö£ ╞Æ /api/manufacturing/customers                                      0 B                0 B
+Γö£ ╞Æ /api/manufacturing/customers/[id]                                 0 B                0 B
+Γö£ ╞Æ /api/manufacturing/dashboard                                      0 B                0 B
+Γö£ ╞Æ /api/manufacturing/employees                                      0 B                0 B
+Γö£ ╞Æ /api/manufacturing/expenses                                       0 B                0 B
+Γö£ ╞Æ /api/manufacturing/factories                                      0 B                0 B
+Γö£ ╞Æ /api/manufacturing/inventory                                      0 B                0 B
+Γö£ ╞Æ /api/manufacturing/inventory/bulk                                 0 B                0 B
+Γö£ ╞Æ /api/manufacturing/material-purchases                             0 B                0 B
+Γö£ ╞Æ /api/manufacturing/material-purchases/[id]                        0 B                0 B
+Γö£ ╞Æ /api/manufacturing/production-orders                              0 B                0 B
+Γö£ ╞Æ /api/manufacturing/production-orders/[id]                         0 B                0 B
+Γö£ ╞Æ /api/manufacturing/products                                       0 B                0 B
+Γö£ ╞Æ /api/manufacturing/products/[id]                                  0 B                0 B
+Γö£ ╞Æ /api/manufacturing/reports                                        0 B                0 B
+Γö£ ╞Æ /api/manufacturing/sales                                          0 B                0 B
+Γö£ ╞Æ /api/manufacturing/scheduling                                     0 B                0 B
+Γö£ ╞Æ /api/manufacturing/vendors                                        0 B                0 B
+Γö£ ╞Æ /api/manufacturing/work-orders                                    0 B                0 B
+Γö£ ╞Æ /api/manufacturing/work-orders/[id]                               0 B                0 B
+Γö£ ╞Æ /api/notifications                                                0 B                0 B
+Γö£ ╞Æ /api/notifications/[id]                                           0 B                0 B
+Γö£ ╞Æ /api/notifications/check                                          0 B                0 B
+Γö£ ╞Æ /api/notifications/seed                                           0 B                0 B
+Γö£ ╞Æ /api/projects                                                     0 B                0 B
+Γö£ ╞Æ /api/projects/[id]                                                0 B                0 B
+Γö£ ╞Æ /api/projects/[id]/expenses                                       0 B                0 B
+Γö£ ╞Æ /api/projects/[id]/labor                                          0 B                0 B
+Γö£ ╞Æ /api/projects/[id]/materials                                      0 B                0 B
+Γö£ ╞Æ /api/projects/accounting/accounts                                 0 B                0 B
+Γö£ ╞Æ /api/projects/accounting/accounts/[id]                            0 B                0 B
+Γö£ ╞Æ /api/projects/accounting/fixed-assets                             0 B                0 B
+Γö£ ╞Æ /api/projects/accounting/reports                                  0 B                0 B
+Γö£ ╞Æ /api/projects/accounting/reports/bank                             0 B                0 B
+Γö£ ╞Æ /api/projects/accounting/reports/company-comprehensive            0 B                0 B
+Γö£ Γùï /api/projects/accounting/reports/daily                            0 B                0 B
+Γö£ ╞Æ /api/projects/accounting/reports/debts                            0 B                0 B
+Γö£ ╞Æ /api/projects/accounting/reports/expenses                         0 B                0 B
+Γö£ ╞Æ /api/projects/accounting/reports/financial-summary                0 B                0 B
+Γö£ ╞Æ /api/projects/accounting/reports/financial-summary/balance-sheet  0 B                0 B
+Γö£ ╞Æ /api/projects/accounting/reports/inventory                        0 B                0 B
+Γö£ ╞Æ /api/projects/accounting/reports/overview                         0 B                0 B
+Γö£ ╞Æ /api/projects/accounting/reports/payment-schedule                 0 B                0 B
+Γö£ ╞Æ /api/projects/accounting/reports/profit-loss                      0 B                0 B
+Γö£ Γùï /api/projects/accounting/reports/project-performance              0 B                0 B
+Γö£ ╞Æ /api/projects/accounting/reports/projects                         0 B                0 B
+Γö£ ╞Æ /api/projects/accounting/transactions                             0 B                0 B
+Γö£ ╞Æ /api/projects/accounting/transactions/[id]                        0 B                0 B
+Γö£ ╞Æ /api/projects/accounting/transactions/[id]/whatsapp               0 B                0 B
+Γö£ ╞Æ /api/projects/accounting/transactions/transfer                    0 B                0 B
+Γö£ ╞Æ /api/projects/customers                                           0 B                0 B
+Γö£ ╞Æ /api/projects/customers/[id]                                      0 B                0 B
+Γö£ ╞Æ /api/projects/customers/payments                                  0 B                0 B
+Γö£ ╞Æ /api/projects/employees                                           0 B                0 B
+Γö£ ╞Æ /api/projects/employees/[id]                                      0 B                0 B
+Γö£ ╞Æ /api/projects/employees/[id]/status                               0 B                0 B
+Γö£ ╞Æ /api/projects/expenses                                            0 B                0 B
+Γö£ ╞Æ /api/projects/expenses/[id]                                       0 B                0 B
+Γö£ ╞Æ /api/projects/expenses/[id]/approve                               0 B                0 B
+Γö£ ╞Æ /api/projects/expenses/bulk-import                                0 B                0 B
+Γö£ ╞Æ /api/projects/expenses/bulk-reset                                 0 B                0 B
+Γö£ ╞Æ /api/projects/expenses/categories                                 0 B                0 B
+Γö£ ╞Æ /api/projects/expenses/company                                    0 B                0 B
+Γö£ ╞Æ /api/projects/expenses/company-labors                             0 B                0 B
+Γö£ ╞Æ /api/projects/expenses/project                                    0 B                0 B
+Γö£ ╞Æ /api/projects/expenses/project-labors                             0 B                0 B
+Γö£ ╞Æ /api/projects/expenses/seed                                       0 B                0 B
+Γö£ ╞Æ /api/projects/inventory/manufacturing                             0 B                0 B
+Γö£ ╞Æ /api/projects/inventory/projects                                  0 B                0 B
+Γö£ ╞Æ /api/projects/inventory/store                                     0 B                0 B
+Γö£ ╞Æ /api/projects/inventory/store/[id]                                0 B                0 B
+Γö£ ╞Æ /api/projects/inventory/store/bulk                                0 B                0 B
+Γö£ ╞Æ /api/projects/inventory/store/restock                             0 B                0 B
+Γö£ ╞Æ /api/projects/vendors                                             0 B                0 B
+Γö£ ╞Æ /api/projects/vendors/[id]                                        0 B                0 B
+Γö£ ╞Æ /api/public/receipt/[id]                                          0 B                0 B
+Γö£ ╞Æ /api/public/shop/receipt/[id]                                     0 B                0 B
+Γö£ ╞Æ /api/reports/balance-sheet                                        0 B                0 B
+Γö£ ╞Æ /api/reports/bank                                                 0 B                0 B
+Γö£ ╞Æ /api/reports/daily                                                0 B                0 B
+Γö£ ╞Æ /api/reports/debts                                                0 B                0 B
+Γö£ ╞Æ /api/reports/expenses                                             0 B                0 B
+Γö£ ╞Æ /api/reports/inventory                                            0 B                0 B
+Γö£ ╞Æ /api/reports/overview                                             0 B                0 B
+Γö£ ╞Æ /api/reports/profit-loss                                          0 B                0 B
+Γö£ ╞Æ /api/reports/scheduled                                            0 B                0 B
+Γö£ ╞Æ /api/reviews                                                      0 B                0 B
+Γö£ ╞Æ /api/sales                                                        0 B                0 B
+Γö£ ╞Æ /api/sales/[id]                                                   0 B                0 B
+Γö£ ╞Æ /api/settings/assets                                              0 B                0 B
+Γö£ ╞Æ /api/settings/assets-register                                     0 B                0 B
+Γö£ ╞Æ /api/settings/assets/[id]                                         0 B                0 B
+Γö£ ╞Æ /api/settings/backup                                              0 B                0 B
+Γö£ ╞Æ /api/settings/categories                                          0 B                0 B
+Γö£ ╞Æ /api/settings/categories/[id]                                     0 B                0 B
+Γö£ ╞Æ /api/settings/company                                             0 B                0 B
+Γö£ ╞Æ /api/settings/exchange-rate                                       0 B                0 B
+Γö£ ╞Æ /api/settings/personalization                                     0 B                0 B
+Γö£ Γùï /api/settings/profile                                             0 B                0 B
+Γö£ Γùï /api/settings/restore                                             0 B                0 B
+Γö£ ╞Æ /api/settings/shareholders                                        0 B                0 B
+Γö£ ╞Æ /api/settings/shareholders/[id]                                   0 B                0 B
+Γö£ ╞Æ /api/settings/users                                               0 B                0 B
+Γö£ ╞Æ /api/settings/users/[id]                                          0 B                0 B
+Γö£ ╞Æ /api/settings/users/[id]/status                                   0 B                0 B
+Γö£ ╞Æ /api/settings/users/me                                            0 B                0 B
+Γö£ ╞Æ /api/settings/whatsapp                                            0 B                0 B
+Γö£ ╞Æ /api/settings/whatsapp/test                                       0 B                0 B
+Γö£ ╞Æ /api/shop/accounting/assets                                       0 B                0 B
+Γö£ ╞Æ /api/shop/accounting/assets/depreciate                            0 B                0 B
+Γö£ ╞Æ /api/shop/accounting/chart                                        0 B                0 B
+Γö£ ╞Æ /api/shop/accounting/journal                                      0 B                0 B
+Γö£ ╞Æ /api/shop/accounting/ledger                                       0 B                0 B
+Γö£ ╞Æ /api/shop/accounting/payables                                     0 B                0 B
+Γö£ ╞Æ /api/shop/accounting/receivables                                  0 B                0 B
+Γö£ ╞Æ /api/shop/accounting/tax                                          0 B                0 B
+Γö£ ╞Æ /api/shop/accounting/tax/file                                     0 B                0 B
+Γö£ ╞Æ /api/shop/accounting/till                                         0 B                0 B
+Γö£ ╞Æ /api/shop/accounting/transactions                                 0 B                0 B
+Γö£ ╞Æ /api/shop/accounting/transfer                                     0 B                0 B
+Γö£ ╞Æ /api/shop/accounts                                                0 B                0 B
+Γö£ ╞Æ /api/shop/accounts/[id]                                           0 B                0 B
+Γö£ ╞Æ /api/shop/accounts/transfer                                       0 B                0 B
+Γö£ ╞Æ /api/shop/analytics/dashboard                                     0 B                0 B
+Γö£ ╞Æ /api/shop/categories                                              0 B                0 B
+Γö£ ╞Æ /api/shop/company                                                 0 B                0 B
+Γö£ ╞Æ /api/shop/customers                                               0 B                0 B
+Γö£ ╞Æ /api/shop/customers/[id]                                          0 B                0 B
+Γö£ ╞Æ /api/shop/employees                                               0 B                0 B
+Γö£ ╞Æ /api/shop/employees/[id]                                          0 B                0 B
+Γö£ ╞Æ /api/shop/expenses                                                0 B                0 B
+Γö£ ╞Æ /api/shop/finance/accounts                                        0 B                0 B
+Γö£ ╞Æ /api/shop/finance/accounts/[id]                                   0 B                0 B
+Γö£ ╞Æ /api/shop/inventory                                               0 B                0 B
+Γö£ ╞Æ /api/shop/inventory/[id]                                          0 B                0 B
+Γö£ ╞Æ /api/shop/inventory/adjust                                        0 B                0 B
+Γö£ ╞Æ /api/shop/inventory/bulk                                          0 B                0 B
+Γö£ Γùï /api/shop/inventory/template                                      0 B                0 B
+Γö£ ╞Æ /api/shop/products                                                0 B                0 B
+Γö£ ╞Æ /api/shop/purchase-orders                                         0 B                0 B
+Γö£ ╞Æ /api/shop/purchase-orders/pay                                     0 B                0 B
+Γö£ ╞Æ /api/shop/purchases                                               0 B                0 B
+Γö£ ╞Æ /api/shop/purchases/[id]                                          0 B                0 B
+Γö£ ╞Æ /api/shop/purchases/[id]/pay                                      0 B                0 B
+Γö£ ╞Æ /api/shop/receivables                                             0 B                0 B
+Γö£ ╞Æ /api/shop/receivables/pay                                         0 B                0 B
+Γö£ ╞Æ /api/shop/recycle-bin                                             0 B                0 B
+Γö£ ╞Æ /api/shop/reports/aging/customer                                  0 B                0 B
+Γö£ ╞Æ /api/shop/reports/aging/vendor                                    0 B                0 B
+Γö£ ╞Æ /api/shop/reports/balance-sheet                                   0 B                0 B
+Γö£ ╞Æ /api/shop/reports/categories                                      0 B                0 B
+Γö£ ╞Æ /api/shop/reports/finance                                         0 B                0 B
+Γö£ ╞Æ /api/shop/reports/ledger                                          0 B                0 B
+Γö£ ╞Æ /api/shop/reports/sales                                           0 B                0 B
+Γö£ ╞Æ /api/shop/reports/top-products                                    0 B                0 B
+Γö£ ╞Æ /api/shop/sales                                                   0 B                0 B
+Γö£ ╞Æ /api/shop/sales/[id]                                              0 B                0 B
+Γö£ ╞Æ /api/shop/sales/[id]/refund                                       0 B                0 B
+Γö£ ╞Æ /api/shop/sales/[id]/settle                                       0 B                0 B
+Γö£ ╞Æ /api/shop/sales/[id]/whatsapp                                     0 B                0 B
+Γö£ ╞Æ /api/shop/till/close                                              0 B                0 B
+Γö£ ╞Æ /api/shop/till/open                                               0 B                0 B
+Γö£ ╞Æ /api/shop/till/status                                             0 B                0 B
+Γö£ ╞Æ /api/shop/vendors                                                 0 B                0 B
+Γö£ ╞Æ /api/shop/vendors/[id]                                            0 B                0 B
+Γö£ ╞Æ /api/telegram-expenses                                            0 B                0 B
+Γö£ ╞Æ /api/telegram-expenses/[id]/approve                               0 B                0 B
+Γö£ ╞Æ /api/telegram-expenses/[id]/reject                                0 B                0 B
+Γö£ ╞Æ /api/telegram/chats                                               0 B                0 B
+Γö£ ╞Æ /api/telegram/chats/[chatId]                                      0 B                0 B
+Γö£ ╞Æ /api/telegram/users                                               0 B                0 B
+Γö£ ╞Æ /api/telegram/users/[id]                                          0 B                0 B
+Γö£ ╞Æ /api/telegram/webhook                                             0 B                0 B
+Γö£ Γùï /api/test                                                         0 B                0 B
+Γö£ ╞Æ /api/uploads/company-logo                                         0 B                0 B
+Γö£ ╞Æ /api/vehicles                                                     0 B                0 B
+Γö£ Γùï /chat                                                             9 kB            173 kB
+Γö£ Γùï /contact                                                          5.97 kB         154 kB
+Γö£ Γùï /dashboard                                                        11 kB           298 kB
+Γö£ Γùï /demo                                                             5.23 kB         105 kB
+Γö£ Γùï /download                                                         4.39 kB        98.7 kB
+Γö£ Γùï /forgot-password                                                  3.27 kB         137 kB
+Γö£ Γùï /icon.png                                                         0 B                0 B
+Γö£ ╞Æ /invoices/[id]                                                    2.67 kB          97 kB
+Γö£ Γùï /login                                                            4.81 kB         161 kB
+Γö£ Γùï /manufacturing                                                    4.45 kB        98.8 kB
+Γö£ Γùï /manufacturing/accounting                                         2.83 kB        90.4 kB
+Γö£ Γùï /manufacturing/bom                                                4.44 kB         138 kB
+Γö£ Γùï /manufacturing/customers                                          3.78 kB        98.1 kB
+Γö£ ╞Æ /manufacturing/customers/[id]                                     3.45 kB         137 kB
+Γö£ ╞Æ /manufacturing/customers/[id]/edit                                3.58 kB         138 kB
+Γö£ Γùï /manufacturing/customers/add                                      3.4 kB          137 kB
+Γö£ Γùï /manufacturing/employees                                          3.34 kB        97.7 kB
+Γö£ Γùï /manufacturing/employees/add                                      2.78 kB         137 kB
+Γö£ Γùï /manufacturing/expenses                                           3.33 kB        97.7 kB
+Γö£ Γùï /manufacturing/expenses/add                                       2.82 kB         137 kB
+Γö£ Γùï /manufacturing/factories                                          4.25 kB         171 kB
+Γö£ ╞Æ /manufacturing/factories/[id]                                     5.15 kB         169 kB
+Γö£ Γùï /manufacturing/factories/add                                      3.78 kB         168 kB
+Γö£ Γùï /manufacturing/inventory                                          3.67 kB          98 kB
+Γö£ Γùï /manufacturing/inventory/add                                      3.34 kB         137 kB
+Γö£ Γùï /manufacturing/material-purchases                                 2.8 kB         97.1 kB
+Γö£ ╞Æ /manufacturing/material-purchases/[id]                            4.69 kB         169 kB
+Γö£ ╞Æ /manufacturing/material-purchases/[id]/edit                       5.19 kB         169 kB
+Γö£ Γùï /manufacturing/material-purchases/add                             3.29 kB         137 kB
+Γö£ Γùï /manufacturing/production-orders                                  3.42 kB        97.8 kB
+Γö£ ╞Æ /manufacturing/production-orders/[id]                             6.03 kB         170 kB
+Γö£ ╞Æ /manufacturing/production-orders/[id]/edit                        3.25 kB         137 kB
+Γö£ Γùï /manufacturing/production-orders/add                              4.11 kB         138 kB
+Γö£ Γùï /manufacturing/products                                           3.07 kB        97.4 kB
+Γö£ Γùï /manufacturing/products/add                                       3.1 kB          137 kB
+Γö£ ╞Æ /manufacturing/products/edit/[id]                                 4.3 kB          168 kB
+Γö£ Γùï /manufacturing/reports                                            4.01 kB         138 kB
+Γö£ Γùï /manufacturing/sales                                              3.37 kB        97.7 kB
+Γö£ Γùï /manufacturing/sales/add                                          3.77 kB         138 kB
+Γö£ Γùï /manufacturing/vendors                                            4.6 kB          171 kB
+Γö£ ╞Æ /manufacturing/vendors/[id]                                       4.09 kB         182 kB
+Γö£ Γùï /manufacturing/vendors/add                                        4.37 kB         169 kB
+Γö£ ╞Æ /manufacturing/vendors/edit/[id]                                  5.17 kB         169 kB
+Γö£ Γùï /privacy                                                          4.16 kB        98.5 kB
+Γö£ Γùï /profile                                                          4.94 kB         169 kB
+Γö£ ╞Æ /profile/[id]                                                     4 kB            168 kB
+Γö£ ╞Æ /projects/accounting                                              13 kB           289 kB
+Γö£ ╞Æ /projects/accounting/accounts                                     5.04 kB         171 kB
+Γö£ ╞Æ /projects/accounting/accounts/[id]                                7.16 kB         310 kB
+Γö£ ╞Æ /projects/accounting/accounts/add                                 4.86 kB         169 kB
+Γö£ ╞Æ /projects/accounting/accounts/edit                                4.87 kB         169 kB
+Γö£ ╞Æ /projects/accounting/accounts/edit/[id]                           5.04 kB         169 kB
+Γö£ ╞Æ /projects/accounting/add                                          4.61 kB         169 kB
+Γö£ ╞Æ /projects/accounting/reports                                      2.59 kB         130 kB
+Γö£ ╞Æ /projects/accounting/reports/payment-schedule                     5.27 kB         172 kB
+Γö£ ╞Æ /projects/accounting/transactions                                 6.15 kB         172 kB
+Γö£ ╞Æ /projects/accounting/transactions/[id]                            4.98 kB         169 kB
+Γö£ ╞Æ /projects/accounting/transactions/[id]/receipt                    2.94 kB         346 kB
+Γö£ ╞Æ /projects/accounting/transactions/add                             6.93 kB         173 kB
+Γö£ ╞Æ /projects/accounting/transactions/add/[id]                        4.65 kB         171 kB
+Γö£ ╞Æ /projects/accounting/transactions/edit/[id]                       6.75 kB         171 kB
+Γö£ ╞Æ /projects/accounting/transactions/transfer                        5.79 kB         170 kB
+Γö£ ╞Æ /projects/customers                                               4.6 kB          171 kB
+Γö£ ╞Æ /projects/customers/[id]                                          8.26 kB         177 kB
+Γö£ ╞Æ /projects/customers/add                                           4.77 kB         169 kB
+Γö£ ╞Æ /projects/customers/edit                                          414 B          87.9 kB
+Γö£ ╞Æ /projects/customers/edit/[id]                                     5.14 kB         169 kB
+Γö£ ╞Æ /projects/customers/payments                                      5.36 kB         170 kB
+Γö£ ╞Æ /projects/employees                                               7.59 kB         174 kB
+Γö£ ╞Æ /projects/employees/[id]                                          14.4 kB         179 kB
+Γö£ ╞Æ /projects/employees/add                                           6.67 kB         171 kB
+Γö£ ╞Æ /projects/employees/edit/[id]                                     6.38 kB         171 kB
+Γö£ ╞Æ /projects/expenses                                                8.59 kB         312 kB
+Γö£ ╞Æ /projects/expenses/[id]                                           9.98 kB         353 kB
+Γö£ ╞Æ /projects/expenses/add                                            19.2 kB         200 kB
+Γö£ ╞Æ /projects/expenses/bulk-import                                    9.36 kB         174 kB
+Γö£ ╞Æ /projects/expenses/edit                                           152 B          87.7 kB
+Γö£ ╞Æ /projects/expenses/edit/[id]                                      9.36 kB         190 kB
+Γö£ ╞Æ /projects/expenses/import                                         4.33 kB         309 kB
+Γö£ ╞Æ /projects/inventory                                               4.98 kB         169 kB
+Γö£ ╞Æ /projects/inventory/expenses                                      2.95 kB         169 kB
+Γö£ ╞Æ /projects/inventory/manufacturing                                 5.68 kB         170 kB
+Γö£ ╞Æ /projects/inventory/projects                                      4.09 kB         170 kB
+Γö£ ╞Æ /projects/inventory/store                                         5.75 kB         282 kB
+Γö£ ╞Æ /projects/inventory/store/add                                     5.15 kB         169 kB
+Γö£ ╞Æ /projects/main                                                    7.32 kB         312 kB
+Γö£ ╞Æ /projects/main/[id]                                               14.5 kB         320 kB
+Γö£ ╞Æ /projects/main/[id]/invoice                                       3.89 kB        91.4 kB
+Γö£ ╞Æ /projects/main/add                                                5.33 kB         175 kB
+Γö£ ╞Æ /projects/main/edit/[id]                                          5.82 kB         175 kB
+Γö£ ╞Æ /projects/vendors                                                 4.59 kB         171 kB
+Γö£ ╞Æ /projects/vendors/[id]                                            6.64 kB         185 kB
+Γö£ ╞Æ /projects/vendors/add                                             4.36 kB         169 kB
+Γö£ ╞Æ /projects/vendors/edit/[id]                                       5.17 kB         169 kB
+Γö£ ╞Æ /receipt/[id]                                                     186 B          94.5 kB
+Γö£ ╞Æ /receipt/shop/[id]                                                186 B          94.5 kB
+Γö£ Γùï /recycle-bin                                                      4.12 kB         168 kB
+Γö£ Γùï /reports                                                          10.1 kB         279 kB
+Γö£ Γùï /reports/bank                                                     9.59 kB         281 kB
+Γö£ Γùï /reports/bankbook                                                 3.59 kB         168 kB
+Γö£ Γùï /reports/cashbook                                                 3.46 kB         168 kB
+Γö£ Γùï /reports/company-report                                           7.28 kB         406 kB
+Γö£ Γùï /reports/custom                                                   4.84 kB         169 kB
+Γö£ Γùï /reports/daily-reports                                            7.19 kB         314 kB
+Γö£ Γùï /reports/debts                                                    6.17 kB         170 kB
+Γö£ Γùï /reports/expenses                                                 6.8 kB          287 kB
+Γö£ Γùï /reports/financial-summary                                        5.9 kB          176 kB
+Γö£ Γùï /reports/inventory                                                5.34 kB         282 kB
+Γö£ Γùï /reports/payment-schedule                                         5.77 kB         170 kB
+Γö£ Γùï /reports/profit-loss                                              10.1 kB         289 kB
+Γö£ Γùï /reports/project-reports                                          12.6 kB         319 kB
+Γö£ Γùï /reports/scheduled                                                5.24 kB         169 kB
+Γö£ Γùï /robots.txt                                                       0 B                0 B
+Γö£ Γùï /sales                                                            4 kB            168 kB
+Γö£ ╞Æ /sales/[id]                                                       5.07 kB         169 kB
+Γö£ Γùï /sales/add                                                        4.63 kB         169 kB
+Γö£ ╞Æ /sales/edit/[id]                                                  4.47 kB         169 kB
+Γö£ Γùï /sales/new                                                        4.39 kB         169 kB
+Γö£ Γùï /settings                                                         3 kB            169 kB
+Γö£ ╞Æ /settings/[setting_name]                                          3.85 kB         168 kB
+Γö£ Γùï /settings/accounts                                                6.44 kB         171 kB
+Γö£ Γùï /settings/assets                                                  6.91 kB         171 kB
+Γö£ Γùï /settings/assets-register                                         4.96 kB         281 kB
+Γö£ Γùï /settings/assets/add                                              4.87 kB         169 kB
+Γö£ Γùï /settings/backup                                                  5.74 kB         170 kB
+Γö£ Γùï /settings/categories                                              6.16 kB         170 kB
+Γö£ Γùï /settings/company-profile                                         6.07 kB         170 kB
+Γö£ Γùï /settings/currency                                                5.42 kB         176 kB
+Γö£ Γùï /settings/language                                                3.33 kB         167 kB
+Γö£ Γùï /settings/notifications                                           5.27 kB         172 kB
+Γö£ Γùï /settings/personalization                                         4.25 kB         171 kB
+Γö£ Γùï /settings/security                                                10.8 kB         108 kB
+Γö£ Γùï /settings/shareholders                                            4.52 kB         171 kB
+Γö£ Γùï /settings/users                                                   8.96 kB         173 kB
+Γö£ Γùï /settings/whatsapp                                                5.87 kB         170 kB
+Γö£ Γùï /shop                                                             152 B          87.7 kB
+Γö£ Γùï /shop/accounting                                                  8.98 kB         209 kB
+Γö£ Γùï /shop/accounting/accounts                                         5.9 kB          110 kB
+Γö£ ╞Æ /shop/accounting/accounts/[id]                                    5.35 kB         109 kB
+Γö£ Γùï /shop/accounting/assets                                           2.88 kB        97.2 kB
+Γö£ Γùï /shop/accounting/journal                                          3.76 kB        98.1 kB
+Γö£ Γùï /shop/accounting/ledger                                           2.69 kB         242 kB
+Γö£ Γùï /shop/accounting/payables                                         2.23 kB         103 kB
+Γö£ Γùï /shop/accounting/receivables                                      9.44 kB         110 kB
+Γö£ Γùï /shop/accounting/reconciliation                                   1.88 kB        96.2 kB
+Γö£ Γùï /shop/accounting/tax                                              4.37 kB        98.7 kB
+Γö£ Γùï /shop/accounting/till                                             3.2 kB          104 kB
+Γö£ Γùï /shop/accounting/transactions                                     5.34 kB         248 kB
+Γö£ Γùï /shop/customers                                                   4.49 kB        98.8 kB
+Γö£ ╞Æ /shop/customers/[id]                                              9.15 kB         110 kB
+Γö£ ╞Æ /shop/customers/[id]/edit                                         2.95 kB        97.3 kB
+Γö£ Γùï /shop/customers/add                                               3.36 kB         107 kB
+Γö£ Γùï /shop/dashboard                                                   8.98 kB         217 kB
+Γö£ Γùï /shop/employees                                                   4.25 kB         105 kB
+Γö£ ╞Æ /shop/employees/[id]                                              6.45 kB         100 kB
+Γö£ Γùï /shop/employees/add                                               3.33 kB        97.7 kB
+Γö£ Γùï /shop/inventory                                                   5.84 kB         100 kB
+Γö£ ╞Æ /shop/inventory/[id]                                              5.28 kB         117 kB
+Γö£ ╞Æ /shop/inventory/[id]/edit                                         4.25 kB        98.6 kB
+Γö£ Γùï /shop/inventory/add                                               4.87 kB        99.2 kB
+Γö£ Γùï /shop/inventory/adjust                                            3.98 kB        98.3 kB
+Γö£ Γùï /shop/inventory/bulk-import                                       5.75 kB         232 kB
+Γö£ Γùï /shop/manual-entry                                                9.31 kB         113 kB
+Γö£ Γùï /shop/pos                                                         9.09 kB         106 kB
+Γö£ Γùï /shop/profile                                                     2.88 kB         107 kB
+Γö£ Γùï /shop/purchases                                                   8.09 kB         247 kB
+Γö£ ╞Æ /shop/purchases/[id]                                              5.81 kB         124 kB
+Γö£ ╞Æ /shop/purchases/[id]/pay                                          5.04 kB         109 kB
+Γö£ Γùï /shop/purchases/add                                               11.1 kB         115 kB
+Γö£ Γùï /shop/purchases/create                                            4.52 kB        98.8 kB
+Γö£ ╞Æ /shop/purchases/edit/[id]                                         5.57 kB         109 kB
+Γö£ Γùï /shop/reports                                                     5.72 kB         100 kB
+Γö£ Γùï /shop/reports/aging/customer                                      2.19 kB        96.5 kB
+Γö£ Γùï /shop/reports/aging/vendor                                        2.18 kB        96.5 kB
+Γö£ Γùï /shop/reports/balance-sheet                                       3.53 kB         104 kB
+Γö£ Γùï /shop/reports/categories                                          6.26 kB         196 kB
+Γö£ Γùï /shop/reports/finance                                             4.12 kB        91.6 kB
+Γö£ Γùï /shop/reports/ledger                                              2.33 kB        95.9 kB
+Γö£ Γùï /shop/reports/low-stock                                           2.78 kB        97.1 kB
+Γö£ Γùï /shop/reports/sales                                               4.55 kB         199 kB
+Γö£ Γùï /shop/reports/top-products                                        2.58 kB        96.9 kB
+Γö£ Γùï /shop/sales                                                       13 kB           113 kB
+Γö£ ╞Æ /shop/sales/[id]                                                  9.21 kB         110 kB
+Γö£ Γùï /shop/settings                                                    8.14 kB         112 kB
+Γö£ Γùï /shop/settings/whatsapp                                           4.86 kB        99.2 kB
+Γö£ Γùï /shop/vendors                                                     4.4 kB         98.7 kB
+Γö£ ╞Æ /shop/vendors/[id]                                                3.91 kB         104 kB
+Γö£ Γùï /shop/vendors/add                                                 3.39 kB         107 kB
+Γö£ Γùï /signup                                                           6.78 kB         163 kB
+Γö£ Γùï /sitemap.xml                                                      0 B                0 B
+Γö£ ╞Æ /solutions/[slug]                                                 186 B          94.5 kB
+Γö£ Γùï /telegram-expenses                                                4.99 kB         169 kB
+Γö£ Γùï /telegram-expenses/settings                                       4.88 kB         169 kB
+Γö£ Γùï /terms                                                            4.04 kB        98.4 kB
+Γö£ Γùï /verify-device                                                    2.15 kB         109 kB
+Γö£ ╞Æ /verify-email                                                     186 B          94.5 kB
+Γöö Γùï /workshop                                                         4.55 kB         169 kB
++ First Load JS shared by all                                         87.5 kB
+  Γö£ chunks/7023-47aa381eec3cd231.js                                   31.7 kB
+  Γö£ chunks/fd9d1056-e7a151f2c711d733.js                               53.6 kB
+  Γöö other shared chunks (total)                                       2.2 kB
+
+
+╞Æ Middleware                                                          52.5 kB
+
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+

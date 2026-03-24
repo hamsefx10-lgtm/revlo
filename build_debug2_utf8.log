@@ -246,35 +246,39 @@ s/invalid-next-config
 info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules
 Failed to compile.
 
-./app/projects/main/[id]/pag
-e.tsx:255:11
-Type error: Variable 
-'allExpenses' implicitly 
-has type 'any[]' in some 
-locations where its type 
-cannot be determined.
+./app/reports/debts/page.tsx
+:538:43
+Type error: Property 
+'isLiability' does not 
+exist on type 'Debt'.
 
-[0m [90m 253 |[39m[0m
-[0m [90m 254 |[39m     
-[90m// 2. Kharashaadka 
-(Expenses)[39m[0m
+[0m [90m 536 |[39m[0m
+[0m [90m 537 |[39m   
+[90m// Filter Logic 
+matching the 3 Tabs 
+(Consolidated)[39m[0m
 [0m[31m[1m>[22m[39m[90
-m 255 |[39m     
-[36mconst[39m allExpenses 
+m 538 |[39m   
+[36mconst[39m allPayables 
 [33m=[39m 
-[][33m;[39m[0m
+debts[33m.[39mfilter(d 
+[33m=>[39m d[33m.[39misL
+iability)[33m;[39m[0m
 [0m [90m     |[39m       
-    [31m[1m^[22m[39m[0m
-[0m [90m 256 |[39m     [
-33mObject[39m[33m.[39ment
-ries(expensesByCategory)[33
-m.[39mforEach(([category[3
-3m,[39m exps]) 
-[33m=>[39m {[0m
-[0m [90m 257 |[39m       
-exps[33m.[39mforEach((exp
-[33m:[39m any) 
-[33m=>[39m {[0m
-[0m [90m 258 |[39m       
-  allExpenses[33m.[39mpush
-({[0m
+                            
+        
+[31m[1m^[22m[39m[0m
+[0m [90m 539 |[39m   
+[36mconst[39m 
+allReceivables [33m=[39m 
+debts[33m.[39mfilter(d 
+[33m=>[39m [33m![39md[3
+3m.[39misLiability)[33m;[
+39m[0m
+[0m [90m 540 |[39m[0m
+[0m [90m 541 |[39m   
+[36mconst[39m vendorDebts 
+[33m=[39m 
+allPayables[33m;[39m 
+[90m// All entities we 
+owe[39m[0m

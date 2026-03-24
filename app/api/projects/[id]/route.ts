@@ -22,6 +22,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
             employee: { select: { id: true, fullName: true } },
             vendor: { select: { id: true, name: true } },
             customer: { select: { id: true, name: true } },
+            account: { select: { id: true, name: true } },
           },
           orderBy: { transactionDate: 'desc' }
         },

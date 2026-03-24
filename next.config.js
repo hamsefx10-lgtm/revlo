@@ -5,9 +5,7 @@ const nextConfig = {
   output: 'standalone',
 
   // Ensure server-only packages (native modules) are not bundled for the browser
-  experimental: {
-    serverExternalPackages: ['whatsapp-web.js', 'puppeteer', 'puppeteer-core', 'qrcode'],
-  },
+  serverExternalPackages: ['whatsapp-web.js', 'puppeteer', 'puppeteer-core', 'qrcode'],
 
   // Exclude directories with permission issues from file scanning
   webpack: (config, { isServer }) => {

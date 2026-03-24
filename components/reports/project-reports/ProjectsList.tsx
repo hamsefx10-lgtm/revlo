@@ -147,7 +147,7 @@ const ProjectRow: React.FC<{
                                         : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                                         }`}
                                 >
-                                    Kharashyada ({project.expenses.length})
+                                    Kharashyada ({project.expenses?.length || 0})
                                 </button>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); setActiveTab('transactions'); }}
@@ -156,7 +156,7 @@ const ProjectRow: React.FC<{
                                         : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                                         }`}
                                 >
-                                    Dhaqdhaqaaqa ({project.transactions.length})
+                                    Dhaqdhaqaaqa ({project.transactions?.length || 0})
                                 </button>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); setActiveTab('payments'); }}
@@ -165,7 +165,7 @@ const ProjectRow: React.FC<{
                                         : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
                                         }`}
                                 >
-                                    Lacagaha ({project.payments.length})
+                                    Lacagaha ({project.payments?.length || 0})
                                 </button>
                             </div>
 
@@ -183,7 +183,7 @@ const ProjectRow: React.FC<{
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                                            {project.expenses.map(expense => (
+                                            {(project.expenses || []).map(expense => (
                                                 <tr key={expense.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
                                                     <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
                                                         {expense.date}
@@ -247,7 +247,7 @@ const ProjectRow: React.FC<{
                                                     </td>
                                                 </tr>
                                             ))}
-                                            {project.expenses.length === 0 && (
+                                            {(project.expenses || []).length === 0 && (
                                                 <tr>
                                                     <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
                                                         Wax kharash ah lagama diiwaangelin mashruucan
@@ -272,7 +272,7 @@ const ProjectRow: React.FC<{
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                                            {project.transactions.map(tx => (
+                                            {(project.transactions || []).map(tx => (
                                                 <tr key={tx.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
                                                     <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
                                                         {tx.date}
@@ -290,7 +290,7 @@ const ProjectRow: React.FC<{
                                                     </td>
                                                 </tr>
                                             ))}
-                                            {project.transactions.length === 0 && (
+                                            {(project.transactions || []).length === 0 && (
                                                 <tr>
                                                     <td colSpan={4} className="px-4 py-8 text-center text-gray-400">
                                                         Wax dhaqdhaqaaq ah lagama diiwaangelin
@@ -314,7 +314,7 @@ const ProjectRow: React.FC<{
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                                            {project.payments.map(pay => (
+                                            {(project.payments || []).map(pay => (
                                                 <tr key={pay.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
                                                     <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
                                                         {pay.date}
@@ -327,7 +327,7 @@ const ProjectRow: React.FC<{
                                                     </td>
                                                 </tr>
                                             ))}
-                                            {project.payments.length === 0 && (
+                                            {(project.payments || []).length === 0 && (
                                                 <tr>
                                                     <td colSpan={3} className="px-4 py-8 text-center text-gray-400">
                                                         Wax lacag bixin ah lagama diiwaangelin

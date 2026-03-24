@@ -50,7 +50,10 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         window.location.reload();
       }
 
-      setUser(newUser);
+      // Only update if something changed
+      if (!user || user.id !== newUser.id || user.role !== newUser.role) {
+        setUser(newUser);
+      }
     } else if (status === 'unauthenticated') {
       if (user) {
         // If we had a user but now we don't (logout in another tab)

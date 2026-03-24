@@ -21,6 +21,7 @@ export interface Debt {
   interestRate?: number;
   paymentTerms?: string;
   lastPaymentDate?: string;
+  isLiability?: boolean;
 }
 
 export interface Receivable {
@@ -633,8 +634,8 @@ export default function DebtsOverviewReportPage() {
                 return isReceivable ? (
                   <ReceivableRow
                     key={item.id}
-                    receivable={item as Receivable}
-                    onReceive={(id) => setReceivablePaymentModal({ isOpen: true, receivable: item as Receivable })}
+                    receivable={item as unknown as Receivable}
+                    onReceive={(id) => setReceivablePaymentModal({ isOpen: true, receivable: item as unknown as Receivable })}
                     onReminder={() => { }}
                     onView={() => { }}
                     isOverdue={item.status === 'Overdue'}
