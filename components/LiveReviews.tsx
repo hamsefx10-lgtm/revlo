@@ -72,7 +72,7 @@ const LiveReviews: React.FC<LiveReviewsProps> = ({ className = '' }) => {
     return (
       <div className={`text-center py-8 ${className}`}>
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-        <p className="text-mediumGray dark:text-gray-400">Loading reviews...</p>
+        <p className="text-mediumGray dark:text-gray-400">Waa la soo rabaa reviews-ka...</p>
       </div>
     );
   }

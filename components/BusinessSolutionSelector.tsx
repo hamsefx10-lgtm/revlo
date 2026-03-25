@@ -73,7 +73,7 @@ export default function BusinessSolutionSelector() {
                             : 'bg-white dark:bg-gray-800 text-gray-500 hover:bg-gray-100 hover:text-darkGray'
                             }`}
                     >
-                        <Factory size={20} /> Factories
+                        <Factory size={20} /> Warshadaha
                     </button>
                     <button
                         onClick={() => setActiveTab('SHOP')}
@@ -82,7 +82,7 @@ export default function BusinessSolutionSelector() {
                             : 'bg-white dark:bg-gray-800 text-gray-500 hover:bg-gray-100 hover:text-darkGray'
                             }`}
                     >
-                        <Store size={20} /> Shops
+                        <Store size={20} /> Dukaamada
                     </button>
                     <button
                         onClick={() => setActiveTab('PROJECT')}
@@ -91,7 +91,7 @@ export default function BusinessSolutionSelector() {
                             : 'bg-white dark:bg-gray-800 text-gray-500 hover:bg-gray-100 hover:text-darkGray'
                             }`}
                     >
-                        <Briefcase size={20} /> Projects
+                        <Briefcase size={20} /> Mashaariicda
                     </button>
                 </div>
 

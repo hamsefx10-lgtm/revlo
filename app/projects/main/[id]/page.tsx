@@ -5,13 +5,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import Layout from '@/components/layouts/Layout';
-import { 
-  ArrowLeft, Edit, Trash2, CheckCircle, Clock, Loader2, Calendar, 
-  Info, Tag, Wallet, BarChart2, AlertTriangle, Download, List, 
-  LayoutGrid, Scale, ArrowUpRight, Eye, Plus, FileText, User, 
-  MapPin, Building, ListFilter, ChevronLeft, ChevronRight, Search, 
+import {
+  ArrowLeft, Edit, Trash2, CheckCircle, Clock, Loader2, Calendar,
+  Info, Tag, Wallet, BarChart2, AlertTriangle, Download, List,
+  LayoutGrid, Scale, ArrowUpRight, Eye, Plus, FileText, User,
+  MapPin, Building, ListFilter, ChevronLeft, ChevronRight, Search,
   SlidersHorizontal, ChevronDown, Check, DollarSign, TrendingUp,
-  Layers, HardHat
+  Layers, HardHat, FileDown
 } from 'lucide-react';
 import { generateProjectExcelWorkbook } from '@/lib/project-export-utils';
 import Toast from '@/components/common/Toast';
@@ -33,6 +33,7 @@ interface Project {
     receiptUrl?: string;
     employeeId?: string;
     employee?: { id: string; fullName?: string };
+    account?: { id: string; name: string };
   }[];
   materialsUsed: { id: string; name: string; quantityUsed: number; unit: string; leftoverQty: number; costPerUnit: number | string; dateUsed?: string; }[];
   laborRecords: {
@@ -63,6 +64,7 @@ interface Project {
   }[];
   payments: { id: string; amount: number; paymentDate: string; paymentType: string; receivedIn: string; }[];
   documents: { id: string; name: string; fileUrl: string; fileType: string; uploadedAt: string; }[];
+  company?: { id: string; name: string; logoUrl?: string; };
 }
 
 // --- Reusable Helper Components ---
@@ -181,7 +183,7 @@ const ProjectDetailsPage: React.FC = () => {
 
   // Total Paid = Advance (DB field) + customer debt repayments only
   const totalPaid = totalAdvance + totalRepaidViaDebt;
-  
+
   // Remaining Amount: Allow negative to show overpayment correctly
   const remainingAmount = totalValue - totalPaid;
   const tabs = ['Overview', 'Expenses', 'Materials', 'Labor', 'Payments', 'Documents', 'Financials'];
@@ -190,9 +192,9 @@ const ProjectDetailsPage: React.FC = () => {
   // FIX: Avoid double-counting labor. If an employee has expenses with category 'Labor', 
   // we assume those represent the payments and don't add their laborRecord.paidAmount.
   const totalDirectExpenses = project?.expenses?.reduce((sum, expense) => sum + Math.abs(typeof expense.amount === 'number' ? expense.amount : parseFloat(expense.amount as any) || 0), 0) || 0;
-  
+
   const totalLaborPaidUncounted = (project?.laborRecords || []).reduce((sum, lr) => {
-    const employeeHasExpense = project.expenses.some(e => 
+    const employeeHasExpense = project.expenses.some(e =>
       e.category?.toLowerCase() === 'labor' && (e.employeeId === lr.employeeId || e.description?.toLowerCase().includes(lr.employee?.fullName?.toLowerCase() || ''))
     );
     if (!employeeHasExpense) {
@@ -252,12 +254,12 @@ const ProjectDetailsPage: React.FC = () => {
     const fromExpenses = (project?.expenses || [])
       .filter(e => e.category?.toLowerCase() === cat.toLowerCase())
       .reduce((sum, e) => sum + (typeof e.amount === 'number' ? e.amount : parseFloat(e.amount as any) || 0), 0);
-    
+
     // For Labor, also add uncounted labor record payments if they match (simplified)
     if (cat.toLowerCase() === 'labor') {
       return fromExpenses + totalLaborPaidUncounted;
     }
-    
+
     return fromExpenses;
   };
 
@@ -274,6 +276,218 @@ const ProjectDetailsPage: React.FC = () => {
     if (!project) return;
     const workbook = generateProjectExcelWorkbook(project);
     XLSX.writeFile(workbook, `Project_${project.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
+  const exportLaborPDF = async (emp: any) => {
+    if (!project) return;
+
+    // Import jsPDF and autoTable dynamically since they are large and only needed here
+    const { default: jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
+
+    const doc = new jsPDF();
+    const formatCurrency = (value: number) => `Br${value.toLocaleString()}`;
+
+    // Helper to load logo
+    const loadLogoAsDataUrl = async (url?: string) => {
+      if (!url) return null;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) return null;
+        const blob = await response.blob();
+        return await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(blob);
+        });
+      } catch (e) { return null; }
+    };
+
+    // -- Branding --
+    const logoUrl = project.company?.logoUrl;
+    const logoData = await loadLogoAsDataUrl(logoUrl);
+
+    // -- Watermark & Background Elements --
+    if (logoData) {
+      (doc as any).setGState(new (doc as any).GState({ opacity: 0.04 }));
+      doc.addImage(logoData, 'PNG', 40, 70, 130, 130, undefined, 'FAST');
+      (doc as any).setGState(new (doc as any).GState({ opacity: 1.0 }));
+    }
+
+    // -- Header: Brand Identity --
+    if (logoData) {
+      doc.addImage(logoData, 'PNG', 14, 12, 22, 22, undefined, 'FAST');
+    }
+
+    // Modern Double-Colored Title (Birshiil Style)
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(26);
+    doc.setTextColor(30, 41, 59); // Slate-800
+    doc.text('Bir', 40, 24);
+
+    doc.setTextColor(245, 158, 11); // Amber-500
+    doc.text('shiil', 51, 24);
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 116, 139); // Slate-500
+    doc.text('Warqadda Dhaqdhaqaaqa Shaqaalaha • LABOR TRANSACTION RECORD', 40, 31);
+
+    // Top Accent Line
+    doc.setDrawColor(245, 158, 11);
+    doc.setLineWidth(1);
+    doc.line(14, 40, 196, 40);
+
+    // -- Section: Document Info Grid --
+    let currentY = 52;
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(30, 41, 59);
+    doc.text('XOGTA GUUD (GENERAL INFO)', 14, currentY);
+
+    currentY += 6;
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.2);
+    doc.line(14, currentY, 196, currentY);
+
+    currentY += 10;
+    // Four-point Data Grid
+    const drawGridItem = (label: string, value: string, x: number, y: number) => {
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(100, 116, 139);
+      doc.text(label.toUpperCase(), x, y);
+
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(30, 41, 59);
+      doc.text(value, x, y + 6);
+    };
+
+    drawGridItem('Mashruuca (Project)', project.name, 14, currentY);
+    drawGridItem('Shaqaalaha (Employee)', emp.employeeName, 75, currentY);
+    drawGridItem('Taariikhda (Date)', new Date().toLocaleDateString(), 150, currentY);
+
+    currentY += 22;
+
+    // -- Highlighted Total Box --
+    doc.setFillColor(30, 41, 59); // Dark Slate
+    doc.roundedRect(14, currentY, 182, 24, 2, 2, 'F');
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(203, 213, 225); // Slate-300
+    doc.text('WADARTA LA BIXIYAY (TOTAL DISBURSED)', 24, currentY + 10);
+
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.text(formatCurrency(emp.totalPaid), 24, currentY + 18);
+
+    // Aesthetic accent on the box
+    doc.setFillColor(245, 158, 11);
+    doc.rect(14, currentY, 3, 24, 'F');
+
+    currentY += 40;
+
+    // -- Tables: Minimalist Aesthetics --
+    const tableOptions = (title: string, startY: number) => ({
+      startY,
+      theme: 'plain' as const,
+      styles: {
+        fontSize: 9,
+        cellPadding: 4,
+        textColor: [51, 65, 85] as [number, number, number],
+        font: 'helvetica'
+      },
+      headStyles: {
+        fillColor: [248, 250, 252] as [number, number, number],
+        textColor: [100, 116, 139] as [number, number, number],
+        fontStyle: 'bold' as const,
+        fontSize: 8,
+        lineWidth: 0.1,
+        lineColor: [226, 232, 240] as [number, number, number]
+      },
+      alternateRowStyles: { fillColor: [252, 253, 254] as [number, number, number] },
+      columnStyles: {
+        3: { halign: 'right' as 'right', fontStyle: 'bold' as 'bold', textColor: [15, 23, 42] as [number, number, number] }
+      },
+      didDrawPage: (data: any) => {
+        // Subtle divider between rows
+        doc.setDrawColor(241, 245, 249);
+        doc.setLineWidth(0.1);
+      }
+    });
+
+    if (emp.transactions.length > 0) {
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(30, 41, 59);
+      doc.text('DHAQDHAQAAQAADKA (TRANSACTIONS)', 14, currentY);
+
+      autoTable(doc, {
+        ...tableOptions('', currentY + 4),
+        head: [['TAARIIKH', 'SHARAXAAD', 'ACCOUNT / BIXIYAY', 'QADARKA']],
+        body: emp.transactions.sort((a: any, b: any) => new Date(b.transactionDate).getTime() - new Date(a.transactionDate).getTime()).map((t: any) => [
+          new Date(t.transactionDate).toLocaleDateString(),
+          t.description || 'Lacag Bixin',
+          t.account?.name || t.fromAccount?.name || '-',
+          formatCurrency(Math.abs(typeof t.amount === 'number' ? t.amount : parseFloat(t.amount as any) || 0))
+        ])
+      });
+      currentY = (doc as any).lastAutoTable.finalY + 18;
+    }
+
+    if (emp.payments.length > 0) {
+      if (currentY > 230) { doc.addPage(); currentY = 20; }
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(30, 41, 59);
+      doc.text('LACAGAHA TOOSKA AH (DIRECT PAYMENTS)', 14, currentY);
+
+      autoTable(doc, {
+        ...tableOptions('', currentY + 4),
+        head: [['TAARIIKH', 'SHARAXAAD', 'ACCOUNT / BIXIYAY', 'QADARKA']],
+        body: emp.payments.sort((a: any, b: any) => new Date(b.expenseDate).getTime() - new Date(a.expenseDate).getTime()).map((p: any) => [
+          new Date(p.expenseDate).toLocaleDateString(),
+          p.description || 'Bixin',
+          p.account?.name || '-',
+          formatCurrency(Math.abs(typeof p.amount === 'number' ? p.amount : parseFloat(p.amount as any) || 0))
+        ])
+      });
+      currentY = (doc as any).lastAutoTable.finalY + 18;
+    }
+
+    // -- Summary Signature Area --
+    if (currentY > 240) { doc.addPage(); currentY = 30; }
+
+    currentY += 10;
+    doc.setDrawColor(226, 232, 240);
+    doc.line(14, currentY, 196, currentY);
+
+    currentY += 15;
+    // Signature lines
+    doc.setFontSize(8);
+    doc.setTextColor(148, 163, 184);
+
+    doc.line(14, currentY + 15, 64, currentY + 15);
+    doc.text('HUBIYAY (VERIFIED BY)', 14, currentY + 20);
+
+    doc.line(146, currentY + 15, 196, currentY + 15);
+    doc.text('SHAAQALAHA (EMPLOYEE)', 146, currentY + 20);
+
+    // -- Footer --
+    const pageCount = (doc as any).internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184);
+      doc.text(`Doc Ref: REV-${id?.toString().slice(0, 8).toUpperCase()}-${Math.floor(Math.random() * 1000)}`, 14, 285);
+      doc.text(`Page ${i} of ${pageCount}`, 105, 285, { align: 'center' });
+      doc.text('Birshiil Management System • www.revlo.app', 196, 285, { align: 'right' });
+    }
+
+    doc.save(`Labor_Report_${emp.employeeName.replace(/\s+/g, '_')}_${project.name.replace(/\s+/g, '_')}.pdf`);
   };
 
   // --- View Toggle Component ---
@@ -494,7 +708,7 @@ const ProjectDetailsPage: React.FC = () => {
                                 </div>
                                 <p className='font-bold text-lg text-redError ml-3 flex-shrink-0'>-Br{(typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount as any) || 0).toLocaleString()}</p>
                               </div>
-                              
+
                               {/* Settlement Progress */}
                               <div className="mt-1 pt-2 border-t border-dashed border-gray-200 dark:border-gray-700">
                                 <div className="flex justify-between items-center text-[10px] mb-1">
@@ -694,13 +908,22 @@ const ProjectDetailsPage: React.FC = () => {
                                   </p>
                                 </td>
                                 <td className="px-3 py-3 text-center">
-                                  <Link
-                                    href={`/expenses/add?projectId=${project.id}&employeeId=${emp.employeeId}&category=Labor`}
-                                    className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-primary text-white hover:bg-primary/90"
-                                  >
-                                    <Plus size={12} />
-                                    Bixin
-                                  </Link>
+                                  <div className="flex items-center gap-1.5">
+                                    <Link
+                                      href={`/expenses/add?projectId=${project.id}&employeeId=${emp.employeeId}&category=Labor`}
+                                      className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold bg-primary text-white hover:bg-primary/90"
+                                    >
+                                      <Plus size={12} />
+                                      Bixin
+                                    </Link>
+                                    <button
+                                      onClick={() => exportLaborPDF(emp)}
+                                      className="p-1 rounded bg-green-100 text-green-700 active:scale-95 transition-all"
+                                      title="Download PDF"
+                                    >
+                                      <FileDown size={14} />
+                                    </button>
+                                  </div>
                                 </td>
                               </tr>
                               {/* Expandable Details Row - Mobile */}
@@ -972,12 +1195,11 @@ const ProjectDetailsPage: React.FC = () => {
                               <p className="font-bold text-darkGray dark:text-gray-100 group-hover:text-red-600 transition-colors">{exp.description || '-'}</p>
                               <p className="text-xs text-mediumGray dark:text-gray-400">{new Date(exp.expenseDate).toLocaleDateString()}</p>
                               <div className="flex items-center gap-2 mt-1">
-                                <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${
-                                  exp.category === 'Material' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200' :
+                                <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${exp.category === 'Material' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200' :
                                   exp.category === 'Transport' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-200' :
-                                  exp.category === 'Debt Repayment' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-200' :
-                                  'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200'
-                                }`}>
+                                    exp.category === 'Debt Repayment' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-200' :
+                                      'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200'
+                                  }`}>
                                   {exp.category}
                                 </span>
                                 <span className="text-[10px] text-primary opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
@@ -1489,13 +1711,22 @@ const ProjectDetailsPage: React.FC = () => {
                                       </p>
                                     </td>
                                     <td className="px-4 py-4 text-center">
-                                      <Link
-                                        href={`/expenses/add?projectId=${project.id}&employeeId=${emp.employeeId}&category=Labor`}
-                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary text-white hover:bg-primary/90 transition-colors"
-                                      >
-                                        <Plus size={14} />
-                                        Bixin
-                                      </Link>
+                                      <div className="flex items-center gap-2">
+                                        <Link
+                                          href={`/expenses/add?projectId=${project.id}&employeeId=${emp.employeeId}&category=Labor`}
+                                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary text-white hover:bg-primary/90 transition-colors"
+                                        >
+                                          <Plus size={14} />
+                                          Bixin
+                                        </Link>
+                                        <button
+                                          onClick={() => exportLaborPDF(emp)}
+                                          className="p-1.5 rounded-lg bg-green-100 text-green-700 hover:bg-green-200 transition-colors"
+                                          title="Download PDF"
+                                        >
+                                          <FileDown size={18} />
+                                        </button>
+                                      </div>
                                     </td>
                                   </tr>
                                   {/* Expandable Details Row */}

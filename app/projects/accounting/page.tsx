@@ -191,13 +191,12 @@ export default function AccountingPage() {
       // NEW: Fetch debts report (true aggregation)
       const debtsReportRes = await fetch('/api/projects/accounting/reports/debts');
       const debtsReport = await debtsReportRes.json();
+      // Strict separation: Use aggregate project debts for the Project tab, and discrete non-project receivables for the general tab.
       const allDebts = debtsReport.debts || [];
+      const company = allDebts.filter((d: any) => !d.projectId && d.isReceivable);
+      const project = debtsReport.projectDebts || [];
 
-      // Strict separation: If it has a project ID, it's a project debt. Otherwise, it's a company debt.
-      const project = allDebts.filter((d: any) => d.projectId);
-      const company = allDebts.filter((d: any) => !d.projectId);
-
-      setCompanyDebts(debtsReport.receivables || []);
+      setCompanyDebts(company);
       setProjectDebts(project);
 
     } catch (error: any) {
@@ -867,7 +866,7 @@ export default function AccountingPage() {
         <div className="block lg:hidden">
           <div className="border-b border-lightGray dark:border-gray-700">
             <nav className="flex overflow-x-auto space-x-0 px-1" aria-label="Tabs">
-              {['Overview', 'Transactions', 'Debts', 'Project Debts', 'Accounts', 'Reports'].map((tab) => (
+              {['Overview', 'Transactions', 'Receivables', 'Project Debts', 'Accounts', 'Reports'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -879,11 +878,11 @@ export default function AccountingPage() {
                 >
                   {tab === 'Overview' && <LayoutGrid size={14} />}
                   {tab === 'Transactions' && <ReceiptText size={14} />}
-                  {tab === 'Debts' && <Scale size={14} />}
+                  {tab === 'Receivables' && <Scale size={14} />}
                   {tab === 'Project Debts' && <BriefcaseIcon size={14} />}
                   {tab === 'Accounts' && <Landmark size={14} />}
                   {tab === 'Reports' && <TrendingUp size={14} />}
-                  <span className="text-xs leading-tight text-center">{tab === 'Project Debts' ? 'Project' : tab === 'Transactions' ? 'Trans' : tab}</span>
+                  <span className="text-xs leading-tight text-center">{tab === 'Project Debts' ? 'Project' : tab === 'Transactions' ? 'Trans' : tab === 'Receivables' ? 'Receiv' : tab}</span>
                 </button>
               ))}
             </nav>
@@ -894,7 +893,7 @@ export default function AccountingPage() {
         <div className="hidden lg:block">
           <div className="border-b border-lightGray dark:border-gray-700">
             <nav className="-mb-px flex overflow-x-auto space-x-0 px-6" aria-label="Tabs">
-              {['Overview', 'Transactions', 'Debts', 'Project Debts', 'Accounts', 'Reports'].map((tab) => (
+              {['Overview', 'Transactions', 'Receivables', 'Project Debts', 'Accounts', 'Reports'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -906,7 +905,7 @@ export default function AccountingPage() {
                 >
                   {tab === 'Overview' && <LayoutGrid size={16} />}
                   {tab === 'Transactions' && <ReceiptText size={16} />}
-                  {tab === 'Debts' && <Scale size={16} />}
+                  {tab === 'Receivables' && <Scale size={16} />}
                   {tab === 'Project Debts' && <BriefcaseIcon size={16} />}
                   {tab === 'Accounts' && <Landmark size={16} />}
                   {tab === 'Reports' && <TrendingUp size={16} />}
@@ -1071,23 +1070,23 @@ export default function AccountingPage() {
             </div>
           )}
 
-          {activeTab === 'Debts' && (
+          {activeTab === 'Receivables' && (
             <div>
               <div className="mb-6">
-                <h3 className="text-xl sm:text-2xl font-bold text-darkGray dark:text-gray-100 mb-2">Lacagaha Deynta Macaamiisha/Shirkadaha</h3>
-                <p className="text-sm sm:text-base text-mediumGray dark:text-gray-400 mb-4">Halkan waxaad ka arki kartaa macaamiisha/shirkadaha ay shirkaddu daynta ku leedahay.</p>
+                <h3 className="text-xl sm:text-2xl font-bold text-darkGray dark:text-gray-100 mb-2">Lacagaha Macaamiisha/Receivables</h3>
+                <p className="text-sm sm:text-base text-mediumGray dark:text-gray-400 mb-4">Halkan waxaad ka arki kartaa macaamiisha/shirkadaha ay shirkaddu lacagta ku leedahay (Receivables).</p>
               </div>
-              {companyDebts.length === 0 ? (
+              {companyDebts.filter(d => (d.remaining || 0) > 0).length === 0 ? (
                 <div className="text-center py-8 sm:py-12">
                   <Scale size={40} className="mx-auto text-gray-400 mb-4" />
-                  <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-2">Ma jiraan deymo sax ah oo macaamiil/shirkad leedahay</h4>
-                  <p className="text-sm sm:text-base text-mediumGray dark:text-gray-400">Deynta oo dhan waa la bixiyay ama lama helin wax deyn ah.</p>
+                  <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-2">Ma jiraan lacago ay macaamiil/shirkad kugu leeyihiin</h4>
+                  <p className="text-sm sm:text-base text-mediumGray dark:text-gray-400">Dhammaan lacagihii waa la bixiyay ama lama helin wax receivables ah.</p>
                 </div>
               ) : (
                 <>
                   {/* Mobile Cards */}
                   <div className="block lg:hidden space-y-3">
-                    {companyDebts.map((debt) => (
+                    {companyDebts.filter(d => (d.remaining || 0) > 0).map((debt) => (
                       <div key={debt.id || debt.lender} className={`bg-white dark:bg-gray-800 p-3 rounded-xl shadow-md border-l-4 ${debt.status === 'Overdue' ? 'border-redError' : 'border-accent'} flex flex-col gap-2`}>
                         <div className="flex items-center gap-2 mb-1">
                           <Scale size={18} className={debt.status === 'Overdue' ? 'text-redError' : 'text-accent'} />
@@ -1138,20 +1137,20 @@ export default function AccountingPage() {
           {activeTab === 'Project Debts' && (
             <div>
               <div className="mb-6">
-                <h3 className="text-xl sm:text-2xl font-bold text-darkGray dark:text-gray-100 mb-2">Deynta Mashaariicda Ku Dhiman</h3>
-                <p className="text-sm sm:text-base text-mediumGray dark:text-gray-400 mb-4">Halkan waxaad ka arki kartaa dhammaan mashaariicda weli lacag looga leeyahay shirkad ahaan.</p>
+                <h3 className="text-xl sm:text-2xl font-bold text-darkGray dark:text-gray-100 mb-2">Lacagaha Mashaariicda/Project Receivables</h3>
+                <p className="text-sm sm:text-base text-mediumGray dark:text-gray-400 mb-4">Halkan waxaad ka arki kartaa mashaariicda ay shirkaddu lacagta ku leedahay.</p>
               </div>
-              {projectDebts.length === 0 ? (
+              {projectDebts.filter(d => (d.remaining || 0) > 0).length === 0 ? (
                 <div className="text-center py-8 sm:py-12">
                   <BriefcaseIcon size={40} className="mx-auto text-gray-400 mb-4" />
-                  <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-2">Ma jiraan deymo mashruuc ah oo ku dhiman</h4>
-                  <p className="text-sm sm:text-base text-mediumGray dark:text-gray-400">Deynta dhammaan mashaariicdu waa la bixiyay ama lama helin wax deyn mashruuc ah.</p>
+                  <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-2">Ma jiraan lacago mashaariic ah oo maqan</h4>
+                  <p className="text-sm sm:text-base text-mediumGray dark:text-gray-400">Dhammaan lacagihii mashaariicda waa la bixiyay.</p>
                 </div>
               ) : (
                 <>
                   {/* Mobile Cards */}
                   <div className="block lg:hidden space-y-3">
-                    {projectDebts.map((debt) => (
+                    {projectDebts.filter(d => (d.remaining || 0) > 0).map((debt) => (
                       <div key={debt.id || debt.project} className={`bg-white dark:bg-gray-800 p-3 rounded-xl shadow-md border-l-4 border-darkGray flex flex-col gap-2`}>
                         <div className="flex items-center gap-2 mb-1">
                           <BriefcaseIcon size={18} className="text-darkGray" />
@@ -1519,24 +1518,24 @@ export default function AccountingPage() {
             </div>
           )}
 
-          {activeTab === 'Debts' && (
+          {activeTab === 'Receivables' && (
             <div>
               <div className="mb-8">
                 <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-2 flex items-center">
                   <Scale size={24} className="text-primary mr-3" />
-                  Lacagaha Deynta Macaamiisha/Shirkadaha
+                  Lacagaha Macaamiisha/Receivables
                 </h3>
                 <p className="text-base text-mediumGray dark:text-gray-400">
-                  Halkan waxaad ka arki kartaa macaamiisha/shirkadaha ay shirkaddu daynta ku leedahay.
+                  Halkan waxaad ka arki kartaa macaamiisha/shirkadaha ay shirkaddu lacagta ku leedahay (Receivables).
                 </p>
               </div>
 
-              {companyDebts.length === 0 ? (
+              {companyDebts.filter(d => (d.remaining || 0) > 0).length === 0 ? (
                 <div className="text-center py-12">
                   <Scale size={48} className="mx-auto text-gray-400 mb-4" />
-                  <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-2">Ma jiraan deymo sax ah oo macaamiil/shirkad leedahay</h4>
+                  <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-2">Ma jiraan lacago ay macaamiil/shirkad kugu leeyihiin</h4>
                   <p className="text-base text-mediumGray dark:text-gray-400 mb-6">
-                    Deynta oo dhan waa la bixiyay ama lama helin wax deyn ah.
+                    Dhammaan lacagihii waa la bixiyay ama lama helin wax receivables ah.
                   </p>
                 </div>
               ) : (
@@ -1545,20 +1544,73 @@ export default function AccountingPage() {
                     <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
                       <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600">
                         <tr>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Customer</th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Total</th>
-                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Received</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Macmiilka</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Wadarta</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">La Helay</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Haraaga</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Xilliga</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-lightGray dark:divide-gray-700">
+                        {companyDebts.filter(d => (d.remaining || 0) > 0).map((debt) => (
+                          <tr key={debt.id || debt.lender} className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${debt.status === 'Overdue' ? 'bg-red-50 dark:bg-red-900/20' : ''}`}>
+                            <td className="px-6 py-4 font-bold text-darkGray dark:text-gray-100">{debt.client || debt.customerName || '--'}</td>
+                            <td className="px-6 py-4">{debt.amount?.toLocaleString()}</td>
+                            <td className="px-6 py-4">{debt.received?.toLocaleString() || debt.paid?.toLocaleString()}</td>
+                            <td className="px-6 py-4 text-redError font-semibold">{debt.remaining?.toLocaleString()}</td>
+                            <td className="px-6 py-4">{debt.dueDate ? new Date(debt.dueDate).toLocaleDateString() : '--'}</td>
+                            <td className="px-6 py-4 font-medium"><span className={`px-3 py-1 rounded-full text-xs font-semibold ${debt.status === 'Overdue' ? 'bg-redError/20 text-redError' : debt.status === 'Paid' ? 'bg-green-100 text-secondary' : 'bg-accent/10 text-accent'}`}>{debt.status}</span></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'Project Debts' && (
+            <div>
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-2 flex items-center">
+                  <BriefcaseIcon size={24} className="text-primary mr-3" />
+                  Lacagaha Mashaariicda/Project Receivables
+                </h3>
+                <p className="text-base text-mediumGray dark:text-gray-400">
+                  Halkan waxaad ka arki kartaa mashaariicda ay shirkaddu lacagta ku leedahay.
+                </p>
+              </div>
+
+              {projectDebts.filter(d => (d.remaining || 0) > 0).length === 0 ? (
+                <div className="text-center py-12">
+                  <BriefcaseIcon size={48} className="mx-auto text-gray-400 mb-4" />
+                  <h4 className="text-lg font-semibold text-darkGray dark:text-gray-100 mb-2">Ma jiraan lacago mashaariic ah oo maqan</h4>
+                  <p className="text-base text-mediumGray dark:text-gray-400 mb-6">
+                    Dhammaan lacagihii mashaariicda waa la xisaabiyay.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
+                      <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600">
+                        <tr>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Project</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Agreement</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Paid</th>
                           <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Remaining</th>
                           <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Due</th>
                           <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Status</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-lightGray dark:divide-gray-700">
-                        {companyDebts.map((debt) => (
-                          <tr key={debt.id || debt.lender} className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${debt.status === 'Overdue' ? 'bg-red-50 dark:bg-red-900/20' : ''}`}>
-                            <td className="px-6 py-4 font-bold text-darkGray dark:text-gray-100">{debt.client || debt.customerName || '--'}</td>
+                        {projectDebts.filter(d => (d.remaining || 0) > 0).map((debt) => (
+                          <tr key={debt.id || debt.project} className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${debt.status === 'Overdue' ? 'bg-red-50 dark:bg-red-900/20' : ''}`}>
+                            <td className="px-6 py-4 font-bold text-darkGray dark:text-gray-100">{debt.project || debt.projectName || '--'}</td>
                             <td className="px-6 py-4">{debt.amount?.toLocaleString()}</td>
-                            <td className="px-6 py-4">{debt.received?.toLocaleString() || debt.paid?.toLocaleString()}</td>
+                            <td className="px-6 py-4">{debt.paid?.toLocaleString()}</td>
                             <td className="px-6 py-4 text-redError font-semibold">{debt.remaining?.toLocaleString()}</td>
                             <td className="px-6 py-4">{debt.dueDate ? new Date(debt.dueDate).toLocaleDateString() : '--'}</td>
                             <td className="px-6 py-4 font-medium"><span className={`px-3 py-1 rounded-full text-xs font-semibold ${debt.status === 'Overdue' ? 'bg-redError/20 text-redError' : debt.status === 'Paid' ? 'bg-green-100 text-secondary' : 'bg-accent/10 text-accent'}`}>{debt.status}</span></td>

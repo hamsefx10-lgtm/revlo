@@ -23,6 +23,7 @@ interface Customer {
   notes?: string;
   createdAt: string;
   updatedAt: string;
+  outstandingDebt: number; // Added for debt filtering
 }
 
 // --- Customer Table Row Component ---
@@ -44,7 +45,11 @@ const CustomerRow: React.FC<{ customer: Customer; onEdit: (id: string) => void; 
     <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300 flex items-center space-x-2">
       {customer.phone ? <Phone size={16} /> : <XCircle size={16} className="text-redError" />} <span>{customer.phone || 'N/A'}</span>
     </td>
-    <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">{new Date(customer.createdAt).toLocaleDateString()}</td>
+    <td className="p-4 whitespace-nowrap">
+      <span className={`font-bold ${customer.outstandingDebt > 0 ? 'text-redError' : 'text-green-600'}`}>
+        Br{customer.outstandingDebt.toLocaleString()}
+      </span>
+    </td>
     <td className="p-4 whitespace-nowrap text-right">
       <div className="flex items-center justify-end space-x-2">
         <Link href={`/projects/customers/${customer.id}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View Details">
@@ -97,6 +102,12 @@ const CustomerCard: React.FC<{ customer: Customer; onEdit: (id: string) => void;
     <p className="text-xs text-mediumGray dark:text-gray-400 mb-0.5 flex items-center space-x-1">
       <Calendar size={8} /> <span>Diiwaan Gashan: {new Date(customer.createdAt).toLocaleDateString()}</span>
     </p>
+    <div className="mt-2 p-2 bg-red-50 dark:bg-red-900/20 rounded border border-red-100 dark:border-red-800 flex justify-between items-center">
+      <span className="text-[10px] font-bold text-red-600 dark:text-red-400">Daynta Hadhay:</span>
+      <span className="text-sm font-bold text-redError">
+        Br{customer.outstandingDebt.toLocaleString()}
+      </span>
+    </div>
     <Link href={`/projects/customers/${customer.id}`} className="mt-1 inline-block text-primary hover:underline text-xs font-medium">
       Fiiri Faahfaahin &rarr;
     </Link>
@@ -111,6 +122,7 @@ export default function CustomersPage() {
   const [filterType, setFilterType] = useState('All'); // 'Individual' or 'Company'
   const [filterDateRange, setFilterDateRange] = useState('All');
   const [viewMode, setViewMode] = useState<'list' | 'cards'>('list'); // Default to list view
+  const [showOnlyDebtors, setShowOnlyDebtors] = useState(true); // Default to showing only debtors
   const [pageLoading, setPageLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
@@ -167,8 +179,9 @@ export default function CustomersPage() {
       (customer.companyName && customer.companyName.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesType = filterType === 'All' || customer.type === filterType;
     const matchesDate = filterDateRange === 'All' ? true : true;
+    const matchesDebt = !showOnlyDebtors || customer.outstandingDebt > 0;
 
-    return matchesSearch && matchesType && matchesDate;
+    return matchesSearch && matchesType && matchesDate && matchesDebt;
   });
 
   // Filter options
@@ -264,6 +277,17 @@ export default function CustomersPage() {
             <LayoutGrid size={16} />
           </button>
         </div>
+        {/* Debt Filter Toggle */}
+        <div className="flex items-center space-x-2 bg-lightGray dark:bg-gray-700 px-3 py-1.5 rounded-lg border border-lightGray dark:border-gray-600">
+          <span className="text-xs font-semibold text-darkGray dark:text-gray-200">Kaliya kuwa lagu leeyahay:</span>
+          <button
+            title={showOnlyDebtors ? "Show all customers" : "Show only debtors"}
+            onClick={() => setShowOnlyDebtors(!showOnlyDebtors)}
+            className={`w-10 h-5 flex items-center rounded-full p-1 transition-colors duration-200 ${showOnlyDebtors ? 'bg-primary' : 'bg-gray-400'}`}
+          >
+            <div className={`bg-white w-3 h-3 rounded-full shadow-md transform transition-transform duration-200 ${showOnlyDebtors ? 'translate-x-5' : 'translate-x-0'}`} />
+          </button>
+        </div>
       </div>
 
 
@@ -298,7 +322,7 @@ export default function CustomersPage() {
                       <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Magaca Shirkadda</th>
                       <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Email</th>
                       <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Taleefan</th>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Diiwaan Gashan</th>
+                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Daynta Hadhay</th>
                       <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>

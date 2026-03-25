@@ -14,6 +14,7 @@ import {
 import Toast from '@/components/common/Toast'; // Import Toast component
 import { calculateEmployeeSalary, calculateEmployeeDays } from '@/lib/utils';
 import { subscribeToExpenseChange } from '@/lib/client-events';
+import EmployeeIDCard from '@/components/employees/EmployeeIDCard';
 
 // --- Employee Data Interface (Refined for API response) ---
 interface Employee {
@@ -160,7 +161,7 @@ const EmployeeDetailsPage: React.FC = () => {
     // fetchSalarySummary is now only defined once outside, not inside fetchEmployeeDetails
     setLoading(true);
     try {
-      const response = await fetch(`/api/employees/${id}`);
+      const response = await fetch(`/api/projects/employees/${id}`);
       if (!response.ok) throw new Error('Failed to fetch employee details');
       const data = await response.json();
 
@@ -697,6 +698,12 @@ const EmployeeDetailsPage: React.FC = () => {
               )}
               {refreshing ? 'Cusboonaysiina...' : 'Cusboonaysii'}
             </button>
+            <button
+              onClick={() => window.print()}
+              className="bg-secondary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-green-700 transition duration-200 shadow-md flex items-center"
+            >
+              <Download size={20} className="mr-2" /> Aqoonsi (ID Card)
+            </button>
             <Link href={`/projects/employees/edit/${employee.id}`} className="bg-accent text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-orange-600 transition duration-200 shadow-md flex items-center">
               <Edit size={20} className="mr-2" /> Edit Shaqaale
             </Link>
@@ -704,6 +711,11 @@ const EmployeeDetailsPage: React.FC = () => {
               <Trash2 size={20} className="mr-2" /> Delete
             </button>
           </div>
+        </div>
+
+        {/* Hidden on screen, visible on print */}
+        <div className="hidden print:block">
+          <EmployeeIDCard employee={employee} />
         </div>
 
         {/* Employee Summary Cards - Redesigned with Essential Cards Only */}

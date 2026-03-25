@@ -65,11 +65,11 @@ export async function GET(request: Request, { params }: { params: { id: string }
           shouldProcess = true;
           const isStandardIn = [
             'INCOME', 'DEBT_RECEIVED', 'TRANSFER_IN'
-          ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && !trx.vendorId);
+          ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && (!trx.vendorId || !trx.expenseId));
 
           const isStandardOut = [
             'EXPENSE', 'DEBT_GIVEN', 'DEBT_TAKEN', 'TRANSFER_OUT'
-          ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && trx.vendorId);
+          ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && !!trx.vendorId && !!trx.expenseId);
 
           if (isStandardIn) {
             isIncome = true;

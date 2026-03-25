@@ -67,14 +67,14 @@ const Navbar = () => {
               </Link>
             ))}
             <Link href="/download" className="text-sm font-bold hover:text-primary transition-colors text-mediumGray dark:text-gray-300">
-              Install
+              Ku Shubo
             </Link>
           </div>
 
           {/* CTA Buttons - Desktop */}
           <div className="hidden md:flex items-center gap-4">
             <Link href="/login" className="text-sm font-bold hover:text-primary transition-colors text-darkGray dark:text-gray-200">
-              Log In
+              Gal (Login)
             </Link>
             <Link href="/signup" className="relative overflow-hidden bg-primary text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-lg hover:shadow-primary/40 hover:-translate-y-0.5 transition-all group">
               <span className="relative z-10 flex items-center gap-2 text-nowrap">Bilaaw Hadda <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" /></span>
@@ -108,11 +108,11 @@ const Navbar = () => {
               {link.name}
             </Link>
           ))}
-          <Link href="/download" className="block text-2xl font-bold text-darkGray dark:text-white hover:text-primary pb-4">Install</Link>
+          <Link href="/download" className="block text-2xl font-bold text-darkGray dark:text-white hover:text-primary pb-4">Ku Shubo</Link>
 
           <div className="pt-8 flex flex-col gap-4">
             <Link href="/login" className="w-full text-center text-lg font-bold py-4 bg-gray-100 dark:bg-gray-800 text-darkGray dark:text-white rounded-2xl active:scale-95 transition-transform" onClick={() => setIsOpen(false)}>
-              Log In
+              Gal (Login)
             </Link>
             <Link href="/signup" className="w-full text-center text-lg bg-primary text-white py-4 rounded-2xl font-bold shadow-xl active:scale-95 transition-transform" onClick={() => setIsOpen(false)}>
               Bilaaw Hadda
@@ -434,29 +434,31 @@ const Statistics = () => {
   ];
 
   return (
-    <section className="relative z-20 bg-darkGray dark:bg-black text-white border-y border-white/5 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <ScrollReveal width="100%" direction="up" delay={0.1} distance={20}>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 divide-x-0 md:divide-x divide-white/10">
-            {values.map((item, idx) => {
-              const Icon = item.icon;
-              return (
-                <div key={idx} className="flex flex-col items-center text-center group cursor-default">
-                  <div className="mb-4 p-3 rounded-xl bg-white/5 text-gray-400 group-hover:text-primary group-hover:bg-white/10 group-hover:scale-110 transition-all duration-300">
-                    <Icon size={24} />
+    <Sticky3DSection index={3} className="bg-darkGray dark:bg-black">
+      <section className="relative z-20 text-white border-y border-white/5 py-12 w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <ScrollReveal width="100%" direction="up" delay={0.1} distance={20}>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 divide-x-0 md:divide-x divide-white/10">
+              {values.map((item, idx) => {
+                const Icon = item.icon;
+                return (
+                  <div key={idx} className="flex flex-col items-center text-center group cursor-default">
+                    <div className="mb-4 p-3 rounded-xl bg-white/5 text-gray-400 group-hover:text-primary group-hover:bg-white/10 group-hover:scale-110 transition-all duration-300">
+                      <Icon size={24} />
+                    </div>
+                    <div className="text-2xl md:text-3xl font-black mb-2 tracking-tight text-white group-hover:text-primary transition-colors">
+                      {item.title}
+                    </div>
+                    <div className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">{item.label}</div>
+                    <div className="text-xs text-gray-500 font-medium">{item.desc}</div>
                   </div>
-                  <div className="text-2xl md:text-3xl font-black mb-2 tracking-tight text-white group-hover:text-primary transition-colors">
-                    {item.title}
-                  </div>
-                  <div className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-1">{item.label}</div>
-                  <div className="text-xs text-gray-500 font-medium">{item.desc}</div>
-                </div>
-              );
-            })}
-          </div>
-        </ScrollReveal>
-      </div>
-    </section>
+                );
+              })}
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+    </Sticky3DSection>
   );
 };
 
@@ -631,10 +633,10 @@ const Pricing = () => {
 
   const plans = [
     {
-      name: 'Starter',
+      name: 'Starter (Bilow)',
       target: 'Ganacsiga Yaryar & Tukaamada',
-      price: billingCycle === 'monthly' ? 'Free' : 'Free',
-      period: billingCycle === 'monthly' ? '/mo' : '/yr',
+      price: billingCycle === 'monthly' ? 'Bilaash' : 'Bilaash',
+      period: billingCycle === 'monthly' ? '/bishii' : '/sanadkii',
       description: 'Ku bilow nidaamka POS-ka iyo maamulka iibka oo bilaash ah.',
       buttonText: 'Bilaaw Hadda',
       buttonColor: 'bg-white text-darkGray border border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:text-white dark:border-gray-700',
@@ -651,10 +653,10 @@ const Pricing = () => {
       ]
     },
     {
-      name: 'Professional',
+      name: 'Professional (Xirfadle)',
       target: 'Shirkadaha Dhexe & Ganacsiga Guud',
-      price: billingCycle === 'monthly' ? '$0' : '$00',
-      period: billingCycle === 'monthly' ? '/mo' : '/yr',
+      price: billingCycle === 'monthly' ? '$30' : '$24',
+      period: billingCycle === 'monthly' ? '/bishii' : '/sanadkii',
       description: 'Xalka ugu fiican ee lagu maamulo kaydka, shaqaalaha, iyo xisaabaadka.',
       buttonText: 'Tijaabi 14 Maalmood',
       buttonColor: 'bg-primary text-white hover:bg-blue-600 shadow-lg shadow-blue-500/30',
@@ -671,9 +673,9 @@ const Pricing = () => {
       ]
     },
     {
-      name: 'Enterprise',
+      name: 'Enterprise (Shirkadaha)',
       target: 'Warshadaha & Shirkadaha Waaweyn',
-      price: 'Custom',
+      price: 'Heshiis',
       period: '',
       description: 'Nidaam gaar ah oo loogu talagalay warshadaha iyo hawlaha waaweyn.',
       buttonText: 'La Hadal Sales-ka',
@@ -713,13 +715,13 @@ const Pricing = () => {
                 <div className={`absolute w-1/2 h-[calc(100%-8px)] top-1 bg-white dark:bg-gray-700 rounded-full shadow-sm transition-all duration-300 ${billingCycle === 'monthly' ? 'left-1' : 'left-[calc(50%-4px)] translate-x-full'}`}></div>
                 <button
                   onClick={() => setBillingCycle('monthly')}
-                  className={`relative z-10 px-6 py-2 rounded-full text-sm font-bold transition-colors ${billingCycle === 'monthly' ? 'text-darkGray dark:text-white' : 'text-gray-500'}`}
+                  className={`relative z-10 px-6 py-2 rounded-full text-sm font-bold transition-colors ${billingCycle === 'monthly' ? 'text-primary' : 'text-gray-500 hover:text-darkGray dark:hover:text-white'}`}
                 >
                   Bille (Monthly)
                 </button>
                 <button
                   onClick={() => setBillingCycle('yearly')}
-                  className={`relative z-10 px-6 py-2 rounded-full text-sm font-bold transition-colors ${billingCycle === 'yearly' ? 'text-darkGray dark:text-white' : 'text-gray-500'}`}
+                  className={`relative z-10 px-6 py-2 rounded-full text-sm font-bold transition-colors ${billingCycle === 'yearly' ? 'text-primary' : 'text-gray-500 hover:text-darkGray dark:hover:text-white'}`}
                 >
                   Sanadle (Yearly) <span className="text-[10px] text-green-500 ml-1">-20%</span>
                 </button>
@@ -741,7 +743,7 @@ const Pricing = () => {
                 >
                   {plan.popular && (
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white px-6 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg whitespace-nowrap z-20">
-                      Most Popular
+                      Ugu Caansan
                     </div>
                   )}
 
@@ -801,7 +803,7 @@ const Pricing = () => {
 const FAQ = () => {
   const faqs = [
     { q: "Ma u baahanahay internet joogto ah?", a: "Maya. Revlo wuxuu leeyahay 'Offline Mode'. Waad shaqayn kartaa internet la'aan, markaad hesho internet-na xogta ayaa synchronise samaynaysa." },
-    { q: "Ma isticmaali karaa Mobile?", a: "Haa. Revlo waa PWA (Progressive Web App). Waxaad ku shuban kartaa mobile-kaaga (Android & iOS) adigoo ka heleya khibrad liidata." },
+    { q: "Ma isticmaali karaa Mobile?", a: "Haa. Revlo waa PWA (Progressive Web App). Waxaad ku shuban kartaa mobile-kaaga (Android & iOS) adigoo ka heleya khibrad sare." },
     { q: "Xogtaydu ma ammaan baa?", a: "Haa. Xogtaada waxaa lagu keydiyaa Cloud Servers oo aad u ammaan ah (Encrypted). Adiga kaliya ayaa geli kara." },
     { q: "Ma jiraan kharashyo qarsoon?", a: "Maya. Qiimaha aad aragto waa kaas. Ma jiraan wax qarsoon. Support-kuna waa bilaash." }
   ];
@@ -847,7 +849,7 @@ const FAQ = () => {
 
 // --- Final CTA Section (NEW) ---
 const FinalCTA = () => (
-  <Sticky3DSection index={10} className="bg-primary text-white relative overflow-hidden">
+  <Sticky3DSection index={12} className="bg-primary text-white relative overflow-hidden">
     <div className="py-24 h-full flex flex-col justify-center relative">
       {/* Abstract Backgrounds */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
@@ -873,7 +875,7 @@ const FinalCTA = () => (
 
 const PWAInstall = () => {
   return (
-    <Sticky3DSection index={11} className="bg-gradient-to-br from-primary/5 to-secondary/5 dark:from-gray-900 dark:to-gray-800">
+    <Sticky3DSection index={10} className="bg-gradient-to-br from-primary/5 to-secondary/5 dark:from-gray-900 dark:to-gray-800">
       <div id="download" className="py-24 h-full flex flex-col justify-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -913,7 +915,7 @@ const PWAInstall = () => {
 
                 <div className="mt-10 flex gap-4">
                   <button className="bg-darkGray text-white px-6 py-3 rounded-lg font-bold hover:bg-black transition-colors flex items-center gap-2">
-                    <Download size={20} /> Install App
+                    <Download size={20} /> Ku Shubo App-ka
                   </button>
                 </div>
               </div>
@@ -947,7 +949,7 @@ const PWAInstall = () => {
 
 const Reviews = () => {
   return (
-    <Sticky3DSection index={12} className="bg-white dark:bg-gray-900">
+    <Sticky3DSection index={11} className="bg-white dark:bg-gray-900">
       <div className="py-24 h-full flex flex-col justify-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal width="100%" direction="up" delay={0.1}>
@@ -991,8 +993,8 @@ const Footer = () => {
           </p>
           <div className="flex gap-4">
             {/* Socials placeholder */}
-            <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary transition-colors cursor-pointer"><Globe size={20} /></div>
-            <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary transition-colors cursor-pointer"><Mail size={20} /></div>
+            <Link href="https://revlo.me" className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary transition-colors cursor-pointer"><Globe size={20} /></Link>
+            <Link href="mailto:info@revlo.com" className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary transition-colors cursor-pointer"><Mail size={20} /></Link>
           </div>
         </div>
 
@@ -1026,10 +1028,10 @@ const Footer = () => {
         </div>
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 pt-8 border-t border-gray-800 text-center text-gray-500 text-sm flex flex-col md:flex-row justify-between items-center gap-4">
-        <p>&copy; {new Date().getFullYear()} Revlo.2026 Xuquuqda oo dhan waa ay xifdisan tahay.</p>
+        <p>&copy; {new Date().getFullYear()} Revlo. Xuquuqda oo dhan waa ay xifdisan tahay.</p>
         <div className="flex gap-6">
-          <Link href="/terms" className="hover:text-white">Terms</Link>
-          <Link href="/privacy" className="hover:text-white">Privacy</Link>
+          <Link href="/terms" className="hover:text-white">Shuruudaha (Terms)</Link>
+          <Link href="/privacy" className="hover:text-white">Xog-dhawrka (Privacy)</Link>
         </div>
       </div>
     </footer>
@@ -1050,12 +1052,13 @@ export default function HomePage() {
       <Hero />
       <DashboardPreview />
       <Statistics />
-      <Sticky3DSection index={3} className="bg-white dark:bg-gray-900">
+      <Sticky3DSection index={4} className="bg-white dark:bg-gray-900">
         <BusinessSolutionSelector />
       </Sticky3DSection>
-      <div className="relative z-10 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
+      <div className="relative">
         <HowItWorks />
         <Features />
+        <Solutions />
         <Pricing />
         <FAQ />
       </div>

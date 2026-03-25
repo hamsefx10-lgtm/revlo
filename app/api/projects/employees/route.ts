@@ -21,53 +21,70 @@ export async function GET(request: Request) {
         }
       }
     });
+
     const today = new Date();
     const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
     const currentDayOfMonth = today.getDate();
-    const processedEmployees = await Promise.all(employees.map(async (emp: any) => {
+
+    // OPTIMIZATION: Fetch ALL relevant expenses for ALL employees in the list at once
+    const employeeIds = employees.map(e => e.id);
+    const allSalaryExpenses = await prisma.expense.findMany({
+      where: {
+        companyId,
+        employeeId: { in: employeeIds },
+        OR: [
+          { category: 'Salary' },
+          { category: 'Labor' },
+          { category: 'Company Labor' },
+          { subCategory: 'Salary' },
+        ],
+      },
+    });
+
+    // Group expenses by employeeId for efficient lookup
+    const expensesByEmployee: Record<string, any[]> = {};
+    allSalaryExpenses.forEach(expense => {
+      if (!expense.employeeId) return;
+      if (!expensesByEmployee[expense.employeeId]) {
+        expensesByEmployee[expense.employeeId] = [];
+      }
+      expensesByEmployee[expense.employeeId].push(expense);
+    });
+
+    const processedEmployees = employees.map((emp: any) => {
       // monthlySalary can be null
-      const monthlySalaryNum = emp.monthlySalary ? emp.monthlySalary.toNumber() : null;
+      const monthlySalaryNum = emp.monthlySalary ? Number(emp.monthlySalary) : null;
 
       // Calculate total months worked
       const startDate = new Date(emp.startDate);
       const yearDiff = today.getFullYear() - startDate.getFullYear();
       const monthDiff = today.getMonth() - startDate.getMonth();
-      const totalMonthsWorked = yearDiff * 12 + monthDiff + 1;
+      const totalMonthsWorked = Math.max(1, yearDiff * 12 + monthDiff + 1);
       const totalSalaryOwed = monthlySalaryNum ? monthlySalaryNum * totalMonthsWorked : 0;
 
-      // Get ACTUAL total paid from expenses
-      const salaryExpenses = await prisma.expense.findMany({
-        where: {
-          employeeId: emp.id,
-          companyId,
-          OR: [
-            { category: 'Salary' },
-            { category: 'Labor' },
-            { category: 'Company Labor' },
-            { subCategory: 'Salary' },
-          ],
-        },
-      });
-
+      // Get ACTUAL total paid from pre-fetched expenses
+      const salaryExpenses = expensesByEmployee[emp.id] || [];
       const totalPaid = salaryExpenses.reduce((sum, expense) => {
-        return sum + (expense.amount ? expense.amount.toNumber() : 0);
+        return sum + (expense.amount ? Number(expense.amount) : 0);
       }, 0);
 
       const dailyRate = monthlySalaryNum ? monthlySalaryNum / daysInMonth : null;
       const earnedThisMonth = dailyRate ? dailyRate * currentDayOfMonth : null;
       const totalRemaining = monthlySalaryNum ? totalSalaryOwed - totalPaid : 0;
       const overpaidAmount = totalRemaining < 0 ? Math.abs(totalRemaining) : 0;
+
       // Project labor records
       const laborRecords = (emp.laborRecords || []).map((labor: any) => ({
         id: labor.id,
         projectId: labor.projectId,
         projectName: labor.project?.name || '',
         workDescription: labor.workDescription,
-        agreedWage: labor.agreedWage ? labor.agreedWage.toNumber() : null,
-        paidAmount: labor.paidAmount ? labor.paidAmount.toNumber() : null,
-        remainingWage: labor.remainingWage ? labor.remainingWage.toNumber() : null,
+        agreedWage: labor.agreedWage ? Number(labor.agreedWage) : null,
+        paidAmount: labor.paidAmount ? Number(labor.paidAmount) : null,
+        remainingWage: labor.remainingWage ? Number(labor.remainingWage) : null,
         dateWorked: labor.dateWorked,
       }));
+
       return {
         id: emp.id,
         fullName: emp.fullName,
@@ -78,22 +95,22 @@ export async function GET(request: Request) {
         isActive: emp.isActive,
         startDate: emp.startDate,
         monthlySalary: monthlySalaryNum,
-        totalPaid, // FIXED: Actual total paid from all expenses
-        totalSalaryOwed, // FIXED: Total salary owed (months × salary)
-        totalRemaining, // FIXED: Remaining (negative if overpaid)
+        totalPaid,
+        totalSalaryOwed,
+        totalRemaining,
         dailyRate,
         earnedThisMonth,
         overpaidAmount,
         daysWorkedThisMonth: currentDayOfMonth,
         laborRecords,
-        totalMonthsWorked, // FIXED: Total months worked
+        totalMonthsWorked,
       };
-    }));
+    });
     return NextResponse.json({ employees: processedEmployees }, { status: 200 });
   } catch (error) {
     console.error('Cilad ayaa dhacday marka shaqaalaha la soo gelinayay:', error);
     return NextResponse.json(
-      { message: 'Cilad server ayaa dhacday. Fadlan isku day mar kale.' },
+      { message: `Cilad server ayaa dhacday: ${error instanceof Error ? error.message : 'Fadlan isku day mar kale.'}` },
       { status: 500 }
     );
   }

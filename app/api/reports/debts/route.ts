@@ -77,6 +77,7 @@ export async function GET(req: Request) {
             subCategory: 'Debt'
           },
           { category: 'Debt Repayment' },
+          { vendorId: { not: null } }, // ALL Vendor expenses might have debt
           { description: { contains: 'debt', mode: 'insensitive' } },
           { description: { contains: 'loan', mode: 'insensitive' } },
           { description: { contains: 'credit', mode: 'insensitive' } },
@@ -110,52 +111,13 @@ export async function GET(req: Request) {
     // -------------------------------------------------------------------------
     const vendorDebtMap: Record<string, any> = {};
 
-    // 1. Initialize from Purchase Orders (Primary source of debt)
-    allPOs.forEach((po: any) => {
-      const entityKey = `${po.vendorId}_${po.companyId}`;
-      const amount = Number(po.totalAmount || 0);
-      const paid = Number(po.paidAmount || 0);
-
-      if (!vendorDebtMap[entityKey]) {
-        vendorDebtMap[entityKey] = {
-          id: po.vendorId,
-          lender: po.vendor?.name || 'Unknown Vendor',
-          lenderId: po.vendorId,
-          companyId: po.companyId,
-          companyName: 'Company',
-          type: 'Supplier Credit',
-          amount: 0,
-          paid: 0,
-          remaining: 0,
-          issueDate: po.createdAt,
-          dueDate: new Date(new Date(po.createdAt).getTime() + (30 * 24 * 60 * 60 * 1000)).toISOString(),
-          status: 'Active',
-          project: po.project?.name || '',
-          projectId: po.projectId || '',
-          phoneNumber: po.vendor?.phoneNumber || '',
-          email: po.vendor?.userId || '',
-          isLiability: true,
-          isReceivable: false,
-          transactions: []
-        };
-      }
-
-      vendorDebtMap[entityKey].amount += amount;
-      vendorDebtMap[entityKey].paid += paid;
-    });
-
-    // 2. Add Expenses that are NOT linked to a Purchase Order
+    // 1. Incorporate ALL Vendor Expenses (Credit Purchases)
     allExpenses.forEach((expense: any) => {
-      if (expense.purchaseOrderId) return; // Skip, already handled by PO logic
-
-      const entityKey = `${expense.vendorId}_${expense.companyId}`;
       if (!expense.vendorId) return;
-
+      
+      const projectKey = expense.projectId || 'general';
+      const entityKey = `${expense.vendorId}_${projectKey}`;
       const amount = Math.abs(Number(expense.amount) || 0);
-      // We calculate paidAmount from transactions linked to this expense
-      const paid = allTransactions
-        .filter(t => t.expenseId === expense.id && (t.type === 'EXPENSE' || t.type === 'DEBT_REPAID'))
-        .reduce((sum, t) => sum + Math.abs(Number(t.amount || 0)), 0);
 
       if (!vendorDebtMap[entityKey]) {
         vendorDebtMap[entityKey] = {
@@ -164,14 +126,14 @@ export async function GET(req: Request) {
           lenderId: expense.vendorId,
           companyId: expense.companyId,
           companyName: 'Company',
-          type: 'Expense Credit',
+          type: 'Vendor Credit',
           amount: 0,
           paid: 0,
           remaining: 0,
           issueDate: expense.createdAt,
           dueDate: new Date(new Date(expense.createdAt).getTime() + (30 * 24 * 60 * 60 * 1000)).toISOString(),
           status: 'Active',
-          project: expense.project?.name || '',
+          project: expense.project?.name || (expense.projectId ? 'Project Account' : 'General'),
           projectId: expense.projectId || '',
           phoneNumber: expense.vendor?.phoneNumber || '',
           email: '',
@@ -180,16 +142,16 @@ export async function GET(req: Request) {
           transactions: []
         };
       }
-
+      
       vendorDebtMap[entityKey].amount += amount;
-      vendorDebtMap[entityKey].paid += paid;
     });
 
-    // 3. Add Standalone Transactions (Loans) NOT linked to an expense
+    // 2. Incorporate Transactions (Payments and standalone Loans)
     allTransactions.forEach((transaction: any) => {
-      if (!transaction.vendorId || transaction.expenseId) return; // Skip if no vendor or linked to expense
-
-      const entityKey = `${transaction.vendorId}_${transaction.companyId}`;
+      if (!transaction.vendorId || transaction.companyId !== companyId) return;
+      
+      const projectKey = transaction.projectId || 'general';
+      const entityKey = `${transaction.vendorId}_${projectKey}`;
       const amount = Math.abs(Number(transaction.amount) || 0);
 
       if (!vendorDebtMap[entityKey]) {
@@ -199,14 +161,14 @@ export async function GET(req: Request) {
           lenderId: transaction.vendorId,
           companyId: transaction.companyId,
           companyName: 'Company',
-          type: 'Supplier Loan',
+          type: 'Vendor Loan',
           amount: 0,
           paid: 0,
           remaining: 0,
           issueDate: transaction.transactionDate,
           dueDate: new Date(new Date(transaction.transactionDate).getTime() + (30 * 24 * 60 * 60 * 1000)).toISOString(),
           status: 'Active',
-          project: transaction.project?.name || '',
+          project: transaction.project?.name || (transaction.projectId ? 'Project Account' : 'General'),
           projectId: transaction.projectId || '',
           phoneNumber: transaction.vendor?.phoneNumber || '',
           email: '',
@@ -216,11 +178,19 @@ export async function GET(req: Request) {
         };
       }
 
+      // Logic:
+      // DEBT_TAKEN/RECEIVED: Increase debt amount (e.g. cash loan)
+      // DEBT_REPAID/EXPENSE: Cash outflow (Payment reducing debt)
       if (transaction.type === 'DEBT_TAKEN' || transaction.type === 'DEBT_RECEIVED') {
-        vendorDebtMap[entityKey].amount += amount;
-      } else if (transaction.type === 'DEBT_REPAID') {
+        // Only add to amount if NOT already linked to an expense (to avoid double counting credit bills)
+        if (!transaction.expenseId) {
+          vendorDebtMap[entityKey].amount += amount;
+        }
+      } else if (transaction.type === 'DEBT_REPAID' || transaction.type === 'EXPENSE') {
         vendorDebtMap[entityKey].paid += amount;
       }
+      
+      vendorDebtMap[entityKey].transactions.push(transaction);
     });
 
     // Final processing for vendor debts (Unified Payables/Receivables logic)
@@ -261,10 +231,7 @@ export async function GET(req: Request) {
     allTransactions.forEach((transaction: any) => {
       if (!transaction.customerId || transaction.companyId !== companyId) return;
       
-      // Skip if this was us taking money from a customer (handled in liabilities)
-      if (transaction.type === 'DEBT_RECEIVED' && !transaction.vendorId) return;
-
-      const customerKey = `${transaction.customerId}_${transaction.companyId}`;
+      const customerKey = `${transaction.customerId}_${transaction.companyId}_${transaction.projectId || 'general'}`;
       const amount = Math.abs(Number(transaction.amount) || 0);
 
       if (!customerReceivableMap[customerKey]) {
@@ -274,7 +241,7 @@ export async function GET(req: Request) {
           clientId: transaction.customerId,
           companyId: transaction.companyId,
           companyName: 'Company',
-          project: transaction.project?.name || 'General',
+          project: transaction.project?.name || (transaction.projectId ? 'Project Account' : 'General'),
           projectId: transaction.projectId || '',
           amount: 0,
           received: 0,
@@ -282,6 +249,7 @@ export async function GET(req: Request) {
           issueDate: transaction.transactionDate,
           dueDate: new Date(new Date(transaction.transactionDate).getTime() + (30 * 24 * 60 * 60 * 1000)).toISOString(),
           status: 'Upcoming',
+          type: transaction.projectId ? 'Project Related' : 'Direct Loan',
           phoneNumber: transaction.customer?.phoneNumber || '',
           email: transaction.customer?.email || '',
           isLiability: false,
@@ -290,9 +258,12 @@ export async function GET(req: Request) {
         };
       }
 
-      if (transaction.type === 'DEBT_TAKEN' || transaction.type === 'DEBT_GIVEN') {
+      // Math Logic: 
+      // DEBT_GIVEN: Company gave to customer (+)
+      // DEBT_TAKEN/RECEIVED/REPAID: Customer gave to company (-)
+      if (transaction.type === 'DEBT_GIVEN') {
         customerReceivableMap[customerKey].amount += amount;
-      } else if (transaction.type === 'DEBT_REPAID') {
+      } else {
         customerReceivableMap[customerKey].received += amount;
       }
       
@@ -308,10 +279,13 @@ export async function GET(req: Request) {
         receivable.isLiability = true;
         receivable.isReceivable = false;
         receivable.remaining = Math.abs(remaining);
+        receivable.type = 'Customer Overpayment';
       } else {
         receivable.isLiability = false;
         receivable.isReceivable = true;
         receivable.remaining = remaining;
+        // Keep existing type or refine
+        if (!receivable.projectId) receivable.type = 'Direct Loan';
       }
       
       if (receivable.remaining <= 0) {
@@ -415,16 +389,43 @@ export async function GET(req: Request) {
       };
     }); 
 
-    // --- CONSOLIDATION ---
-    // 1. Combine everything into two buckets: Liabilities (Payables) and Receivables
-    const allPayablesItems = [
-      ...processedVendorDebts.filter(d => d.isLiability),
-      ...processedCustomerReceivables.filter(r => r.isLiability)
-    ];
+    // --- CONSOLIDATION & DEDUPLICATION (By Name + Project) ---
+    // Use a map to ensure unique entries for Entity Name + Project pairs
+    const finalPayablesMap: Record<string, any> = {};
+    const finalReceivablesMap: Record<string, any> = {};
 
+    const consolidate = (item: any, map: Record<string, any>, isPayable: boolean) => {
+      const name = (item.lender || item.client || item.customerName || 'Unknown').trim();
+      const projectKey = item.projectId || 'general';
+      const key = `${name.toLowerCase()}_${projectKey}`;
+
+      if (map[key]) {
+        map[key].amount += (item.amount || 0);
+        if (isPayable) {
+          map[key].paid += (item.paid || 0);
+        } else {
+          map[key].received += (item.received || 0);
+        }
+        map[key].remaining = map[key].amount - (isPayable ? map[key].paid : map[key].received);
+      } else {
+        map[key] = { ...item };
+        // Ensure consistent naming for the UI
+        if (isPayable) {
+          map[key].lender = name;
+          map[key].paid = item.paid || 0;
+        } else {
+          map[key].client = name;
+          map[key].received = item.received || 0;
+        }
+      }
+    };
+
+    processedVendorDebts.forEach(d => consolidate(d, d.isLiability ? finalPayablesMap : finalReceivablesMap, d.isLiability));
+    processedCustomerReceivables.forEach(r => consolidate(r, r.isLiability ? finalPayablesMap : finalReceivablesMap, r.isLiability));
+
+    const allPayablesItems = Object.values(finalPayablesMap).filter((i: any) => i.remaining > 0);
     const allReceivablesItems = [
-      ...processedVendorDebts.filter(d => !d.isLiability),
-      ...processedCustomerReceivables.filter(r => !r.isLiability),
+      ...Object.values(finalReceivablesMap).filter((i: any) => i.remaining > 0),
       ...projectReceivablesData.map(p => ({ ...p, isLiability: false, isReceivable: true }))
     ];
 

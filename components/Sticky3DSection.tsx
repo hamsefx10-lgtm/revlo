@@ -35,7 +35,7 @@ export const Sticky3DSection = ({ children, className = "", index = 0 }: Props) 
         // On lg screens, we switch to 'sticky' and 'h-screen' for the 3D stacking effect.
         <div
             ref={container}
-            className={`relative lg:sticky top-0 w-full flex flex-col items-center justify-center border-t-2 border-white/5 shadow-2xl min-h-screen h-auto lg:h-screen lg:overflow-hidden ${className}`}
+            className={`relative lg:sticky top-0 w-full flex flex-col items-center justify-center border-t-2 border-white/5 shadow-2xl min-h-screen h-auto lg:min-h-screen ${className}`}
             style={{ zIndex: index }}
         >
             <motion.div

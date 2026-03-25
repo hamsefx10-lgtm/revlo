@@ -63,7 +63,7 @@ export default function EditEmployeePage() {
 
       setLoading(true);
       try {
-        const response = await fetch(`/api/employees/${id}`);
+        const response = await fetch(`/api/projects/employees/${id}`);
         if (!response.ok) throw new Error('Failed to fetch employee details');
         const data = await response.json();
 
@@ -175,7 +175,7 @@ export default function EditEmployeePage() {
           // salaryPaidThisMonth and daysWorkedThisMonth are updated via separate actions/APIs
         };
         // API call for updating an existing general employee
-        const response = await fetch(`/api/employees/${id}`, {
+        const response = await fetch(`/api/projects/employees/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(employeeData),
@@ -193,7 +193,7 @@ export default function EditEmployeePage() {
           category: 'PROJECT',
         };
         // API call for updating an existing general employee (who might be a project employee)
-        const response = await fetch(`/api/employees/${id}`, {
+        const response = await fetch(`/api/projects/employees/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(employeeData),

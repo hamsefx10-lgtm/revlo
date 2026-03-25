@@ -493,7 +493,7 @@ export default function DebtsOverviewReportPage() {
 
   // REVERTED TO STABLE TBAS: 'Company Debts', 'Project Debts', 'Receivables'
   // But using English keys for I18n
-  const [activeTab, setActiveTab] = useState<'Company Debts' | 'Project Debts' | 'Receivables'>('Company Debts');
+  const [activeTab, setActiveTab] = useState<'Payables' | 'Project Debts' | 'Receivables'>('Payables');
   const [debts, setDebts] = useState<Debt[]>([]);
   const [receivables, setReceivables] = useState<Receivable[]>([]);
   const [loading, setLoading] = useState(true);
@@ -535,24 +535,29 @@ export default function DebtsOverviewReportPage() {
   }
 
 
-  // Filter Logic matching the 3 Tabs (Consolidated)
+  // Filter Logic matching the 3 Tabs (Strictly separating payables vs project receivables vs direct receivables)
   const allPayables = debts.filter(d => d.isLiability);
   const allReceivables = debts.filter(d => !d.isLiability);
 
-  const vendorDebts = allPayables; // All entities we owe
+  const vendorDebts = allPayables; // All entities we owe (Vendors + Customer Overpayments + Project Payables)
   const projectReceivables = allReceivables.filter(r => r.projectId || r.project); // All project-related money owed to us
   const directLoans = allReceivables.filter(r => !r.projectId && !r.project); // Direct loans given to customers
 
+  // Filter out zero-balance accounts to show only active debts/receivables
+  const activeVendorDebts = vendorDebts.filter(d => d.remaining > 0);
+  const activeProjectReceivables = projectReceivables.filter(r => r.remaining > 0);
+  const activeDirectLoans = directLoans.filter(r => r.remaining > 0);
+
   const getCurrentData = () => {
     switch (activeTab) {
-      case 'Company Debts': 
-        return vendorDebts;
+      case 'Payables': 
+        return activeVendorDebts;
       case 'Project Debts': 
-        return projectReceivables;
+        return activeProjectReceivables;
       case 'Receivables': 
-        return directLoans;
+        return activeDirectLoans;
       default: 
-        return vendorDebts;
+        return activeVendorDebts;
     }
   };
 
@@ -598,15 +603,15 @@ export default function DebtsOverviewReportPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex space-x-1 bg-white dark:bg-gray-800 p-1 rounded-lg shadow mb-6 w-fit">
-        <button onClick={() => setActiveTab('Company Debts')} className={`px-4 py-2 rounded-lg ${activeTab === 'Company Debts' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
-          {t.reports.companyPayables} ({vendorDebts.length})
+      <div className="flex flex-wrap gap-2 lg:space-x-1 bg-white dark:bg-gray-800 p-1 rounded-lg shadow mb-6 w-full lg:w-fit">
+        <button onClick={() => setActiveTab('Payables')} className={`flex-1 lg:flex-none px-4 py-2 rounded-lg font-bold ${activeTab === 'Payables' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+          Payables ({activeVendorDebts.length})
         </button>
-        <button onClick={() => setActiveTab('Project Debts')} className={`px-4 py-2 rounded-lg ${activeTab === 'Project Debts' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
-          {t.reports.projectReceivables} ({projectReceivables.length})
+        <button onClick={() => setActiveTab('Project Debts')} className={`flex-1 lg:flex-none px-4 py-2 rounded-lg font-bold ${activeTab === 'Project Debts' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+          Project Receiv ({activeProjectReceivables.length})
         </button>
-        <button onClick={() => setActiveTab('Receivables')} className={`px-4 py-2 rounded-lg ${activeTab === 'Receivables' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
-          {t.reports.customerReceivables} ({directLoans.length})
+        <button onClick={() => setActiveTab('Receivables')} className={`flex-1 lg:flex-none px-4 py-2 rounded-lg font-bold ${activeTab === 'Receivables' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+          Direct Receiv ({activeDirectLoans.length})
         </button>
       </div>
 
@@ -617,9 +622,11 @@ export default function DebtsOverviewReportPage() {
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  {activeTab === 'Receivables' ? t.reports.client : (activeTab === 'Project Debts' ? `${t.reports.client} / ${t.reports.lender}` : t.reports.lender)}
+                  {activeTab === 'Receivables' ? 'Macmiilka' : (activeTab === 'Project Debts' ? 'Project' : 'Lender')}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t.reports.type}</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  {activeTab === 'Payables' ? t.reports.type : 'Mashruuca'}
+                </th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">{activeTab === 'Receivables' ? t.reports.received : t.reports.paid}</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">{t.reports.remaining}</th>

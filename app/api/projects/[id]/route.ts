@@ -15,6 +15,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
         expenses: {
           include: {
             employee: { select: { id: true, fullName: true } },
+            account: { select: { id: true, name: true } },
           }
         },
         transactions: {
@@ -37,7 +38,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
         payments: true,
         members: { select: { id: true, fullName: true, email: true, role: true } },
         tasks: true,
-        company: { select: { id: true, name: true } },
+        company: { select: { id: true, name: true, logoUrl: true } },
       },
     });
     if (!project || project.companyId !== companyId) {
