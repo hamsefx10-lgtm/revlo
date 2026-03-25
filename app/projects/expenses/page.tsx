@@ -9,10 +9,107 @@ import {
   Truck, Coffee, Zap, Wrench, Wallet,
   User, Store, Package, Building2, Briefcase, SlidersHorizontal, Calendar,
   MoreHorizontal, ArrowUpRight, ArrowDownLeft, ChevronLeft, ChevronRight,
-  Download
+  Download, FileUp, ImageIcon, Check
 } from 'lucide-react';
 import { emitExpenseChange } from '@/lib/client-events';
 import * as XLSX from 'xlsx';
+
+// --- NEW COMPONENTS FOR RECEIPT UPLOAD ---
+
+const ReceiptUploadStyles = () => (
+  <style jsx global>{`
+    @keyframes bounce-subtle {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
+    }
+    .animate-bounce-subtle {
+      animation: bounce-subtle 2s infinite ease-in-out;
+    }
+  `}</style>
+);
+
+const ReceiptUploadCell = ({ expense, onUploadSuccess }: { expense: Expense, onUploadSuccess: (url: string) => void }) => {
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const handleUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const res = await fetch(`/api/projects/expenses/${expense.id}/receipt`, {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!res.ok) throw new Error('Upload failed');
+      
+      const data = await res.json();
+      onUploadSuccess(data.receiptUrl);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (error) {
+      console.error(error);
+      alert('Upload failed. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      handleUpload(file);
+    }
+  };
+
+  return (
+    <div 
+      onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+      onDragLeave={() => setIsDragging(false)}
+      onDrop={onDrop}
+      className={`relative group w-10 h-10 rounded-lg border-2 border-dashed flex items-center justify-center transition-all ${
+        isDragging ? 'border-primary bg-blue-50 scale-110 shadow-md' : 
+        expense.receiptUrl ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-white'
+      }`}
+      title={expense.receiptUrl ? 'Receipt Attached (Drag new to replace)' : 'Drag & Drop Receipt here'}
+    >
+      {uploading ? (
+        <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+      ) : success ? (
+        <Check size={18} className="text-green-600 animate-in zoom-in duration-300" />
+      ) : expense.receiptUrl ? (
+        <div className="relative">
+          <ImageIcon size={18} className="text-green-600" />
+          <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full border border-white"></div>
+        </div>
+      ) : (
+        <FileUp size={18} className={`text-gray-400 group-hover:text-primary transition-colors ${isDragging ? 'animate-bounce-subtle' : ''}`} />
+      )}
+      
+      {/* Tooltip on hover */}
+      <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity z-50">
+        {expense.receiptUrl ? 'View Receipt' : 'Upload Receipt'}
+      </div>
+      
+      {/* Hidden file input for click fallback */}
+      <input 
+        type="file" 
+        accept="image/*"
+        aria-label="Upload source file"
+        className="absolute inset-0 opacity-0 cursor-pointer"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleUpload(file);
+        }}
+      />
+    </div>
+  );
+};
 
 interface Expense {
   id: string;
@@ -32,6 +129,7 @@ interface Expense {
   status?: string;
   employeeId?: string;
   employee?: { id: string; name: string };
+  receiptUrl?: string; // NEW
 }
 
 type FilterType = 'all' | 'company' | 'projects';
@@ -179,6 +277,7 @@ export default function ExpensesPage() {
 
   return (
     <Layout>
+      <ReceiptUploadStyles />
       <div className="max-w-[1600px] mx-auto space-y-6 md:space-y-8 animate-in fade-in pb-20 md:pb-6">
 
         {/* HEADER */}
@@ -332,11 +431,12 @@ export default function ExpensesPage() {
         <div className="hidden md:block bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-gray-50/50 dark:bg-gray-900/50 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 dark:border-gray-700 whitespace-nowrap">
             <div className="col-span-1 text-center">#</div>
-            <div className="col-span-2">Date</div>
+            <div className="col-span-1">Date</div>
             <div className="col-span-2">Category</div>
             <div className="col-span-3">Description</div>
             <div className="col-span-2">Payee / Project</div>
             <div className="col-span-1 text-right">Amount</div>
+            <div className="col-span-1 text-center">Receipt</div>
             <div className="col-span-1 text-center">Actions</div>
           </div>
 
@@ -372,7 +472,7 @@ export default function ExpensesPage() {
                   <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer" checked={isSelected(exp.id)} onChange={() => toggleSelect(exp.id)} />
                 </div>
 
-                <div className="col-span-2">
+                <div className="col-span-1">
                   <div className='flex flex-col'>
                     <span className="text-gray-900 dark:text-white font-bold text-sm">{new Date(exp.date).toLocaleDateString(undefined, { day: '2-digit', month: 'short' })}</span>
                     <span className="text-[10px] text-gray-400">{new Date(exp.date).getFullYear()}</span>
@@ -415,6 +515,12 @@ export default function ExpensesPage() {
                     {exp.amount.toLocaleString()}
                   </span>
                   <span className="text-[10px] text-gray-400 block">ETB</span>
+                </div>
+
+                <div className="col-span-1 flex justify-center">
+                  <ReceiptUploadCell expense={exp} onUploadSuccess={(url) => {
+                    setExpenses(prev => prev.map(e => e.id === exp.id ? { ...e, receiptUrl: url } : e));
+                  }} />
                 </div>
 
                 <div className="col-span-1 flex justify-center items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">

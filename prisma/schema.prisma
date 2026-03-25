@@ -556,6 +556,7 @@ model Transaction {
   userId          String?
   employeeId      String?
   category        String?
+  receiptUrl      String?
   companyId       String
   fiscalYearId    String?
   shareholderId   String?

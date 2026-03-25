@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
         const mimeType = file.type || 'image/jpeg';
 
         // Define model options to try in order (Must use official Google API names)
-        const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+        const models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
 
         // Prompt
         const promptText = `

@@ -663,7 +663,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       await prisma.transaction.create({
         data: {
           ...trxData,
-          amount: finalAmount
+          amount: finalAmount,
+          receiptUrl: body.receiptUrl || updatedExpense.receiptUrl || null
         },
       });
 

@@ -29,6 +29,7 @@ interface Transaction {
   vendor?: { id: string; name: string; };      // If linked to vendor
   user?: { id: string; fullName: string; };    // Who recorded
   employee?: { id: string; fullName: string; }; // If linked to employee
+  receiptUrl?: string; // NEW
   createdAt: string;
   updatedAt: string;
 }
@@ -200,6 +201,31 @@ const TransactionDetailsPage: React.FC = () => {
                 <p><span className="font-semibold text-mediumGray dark:text-gray-400">Taariikhda Abuurista:</span> {new Date(transaction.createdAt).toLocaleDateString()}</p>
                 <p><span className="font-semibold text-mediumGray dark:text-gray-400">Taariikhda Cusboonaysiinta:</span> {new Date(transaction.updatedAt).toLocaleDateString()}</p>
               </div>
+
+              {/* NEW: Receipt Display */}
+              {transaction.receiptUrl && (
+                <div className="mt-8 pt-8 border-t border-gray-100 dark:border-gray-700">
+                  <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Rasiidka / Document</h4>
+                  <div className="relative group rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 inline-block shadow-sm">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img 
+                      src={transaction.receiptUrl} 
+                      alt="Receipt" 
+                      className="max-h-96 object-contain p-2" 
+                    />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <a 
+                        href={transaction.receiptUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="bg-white text-gray-900 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2"
+                      >
+                        <Eye size={16} /> View Full
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

@@ -500,7 +500,8 @@ export async function POST(request: Request) {
       await prisma.transaction.create({
         data: {
           ...trxData,
-          amount: finalAmount
+          amount: finalAmount,
+          receiptUrl: receiptUrl || null
         },
       });
 

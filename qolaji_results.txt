@@ -1,0 +1,8 @@
+Found 1 project(s):
+Project: Qolaji Site (ID: 536f054c-501f-4d53-8d8a-35a79450c0d3)
+Customer: UNSEF
+Agreement Amount: 1760679
+Advance Paid: 300000
+  Found 2 transaction(s) of 300k:
+    - ID: c5075f85-218a-4465-ab8c-5aa36afdb4f6, Amount: 300000, Type: INCOME, Description: Advance Payment for Project: Qolaji Site , Date: Wed Jan 21 2026 05:47:06 GMT+0300 (East Africa Time)
+    - ID: 2aa469b1-e214-454a-a749-a58f41693a15, Amount: -300000, Type: EXPENSE, Description: Material expense - 2026-01-21, Date: Mon Jan 05 2026 00:00:00 GMT+0300 (East Africa Time)
