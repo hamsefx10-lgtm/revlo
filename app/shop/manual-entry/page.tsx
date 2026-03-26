@@ -178,7 +178,9 @@ export default function ManualEntryPage() {
                 const rateRes = await fetch('/api/settings/exchange-rate');
                 if (rateRes.ok) {
                     const rateData = await rateRes.json();
-                    if (rateData.rate) setExchangeRate(String(rateData.rate));
+                    if (rateData.rate && rateData.rate.rate) {
+                        setExchangeRate(String(rateData.rate.rate));
+                    }
                 }
             }
         } catch { }
@@ -705,8 +707,8 @@ export default function ManualEntryPage() {
                             <div className="flex-1 md:text-right">
                                 <p className="text-[10px] font-bold text-gray-400 italic">
                                     {currency === 'USD'
-                                        ? `Pricing in USD. Normalized to ETB @ ${exchangeRate} for accounting.`
-                                        : `Standard ETB sale. Exchange rate used for debt calculation if needed.`
+                                        ? `💵 Iibka USD: Alaabta geli qiimaheeda USD. Waxaa loo badali doonaa ETB (@ ${exchangeRate}) xisaabaadka accounting-ka.`
+                                        : `⚖️ Iibka ETB: Qiyaasta Exchange rate-ka waxaa loo isticmaali doonaa badalaada deynta hadii loo baahdo.`
                                     }
                                 </p>
                             </div>
@@ -908,7 +910,7 @@ export default function ManualEntryPage() {
 
                             <div className="flex justify-between text-xl font-black text-[#2ECC71] pt-2.5 border-t border-gray-200 dark:border-gray-700">
                                 <span>Total</span>
-                                <span>ETB {total.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                                <span>{currency === 'USD' ? '$' : 'ETB'} {total.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                             </div>
 
                             {paymentMethod === 'Credit' && partialAmount > 0 && (

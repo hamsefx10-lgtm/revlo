@@ -101,12 +101,14 @@ export default function SaleDetailsPage({ params }: { params: { id: string } }) 
         );
     }
 
-    // Calculate total cost and profit
-    // REAL PROFIT = Subtotal (Net Revenue) - Total Cost (COGS)
-    // We ignore Tax (VAT) in profit because it's a liability, not income.
-    const totalCost = sale.items?.reduce((sum: number, item: any) => sum + (Number(item.totalCost || 0)), 0) || 0;
-    const netRevenue = Number(sale.subtotal || sale.total - (sale.tax || 0));
-    const profit = netRevenue - totalCost;
+    const totalCostETB = sale.items?.reduce((sum: number, item: any) => sum + (Number(item.totalCost || 0)), 0) || 0;
+    const rate = sale.currency === 'USD' ? (sale.exchangeRate || 1) : 1;
+    const revenueBase = Number(sale.subtotal || sale.total - (sale.tax || 0));
+    const revenueETB = revenueBase * rate;
+    const profitETB = revenueETB - totalCostETB;
+    const margin = revenueETB > 0 ? (profitETB / revenueETB) * 100 : 0;
+
+    const currencySymbol = sale.currency === 'USD' ? '$' : 'ETB';
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0B0F1A] animate-fade-in font-sans w-full p-4 lg:p-6 overflow-hidden flex flex-col">
@@ -185,10 +187,10 @@ export default function SaleDetailsPage({ params }: { params: { id: string } }) 
                                                 {item.quantity}
                                             </td>
                                             <td className="py-5 px-4 text-center font-bold text-slate-500 tabular-nums text-sm">
-                                                {Number(item.unitPrice).toLocaleString()} <span className="text-[10px] font-black opacity-20 align-top">ETB</span>
+                                                {Number(item.unitPrice).toLocaleString()} <span className="text-[10px] font-black opacity-20 align-top">{currencySymbol}</span>
                                             </td>
                                             <td className="py-5 px-8 text-right font-black text-slate-900 dark:text-white tabular-nums text-sm">
-                                                {Number(item.total).toLocaleString()} <span className="text-[10px] font-black opacity-20 align-top">ETB</span>
+                                                {Number(item.total).toLocaleString()} <span className="text-[10px] font-black opacity-20 align-top">{currencySymbol}</span>
                                             </td>
                                         </tr>
                                     ))}
@@ -261,19 +263,19 @@ export default function SaleDetailsPage({ params }: { params: { id: string } }) 
                         <div className="space-y-5 relative z-10">
                             <div className="flex justify-between items-center text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] opacity-80">
                                 <span>Net Subtotal</span>
-                                <span className="text-slate-800 dark:text-slate-200 font-bold tracking-tight">{Number(sale.subtotal || sale.total).toLocaleString()} <span className="text-[9px] opacity-40 ml-0.5">ETB</span></span>
+                                <span className="text-slate-800 dark:text-slate-200 font-bold tracking-tight">{Number(sale.subtotal || sale.total).toLocaleString()} <span className="text-[9px] opacity-40 ml-0.5">{currencySymbol}</span></span>
                             </div>
                             {sale.tax > 0 && (
                                 <div className="flex justify-between items-center text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] opacity-80">
                                     <span>Vat (15%)</span>
-                                    <span className="text-slate-800 dark:text-slate-200 font-bold tracking-tight">{Number(sale.tax).toLocaleString()} <span className="text-[9px] opacity-40 ml-0.5">ETB</span></span>
+                                    <span className="text-slate-800 dark:text-slate-200 font-bold tracking-tight">{Number(sale.tax).toLocaleString()} <span className="text-[9px] opacity-40 ml-0.5">{currencySymbol}</span></span>
                                 </div>
                             )}
 
                             <div className="py-8 my-4 border-y border-slate-100 dark:border-slate-800/50 flex flex-col gap-1 items-center justify-center bg-slate-50/50 dark:bg-slate-900/30 rounded-[1.5rem]">
                                 <span className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em] mb-1">Total Bill Amount</span>
                                 <span className="text-4xl font-black text-slate-900 dark:text-white leading-none tracking-tighter tabular-nums drop-shadow-sm flex items-baseline">
-                                    {Number(sale.total).toLocaleString()} <span className="text-xs font-black text-[#3498DB] tracking-tight ml-1.5">ETB</span>
+                                    {Number(sale.total).toLocaleString()} <span className="text-xs font-black text-[#3498DB] tracking-tight ml-1.5">{currencySymbol}</span>
                                 </span>
                             </div>
 
@@ -304,52 +306,68 @@ export default function SaleDetailsPage({ params }: { params: { id: string } }) 
                             <h4 className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em] flex items-center gap-2">
                                 <TrendingUp size={14} /> Profit Insight
                             </h4>
-                            <div className="text-[10px] font-black py-1 px-3 bg-emerald-500/10 text-emerald-600 rounded-full" title="Calculation: (Net Revenue - Cost) / Net Revenue">
-                                {((profit / (netRevenue || 1)) * 100).toFixed(1)}% Margin
+                            <div className="text-[10px] font-black py-1 px-3 bg-emerald-500/10 text-emerald-600 rounded-full" title="Margin = (Revenue ETB - Cost ETB) / Revenue ETB">
+                                {margin.toFixed(1)}% Margin
                             </div>
                         </div>
                         <div className="flex items-baseline gap-2">
                             <span className="text-3xl font-black text-emerald-600 dark:text-emerald-500 tracking-tighter tabular-nums drop-shadow-sm">
-                                {profit.toLocaleString()}
+                                {profitETB.toLocaleString()}
                             </span>
-                            <span className="text-[10px] font-black text-emerald-500/60 uppercase ml-1">ETB Net Faaiido</span>
+                            <span className="text-[10px] font-black text-emerald-500/60 uppercase ml-1">ETB Fa'iido Net ah</span>
                         </div>
                         <p className="text-[9px] font-bold text-slate-400 mt-2 italic leading-tight">
-                            Xisaabtu waxay ku dhisantahay: [Subtotal] - [Purchase Cost]. VAT (15%) laguma daro faaiidadaada.
+                            Xisaabtu waxay ku dhisantahay sicirka birta (ETB). {sale.currency === 'USD' ? `Exchange Rate: ${sale.exchangeRate}` : ''}
                         </p>
                     </div>
 
-                    {/* RECENT SETTLEMENTS (Timeline style) */}
-                    <div className="bg-white dark:bg-[#161B2E] border border-slate-100 dark:border-slate-800 rounded-[2.5rem] p-6 shadow-sm overflow-hidden">
-                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-5 flex items-center gap-2">
-                            <History size={14} /> Settlement Timeline
-                        </h4>
-
-                        <div className="space-y-5">
+                    {/* RECENT SETTLEMENTS (Modern Timeline) */}
+                    <div className="bg-white dark:bg-[#161B2E] border border-slate-100 dark:border-slate-800 rounded-[2.5rem] p-6 shadow-sm overflow-hidden min-h-[300px]">
+                        <div className="flex items-center justify-between mb-6">
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                                <History size={14} /> Settlement Journey
+                            </h4>
+                            <span className="text-[9px] font-black px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500">
+                                {sale.payments?.length || 0} Records
+                            </span>
+                        </div>
+                        
+                        <div className="space-y-6 relative">
                             {sale.payments && sale.payments.length > 0 ? (
                                 sale.payments.map((payment: any, i: number) => (
-                                    <div key={i} className="flex gap-4 relative">
-                                        {i !== sale.payments.length - 1 && (
-                                            <div className="absolute left-[13px] top-6 bottom-0 w-[2px] bg-slate-100 dark:bg-slate-800"></div>
-                                        )}
-                                        <div className="w-7 h-7 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 flex items-center justify-center flex-shrink-0 z-10">
-                                            <Check size={12} strokeWidth={4} />
+                                    <div key={i} className="flex gap-4 group">
+                                        <div className="flex flex-col items-center">
+                                            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 flex items-center justify-center flex-shrink-0 z-10 transition-transform group-hover:scale-110">
+                                                <Check size={14} strokeWidth={3} />
+                                            </div>
+                                            {i !== sale.payments.length - 1 && (
+                                                <div className="w-[2px] flex-1 bg-gradient-to-b from-emerald-500/20 to-transparent my-1"></div>
+                                            )}
                                         </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-start">
-                                                <p className="text-[11px] font-black text-slate-900 dark:text-white truncate">
-                                                    {payment.amount.toLocaleString()} <span className="text-[8px] opacity-40">ETB</span>
+                                        <div className="flex-1 pb-4">
+                                            <div className="flex justify-between items-start mb-1">
+                                                <p className="text-sm font-black text-slate-900 dark:text-white">
+                                                    {currencySymbol} {payment.amount.toLocaleString()}
                                                 </p>
-                                                <span className="text-[8px] font-black text-slate-400 shrink-0">
+                                                <span className="text-[9px] font-black text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-2 py-0.5 rounded-md">
                                                     {formatDate(payment.transactionDate, true)}
                                                 </span>
                                             </div>
-                                            <p className="text-[9px] font-bold text-slate-400 mt-0.5 truncate">{payment.account?.name || 'Local Store'}</p>
+                                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500">
+                                                <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                                                Deposit to: <span className="text-[#3498DB]">{payment.account?.name || 'Main Account'}</span>
+                                            </div>
+                                            {payment.description && (
+                                                <p className="text-[9px] text-slate-400 mt-1 italic line-clamp-1">{payment.description}</p>
+                                            )}
                                         </div>
                                     </div>
                                 ))
                             ) : (
-                                <p className="text-[10px] font-black text-slate-300 italic text-center py-4">No payment history recorded</p>
+                                <div className="flex flex-col items-center justify-center py-10 opacity-30">
+                                    <History size={40} className="mb-2" />
+                                    <p className="text-[11px] font-black uppercase tracking-widest text-center">Empty Timeline</p>
+                                </div>
                             )}
                         </div>
                     </div>

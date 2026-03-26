@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
@@ -22,8 +21,8 @@ export async function POST(req: NextRequest) {
         const base64Data = Buffer.from(buffer).toString('base64');
         const mimeType = file.type || 'image/jpeg';
 
-        // Define model options to try in order (Must use official Google API names)
-        const models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
+        // Define model options to try in order (Added 2.5-flash from user dashboard)
+        const models = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
 
         // Prompt
         const promptText = `
@@ -33,30 +32,17 @@ export async function POST(req: NextRequest) {
           1. **Corrections/Cross-outs**: This is the MOST IMPORTANT rule.
              - If a number is crossed out, scribbled over, or has a line through it, it is INVALID. 
              - You MUST find the REPLACEMENT number written near it (often above it).
-             - Specific Example: If '59400' or '58400' is crossed out, and '48600' is written above/near it, output '48600'.
           
           2. **Quantities are INTEGERS ONLY**:
-             - There are NO fractional quantities (e.g. 1.5, 43.9).
-             - If you see "43.9" or "3.49", it is likely a handwriting artifact. Read it as an integer (e.g. "439", "349", "44", or "4").
              - Use the Unit Price and Total to guess the correct Integer Quantity (Total / Price = Qty).
-             - Example: If Total is 48600 and Price is 1330, Qty is approx 36 or 37. Use that calculated integer.
 
           3. **Math Verification**: 
              - Always check: Qty * Unit Price ≈ Total.
-             - If they don't match, trust the **Corrected/Written Total** first, then adjustment the Qty or Price to match.
           
           4. **Receipt Number**:
-             - Look for any printed or handwritten reference/receipt/invoice number on the receipt (e.g. "No. 008", "Ref: 123", "Invoice #456", "REC-001", "Receipt No. 08").
-             - Extract it exactly as written. If none found, return null.
+             - Look for any number (e.g. "No. 008").
 
-          Extract structured data:
-          1. List of Items (name, qty (integer), price, unit).
-          2. The detailed total amount (Sum of the valid totals).
-          3. The Date (YYYY-MM-DD).
-          4. Vendor Name.
-          5. Receipt/Invoice Number.
-
-          Return ONLY valid JSON:
+          Extract structured data and return ONLY valid JSON:
           {
             "items": [{ "name": "Item", "qty": 1, "price": 0, "unit": "pcs", "total": 0 }],
             "totalAmount": 0,
@@ -70,7 +56,7 @@ export async function POST(req: NextRequest) {
         let lastError = '';
 
         for (const model of models) {
-            console.log(`Attempting model: ${model}`);
+            console.log(`Attempting REST model: ${model}`);
             const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
             try {
@@ -92,18 +78,14 @@ export async function POST(req: NextRequest) {
                     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
                     if (text) {
                         const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
-                        try {
-                            successData = JSON.parse(cleanJson);
-                            console.log(`Success with ${model}`);
-                            break; // Exit loop on success
-                        } catch (e) {
-                            console.error(`JSON Parse error for ${model}:`, e);
-                        }
+                        successData = JSON.parse(cleanJson);
+                        console.log(`Success with REST ${model}`);
+                        break; // Exit loop on success
                     }
                 } else {
                     const errText = await response.text();
-                    console.error(`Failed ${model}: ${response.status} - ${errText}`);
-                    lastError = `${model}: ${response.status}`;
+                    console.error(`Failed REST ${model}: ${response.status} - ${errText}`);
+                    lastError = `${model}: ${response.status} - ${errText.substring(0, 100)}`;
                 }
             } catch (e: any) {
                 console.error(`Exception for ${model}:`, e);
@@ -115,13 +97,13 @@ export async function POST(req: NextRequest) {
             return NextResponse.json(successData);
         } else {
             return NextResponse.json({
-                error: `Failed to analyze with all models. Last Error: ${lastError}`,
-                details: "Ensure your API Key has access to Gemini Vision models."
+                error: `Failed to analyze with all models.`,
+                details: lastError
             }, { status: 500 });
         }
 
     } catch (error: any) {
-        console.error('General validation error:', error);
+        console.error('General AI error:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
