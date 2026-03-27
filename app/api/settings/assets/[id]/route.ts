@@ -15,11 +15,11 @@ export async function PUT(
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const { name, type, value, purchaseDate, assignedTo } = await request.json();
+    const { name, type, value, purchaseDate, assignedTo, status, depreciationRate, currentBookValue } = await request.json();
 
-    if (!name || !type || !value || !purchaseDate) {
+    if (!name || !type || value === undefined || !purchaseDate) {
       return NextResponse.json(
-        { message: 'Name, type, value, and purchase date are required' },
+        { message: 'Magaca, nooca, qiimaha, iyo taariikhda waa waajib' },
         { status: 400 }
       );
     }
@@ -35,6 +35,9 @@ export async function PUT(
         value: parseFloat(value),
         purchaseDate: new Date(purchaseDate),
         assignedTo: assignedTo || 'Office',
+        status: status || 'Active',
+        depreciationRate: depreciationRate !== undefined ? parseFloat(depreciationRate) : 0,
+        currentBookValue: currentBookValue !== undefined ? parseFloat(currentBookValue) : parseFloat(value),
       },
     });
 

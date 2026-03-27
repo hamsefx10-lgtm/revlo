@@ -374,6 +374,7 @@ export async function POST(request: Request) {
                 companyId,
                 projectId,
                 vendorId: tVendorId || null,
+                receiptUrl: receiptUrl || null,
             },
         });
 

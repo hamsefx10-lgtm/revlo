@@ -10,7 +10,7 @@ import { emitExpenseChange } from '@/lib/client-events';
 import {
   ArrowLeft, Edit, Trash2, Printer, Download,
   User, CheckCircle, AlertCircle, Building2, Briefcase, Store,
-  Package, LayoutGrid, FileDown
+  Package, LayoutGrid, FileDown, FileText, Maximize2, Info
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -371,17 +371,47 @@ export default function ExpenseDetailsPage() {
               </div>
             )}
 
-            {/* Receipt Image */}
+            {/* Receipt Image - MORE PROMINENT FOR MATERIAL */}
             {expense.receiptUrl && (
-              <div className="mt-10 pt-10 border-t-2 border-dashed border-gray-100 dark:border-gray-700">
-                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest block mb-4">Attached Receipt / Document</label>
-                <div className="relative group rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 inline-block shadow-sm hover:shadow-md transition-all">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={expense.receiptUrl} alt="Receipt" className="max-h-80 object-contain p-2" />
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">
-                    <a href={expense.receiptUrl} download target="_blank" className="bg-white text-gray-900 px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-blue-50 transition-colors transform hover:scale-105"><Download size={16} /> Download Source</a>
+              <div className={`mt-10 pt-10 border-t-2 border-dashed border-gray-100 dark:border-gray-700 ${expense.category === 'Material' ? 'bg-blue-50/30 dark:bg-blue-900/10 p-6 rounded-3xl -mx-6' : ''}`}>
+                <div className="flex items-center gap-2 mb-6">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${expense.category === 'Material' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'}`}>
+                    <FileText size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-gray-900 dark:text-white leading-none">Evidence / Rasiid</h3>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Attached Documentation</p>
                   </div>
                 </div>
+                
+                <div className="relative group rounded-3xl overflow-hidden border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-900 shadow-2xl inline-block transition-all hover:scale-[1.01] hover:shadow-blue-200/50 dark:hover:shadow-blue-900/20">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img 
+                    src={expense.receiptUrl} 
+                    alt="Receipt" 
+                    className="max-h-[600px] w-auto object-contain cursor-zoom-in" 
+                    onClick={() => window.open(expense.receiptUrl, '_blank')}
+                  />
+                  <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={() => window.open(expense.receiptUrl, '_blank')}
+                      className="bg-white/90 text-darkGray p-2.5 rounded-xl shadow-lg hover:bg-white transition-colors flex items-center gap-2 font-bold text-xs"
+                    >
+                      <Maximize2 size={16} /> Meel Dheer
+                    </button>
+                    <a 
+                      href={expense.receiptUrl} 
+                      download 
+                      target="_blank" 
+                      className="bg-primary text-white p-2.5 rounded-xl shadow-lg hover:bg-primary/90 transition-colors flex items-center gap-2 font-bold text-xs"
+                    >
+                      <Download size={16} /> Download
+                    </a>
+                  </div>
+                </div>
+                <p className="mt-4 text-xs text-mediumGray dark:text-gray-500 italic flex items-center gap-1">
+                  <Info size={12} /> Guji sawirka si aad u weyn ugu aragto
+                </p>
               </div>
             )}
 

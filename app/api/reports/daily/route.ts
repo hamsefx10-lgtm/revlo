@@ -5,6 +5,7 @@ import { getSessionCompanyUser } from '@/lib/auth';
 
 export async function GET(request: Request) {
   const startTime = Date.now();
+  let additionalCommissions = 0;
   try {
     console.log('[Daily Report API] Starting request...');
     const sessionUser = await getSessionCompanyUser();
@@ -188,22 +189,30 @@ export async function GET(request: Request) {
     const mappedCompanyExpenses = companyExpenses
       .filter((exp: any) => exp.category !== 'Debt' && exp.subCategory !== 'Debt')
       .map(mapExpense);
+
     const totalProjectExpenses = mappedProjectExpenses.reduce((sum: number, e: any) => sum + e.amount, 0);
-    const totalCompanyExpenses = mappedCompanyExpenses.reduce((sum: number, e: any) => sum + e.amount, 0);
-    const totalExpenses = totalProjectExpenses + totalCompanyExpenses;
+
+    // Separate Bank Commissions (Category: Bank Charges) from other company expenses
+    const bankCommissionsTx = mappedCompanyExpenses.filter((e: any) =>
+      e.category === 'Bank Charges' || e.description.toLowerCase().includes('khidmad')
+    );
+    const totalBankCommissions = bankCommissionsTx.reduce((sum: number, e: any) => sum + e.amount, 0);
+
+    const pureCompanyExpenses = mappedCompanyExpenses
+      .filter((e: any) => e.category !== 'Bank Charges' && !e.description.toLowerCase().includes('khidmad'))
+      .reduce((sum: number, e: any) => sum + e.amount, 0);
+
+    const totalExpenses = totalProjectExpenses + pureCompanyExpenses + totalBankCommissions;
 
     console.log('[Daily Report API] Fetching income transactions...');
     // Income for selected date only - with full details
-    const incomeTx = await prisma.transaction.findMany({
+    // We now split this into pureIncome and loansReceived/debtCollected for the waterfall
+    const incomeTxs = await prisma.transaction.findMany({
       where: {
         companyId,
         transactionDate: { gte: selectedDate, lt: nextDay },
-        OR: [
-          { type: { in: ['INCOME', 'DEBT_RECEIVED'] } },
-          { type: 'DEBT_REPAID', vendorId: null }
-        ]
+        type: { in: ['INCOME', 'DEBT_RECEIVED', 'DEBT_REPAID'] }
       },
-      orderBy: { transactionDate: 'desc' },
       include: {
         account: { select: { name: true } },
         project: { select: { name: true } },
@@ -211,15 +220,28 @@ export async function GET(request: Request) {
         user: { select: { fullName: true } },
       },
     });
-    const income = incomeTx.reduce((sum: number, tx: any) => sum + Number(tx.amount), 0);
-    console.log(`[Daily Report API] Found ${incomeTx.length} income tx for date.`);
+
+    const pureIncome = incomeTxs
+      .filter(tx => tx.type === 'INCOME')
+      .reduce((sum: number, tx: any) => sum + Number(tx.amount), 0);
+
+    const totalLoansReceived = incomeTxs
+      .filter(tx => tx.type === 'DEBT_RECEIVED')
+      .reduce((sum: number, tx: any) => sum + Number(tx.amount), 0);
+
+    const totalDebtCollected = incomeTxs
+      .filter(tx => tx.type === 'DEBT_REPAID')
+      .reduce((sum: number, tx: any) => sum + Number(tx.amount), 0);
+
+    const totalIncome = pureIncome + totalLoansReceived + totalDebtCollected;
+    console.log(`[Daily Report API] Income split: Pure=${pureIncome}, LoansRec=${totalLoansReceived}, DebtColl=${totalDebtCollected}`);
 
     // Map income transactions with details
-    const incomeTransactions = incomeTx.map((tx: any) => {
+    const incomeTransactions = incomeTxs.map((tx: any) => {
       let desc = tx.description || '';
       if (!desc) {
         if (tx.type === 'INCOME') desc = 'Dakhli (Income)';
-        else if (tx.type === 'SHAREHOLDER_DEPOSIT') desc = 'Qaaraan Saamile (Deposit)';
+        else if (tx.type === 'SHAREHOLDER_DEPOSIT') desc = 'Shareholder-Saamile (Deposit)';
         else if (tx.type === 'DEBT_REPAID') desc = 'Dayn La Bixiyay (Debt Collected)';
         else if (tx.type === 'DEBT_RECEIVED') desc = 'Dayn La Qaaday (Loan Received)';
         else desc = 'Dakhli';
@@ -359,11 +381,12 @@ export async function GET(request: Request) {
 
     try {
       console.log('[Daily Report API] Fetching other transactions...');
+      // Exclude types handled elsewhere: INCOME, DEBT_REPAID, DEBT_RECEIVED, TRANSFER_IN, TRANSFER_OUT
       const otherTransactions = await prisma.transaction.findMany({
         where: {
           companyId,
           transactionDate: { gte: selectedDate, lt: nextDay },
-          type: { notIn: ['INCOME', 'TRANSFER_IN', 'TRANSFER_OUT'] },
+          type: { notIn: ['INCOME', 'DEBT_RECEIVED', 'DEBT_REPAID', 'TRANSFER_IN', 'TRANSFER_OUT'] },
         },
         orderBy: { transactionDate: 'desc' },
         include: {
@@ -376,7 +399,19 @@ export async function GET(request: Request) {
         },
       });
 
-      otherTransactionsList = otherTransactions.map((tx: any) => ({
+      // Split otherTransactions into "Commissions" and "Actual Other Transactions"
+      // Any transaction with Category 'Bank Charges' or 'khidmad' in desc is a commission
+      const unmappedCommissions = otherTransactions.filter((tx: any) =>
+        tx.category === 'Bank Charges' || tx.description?.toLowerCase().includes('khidmad')
+      );
+
+      additionalCommissions = unmappedCommissions.reduce((sum: number, tx: any) => sum + Number(tx.amount), 0);
+
+      const filteredOtherTransactions = otherTransactions.filter((tx: any) =>
+        tx.category !== 'Bank Charges' && !tx.description?.toLowerCase().includes('khidmad')
+      );
+
+      otherTransactionsList = filteredOtherTransactions.map((tx: any) => ({
         id: tx.id,
         description: tx.description || '',
         amount: Number(tx.amount),
@@ -393,7 +428,6 @@ export async function GET(request: Request) {
       }));
     } catch (otherTxError: any) {
       console.error('Error fetching other transactions:', otherTxError);
-      // Continue without other transactions if there's an error
       otherTransactionsList = [];
     }
 
@@ -426,7 +460,8 @@ export async function GET(request: Request) {
           amount: true,
           type: true,
           transactionDate: true,
-          vendorId: true
+          vendorId: true,
+          expenseId: true
         }
       });
 
@@ -464,11 +499,11 @@ export async function GET(request: Request) {
 
         const isStandardIn = [
           'INCOME', 'DEBT_RECEIVED', 'TRANSFER_IN'
-        ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && !trx.vendorId);
+        ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && (!trx.vendorId || !trx.expenseId));
 
         const isStandardOut = [
           'EXPENSE', 'DEBT_GIVEN', 'DEBT_TAKEN', 'TRANSFER_OUT'
-        ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && trx.vendorId);
+        ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && !!trx.vendorId && !!trx.expenseId);
 
         let change = 0;
         if (isStandardIn) change = amount;
@@ -488,6 +523,9 @@ export async function GET(request: Request) {
 
     const debtsTaken = otherTransactionsList.filter(tx => tx.type === 'DEBT_TAKEN');
     const debtsRepaid = otherTransactionsList.filter(tx => tx.type === 'DEBT_REPAID');
+    const totalDebtsTaken = debtsTaken.reduce((s: number, t: any) => s + t.amount, 0);
+    const totalDebtsRepaid = debtsRepaid.reduce((s: number, t: any) => s + t.amount, 0);
+    const totalTransfersOut = transfers.reduce((s: number, t: any) => s + t.amount, 0);
 
     let displayDate = dateParam;
     if (!displayDate || isNaN(new Date(displayDate).getTime())) {
@@ -501,20 +539,28 @@ export async function GET(request: Request) {
       companyLogoUrl,
       preparedBy,
       balances: balances || { previous: {}, today: {} },
-      totalPrev: totalPrev ?? 0,
-      totalToday: totalToday ?? 0,
-      income: income ?? 0,
+      totalPrev: totalPrev,
+      totalToday: totalToday,
+      income: totalIncome,
+      pureIncome: pureIncome,
+      totalDebtCollected: totalDebtCollected,
+      totalLoansReceived: totalLoansReceived,
       incomeTransactions: incomeTransactions || [],
       transfers: transfers || [],
       projectExpenses: mappedProjectExpenses || [],
       companyExpenses: mappedCompanyExpenses || [],
-      totalProjectExpenses: totalProjectExpenses ?? 0,
-      totalCompanyExpenses: totalCompanyExpenses ?? 0,
-      totalExpenses: totalExpenses ?? 0,
+      pureCompanyExpenses: pureCompanyExpenses,
+      totalBankCommissions: (totalBankCommissions + additionalCommissions),
+      totalProjectExpenses: totalProjectExpenses,
+      totalCompanyExpenses: (pureCompanyExpenses + totalBankCommissions + additionalCommissions),
+      totalExpenses: (totalExpenses + additionalCommissions),
       fixedAssets: fixedAssetsList || [],
-      totalFixedAssets: totalFixedAssets ?? 0,
+      totalFixedAssets: totalFixedAssets,
       debtsTaken,
       debtsRepaid,
+      totalDebtsTaken: totalDebtsTaken,
+      totalDebtsRepaid: totalDebtsRepaid,
+      totalTransfersOut: totalTransfersOut,
       otherTransactions: otherTransactionsList || [],
     };
 

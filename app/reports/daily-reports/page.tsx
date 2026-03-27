@@ -24,8 +24,11 @@ interface DailyReport {
     today: Record<string, number>;
   };
   totalPrev: number;
-  totalToday: number;
+  totalToday: number;  // Summary aggregates
   income: number;
+  pureIncome: number;
+  totalDebtCollected: number;
+  totalLoansReceived: number;
   incomeTransactions: Array<{
     id: string;
     description: string;
@@ -35,7 +38,6 @@ interface DailyReport {
     customer: string | null;
     note: string | null;
     transactionDate: string;
-    user: string | null;
   }>;
   transfers: Array<{
     id: string;
@@ -45,7 +47,6 @@ interface DailyReport {
     toAccount: string;
     transactionDate: string;
     note: string | null;
-    user: string | null;
     type: string;
   }>;
   projectExpenses: Array<{
@@ -55,8 +56,9 @@ interface DailyReport {
     category: string;
     description: string;
     amount: number;
-    paidFrom?: string;
+    subCategory?: string | null;
     note?: string | null;
+    paidFrom?: string;
     employeeName?: string | null;
     vendorName?: string | null;
     details?: string | null;
@@ -69,16 +71,14 @@ interface DailyReport {
     description: string;
     amount: number;
     subCategory?: string | null;
-    employeeName?: string;
-    rentalPeriod?: string;
-    meterReading?: string;
-    campaignName?: string;
-    details?: string | null;
-    expenseType?: string;
     note?: string | null;
     paidFrom?: string;
+    employeeName?: string | null;
     vendorName?: string | null;
+    details?: string | null;
   }>;
+  pureCompanyExpenses: number;
+  totalBankCommissions: number;
   totalProjectExpenses: number;
   totalCompanyExpenses: number;
   totalExpenses: number;
@@ -92,6 +92,9 @@ interface DailyReport {
     assignedTo: string | null;
   }>;
   totalFixedAssets?: number;
+  totalDebtsTaken?: number;
+  totalDebtsRepaid?: number;
+  totalTransfersOut?: number;
   debtsTaken?: Array<{
     id: string;
     description?: string;
@@ -327,8 +330,8 @@ async function exportPDF(data: DailyReport) {
               // We avoid strings with '-' because descriptions often have dates e.g. "Material expense - 2026-03-03"
               // If "208,000 ETB", it ends with ETB and doesn't have a dash (usually).
               hookData.cell.styles.halign = 'right';
-            } else if (/^[\d,.\s]+ETB$/.test(val) || /^[\+\-]?[\d,.\s]+ETB$/.test(val)) {
-              // Strict regex for amount + ETB e.g "208,000 ETB" or "+406,035 ETB"
+            } else if (/^[\d,.\s]+ETB$/.test(val) || /^[\+\-]?[\d,.\s]+ETB$/.test(val) || /^[\+\-]?[\d,.\s]+$/.test(val)) {
+              // Strict regex for amount + optional ETB or just amount
               hookData.cell.styles.halign = 'right';
             } else {
               // Explicitly left-align text to fix centering issues for descriptions
@@ -377,23 +380,17 @@ async function exportPDF(data: DailyReport) {
       const balanceRows = allAccounts.map(name => {
         const prevBal = data.balances.previous[name] || 0;
         const currBal = data.balances.today[name] || 0;
+        const change = currBal - prevBal;
         return [
           name,
-          formatCurrency(prevBal),
-          formatCurrency(currBal)
+          prevBal.toLocaleString(),
+          currBal.toLocaleString(),
+          (change > 0 ? '+' : '') + change.toLocaleString()
         ];
       });
 
-      // Add a generic Total row as requested by the user
-      balanceRows.push([
-        'Total',
-        formatCurrency(data.totalPrev || 0),
-        formatCurrency(data.totalToday || 0)
-      ]);
-
       renderTable(
-        'Account Balances',
-        [['Account', 'Previous Balance', 'Current Balance']],
+        'Account Balances', [['Account', 'Previous Balance', 'Current Balance', 'Change']],
         balanceRows,
         {
           didParseCell: (hookData) => {
@@ -409,15 +406,25 @@ async function exportPDF(data: DailyReport) {
                 hookData.cell.styles.fontStyle = 'normal';
               }
 
-              // Color specific columns (Previous Balance and Current Balance)
+              // Color specific columns (Previous Balance and Current Balance and Change)
               // Only color the values, not the account names. 
               // Based on user: "kuwaana tirooyinka numbarada sii kalaro ku haboon waana qaybta accountska"
-              if (colIndex === 1 || colIndex === 2) {
+              if (colIndex === 1 || colIndex === 2 || colIndex === 3) {
                 hookData.cell.styles.textColor = [15, 23, 42]; // slate-900 
+                
+                // Color the Change column specifically
+                if (colIndex === 3) {
+                  const val = String(hookData.cell.raw);
+                  if (val.startsWith('+')) {
+                    hookData.cell.styles.textColor = [22, 163, 74]; // Green
+                  } else if (val.startsWith('-')) {
+                    hookData.cell.styles.textColor = [220, 38, 38]; // Red
+                  }
+                }
               }
 
-              // Force right alignment for numeric columns (index 1 & 2)
-              if (colIndex === 1 || colIndex === 2) {
+              // Force right alignment for numeric columns (index 1, 2, 3)
+              if (colIndex === 1 || colIndex === 2 || colIndex === 3) {
                 hookData.cell.styles.halign = 'right';
               }
             }
@@ -425,7 +432,7 @@ async function exportPDF(data: DailyReport) {
             // Align headers for numeric columns to the right as well to match body
             if (hookData.section === 'head') {
               const colIndex = hookData.column.index;
-              if (colIndex === 1 || colIndex === 2) {
+              if (colIndex === 1 || colIndex === 2 || colIndex === 3) {
                 hookData.cell.styles.halign = 'right';
               }
             }
@@ -538,21 +545,41 @@ async function exportPDF(data: DailyReport) {
       );
     }
 
-    // 5. Debts Taken
+    // 4b. Fixed Assets Purchased
+    if (data.fixedAssets && data.fixedAssets.length > 0) {
+      renderTable(
+        'Fixed Assets Purchased',
+        [['Asset Name', 'Type', 'Vendor', 'Assigned To', 'Value']],
+        data.fixedAssets.map(asset => [
+          asset.name || '-',
+          asset.type || '-',
+          asset.vendor || '-',
+          asset.assignedTo || '-',
+          formatCurrency(asset.value)
+        ]),
+        {
+          totalLabel: 'Total Fixed Assets',
+          totalValue: formatCurrency(data.totalFixedAssets || 0),
+          totalColor: [234, 88, 12] // Orange
+        }
+      );
+    }
+
+    // 5. Receivables Given
     if (data.debtsTaken && data.debtsTaken.length > 0) {
       renderTable(
-        'Debts Taken (Loans Received)',
-        [['Lender / Customer', 'Description', 'Account', 'Amount']],
+        'Receivables Given (Deyn La Siiyay)',
+        [['Borrower / Customer', 'Description', 'Account', 'Amount']],
         data.debtsTaken.map(tx => {
           // We cast to any here just for flexibility to pull name fields if present from backend
           let entity = (tx as any).customerName || (tx as any).vendorName || (tx as any).employeeName || '-';
-          let desc = tx.note || tx.description || 'Debt Taken';
+          let desc = tx.note || tx.description || 'Receivable Given';
           desc = desc.replace(/\s?-?\s*\d{4}-\d{2}-\d{2}$/, '').trim();
-          if (!desc) desc = 'Debt Taken';
+          if (!desc) desc = 'Receivable Given';
           return [entity, desc, tx.account || '-', formatCurrency(tx.amount)];
         }),
         {
-          totalLabel: 'Total Debts Taken',
+          totalLabel: 'Total Receivables',
           totalValue: formatCurrency(
             data.debtsTaken.reduce((sum, tx) => sum + tx.amount, 0)
           )
@@ -591,62 +618,136 @@ async function exportPDF(data: DailyReport) {
       );
     }
 
-    // -- SUMMARY --
-    let summaryY = yPos + 5;
+    // -- DETAILED WATERFALL SUMMARY --
+    let summaryY = yPos + 8;
     const pageHeightPDF = doc.internal.pageSize.getHeight();
 
-    // Check if there's enough room for both the Financial Summary and the signatures/stamp
-    // Summary is ~40 units tall, signatures take the bottom 40 units.
-    if (summaryY > pageHeightPDF - 90) {
+    // Ensure enough space for the full summary (approx 100 units tall)
+    if (summaryY > pageHeightPDF - 130) {
       doc.addPage();
       summaryY = 30;
     }
 
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.5);
-    doc.line(110, summaryY, 196, summaryY);
+    const openingBal = data.totalPrev ?? 0;
+    const closingBal = data.totalToday ?? 0;
+    const incomeAmt = data.pureIncome ?? 0;
+    const debtColl = data.totalDebtCollected ?? 0;
+    const loansRec = data.totalLoansReceived ?? 0;
+    const projExp = data.totalProjectExpenses ?? 0;
+    const compExp = data.pureCompanyExpenses ?? 0;
+    const comms = data.totalBankCommissions ?? 0;
+    const fixedAmt = data.totalFixedAssets ?? 0;
+    const debtGiven = data.totalDebtsTaken ?? 0;
 
-    doc.setFontSize(14);
+    const summaryX1 = 14;   // Left label column
+    const summaryX2 = 196;  // Right value column
+
+    // Section header background
+    doc.setFillColor(15, 23, 42);
+    doc.roundedRect(summaryX1 - 2, summaryY - 2, 184, 10, 2, 2, 'F');
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0, 0, 0);
-    doc.text('FINANCIAL SUMMARY', 110, summaryY + 8);
-
-    doc.setFontSize(10);
-
-    // Income
+    doc.setFontSize(11);
+    doc.setTextColor(255, 255, 255);
+    doc.text('DAILY FINANCIAL STATEMENT', summaryX1 + 2, summaryY + 4.5);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(50, 50, 50);
-    doc.text('Total Income:', 110, summaryY + 16);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(22, 163, 74); // Green
-    doc.text(formatCurrency(data.income || 0), 196, summaryY + 16, { align: 'right' });
+    doc.setFontSize(8);
+    doc.setTextColor(180, 180, 180);
+    doc.text(data.date, summaryX2, summaryY + 4.5, { align: 'right' });
 
-    // Expenses
-    const totalExp = data.totalExpenses + (data.totalFixedAssets || 0);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(50, 50, 50);
-    doc.text('Total Expenses:', 110, summaryY + 24);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(220, 38, 38); // Red
-    doc.text(`(${formatCurrency(totalExp)})`, 196, summaryY + 24, { align: 'right' });
+    summaryY += 15;
 
-    // Net Flow
-    const netFlow = (data.income || 0) - totalExp;
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.2);
-    doc.line(110, summaryY + 28, 196, summaryY + 28);
+    // Helper to draw a summary row
+    const drawRow = (label: string, value: number, isTotal = false, color?: [number, number, number], indent = false) => {
+      if (isTotal) {
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineWidth(0.2);
+        doc.line(summaryX1, summaryY - 2, summaryX2, summaryY - 2);
+      }
+      doc.setFont('helvetica', isTotal ? 'bold' : 'normal');
+      doc.setFontSize(isTotal ? 10 : 9);
+      doc.setTextColor(...(color ?? [50, 50, 50] as [number,number,number]));
+      const labelX = indent ? summaryX1 + 6 : summaryX1;
+      doc.text(label, labelX, summaryY);
 
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
-    doc.setTextColor(15, 23, 42); // Very dark gray for title
-    doc.text('Net Cash Flow:', 110, summaryY + 36);
+      // Prefix sign
+      let valStr = formatCurrency(Math.abs(value));
+      if (!isTotal) {
+        valStr = value >= 0 ? `+ ${valStr}` : `- ${valStr}`;
+      }
+      doc.text(valStr, summaryX2, summaryY, { align: 'right' });
+      summaryY += isTotal ? 8 : 7;
+    };
 
-    if (netFlow >= 0) {
-      doc.setTextColor(22, 163, 74); // Green
-    } else {
-      doc.setTextColor(220, 38, 38); // Red
+    // Opening balance
+    drawRow('Jaban Hore (Opening Balance)', openingBal, false, [15, 23, 42]);
+    summaryY += 1;
+
+    // Inflows
+    if (incomeAmt > 0) drawRow('  + Dakhli (Income)', incomeAmt, false, [22, 163, 74], true);
+    if (debtColl > 0) drawRow('  + Deyn Soo Xarootay (Debt Collected)', debtColl, false, [22, 163, 74], true);
+    if (loansRec > 0) drawRow('  + Dayn La Qaaday (Loans Received)', loansRec, false, [22, 163, 74], true);
+    
+    // Total Inflows Sub-total
+    const totalIn = incomeAmt + debtColl + loansRec;
+    if (totalIn > 0) {
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.1);
+      doc.line(summaryX1 + 6, summaryY - 2, summaryX2, summaryY - 2);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.text('TOTAL INFLOWS', summaryX1 + 6, summaryY + 2);
+      doc.text(`+ ${formatCurrency(totalIn)}`, summaryX2, summaryY + 2, { align: 'right' });
+      summaryY += 8;
     }
-    doc.text(formatCurrency(netFlow), 196, summaryY + 36, { align: 'right' });
+
+    summaryY += 1;
+
+    // Outflows
+    if (projExp > 0) drawRow('  - Mashruuc Kharashyada (Project Exp.)', -projExp, false, [220, 38, 38], true);
+    if (compExp > 0) drawRow('  - Shirkad Kharashyada (Company Exp.)', -compExp, false, [220, 38, 38], true);
+    if (fixedAmt > 0) drawRow('  - Hantida Joogtada (Fixed Assets)', -fixedAmt, false, [234, 88, 12], true);
+    if (comms > 0) drawRow('  - Khidmadaha Bankiga (Bank Commissions)', -comms, false, [234, 88, 12], true);
+    if (debtGiven > 0) drawRow('  - Deyn La Siiyay (Receivables Given)', -debtGiven, false, [220, 38, 38], true);
+
+    // Total Outflows Sub-total
+    const totalOut = projExp + compExp + fixedAmt + comms + debtGiven;
+    if (totalOut > 0) {
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.1);
+      doc.line(summaryX1 + 6, summaryY - 2, summaryX2, summaryY - 2);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.text('TOTAL OUTFLOWS', summaryX1 + 6, summaryY + 2);
+      doc.text(`- ${formatCurrency(totalOut)}`, summaryX2, summaryY + 2, { align: 'right' });
+      summaryY += 8;
+    }
+
+    summaryY += 1;
+
+    // Closing balance (double line)
+    doc.setDrawColor(15, 23, 42);
+    doc.setLineWidth(0.8);
+    doc.line(summaryX1, summaryY - 3, summaryX2, summaryY - 3);
+    doc.setLineWidth(0.3);
+    doc.line(summaryX1, summaryY - 1, summaryX2, summaryY - 1);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(15, 23, 42);
+    doc.text('Jaban Hada (Closing Balance)', summaryX1, summaryY + 5);
+
+    if (closingBal >= 0) {
+      doc.setTextColor(22, 163, 74);
+    } else {
+      doc.setTextColor(220, 38, 38);
+    }
+    doc.text(formatCurrency(closingBal), summaryX2, summaryY + 5, { align: 'right' });
+
+    // -- Closing separator --
+    summaryY += 12;
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.2);
+    doc.line(summaryX1, summaryY, summaryX2, summaryY);
 
     // Check if there's enough room on the current page for the signature block
     // We removed the signatures and stamp entirely.
@@ -755,20 +856,27 @@ export default function DailyReportPage() {
   const totalExp = report.totalExpenses + (report.totalFixedAssets || 0);
   const netFlow = report.income - totalExp;
   const hasBalances = report.balances && Object.keys(report.balances.today).length > 0;
+  const openingBal = report.totalPrev ?? 0;
+  const closingBal = report.totalToday ?? 0;
+
+  // Helper: show a waterfall row
+  const WRow = ({ label, amount, type }: { label: string; amount: number; type: 'in' | 'out' | 'neutral' | 'total' }) => {
+    if (amount === 0) return null;
+    const color = type === 'in' ? 'text-green-600 dark:text-green-400'
+      : type === 'out' ? 'text-red-500 dark:text-red-400'
+      : type === 'total' ? (closingBal >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-red-600 dark:text-red-400')
+      : 'text-gray-700 dark:text-gray-200';
+    const sign = type === 'in' ? '+' : type === 'out' ? '−' : '';
+    const fontClass = type === 'total' ? 'font-black text-lg' : 'font-semibold text-sm';
+    return (
+      <div className={`flex justify-between items-center py-1.5 ${type === 'total' ? 'border-t-2 border-gray-800 dark:border-gray-300 mt-2 pt-3' : ''}`}>
+        <span className={`text-gray-600 dark:text-gray-300 ${type === 'total' ? 'font-bold text-base' : 'text-sm'}`}>{label}</span>
+        <span className={`${fontClass} ${color} tabular-nums`}>{sign} {Math.abs(amount).toLocaleString()} ETB</span>
+      </div>
+    );
+  };
 
   // --- UI Components ---
-
-  const StatCard = ({ title, value, icon: Icon, colorClass, borderClass }: any) => (
-    <div className={`bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border-l-4 ${borderClass} flex items-center justify-between hover:shadow-md transition-shadow`}>
-      <div>
-        <p className="text-xs md:text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">{title}</p>
-        <h3 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">{value.toLocaleString()} <span className="text-xs md:text-sm text-gray-400 font-normal">ETB</span></h3>
-      </div>
-      <div className={`p-2 md:p-3 rounded-full ${colorClass} bg-opacity-10`}>
-        <Icon size={20} className={`md:w-6 md:h-6 ${colorClass.replace('bg-', 'text-')}`} />
-      </div>
-    </div>
-  );
 
   return (
     <Layout>
@@ -848,29 +956,61 @@ export default function DailyReportPage() {
         {/* -- MAIN CONTENT GRID -- */}
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 md:py-8 space-y-4 md:space-y-8">
 
-          {/* 1. STATUS CARDS */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-            <StatCard
-              title="Income"
-              value={report.income}
-              icon={TrendingUp}
-              colorClass="text-green-600 bg-green-600"
-              borderClass="border-green-500"
-            />
-            <StatCard
-              title="Expenses"
-              value={totalExp}
-              icon={TrendingDown}
-              colorClass="text-red-600 bg-red-600"
-              borderClass="border-red-500"
-            />
-            <StatCard
-              title="Net Flow"
-              value={netFlow}
-              icon={DollarSign}
-              colorClass={netFlow >= 0 ? "text-blue-600 bg-blue-600" : "text-orange-600 bg-orange-600"}
-              borderClass={netFlow >= 0 ? "border-blue-500" : "border-orange-500"}
-            />
+          {/* 1. WATERFALL FINANCIAL SUMMARY */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-slate-900 to-slate-700 px-6 py-4 flex justify-between items-center">
+              <div>
+                <h3 className="font-black text-white text-base tracking-wide">DAILY FINANCIAL STATEMENT</h3>
+                <p className="text-slate-400 text-xs mt-0.5">{report.date}</p>
+              </div>
+              <span className="text-slate-300 text-xs font-mono">{report.companyName}</span>
+            </div>
+
+            {/* Waterfall rows */}
+            <div className="px-6 py-5 space-y-0.5">
+              {/* Opening */}
+              <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700 mb-2">
+                <span className="font-bold text-gray-800 dark:text-gray-100 text-sm">Jaban Hore (Opening Balance)</span>
+                <span className="font-bold text-gray-900 dark:text-white tabular-nums">{openingBal.toLocaleString()} ETB</span>
+              </div>
+
+              {/* Inflows */}
+              {report.pureIncome > 0 && <WRow label="+ Dakhli (Income)" amount={report.pureIncome} type="in" />}
+              {(report.totalDebtCollected ?? 0) > 0 && <WRow label="+ Deyn Soo Xarootay (Debt Collected)" amount={report.totalDebtCollected!} type="in" />}
+              {(report.totalLoansReceived ?? 0) > 0 && <WRow label="+ Dayn La Qaaday (Loans Received)" amount={report.totalLoansReceived!} type="in" />}
+
+              {/* Total Inflows Sub-total */}
+              {((report.pureIncome || 0) + (report.totalDebtCollected || 0) + (report.totalLoansReceived || 0)) > 0 && (
+                <div className="flex justify-between items-center py-1 border-t border-gray-50 dark:border-gray-800 mt-1 opacity-80">
+                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">Total Inflows</span>
+                  <span className="text-xs font-bold text-green-600 tabular-nums">+ {((report.pureIncome || 0) + (report.totalDebtCollected || 0) + (report.totalLoansReceived || 0)).toLocaleString()}</span>
+                </div>
+              )}
+
+              {/* Spacer */}
+              {(report.totalProjectExpenses > 0 || report.pureCompanyExpenses > 0 || (report.totalBankCommissions ?? 0) > 0 || (report.totalFixedAssets ?? 0) > 0 || (report.totalDebtsTaken ?? 0) > 0) && (
+                <div className="pt-2" />
+              )}
+
+              {/* Outflows */}
+              {report.totalProjectExpenses > 0 && <WRow label="− Mashruuc Kharash (Project Exp.)" amount={report.totalProjectExpenses} type="out" />}
+              {report.pureCompanyExpenses > 0 && <WRow label="− Shirkad Kharash (Company Exp.)" amount={report.pureCompanyExpenses} type="out" />}
+              {(report.totalBankCommissions ?? 0) > 0 && <WRow label="− Khidmadaha Bankiga (Bank Commissions)" amount={report.totalBankCommissions!} type="out" />}
+              {(report.totalFixedAssets ?? 0) > 0 && <WRow label="− Hantida Joogtada (Fixed Assets)" amount={report.totalFixedAssets!} type="out" />}
+              {(report.totalDebtsTaken ?? 0) > 0 && <WRow label="− Deyn La Siiyay (Receivables Given)" amount={report.totalDebtsTaken!} type="out" />}
+
+              {/* Total Outflows Sub-total */}
+              {(report.totalProjectExpenses + report.pureCompanyExpenses + (report.totalBankCommissions || 0) + (report.totalFixedAssets || 0) + (report.totalDebtsTaken || 0)) > 0 && (
+                <div className="flex justify-between items-center py-1 border-t border-gray-50 dark:border-gray-800 mt-1 opacity-80">
+                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">Total Outflows</span>
+                  <span className="text-xs font-bold text-red-500 tabular-nums">− {(report.totalProjectExpenses + report.pureCompanyExpenses + (report.totalBankCommissions || 0) + (report.totalFixedAssets || 0) + (report.totalDebtsTaken || 0)).toLocaleString()}</span>
+                </div>
+              )}
+
+              {/* Closing */}
+              <WRow label="Jaban Hada (Closing Balance)" amount={closingBal} type="total" />
+            </div>
           </div>
 
           {/* 2. ACCOUNT BALANCES (If Any) */}

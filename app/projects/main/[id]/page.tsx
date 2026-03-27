@@ -756,6 +756,25 @@ const ProjectDetailsPage: React.FC = () => {
                           </div>
                           <p className="font-bold text-lg text-cyan-600 ml-2">{mat.quantityUsed} <span className="text-sm font-normal text-mediumGray">{mat.unit}</span></p>
                         </div>
+                        {(() => {
+                          const matchingExpense = project.expenses.find(e => 
+                            e.category === 'Material' && 
+                            e.receiptUrl && 
+                            Array.isArray((e as any).materials) && 
+                            (e as any).materials.some((m: any) => m.name.toLowerCase() === mat.name.toLowerCase())
+                          );
+                          return matchingExpense ? (
+                            <div className="mt-3 pt-2 border-t border-cyan-200 dark:border-cyan-800 flex justify-between items-center">
+                              <span className="text-[10px] text-cyan-700 font-bold uppercase tracking-tighter">Iibka: {new Date(matchingExpense.expenseDate).toLocaleDateString()}</span>
+                              <button 
+                                onClick={() => window.open(matchingExpense.receiptUrl, '_blank')}
+                                className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:text-blue-700"
+                              >
+                                <Eye size={14} /> Fiiri Rasiidka
+                              </button>
+                            </div>
+                          ) : null;
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -1257,74 +1276,68 @@ const ProjectDetailsPage: React.FC = () => {
 
         {/* Mobile Documents Content */}
         {activeTab === 'Documents' && (
-          <div>
-            <h4 className="font-bold text-lg mb-2 text-primary">Rasiidada Kharashaadka (Receipt Images)</h4>
+          <div className="space-y-8">
             {(() => {
               const expensesWithReceipts = project.expenses.filter(exp => exp.receiptUrl);
-
               if (expensesWithReceipts.length === 0) {
                 return (
                   <div className="text-center py-8">
                     <FileText className="mx-auto text-gray-400 dark:text-gray-500" size={48} />
                     <p className="text-gray-700 dark:text-gray-200 mt-2">Ma jiraan rasiido oo la xiriira kharashaadka mashruuca.</p>
-                    <Link
-                      href="/projects/expenses/add"
-                      className="mt-4 inline-flex items-center gap-2 bg-primary text-white py-2 px-4 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
-                    >
-                      <Plus size={18} />
-                      Ku Dar Kharash + Rasiid
-                    </Link>
                   </div>
                 );
               }
 
-              return (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {expensesWithReceipts.map((expense) => (
-                    <div key={expense.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
-                      <div className="mb-3">
-                        <h4 className="font-semibold text-darkGray dark:text-gray-100">{expense.description}</h4>
-                        <p className="text-sm text-mediumGray dark:text-gray-400">Br{expense.amount.toLocaleString()}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-500">
-                          {new Date(expense.expenseDate).toLocaleDateString()}
-                        </p>
-                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${expense.category === 'Material' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200' :
-                          expense.category === 'Labor' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200' :
-                            expense.category === 'Company Expense' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-200' :
-                              'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200'
-                          }`}>
-                          {expense.category}
-                        </span>
-                      </div>
+              const materialReceipts = expensesWithReceipts.filter(e => e.category === 'Material');
+              const otherReceipts = expensesWithReceipts.filter(e => e.category !== 'Material');
 
-                      {expense.receiptUrl && (
-                        <div className="mb-3">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={expense.receiptUrl}
-                            alt={`Receipt for ${expense.description}`}
-                            className="w-full h-32 object-cover rounded-lg border border-lightGray dark:border-gray-700"
-                            onClick={() => window.open(expense.receiptUrl, '_blank')}
-                            style={{ cursor: 'pointer' }}
-                          />
-                          <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Click to view full size</p>
-                        </div>
-                      )}
-
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
-                          {new Date(expense.expenseDate).toLocaleDateString()}
-                        </span>
-                        <button
-                          onClick={() => window.open(expense.receiptUrl, '_blank')}
-                          className="text-primary hover:text-blue-700 text-sm font-medium"
-                        >
-                          View Receipt
-                        </button>
-                      </div>
+              const ReceiptCard = ({ expense }: { expense: any }) => (
+                <div key={expense.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border border-lightGray dark:border-gray-700 hover:shadow-lg transition-all">
+                  <div className="mb-3 flex justify-between items-start">
+                    <div>
+                      <h4 className="font-semibold text-darkGray dark:text-gray-100">{expense.description}</h4>
+                      <p className="text-sm font-bold text-redError">Br{expense.amount.toLocaleString()}</p>
                     </div>
-                  ))}
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${expense.category === 'Material' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
+                      {expense.category}
+                    </span>
+                  </div>
+                  <img
+                    src={expense.receiptUrl}
+                    alt="Receipt"
+                    className="w-full h-40 object-cover rounded-lg mb-3 cursor-pointer"
+                    onClick={() => window.open(expense.receiptUrl, '_blank')}
+                  />
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-mediumGray">{new Date(expense.expenseDate).toLocaleDateString()}</span>
+                    <button onClick={() => window.open(expense.receiptUrl, '_blank')} className="text-primary font-bold">Full View</button>
+                  </div>
                 </div>
+              );
+
+              return (
+                <>
+                  {materialReceipts.length > 0 && (
+                    <section>
+                      <h4 className="font-bold text-blue-600 dark:text-blue-400 mb-4 flex items-center gap-2">
+                        <Layers size={18} /> Rasiidada Agabka (Material Receipts)
+                      </h4>
+                      <div className="grid grid-cols-1 gap-4">
+                        {materialReceipts.map(exp => <ReceiptCard key={exp.id} expense={exp} />)}
+                      </div>
+                    </section>
+                  )}
+                  {otherReceipts.length > 0 && (
+                    <section>
+                      <h4 className="font-bold text-gray-600 dark:text-gray-400 mb-4 flex items-center gap-2">
+                        <FileText size={18} /> Rasiidada Kale (Other Receipts)
+                      </h4>
+                      <div className="grid grid-cols-1 gap-4">
+                        {otherReceipts.map(exp => <ReceiptCard key={exp.id} expense={exp} />)}
+                      </div>
+                    </section>
+                  )}
+                </>
               );
             })()}
           </div>
@@ -1525,6 +1538,7 @@ const ProjectDetailsPage: React.FC = () => {
                               <th className="border border-lightGray dark:border-gray-700 px-4 py-3 text-left font-semibold text-darkGray dark:text-gray-100">Wadarta Qiimaha</th>
                               <th className="border border-lightGray dark:border-gray-700 px-4 py-3 text-left font-semibold text-darkGray dark:text-gray-100">Hadhay</th>
                               <th className="border border-lightGray dark:border-gray-700 px-4 py-3 text-left font-semibold text-darkGray dark:text-gray-100">Taariikhda</th>
+                              <th className="border border-lightGray dark:border-gray-700 px-4 py-3 text-center font-semibold text-darkGray dark:text-gray-100">Rasiid</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -1540,6 +1554,25 @@ const ProjectDetailsPage: React.FC = () => {
                                   <td className="border border-lightGray dark:border-gray-700 px-4 py-3 font-semibold text-primary">Br{totalCost.toLocaleString()}</td>
                                   <td className="border border-lightGray dark:border-gray-700 px-4 py-3 text-darkGray dark:text-gray-100">{mat.leftoverQty} {mat.unit}</td>
                                   <td className="border border-lightGray dark:border-gray-700 px-4 py-3 text-mediumGray dark:text-gray-400">{mat.dateUsed ? new Date(mat.dateUsed).toLocaleDateString() : '-'}</td>
+                                  <td className="border border-lightGray dark:border-gray-700 px-4 py-3 text-center">
+                                    {(() => {
+                                      const matchingExpense = project.expenses.find(e => 
+                                        e.category === 'Material' && 
+                                        e.receiptUrl && 
+                                        Array.isArray((e as any).materials) && 
+                                        (e as any).materials.some((m: any) => m.name.toLowerCase() === mat.name.toLowerCase())
+                                      );
+                                      return matchingExpense ? (
+                                        <button 
+                                          onClick={() => window.open(matchingExpense.receiptUrl, '_blank')}
+                                          className="p-2 rounded-lg bg-blue-50 text-primary hover:bg-blue-100 transition-colors"
+                                          title="Eeg Rasiidka"
+                                        >
+                                          <Eye size={18} />
+                                        </button>
+                                      ) : <span className="text-xs text-gray-400 italic">No receipt</span>;
+                                    })()}
+                                  </td>
                                 </tr>
                               );
                             })}
@@ -2022,81 +2055,79 @@ const ProjectDetailsPage: React.FC = () => {
                 )}
               </div>
             )}
-
-            {/* Desktop Documents Content */}
+                    {/* Desktop Documents Content */}
             {activeTab === 'Documents' && (
-              <div>
-                <h4 className="font-bold text-lg mb-2 text-primary">Rasiidada Kharashaadka (Receipt Images)</h4>
+              <div className="space-y-10">
                 {(() => {
                   const expensesWithReceipts = project.expenses.filter(exp => exp.receiptUrl);
-
                   if (expensesWithReceipts.length === 0) {
                     return (
-                      <div className="text-center py-8">
-                        <FileText className="mx-auto text-gray-400 dark:text-gray-500" size={48} />
-                        <p className="text-gray-700 dark:text-gray-200 mt-2">Ma jiraan rasiido oo la xiriira kharashaadka mashruuca.</p>
-                        <Link
-                          href="/projects/expenses/add"
-                          className="mt-4 inline-flex items-center gap-2 bg-primary text-white py-2 px-4 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
-                        >
-                          <Plus size={18} />
-                          Ku Dar Kharash + Rasiid
-                        </Link>
+                      <div className="text-center py-12">
+                        <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <FileText className="text-gray-400" size={32} />
+                        </div>
+                        <p className="text-gray-700 dark:text-gray-200 text-lg font-medium">Ma jiraan rasiido.</p>
                       </div>
                     );
                   }
 
-                  return (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {expensesWithReceipts.map((expense) => (
-                        <div key={expense.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
-                          <div className="mb-3">
-                            <h4 className="font-semibold text-darkGray dark:text-gray-100">{expense.description}</h4>
-                            <p className="text-sm text-mediumGray dark:text-gray-400">Br{expense.amount.toLocaleString()}</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-500">
-                              {new Date(expense.expenseDate).toLocaleDateString()}
-                            </p>
-                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${expense.category === 'Material' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200' :
-                              expense.category === 'Labor' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200' :
-                                expense.category === 'Company Expense' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-200' :
-                                  'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-200'
-                              }`}>
-                              {expense.category}
-                            </span>
-                          </div>
+                  const materialReceipts = expensesWithReceipts.filter(e => e.category === 'Material');
+                  const otherReceipts = expensesWithReceipts.filter(e => e.category !== 'Material');
 
-                          {expense.receiptUrl && (
-                            <div className="mb-3">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={expense.receiptUrl}
-                                alt={`Receipt for ${expense.description}`}
-                                className="w-full h-32 object-cover rounded-lg border border-lightGray dark:border-gray-700"
+                  const ReceiptGrid = ({ receipts }: { receipts: any[] }) => (
+                    <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-6">
+                      {receipts.map(expense => (
+                        <div key={expense.id} className="bg-white dark:bg-gray-900 border border-lightGray dark:border-gray-700 rounded-2xl p-4 hover:shadow-xl transition-all group overflow-hidden">
+                          <div className="relative aspect-[3/4] mb-4 rounded-xl overflow-hidden border border-lightGray dark:border-gray-700">
+                            <img src={expense.receiptUrl} alt="Receipt" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                              <button
                                 onClick={() => window.open(expense.receiptUrl, '_blank')}
-                                style={{ cursor: 'pointer' }}
-                              />
-                              <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Click to view full size</p>
+                                className="bg-white text-darkGray px-4 py-2 rounded-xl font-bold flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                              >
+                                <Eye size={16} /> Meel Dheer Ka Eeg
+                              </button>
                             </div>
-                          )}
-
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600 dark:text-gray-400">
-                              {new Date(expense.expenseDate).toLocaleDateString()}
-                            </span>
-                            <button
-                              onClick={() => window.open(expense.receiptUrl, '_blank')}
-                              className="text-primary hover:text-blue-700 text-sm font-medium"
-                            >
-                              View Receipt
-                            </button>
+                          </div>
+                          <h4 className="font-bold text-darkGray dark:text-white mb-1 truncate">{expense.description}</h4>
+                          <div className="flex justify-between items-center text-sm font-mono text-mediumGray">
+                            <span>Br{expense.amount.toLocaleString()}</span>
+                            <span>{new Date(expense.expenseDate).toLocaleDateString()}</span>
                           </div>
                         </div>
                       ))}
                     </div>
                   );
+
+                  return (
+                    <>
+                      {materialReceipts.length > 0 && (
+                        <div>
+                          <h4 className="text-xl font-black text-blue-600 dark:text-blue-400 mb-6 flex items-center gap-3">
+                            <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                              <Layers size={22} />
+                            </div>
+                            Rasiidada Agabka (Material Documentation)
+                          </h4>
+                          <ReceiptGrid receipts={materialReceipts} />
+                        </div>
+                      )}
+                      
+                      {otherReceipts.length > 0 && (
+                        <div>
+                          <h4 className="text-xl font-black text-darkGray dark:text-gray-100 mb-6 flex items-center gap-3">
+                            <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center">
+                              <FileText size={22} />
+                            </div>
+                            Dukumentiyada Kale (Project Documentation)
+                          </h4>
+                          <ReceiptGrid receipts={otherReceipts} />
+                        </div>
+                      )}
+                    </>
+                  );
                 })()}
               </div>
-
             )}
 
             {/* Desktop Financials Content */}

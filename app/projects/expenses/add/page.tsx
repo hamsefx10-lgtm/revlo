@@ -1093,7 +1093,7 @@ function AddExpenseContent() {
         // If receipt image exists, use FormData
         if (receiptImage) {
           const formData = new FormData();
-          formData.append('receiptImage', receiptImage);
+          formData.append('file', receiptImage);
 
           // Append all other fields as JSON strings or primitive values
           Object.keys(payload).forEach(key => {

@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, DollarSign, Package, AlertCircle, ScanLine, Loader2, UploadCloud } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Plus, Trash2, DollarSign, Package, AlertCircle, ScanLine, Loader2, UploadCloud, X, CheckCircle, ImageIcon } from 'lucide-react';
 import { VendorSelect } from './VendorSelect';
 import { toast } from 'sonner';
 
@@ -55,6 +55,8 @@ export function MaterialExpenseForm({
 
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [previewFile, setPreviewFile] = useState<File | null>(null);
 
     // Calculate total whenever materials change
     useEffect(() => {
@@ -99,6 +101,13 @@ export function MaterialExpenseForm({
         };
     }, []);
 
+    // Clean up object URLs on unmount
+    useEffect(() => {
+        return () => {
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+        };
+    }, [previewUrl]);
+
     // Handle adding a new material row
     const addMaterial = () => {
         setMaterials([
@@ -130,6 +139,11 @@ export function MaterialExpenseForm({
             toast.error('Fadlan sawir kaliya soo geli!');
             return;
         }
+
+        // Show live preview immediately
+        const url = URL.createObjectURL(file);
+        setPreviewUrl(url);
+        setPreviewFile(file);
 
         // Set the file for final submission
         setReceiptImage(file);
@@ -167,10 +181,7 @@ export function MaterialExpenseForm({
                 setTotalAmount(Number(data.totalAmount));
             }
 
-            // User requested to NOT fill Expense Date or Vendor automatically.
-            // Keeping only Items and Total Amount.
-
-            toast.success('Rasiidka si guul leh ayaa loo akhriyay (Alaabta kaliya)!');
+            toast.success('✅ Rasiidka si guul leh ayaa loo akhriyay!');
 
         } catch (error: any) {
             console.error('Error analyzing receipt:', error);
@@ -184,6 +195,13 @@ export function MaterialExpenseForm({
         const file = e.target.files?.[0];
         if (!file) return;
         await processReceiptFile(file);
+    };
+
+    const clearReceipt = () => {
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        setPreviewUrl(null);
+        setPreviewFile(null);
+        setReceiptImage(null);
     };
 
     // Drag and drop handlers
@@ -220,53 +238,121 @@ export function MaterialExpenseForm({
     return (
         <div className="space-y-6">
 
-            {/* AI Receipt Upload Banner */}
-            <div
-                className={`bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 animate-fade-in transition-all ${isDragging
-                    ? 'border-blue-500 dark:border-blue-400 border-2 bg-blue-100 dark:bg-blue-900/40'
-                    : 'border-blue-200 dark:border-blue-800'
-                    }`}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-            >
-                <div className="flex items-center space-x-3">
-                    <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded-full">
-                        <ScanLine className="w-6 h-6 text-blue-600 dark:text-blue-300" />
-                    </div>
-                    <div>
-                        <h4 className="font-semibold text-blue-800 dark:text-blue-200">Smart Receipt Scan</h4>
-                        <p className="text-xs text-blue-600 dark:text-blue-300">
-                            {isDragging
-                                ? '🎯 Sii daa sawirka halkan! (Drop image here!)'
-                                : 'Sawir soo riix ama Ctrl+V dheg (Drag, drop, or paste image)'}
-                        </p>
-                    </div>
+            {/* ═══ PREMIUM DRAG & DROP RECEIPT ZONE ═══ */}
+            <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                    <ScanLine className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    <h4 className="text-sm font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Smart Receipt Upload</h4>
+                    <span className="text-[10px] bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 px-2 py-0.5 rounded-full font-bold">AI</span>
                 </div>
 
-                <div className="relative">
-                    <input
-                        type="file"
-                        id="aiReceiptUpload"
-                        accept="image/*"
-                        onChange={handleReceiptUpload}
-                        className="hidden"
-                        disabled={isAnalyzing}
-                    />
-                    <label
-                        htmlFor="aiReceiptUpload"
-                        className={`group cursor-pointer flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded-lg shadow-sm hover:border-blue-400 dark:hover:border-blue-500 transition-all ${isAnalyzing ? 'opacity-50 pointer-events-none' : ''}`}
+                {previewUrl ? (
+                    /* === PREVIEW STATE === */
+                    <div className="relative rounded-2xl overflow-hidden border-2 border-blue-300 dark:border-blue-600 shadow-xl bg-gray-50 dark:bg-gray-900">
+                        {/* Preview image */}
+                        <img
+                            src={previewUrl}
+                            alt="Receipt Preview"
+                            className="w-full max-h-72 object-contain p-2"
+                        />
+
+                        {/* Overlay controls on top of image */}
+                        <div className="absolute top-3 right-3 flex gap-2">
+                            <button
+                                type="button"
+                                onClick={clearReceipt}
+                                className="bg-red-500 text-white p-2 rounded-xl shadow-lg hover:bg-red-600 transition-colors"
+                                title="Ka saar rasiidka"
+                            >
+                                <X size={16} />
+                            </button>
+                        </div>
+
+                        {/* Status badge */}
+                        <div className="absolute bottom-3 left-3">
+                            {isAnalyzing ? (
+                                <span className="flex items-center gap-2 bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg animate-pulse">
+                                    <Loader2 size={12} className="animate-spin" /> AI waa akhriyaa...
+                                </span>
+                            ) : (
+                                <span className="flex items-center gap-2 bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+                                    <CheckCircle size={12} /> Rasiidka waa diyaar
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Change receipt label */}
+                        <div className="absolute top-3 left-3">
+                            <label htmlFor="aiReceiptUpload" className="cursor-pointer">
+                                <span className="flex items-center gap-1 bg-white/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-200 text-xs font-bold px-3 py-1.5 rounded-full shadow border border-gray-200 dark:border-gray-600 hover:bg-blue-50 transition-colors">
+                                    <UploadCloud size={12} /> Beddel  
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                ) : (
+                    /* === DROP ZONE STATE === */
+                    <div
+                        className={`
+                            relative rounded-2xl border-2 border-dashed transition-all cursor-pointer
+                            ${isDragging
+                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-[1.01] shadow-lg shadow-blue-200/50'
+                                : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10'
+                            }
+                        `}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                        onClick={() => document.getElementById('aiReceiptUpload')?.click()}
                     >
-                        {isAnalyzing ? (
-                            <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
-                        ) : (
-                            <UploadCloud className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
-                        )}
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                            {isAnalyzing ? 'Analyzing...' : 'Upload Receipt'}
-                        </span>
-                    </label>
-                </div>
+                        <div className="flex flex-col items-center justify-center py-10 px-6 text-center">
+                            {isDragging ? (
+                                <>
+                                    <div className="w-16 h-16 rounded-2xl bg-blue-500 flex items-center justify-center mb-4 shadow-xl animate-bounce">
+                                        <UploadCloud className="w-8 h-8 text-white" />
+                                    </div>
+                                    <p className="text-lg font-black text-blue-600 dark:text-blue-300">🎯 Sii daaya! Halkan dhig!</p>
+                                    <p className="text-sm text-blue-500 mt-1">Drop image here</p>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 flex items-center justify-center mb-4 shadow-md">
+                                        <ImageIcon className="w-8 h-8 text-blue-500 dark:text-blue-400" />
+                                    </div>
+                                    <p className="text-base font-bold text-gray-700 dark:text-gray-200">
+                                        Rasiidka Halkan Ku Dhig
+                                    </p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                        Telegram-ka ka soo jiid ↓ ama guji
+                                    </p>
+                                    <div className="flex items-center gap-3 mt-4">
+                                        <span className="flex items-center gap-1 text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 px-3 py-1.5 rounded-full font-semibold">
+                                            <UploadCloud size={12} /> Dhig (Drag & Drop)
+                                        </span>
+                                        <span className="text-gray-300 dark:text-gray-600">|</span>
+                                        <span className="flex items-center gap-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 py-1.5 rounded-full font-semibold">
+                                            Ctrl+V Paste
+                                        </span>
+                                        <span className="text-gray-300 dark:text-gray-600">|</span>
+                                        <span className="flex items-center gap-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-3 py-1.5 rounded-full font-semibold">
+                                            📁 Browse
+                                        </span>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Hidden file input */}
+                <input
+                    type="file"
+                    id="aiReceiptUpload"
+                    accept="image/*"
+                    onChange={handleReceiptUpload}
+                    className="hidden"
+                    disabled={isAnalyzing}
+                />
             </div>
 
             {/* 1. Vendor & Invoice Section */}

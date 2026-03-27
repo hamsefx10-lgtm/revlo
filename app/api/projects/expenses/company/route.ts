@@ -57,7 +57,7 @@ export async function POST(request: Request) {
       const formData = await request.formData();
 
       // Extract receipt file if present
-      const file = formData.get('receiptImage');
+      const file = formData.get('file');
       if (file && file instanceof File) {
         receiptFile = file;
       }
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
       // Extract all other fields from FormData
       reqBody = {};
       for (const [key, value] of formData.entries()) {
-        if (key !== 'receiptImage') {
+        if (key !== 'file') {
           // Parse JSON strings and arrays
           if (typeof value === 'string' && (value.startsWith('[') || value.startsWith('{'))) {
             try {
@@ -316,6 +316,7 @@ export async function POST(request: Request) {
         employeeId: employeeId || undefined,
         customerId: transactionCustomerId,
         vendorId: transactionVendorId,
+        receiptUrl: receiptUrl || null,
         userId,
         companyId,
       },

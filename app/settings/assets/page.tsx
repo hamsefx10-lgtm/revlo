@@ -19,6 +19,8 @@ interface FixedAsset {
   purchaseDate: string;
   assignedTo: string;
   status: string;
+  depreciationRate: number;
+  currentBookValue: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -86,8 +88,11 @@ const AssetForm: React.FC<AssetFormProps> = ({ onSubmit, onCancel, editingAsset 
   const [name, setName] = useState(editingAsset?.name || '');
   const [type, setType] = useState(editingAsset?.type || '');
   const [value, setValue] = useState<number | ''>(editingAsset?.value || '');
-  const [purchaseDate, setPurchaseDate] = useState(editingAsset?.purchaseDate || new Date().toISOString().split('T')[0]);
+  const [purchaseDate, setPurchaseDate] = useState(editingAsset?.purchaseDate ? editingAsset.purchaseDate.split('T')[0] : new Date().toISOString().split('T')[0]);
   const [assignedTo, setAssignedTo] = useState(editingAsset?.assignedTo || 'Office');
+  const [status, setStatus] = useState(editingAsset?.status ?? 'Active');
+  const [depreciationRate, setDepreciationRate] = useState<number | ''>(editingAsset?.depreciationRate ?? 0);
+  const [currentBookValue, setCurrentBookValue] = useState<number | ''>(editingAsset ? (editingAsset.currentBookValue ?? editingAsset.value) : '');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -117,7 +122,15 @@ const AssetForm: React.FC<AssetFormProps> = ({ onSubmit, onCancel, editingAsset 
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, type, value, purchaseDate, assignedTo }),
+        body: JSON.stringify(editingAsset 
+          ? { name, type, value, purchaseDate, assignedTo, status, depreciationRate, currentBookValue }
+          : { 
+              assets: [{ name, type, value, purchaseDate, assignedTo, status, depreciationRate, currentBookValue }],
+              accountId: null, // Default
+              vendorId: null,
+              note: ''
+            }
+        ),
       });
 
       if (!response.ok) throw new Error('Failed to save asset');
@@ -160,18 +173,41 @@ const AssetForm: React.FC<AssetFormProps> = ({ onSubmit, onCancel, editingAsset 
         <input type="date" id="purchaseDate" value={purchaseDate} onChange={(e) => setPurchaseDate(e.target.value)} className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.purchaseDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} />
         {errors.purchaseDate && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.purchaseDate}</p>}
       </div>
-      <div>
-        <label htmlFor="assignedTo" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Meelaynta <span className="text-redError">*</span></label>
-        <select id="assignedTo" value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary appearance-none ${errors.assignedTo ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}>
-          <option value="">-- Dooro Meelayn --</option>
-          {assignedOptions.map(option => <option key={option} value={option}>{option}</option>)}
-        </select>
-        {errors.assignedTo && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.assignedTo}</p>}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="assignedTo" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Meelaynta <span className="text-redError">*</span></label>
+          <select id="assignedTo" value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary appearance-none ${errors.assignedTo ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}>
+            <option value="">-- Dooro Meelayn --</option>
+            {assignedOptions.map(option => <option key={option} value={option}>{option}</option>)}
+          </select>
+          {errors.assignedTo && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.assignedTo}</p>}
+        </div>
+        <div>
+          <label htmlFor="assetStatus" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Xaaladda (Status)</label>
+          <select id="assetStatus" value={status} onChange={(e) => setStatus(e.target.value)} className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary appearance-none border-lightGray dark:border-gray-700">
+            <option value="Active">Active</option>
+            <option value="Disposed">Disposed</option>
+            <option value="Maintenance">Maintenance</option>
+            <option value="Sold">Sold</option>
+          </select>
+        </div>
       </div>
-      <div className="flex justify-end space-x-3 mt-6">
-        <button type="button" onClick={onCancel} className="bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 py-2 px-4 rounded-lg font-bold hover:bg-gray-200 dark:hover:bg-gray-600 transition">Jooji</button>
-        <button type="submit" className="bg-primary text-white py-2 px-4 rounded-lg font-bold hover:bg-blue-700 flex items-center justify-center" disabled={loading}>
-          {loading ? <Loader2 className="animate-spin mr-2" size={20} /> : <Plus size={20} className="mr-2" />} {editingAsset ? 'Cusboonaysii Hantida' : 'Ku Dar Hantida'}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="depRate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Depreciation Rate (0-1)</label>
+          <input type="number" step="0.01" id="depRate" value={depreciationRate} onChange={(e) => setDepreciationRate(parseFloat(e.target.value) || 0)} placeholder="Tusaale: 0.10" className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary border-lightGray dark:border-gray-700" />
+        </div>
+        <div>
+          <label htmlFor="bookValue" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Current Book Value ($)</label>
+          <input type="number" id="bookValue" value={currentBookValue} onChange={(e) => setCurrentBookValue(parseFloat(e.target.value) || '')} placeholder="Tusaale: 24000.00" className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary border-lightGray dark:border-gray-700" />
+        </div>
+      </div>
+
+      <div className="flex justify-end space-x-3 mt-6 border-t pt-4">
+        <button type="button" onClick={onCancel} className="bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 py-2.5 px-6 rounded-lg font-bold hover:bg-gray-200 dark:hover:bg-gray-600 transition">Jooji</button>
+        <button type="submit" className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold hover:bg-blue-700 flex items-center justify-center min-w-[140px]" disabled={loading}>
+          {loading ? <Loader2 className="animate-spin mr-2" size={20} /> : (editingAsset ? <Edit size={20} className="mr-2" /> : <Plus size={20} className="mr-2" />)} {editingAsset ? 'Cusboonaysii' : 'Ku Dar'}
         </button>
       </div>
     </form>
