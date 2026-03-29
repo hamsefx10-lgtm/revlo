@@ -1,5 +1,0 @@
-PrismaClientKnownRequestError: 
-Invalid `prisma.project.findMany()` invocation:
-
-
-The column `transactions.receiptUrl` does not exist in the current database.

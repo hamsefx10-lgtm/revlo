@@ -230,35 +230,44 @@ export async function GET(request: Request) {
       .reduce((sum: number, tx: any) => sum + Number(tx.amount), 0);
 
     const totalDebtCollected = incomeTxs
-      .filter(tx => tx.type === 'DEBT_REPAID')
+      .filter(tx => 
+        tx.type === 'DEBT_REPAID' && 
+        !tx.vendorId && 
+        !tx.expenseId && 
+        !(tx.description && tx.description.includes('Flipped to Outflow'))
+      )
       .reduce((sum: number, tx: any) => sum + Number(tx.amount), 0);
 
     const totalIncome = pureIncome + totalLoansReceived + totalDebtCollected;
     console.log(`[Daily Report API] Income split: Pure=${pureIncome}, LoansRec=${totalLoansReceived}, DebtColl=${totalDebtCollected}`);
 
-    // Map income transactions with details
-    const incomeTransactions = incomeTxs.map((tx: any) => {
-      let desc = tx.description || '';
-      if (!desc) {
-        if (tx.type === 'INCOME') desc = 'Dakhli (Income)';
-        else if (tx.type === 'SHAREHOLDER_DEPOSIT') desc = 'Shareholder-Saamile (Deposit)';
-        else if (tx.type === 'DEBT_REPAID') desc = 'Dayn La Bixiyay (Debt Collected)';
-        else if (tx.type === 'DEBT_RECEIVED') desc = 'Dayn La Qaaday (Loan Received)';
-        else desc = 'Dakhli';
-      }
+    // Map income transactions with details - FILTERED to exclude vendor repayments (outflows)
+    const incomeTransactions = incomeTxs
+      .filter((tx: any) => 
+        !(tx.type === 'DEBT_REPAID' && (tx.vendorId || tx.expenseId || (tx.description && tx.description.includes('Flipped to Outflow'))))
+      )
+      .map((tx: any) => {
+        let desc = tx.description || '';
+        if (!desc) {
+          if (tx.type === 'INCOME') desc = 'Dakhli (Income)';
+          else if (tx.type === 'SHAREHOLDER_DEPOSIT') desc = 'Shareholder-Saamile (Deposit)';
+          else if (tx.type === 'DEBT_REPAID') desc = 'Dayn La Bixiyay (Debt Collected)';
+          else if (tx.type === 'DEBT_RECEIVED') desc = 'Dayn La Qaaday (Loan Received)';
+          else desc = 'Dakhli';
+        }
 
-      return {
-        id: tx.id,
-        description: desc,
-        amount: Number(tx.amount),
-        account: tx.account?.name || 'N/A',
-        project: tx.project?.name || null,
-        customer: tx.customer?.name || null,
-        note: tx.note || null,
-        transactionDate: tx.transactionDate?.toISOString().slice(0, 10) || '',
-        user: tx.user?.fullName || null,
-      };
-    });
+        return {
+          id: tx.id,
+          description: desc,
+          amount: Number(tx.amount),
+          account: tx.account?.name || 'N/A',
+          project: tx.project?.name || null,
+          customer: tx.customer?.name || null,
+          note: tx.note || null,
+          transactionDate: tx.transactionDate?.toISOString().slice(0, 10) || '',
+          user: tx.user?.fullName || null,
+        };
+      });
 
     console.log('[Daily Report API] Fetching transfer transactions...');
     // Transfer transactions - showing money movement between accounts
@@ -386,7 +395,7 @@ export async function GET(request: Request) {
         where: {
           companyId,
           transactionDate: { gte: selectedDate, lt: nextDay },
-          type: { notIn: ['INCOME', 'DEBT_RECEIVED', 'DEBT_REPAID', 'TRANSFER_IN', 'TRANSFER_OUT'] },
+          type: { notIn: ['INCOME', 'DEBT_RECEIVED', 'TRANSFER_IN', 'TRANSFER_OUT'] },
         },
         orderBy: { transactionDate: 'desc' },
         include: {
@@ -499,11 +508,11 @@ export async function GET(request: Request) {
 
         const isStandardIn = [
           'INCOME', 'DEBT_RECEIVED', 'TRANSFER_IN'
-        ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && (!trx.vendorId || !trx.expenseId));
+        ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && (!trx.vendorId && !trx.expenseId && !(trx.description && trx.description.includes('Flipped to Outflow'))));
 
         const isStandardOut = [
           'EXPENSE', 'DEBT_GIVEN', 'DEBT_TAKEN', 'TRANSFER_OUT'
-        ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && !!trx.vendorId && !!trx.expenseId);
+        ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && (!!trx.vendorId || !!trx.expenseId || (trx.description && trx.description.includes('Flipped to Outflow'))));
 
         let change = 0;
         if (isStandardIn) change = amount;

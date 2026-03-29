@@ -64,12 +64,13 @@ export async function GET(request: Request, { params }: { params: { id: string }
         if (trx.accountId === id) {
           shouldProcess = true;
           const isStandardIn = [
-            'INCOME', 'DEBT_RECEIVED', 'TRANSFER_IN'
-          ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && (!trx.vendorId || !trx.expenseId));
+            'INCOME', 'DEBT_RECEIVED', 'TRANSFER_IN', 'SHAREHOLDER_DEPOSIT'
+          ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && (!trx.vendorId && !trx.expenseId && !(trx.description && trx.description.includes('Flipped to Outflow'))));
 
           const isStandardOut = [
-            'EXPENSE', 'DEBT_GIVEN', 'DEBT_TAKEN', 'TRANSFER_OUT'
-          ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && !!trx.vendorId && !!trx.expenseId);
+            'EXPENSE', 'DEBT_GIVEN', 'DEBT_TAKEN', 'TRANSFER_OUT', 'SALARY'
+          ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && (!!trx.vendorId || !!trx.expenseId || (trx.description && trx.description.includes('Flipped to Outflow'))));
+
 
           if (isStandardIn) {
             isIncome = true;

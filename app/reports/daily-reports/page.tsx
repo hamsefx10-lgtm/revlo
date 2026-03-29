@@ -657,7 +657,7 @@ async function exportPDF(data: DailyReport) {
     summaryY += 15;
 
     // Helper to draw a summary row
-    const drawRow = (label: string, value: number, isTotal = false, color?: [number, number, number], indent = false) => {
+    const drawRow = (label: string, value: number, isTotal = false, color?: [number, number, number], indent = false, hideSign = false) => {
       if (isTotal) {
         doc.setDrawColor(200, 200, 200);
         doc.setLineWidth(0.2);
@@ -671,7 +671,7 @@ async function exportPDF(data: DailyReport) {
 
       // Prefix sign
       let valStr = formatCurrency(Math.abs(value));
-      if (!isTotal) {
+      if (!isTotal && !hideSign) {
         valStr = value >= 0 ? `+ ${valStr}` : `- ${valStr}`;
       }
       doc.text(valStr, summaryX2, summaryY, { align: 'right' });
@@ -679,7 +679,7 @@ async function exportPDF(data: DailyReport) {
     };
 
     // Opening balance
-    drawRow('Jaban Hore (Opening Balance)', openingBal, false, [15, 23, 42]);
+    drawRow('Jaban Hore (Opening Balance)', openingBal, false, [15, 23, 42], false, true);
     summaryY += 1;
 
     // Inflows
@@ -708,9 +708,11 @@ async function exportPDF(data: DailyReport) {
     if (fixedAmt > 0) drawRow('  - Hantida Joogtada (Fixed Assets)', -fixedAmt, false, [234, 88, 12], true);
     if (comms > 0) drawRow('  - Khidmadaha Bankiga (Bank Commissions)', -comms, false, [234, 88, 12], true);
     if (debtGiven > 0) drawRow('  - Deyn La Siiyay (Receivables Given)', -debtGiven, false, [220, 38, 38], true);
+    const debtRepaidVal = data.totalDebtsRepaid ?? 0;
+    if (debtRepaidVal > 0) drawRow('  - Deyn La Bixiyay (Debts Repaid)', -debtRepaidVal, false, [220, 38, 38], true);
 
     // Total Outflows Sub-total
-    const totalOut = projExp + compExp + fixedAmt + comms + debtGiven;
+    const totalOut = projExp + compExp + fixedAmt + comms + debtGiven + debtRepaidVal;
     if (totalOut > 0) {
       doc.setDrawColor(200, 200, 200);
       doc.setLineWidth(0.1);
@@ -999,12 +1001,13 @@ export default function DailyReportPage() {
               {(report.totalBankCommissions ?? 0) > 0 && <WRow label="− Khidmadaha Bankiga (Bank Commissions)" amount={report.totalBankCommissions!} type="out" />}
               {(report.totalFixedAssets ?? 0) > 0 && <WRow label="− Hantida Joogtada (Fixed Assets)" amount={report.totalFixedAssets!} type="out" />}
               {(report.totalDebtsTaken ?? 0) > 0 && <WRow label="− Deyn La Siiyay (Receivables Given)" amount={report.totalDebtsTaken!} type="out" />}
+              {(report.totalDebtsRepaid ?? 0) > 0 && <WRow label="− Deyn La Bixiyay (Debts Repaid)" amount={report.totalDebtsRepaid!} type="out" />}
 
               {/* Total Outflows Sub-total */}
-              {(report.totalProjectExpenses + report.pureCompanyExpenses + (report.totalBankCommissions || 0) + (report.totalFixedAssets || 0) + (report.totalDebtsTaken || 0)) > 0 && (
+              {(report.totalProjectExpenses + report.pureCompanyExpenses + (report.totalBankCommissions || 0) + (report.totalFixedAssets || 0) + (report.totalDebtsTaken || 0) + (report.totalDebtsRepaid || 0)) > 0 && (
                 <div className="flex justify-between items-center py-1 border-t border-gray-50 dark:border-gray-800 mt-1 opacity-80">
                   <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">Total Outflows</span>
-                  <span className="text-xs font-bold text-red-500 tabular-nums">− {(report.totalProjectExpenses + report.pureCompanyExpenses + (report.totalBankCommissions || 0) + (report.totalFixedAssets || 0) + (report.totalDebtsTaken || 0)).toLocaleString()}</span>
+                  <span className="text-xs font-bold text-red-500 tabular-nums">− {(report.totalProjectExpenses + report.pureCompanyExpenses + (report.totalBankCommissions || 0) + (report.totalFixedAssets || 0) + (report.totalDebtsTaken || 0) + (report.totalDebtsRepaid || 0)).toLocaleString()}</span>
                 </div>
               )}
 
