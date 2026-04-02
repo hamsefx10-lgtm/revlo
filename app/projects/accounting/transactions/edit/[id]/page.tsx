@@ -268,36 +268,49 @@ export default function EditTransactionPage({ params }: { params: { id: string }
     if (pageLoading) {
         return (
             <Layout>
+      {/* Background Glow Effects */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-[-10%] right-[-5%] w-[40vw] h-[40vw] rounded-full bg-primary/10 blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-[-10%] left-[-10%] w-[35vw] h-[35vw] rounded-full bg-emerald-400/5 dark:bg-emerald-500/10 blur-[100px] animate-pulse" style={{ animationDelay: '1s' }}></div>
+      </div>
+      <div className="relative z-10">
                 <div className="min-h-[400px] flex items-center justify-center">
                     <Loader2 className="animate-spin mr-3 text-primary" size={32} /> Loading Transaction...
                 </div>
+            </div>
             </Layout>
         );
     }
 
     return (
         <Layout>
-            <div className="flex justify-between items-center mb-8">
-                <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">
-                    <Link href="/projects/accounting/transactions" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
-                        <ArrowLeft size={28} className="inline-block" />
+      {/* Background Glow Effects */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-[-10%] right-[-5%] w-[40vw] h-[40vw] rounded-full bg-primary/10 blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-[-10%] left-[-10%] w-[35vw] h-[35vw] rounded-full bg-emerald-400/5 dark:bg-emerald-500/10 blur-[100px] animate-pulse" style={{ animationDelay: '1s' }}></div>
+      </div>
+      <div className="relative z-10">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-6 sm:mb-8 lg:mb-10 gap-4 sm:gap-6">
+                <h1 className="text-2xl sm:text-3xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight">
+                    <Link href="/projects/accounting/transactions" className="inline-flex items-center text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-primary transition-colors mb-3">
+                        <ArrowLeft size={16} className="mr-2" /> Ku Noqo
                     </Link>
                     Wax Ka Beddel Dhaqdhaqaaqa
                 </h1>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md animate-fade-in-up">
-                <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="relative bg-white/70 dark:bg-gray-800/70 backdrop-blur-2xl p-5 sm:p-8 md:p-10 rounded-[1.5rem] sm:rounded-[2rem] shadow-xl border border-white/50 dark:border-gray-700/50 animate-fade-in-up">
+                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                     {/* Transaction Type */}
                     <div>
-                        <label htmlFor="transactionType" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Nooca Dhaqdhaqaaqa <span className="text-redError">*</span></label>
+                        <label htmlFor="transactionType" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Nooca Dhaqdhaqaaqa <span className="text-rose-500">*</span></label>
                         <div className="relative">
                             <TagIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
                             <select
                                 id="transactionType"
                                 value={transactionType}
                                 onChange={(e) => setTransactionType(e.target.value)}
-                                className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.transactionType ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                                className={`w-full p-3 pl-10 border rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-md text-gray-900 dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-inner ${validationErrors.transactionType ? 'border-rose-500 ring-1 ring-rose-500' : 'border-lightGray dark:border-gray-700'}`}
                             >
                                 <option value="">-- Dooro Nooca Dhaqdhaqaaqa --</option>
                                 <option value="INCOME">Dakhli (Soo Gal)</option>
@@ -316,9 +329,9 @@ export default function EditTransactionPage({ params }: { params: { id: string }
                     {transactionType && (
                         <>
                             {/* Common Fields */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 animate-fade-in">
                                 <div>
-                                    <label htmlFor="description" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Sharaxaad <span className="text-redError">*</span></label>
+                                    <label htmlFor="description" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Sharaxaad <span className="text-rose-500">*</span></label>
                                     <div className="relative">
                                         <MessageSquare className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
                                         <input
@@ -331,7 +344,7 @@ export default function EditTransactionPage({ params }: { params: { id: string }
                                     </div>
                                 </div>
                                 <div>
-                                    <label htmlFor="amount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Qiimaha ($) <span className="text-redError">*</span></label>
+                                    <label htmlFor="amount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Qiimaha ($) <span className="text-rose-500">*</span></label>
                                     <div className="relative">
                                         <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
                                         <input
@@ -347,7 +360,7 @@ export default function EditTransactionPage({ params }: { params: { id: string }
 
                             {/* Account Selection */}
                             <div>
-                                <label htmlFor="selectedAccount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Account-ka <span className="text-redError">*</span></label>
+                                <label htmlFor="selectedAccount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Account-ka <span className="text-rose-500">*</span></label>
                                 <div className="relative">
                                     <Banknote className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
                                     <select
@@ -365,13 +378,13 @@ export default function EditTransactionPage({ params }: { params: { id: string }
 
                             {/* Dynamic Sections Based on Type */}
                             {transactionType === 'DEBT_TAKEN' && (
-                                <div className="p-4 border border-redError/20 rounded-lg bg-redError/5 animate-fade-in space-y-4">
+                                <div className="p-4 border border-rose-500 ring-1 ring-rose-500/20 rounded-lg bg-rose-500/5 animate-fade-in space-y-4">
                                     <div className="flex justify-between items-center">
-                                        <h3 className="text-lg font-bold text-redError">Faahfaahinta Daynta (La Siiyay)</h3>
+                                        <h3 className="text-lg font-bold text-rose-500">Faahfaahinta Daynta (La Siiyay)</h3>
                                         <button type="button" onClick={() => setShowQuickAddCustomer(!showQuickAddCustomer)} className="text-xs bg-redError text-white px-2 py-1 rounded flex items-center"><Plus size={14} className="mr-1" /> Macmiil Cusub</button>
                                     </div>
                                     {showQuickAddCustomer && (
-                                        <div className="bg-white dark:bg-gray-700 p-4 rounded shadow-inner grid grid-cols-1 md:grid-cols-3 gap-4 border border-redError/30">
+                                        <div className="bg-white dark:bg-gray-700 p-4 rounded shadow-inner grid grid-cols-1 md:grid-cols-3 gap-4 border border-rose-500 ring-1 ring-rose-500/30">
                                             <input type="text" value={quickCustomerName} onChange={(e) => setQuickCustomerName(e.target.value)} placeholder="Magaca Macmiilka" className="p-2 border rounded bg-lightGray dark:bg-gray-600 text-sm" />
                                             <select value={quickCustomerType} onChange={(e) => setQuickCustomerType(e.target.value)} className="p-2 border rounded bg-lightGray dark:bg-gray-600 text-sm">
                                                 <option value="Individual">Qof</option>
@@ -447,9 +460,9 @@ export default function EditTransactionPage({ params }: { params: { id: string }
                             )}
 
                             {/* Date & Note */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                 <div>
-                                    <label htmlFor="transactionDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda <span className="text-redError">*</span></label>
+                                    <label htmlFor="transactionDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda <span className="text-rose-500">*</span></label>
                                     <div className="relative">
                                         <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray" size={20} />
                                         <input type="date" value={transactionDate} onChange={(e) => setTransactionDate(e.target.value)} className="w-full p-3 pl-10 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700" />
@@ -489,7 +502,7 @@ export default function EditTransactionPage({ params }: { params: { id: string }
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-primary text-white py-4 rounded-xl font-bold text-xl hover:bg-blue-700 transition shadow-lg flex items-center justify-center gap-2"
+                                className="w-full bg-primary text-white py-3 sm:py-4 rounded-xl font-bold text-lg sm:text-xl hover:bg-blue-700 transition shadow-lg flex items-center justify-center gap-2"
                             >
                                 {loading ? <Loader2 size={24} className="animate-spin" /> : <Save size={24} />}
                                 Cusboonaysii Dhaqdhaqaaqa
@@ -502,6 +515,7 @@ export default function EditTransactionPage({ params }: { params: { id: string }
             {toastMessage && (
                 <Toast message={toastMessage.message} type={toastMessage.type} onClose={() => setToastMessage(null)} />
             )}
+            </div>
         </Layout>
     );
 }

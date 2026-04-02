@@ -1,341 +1,18 @@
-// app/accounting/page.tsx - Accounting Overview Page (10000% Design - API Integration & Enhanced)
-'use client';
+import sys
+from pathlib import Path
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import Layout from '@/components/layouts/Layout';
-import {
-  ArrowLeft, Landmark, Plus, Search, Filter, Calendar, List, LayoutGrid,
-  DollarSign, CreditCard, Banknote, RefreshCw, Eye, Edit, Trash2,
-  TrendingUp, TrendingDown, Info as InfoIcon, CheckCircle, XCircle, Clock as ClockIcon,
-  User as UserIcon, Briefcase as BriefcaseIcon, Tag as TagIcon,
-  Coins, Repeat, ReceiptText, Users, Building, Package, Scale, Truck, Mail, Phone, HardDrive, PieChart as PieChartIcon
-} from 'lucide-react';
-import Toast from '@/components/common/Toast';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import TransactionRow from '@/components/accounting/TransactionRow';
-import MobileTransactionCard from '@/components/accounting/MobileTransactionCard';
+file_path = Path("c:/Users/OMEN/projects/revlo-vr/app/projects/accounting/page.tsx")
+content = file_path.read_text(encoding='utf-8')
 
-// --- Data Interfaces (Refined for API response) ---
-interface Account {
-  id: string;
-  name: string;
-  type: string; // e.g., "BANK", "CASH", "MOBILE_MONEY"
-  balance: number; // Converted from Decimal
-  currency: string;
-}
+# Find exactly where '  return (' starts (around line 337)
+split_token = "  return (\n    <Layout>"
+if split_token not in content:
+    split_token = "  return (\n"
 
-interface Transaction {
-  id: string;
-  description: string;
-  amount: number; // Converted from Decimal
-  type: string; // e.g., "INCOME", "EXPENSE", "TRANSFER_IN", "TRANSFER_OUT", "DEBT_TAKEN", "DEBT_REPAID"
-  transactionDate: string;
-  note?: string;
-  account?: { name: string; }; // Primary account
-  fromAccount?: { name: string; }; // For transfers
-  toAccount?: { name: string; };   // For transfers
-  project?: { name: string; };     // If linked to project
-  expense?: { description: string; }; // If linked to expense
-  customer?: { name: string; };    // If linked to customer
-  vendor?: { name: string; };      // If linked to vendor
-  user?: { fullName: string; };    // Who recorded
-  employee?: { fullName: string; }; // If linked to employee
-}
+parts = content.split(split_token)
+top_part = parts[0] + split_token
 
-interface OverviewStats {
-  totalBalance: number;
-  totalIncomeThisMonth: number;
-  totalIncome: number; // Total income (all time)
-  totalExpensesThisMonth: number;
-  totalExpenses: number; // Total expenses (all time, excluding fixed assets)
-  fixedAssetExpenses?: number; // Fixed asset expenses (all time)
-  fixedAssetExpensesThisMonth?: number; // Fixed asset expenses this month
-  totalPayablesReceived?: number; // Total loans taken (all time)
-  totalPayablesReceivedThisMonth?: number; // Total loans taken this month
-  netFlowThisMonth: number;
-  totalBankAccounts: number;
-  totalCashAccounts: number;
-  totalMobileMoneyAccounts: number; // Added Mobile Money count
-  // For charts
-  monthlyCashFlow: { month: string; income: number; expense: number; net: number }[];
-  accountDistribution: { name: string; value: number; }[];
-}
-
-interface DebtsReportCompanyDebt {
-  id?: string;
-  lender?: string;
-  client?: string; // For receivables
-  customerName?: string;
-  amount?: number;
-  paid?: number;
-  received?: number; // For receivables
-  remaining?: number;
-  dueDate?: string;
-  status: string;
-}
-
-interface DebtsReportProjectDebt {
-  id?: string;
-  project?: string;
-  projectName?: string;
-  amount?: number;
-  paid?: number;
-  remaining?: number;
-  dueDate?: string;
-  status: string;
-}
-
-// Helper for chart colors
-const CHART_COLORS = ['#3498DB', '#2ECC71', '#F39C12', '#E74C3C', '#9B59B6', '#1ABC9C', '#34495E', '#A0A0A0'];
-
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }: any) => {
-  const RADIAN = Math.PI / 180;
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-  return (
-    <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-sm font-semibold">
-      {`${(percent * 100).toFixed(0)}%`}
-    </text>
-  );
-};
-
-// --- Account Table Row Component ---
-const AccountRow: React.FC<{ account: Account; onEdit: (id: string) => void; onDelete: (id: string) => void }> = ({ account, onEdit, onDelete }) => (
-  <tr className="hover:bg-lightGray dark:hover:bg-gray-700 transition-colors duration-150 border-b border-lightGray dark:border-gray-700 last:border-b-0">
-    <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-medium flex items-center space-x-2">
-      <Banknote size={18} className="text-primary" /> <span>{account.name}</span>
-    </td>
-    <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">{account.type}</td>
-    <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">{account.currency}</td>
-    <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-semibold text-right">ETB {account.balance.toLocaleString()}</td>
-    <td className="p-4 whitespace-nowrap text-right">
-      <div className="flex items-center justify-end space-x-2">
-        <Link href={`/projects/accounting/accounts/${account.id}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200" title="View Details">
-          <Eye size={18} />
-        </Link>
-        <button onClick={() => onEdit(account.id)} className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit Account">
-          <Edit size={18} />
-        </button>
-        <button onClick={() => onDelete(account.id)} className="p-2 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-colors duration-200" title="Delete Account">
-          <Trash2 size={18} />
-        </button>
-      </div>
-    </td>
-  </tr >
-);
-
-export default function AccountingPage() {
-  const router = useRouter();
-  const [overviewStats, setOverviewStats] = useState<OverviewStats | null>(null);
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
-  const [debtTransactions, setDebtTransactions] = useState<Transaction[]>([]);
-  const [projectDebtTransactions, setProjectDebtTransactions] = useState<Transaction[]>([]);
-  const [pageLoading, setPageLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('Overview');
-  const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
-  const [companyDebts, setCompanyDebts] = useState<DebtsReportCompanyDebt[]>([]);
-  const [projectDebts, setProjectDebts] = useState<DebtsReportProjectDebt[]>([]);
-
-  // --- API Functions ---
-  const fetchAccountingData = async () => {
-    setPageLoading(true);
-    try {
-      const [statsResponse, accountsResponse, transactionsResponse, debtTransactionsResponse, projectDebtTransactionsResponse] = await Promise.all([
-        fetch('/api/projects/accounting/reports'), // Fetch overview stats from new reports API
-        fetch('/api/projects/accounting/accounts'),
-        fetch('/api/projects/accounting/transactions?limit=5'), // Fetch only recent 5 transactions
-        fetch('/api/projects/accounting/transactions?includeDebts=true&limit=10'), // Fetch debt transactions
-        fetch('/api/projects/accounting/transactions?includeProjectDebts=true&limit=15') // Fetch project debt transactions
-      ]);
-
-      const statsData = await statsResponse.json();
-      const accountsData = await accountsResponse.json();
-      const transactionsData = await transactionsResponse.json();
-      const debtTransactionsData = await debtTransactionsResponse.json();
-      const projectDebtTransactionsData = await projectDebtTransactionsResponse.json();
-
-      if (!statsResponse.ok) throw new Error(statsData.message || 'Failed to fetch overview stats');
-      if (!accountsResponse.ok) throw new Error(accountsData.message || 'Failed to fetch accounts');
-      if (!transactionsResponse.ok) throw new Error(transactionsData.message || 'Failed to fetch transactions');
-      if (!debtTransactionsResponse.ok) throw new Error(debtTransactionsData.message || 'Failed to fetch debt transactions');
-      if (!projectDebtTransactionsResponse.ok) throw new Error(projectDebtTransactionsData.message || 'Failed to fetch project debt transactions');
-
-      // Set debt transactions
-      setDebtTransactions(debtTransactionsData.transactions || []);
-      setProjectDebtTransactions(projectDebtTransactionsData.transactions || []);
-
-      setOverviewStats({
-        totalBalance: statsData.totalBalance,
-        totalIncomeThisMonth: statsData.totalIncomeThisMonth,
-        totalIncome: statsData.totalIncome, // Total income (all time)
-        totalExpensesThisMonth: statsData.totalExpensesThisMonth,
-        totalExpenses: statsData.totalExpenses, // Total expenses (all time, excluding fixed assets)
-        fixedAssetExpenses: statsData.fixedAssetExpenses || 0, // Fixed asset expenses (all time)
-        fixedAssetExpensesThisMonth: statsData.fixedAssetExpensesThisMonth || 0, // Fixed asset expenses this month
-        totalPayablesReceived: statsData.totalPayablesReceived || 0,
-        totalPayablesReceivedThisMonth: statsData.totalPayablesReceivedThisMonth || 0,
-        netFlowThisMonth: statsData.netFlowThisMonth,
-        totalBankAccounts: statsData.totalBankAccounts,
-        totalCashAccounts: statsData.totalCashAccounts,
-        totalMobileMoneyAccounts: statsData.totalMobileMoneyAccounts, // Use actual data
-        monthlyCashFlow: statsData.monthlyCashFlow, // From reports API
-        accountDistribution: statsData.accountDistribution, // From reports API
-      });
-      setAccounts(accountsData.accounts); // Data already converted to Number in API
-      setRecentTransactions(transactionsData.transactions); // Data already converted to Number in API
-
-      // NEW: Fetch debts report (true aggregation)
-      const debtsReportRes = await fetch('/api/projects/accounting/reports/debts');
-      const debtsReport = await debtsReportRes.json();
-      // Strict separation: Use aggregate project debts for the Project tab, and discrete non-project receivables for the general tab.
-      const allDebts = debtsReport.debts || [];
-      const company = allDebts.filter((d: any) => !d.projectId && d.isReceivable);
-      const project = debtsReport.projectDebts || [];
-
-      setCompanyDebts(company);
-      setProjectDebts(project);
-
-    } catch (error: any) {
-      console.error('Error fetching accounting data:', error);
-      setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka xogta accounting-ga la soo gelinayay.', type: 'error' });
-      setOverviewStats(null);
-      setAccounts([]);
-      setRecentTransactions([]);
-    } finally {
-      setPageLoading(false);
-    }
-  };
-
-  const handleEditAccount = (id: string) => {
-    router.push(`/projects/accounting/accounts/edit/${id}`); // Navigate to edit account page
-  };
-
-  const handleDeleteAccount = async (id: string) => {
-    if (window.confirm('Ma hubtaa inaad tirtirto account-kan? Tan lama soo celin karo!')) {
-      try {
-        const response = await fetch(`/api/projects/accounting/accounts/${id}`, {
-          method: 'DELETE',
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'Failed to delete account');
-
-        setToastMessage({ message: data.message || 'Account-ka si guul leh ayaa loo tirtiray!', type: 'success' });
-        fetchAccountingData(); // Re-fetch all data after deleting
-      } catch (error: any) {
-        console.error('Error deleting account:', error);
-        setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka account-ka la tirtirayay.', type: 'error' });
-      }
-    }
-  };
-
-  const handleEditTransaction = (id: string) => {
-    router.push(`/projects/accounting/transactions/edit/${id}`); // Navigate to edit transaction page
-  };
-
-  const handleDeleteTransaction = async (id: string) => {
-    if (window.confirm('Ma hubtaa inaad tirtirto dhaqdhaqaaqan lacagta ah? Tan lama soo celin karo!')) {
-      try {
-        const response = await fetch(`/api/projects/accounting/transactions/${id}`, {
-          method: 'DELETE',
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'Failed to delete transaction');
-
-        setToastMessage({ message: data.message || 'Dhaqdhaqaaqa lacagta si guul leh ayaa loo tirtiray!', type: 'success' });
-
-        // If API returned an event, notify all pages about transaction deletion for real-time updates
-        if (data.event) {
-          const deleteEvent = data.event;
-
-          // Store in localStorage for cross-tab communication
-          localStorage.setItem('transactionDeleted', JSON.stringify(deleteEvent));
-          localStorage.setItem('expenses_updated', JSON.stringify(deleteEvent));
-          localStorage.setItem('project_updated', JSON.stringify(deleteEvent));
-
-          // Trigger storage events for same-tab listeners
-          window.dispatchEvent(new StorageEvent('storage', {
-            key: 'transactionDeleted',
-            newValue: JSON.stringify(deleteEvent)
-          }));
-          window.dispatchEvent(new StorageEvent('storage', {
-            key: 'expenses_updated',
-            newValue: JSON.stringify(deleteEvent)
-          }));
-          window.dispatchEvent(new StorageEvent('storage', {
-            key: 'project_updated',
-            newValue: JSON.stringify(deleteEvent)
-          }));
-
-          // Trigger custom events for same-tab listeners
-          window.dispatchEvent(new CustomEvent('expense_updated', { detail: deleteEvent }));
-          window.dispatchEvent(new CustomEvent('project_updated', { detail: deleteEvent }));
-        }
-
-        fetchAccountingData(); // Re-fetch all data after deleting
-      } catch (error: any) {
-        console.error('Error deleting transaction:', error);
-        setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka dhaqdhaqaaqa lacagta la tirtirayay.', type: 'error' });
-      }
-    }
-  };
-
-
-  useEffect(() => {
-    fetchAccountingData();
-  }, []);
-
-  // Auto-refresh data every 30 seconds for live updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchAccountingData();
-    }, 30000); // Refresh every 30 seconds
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Listen for storage events (when expenses are added/deleted from other tabs)
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'expenses_updated' || e.key === 'project_updated' || e.key === 'transactionCreated' || e.key === 'transactionDeleted') {
-        console.log('Accounting page: Storage event detected, refreshing data...', e.key);
-        fetchAccountingData();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
-
-  // Listen for custom events (when expenses are added/deleted from same tab)
-  useEffect(() => {
-    const handleExpenseUpdate = (event: any) => {
-      console.log('Accounting page: Custom event detected, refreshing data...', event.type, event.detail);
-      fetchAccountingData();
-    };
-
-    window.addEventListener('expense_updated', handleExpenseUpdate);
-    window.addEventListener('project_updated', handleExpenseUpdate);
-    window.addEventListener('transaction_created', handleExpenseUpdate);
-    window.addEventListener('transaction_deleted', handleExpenseUpdate);
-
-    return () => {
-      window.removeEventListener('expense_updated', handleExpenseUpdate);
-      window.removeEventListener('project_updated', handleExpenseUpdate);
-      window.removeEventListener('transaction_created', handleExpenseUpdate);
-      window.removeEventListener('transaction_deleted', handleExpenseUpdate);
-    };
-  }, []);
-
-  // Chart Data for Monthly Cash Flow (from overviewStats only - no dummy data)
-  const monthlyCashFlowData = overviewStats?.monthlyCashFlow || [];
-  const accountDistributionData = overviewStats?.accountDistribution || [];
-
-  return (
-    <Layout>
+new_ui = """
       {/* Dynamic Animated Background Patterns */}
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
         <div className="absolute -top-[10%] -right-[5%] w-[40%] h-[40%] bg-primary/5 dark:bg-primary/10 blur-[120px] rounded-full" />
@@ -352,7 +29,7 @@ export default function AccountingPage() {
             </Link>
             <span className="text-xs tracking-widest font-bold uppercase text-primary bg-primary/10 px-3 py-1 rounded-full">Finance Hub</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl md:text-5xl font-black text-darkGray dark:text-white tracking-tight">
+          <h1 className="text-3xl md:text-5xl font-black text-darkGray dark:text-white tracking-tight">
             Accounting
           </h1>
         </div>
@@ -373,7 +50,7 @@ export default function AccountingPage() {
       </div>
 
       {/* Floating Segmented Tabs Control */}
-      <div className="sticky top-0 z-40 flex justify-start lg:justify-center mb-8 px-2 overflow-x-auto custom-scrollbar pt-2 pb-4 -mx-4 sm:mx-0 pr-4 sm:pr-0">
+      <div className="sticky top-0 z-40 flex justify-start lg:justify-center mb-8 px-2 overflow-x-auto custom-scrollbar pt-2 pb-4 -mx-4 sm:mx-0 pr-6 sm:pr-0">
         <div className="bg-white/70 dark:bg-gray-900/60 backdrop-blur-2xl border border-white/40 dark:border-white/10 p-1.5 rounded-full shadow-lg shadow-black/5 flex space-x-1 min-w-max mx-4 sm:mx-0">
           {['Overview', 'Transactions', 'Receivables', 'Project Debts', 'Accounts', 'Reports'].map((tab) => (
             <button
@@ -411,12 +88,12 @@ export default function AccountingPage() {
             
             {/* --- OVERVIEW TAB --- */}
             {activeTab === 'Overview' && (
-              <div className="space-y-4 sm:space-y-6">
+              <div className="space-y-6">
                 {/* BENTO GRID */}
-                <main className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                <main className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   
                   {/* HERO BENTO - TOTAL BALANCE */}
-                  <div className="md:col-span-2 lg:col-span-2 bg-gradient-to-br from-gray-900 via-gray-800 to-black dark:from-gray-800 dark:to-gray-950 rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 md:p-8 shadow-2xl relative overflow-hidden group min-h-[300px]">
+                  <div className="md:col-span-2 lg:col-span-2 bg-gradient-to-br from-gray-900 via-gray-800 to-black dark:from-gray-800 dark:to-gray-950 rounded-[2rem] p-6 md:p-8 shadow-2xl relative overflow-hidden group min-h-[300px]">
                     <div className="absolute inset-0 opacity-[0.15] mix-blend-overlay" style={{backgroundImage: "url('https://grainy-gradients.vercel.app/noise.svg')"}} />
                     <div className="absolute -top-32 -right-32 w-72 h-72 bg-primary/40 blur-[100px] rounded-full group-hover:bg-primary/50 group-hover:scale-110 transition-all duration-700" />
                     <div className="absolute -bottom-32 -left-32 w-72 h-72 bg-secondary/20 blur-[100px] rounded-full group-hover:bg-secondary/30 group-hover:scale-110 transition-all duration-700 delay-150" />
@@ -436,8 +113,8 @@ export default function AccountingPage() {
                       </div>
                       
                       <div>
-                        <div className="flex items-baseline space-x-1 sm:space-x-2 flex-wrap drop-shadow-lg break-all">
-                          <span className="text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tighter">
+                        <div className="flex items-baseline space-x-2 flex-wrap drop-shadow-lg">
+                          <span className="text-white text-5xl sm:text-6xl md:text-6xl lg:text-7xl font-black tracking-tighter">
                             {overviewStats.totalBalance.toLocaleString()}
                           </span>
                           <span className="text-xl md:text-2xl font-black text-gray-400">ETB</span>
@@ -458,7 +135,7 @@ export default function AccountingPage() {
                   </div>
 
                   {/* MINI BENTO 1 - DAYNTA ACTIVITY */}
-                  <div className="bg-gradient-to-b from-white/90 to-white/60 dark:from-gray-800/90 dark:to-gray-800/60 backdrop-blur-2xl border border-white dark:border-gray-700/50 rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 shadow-xl hover:shadow-2xl md:hover:-translate-y-1 transition-all duration-300 flex flex-col relative overflow-hidden group">
+                  <div className="bg-gradient-to-b from-white/90 to-white/60 dark:from-gray-800/90 dark:to-gray-800/60 backdrop-blur-2xl border border-white dark:border-gray-700/50 rounded-[2rem] p-6 shadow-xl hover:shadow-2xl md:hover:-translate-y-1 transition-all duration-300 flex flex-col relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 blur-3xl rounded-full group-hover:bg-orange-500/20 transition-colors" />
                     <div className="flex items-center justify-between mb-6 relative z-10">
                       <div className="bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/40 dark:to-orange-800/40 p-3 rounded-2xl shadow-sm border border-orange-200/50 dark:border-orange-700/30">
@@ -484,7 +161,7 @@ export default function AccountingPage() {
                   </div>
 
                   {/* MINI BENTO 2 - HANTIDA / ACCOUNTS */}
-                  <div className="bg-gradient-to-b from-white/90 to-white/60 dark:from-gray-800/90 dark:to-gray-800/60 backdrop-blur-2xl border border-white dark:border-gray-700/50 rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 shadow-xl hover:shadow-2xl md:hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative overflow-hidden group">
+                  <div className="bg-gradient-to-b from-white/90 to-white/60 dark:from-gray-800/90 dark:to-gray-800/60 backdrop-blur-2xl border border-white dark:border-gray-700/50 rounded-[2rem] p-6 shadow-xl hover:shadow-2xl md:hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 blur-3xl rounded-full group-hover:bg-purple-500/20 transition-colors" />
                     <div className="relative z-10">
                       <div className="flex items-center justify-between mb-6">
@@ -517,9 +194,9 @@ export default function AccountingPage() {
                 </main>
 
                 {/* CHARTS ROW */}
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                   {/* CASH FLOW CHART */}
-                  <div className="lg:col-span-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white dark:border-gray-700/50 rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 md:p-8 shadow-xl">
+                  <div className="lg:col-span-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white dark:border-gray-700/50 rounded-[2rem] p-6 md:p-8 shadow-xl">
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-8 gap-4">
                       <div className="flex items-center">
                         <div className="p-3.5 bg-gradient-to-br from-primary/20 to-primary/5 dark:from-primary/30 dark:to-primary/10 rounded-2xl mr-4 border border-primary/20">
@@ -577,10 +254,10 @@ export default function AccountingPage() {
                   </div>
 
                   {/* PIE CHART */}
-                  <div className="lg:col-span-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white dark:border-gray-700/50 rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 md:p-8 shadow-xl flex flex-col">
+                  <div className="lg:col-span-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white dark:border-gray-700/50 rounded-[2rem] p-6 md:p-8 shadow-xl flex flex-col">
                     <div className="flex items-center mb-6">
                       <div className="p-3.5 bg-gradient-to-br from-accent/20 to-accent/5 dark:from-accent/30 dark:to-accent/10 rounded-2xl mr-4 border border-accent/20">
-                        <PieChartIcon size={24} className="text-accent" />
+                        <PieChart size={24} className="text-accent" />
                       </div>
                       <div>
                         <h3 className="text-xl font-black text-darkGray dark:text-white leading-tight mb-1">Funds Allocation</h3>
@@ -608,7 +285,7 @@ export default function AccountingPage() {
                           </PieChart>
                         ) : (
                           <div className="flex flex-col items-center justify-center h-full text-mediumGray">
-                            <PieChartIcon size={48} className="text-gray-200 dark:text-gray-700 mb-4" />
+                            <PieChart size={48} className="text-gray-200 dark:text-gray-700 mb-4" />
                             <p className="font-bold text-sm">No accounts found</p>
                           </div>
                         )}
@@ -630,7 +307,7 @@ export default function AccountingPage() {
 
             {/* --- TRANSACTIONS TAB --- */}
             {activeTab === 'Transactions' && (
-              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-2xl border border-white dark:border-gray-700/50 rounded-[1.5rem] sm:rounded-[2rem] p-5 md:p-8 shadow-2xl animate-fade-in-up">
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-2xl border border-white dark:border-gray-700/50 rounded-[2rem] p-5 md:p-8 shadow-2xl animate-fade-in-up">
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-8 gap-4">
                   <div>
                     <h3 className="text-2xl md:text-3xl font-black text-darkGray dark:text-white flex items-center tracking-tight">
@@ -646,7 +323,7 @@ export default function AccountingPage() {
                 </div>
 
                 {recentTransactions.length === 0 ? (
-                  <div className="text-center py-20 bg-gray-50/50 dark:bg-gray-900/50 rounded-[1.5rem] sm:rounded-[2rem] border border-dashed border-gray-200 dark:border-gray-700">
+                  <div className="text-center py-20 bg-gray-50/50 dark:bg-gray-900/50 rounded-[2rem] border border-dashed border-gray-200 dark:border-gray-700">
                      <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
                         <ReceiptText size={40} className="text-gray-300 dark:text-gray-600" />
                      </div>
@@ -696,7 +373,7 @@ export default function AccountingPage() {
             {/* --- RECEIVABLES & PROJECT DEBTS & ACCOUNTS & REPORTS - reusing upgraded cards above but styling to match glassmorphism --- */}
             {/* Same aesthetic applied to remaining tabs */}
             {activeTab === 'Receivables' && (
-              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-2xl border border-white dark:border-gray-700/50 rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 md:p-8 shadow-2xl animate-fade-in-up">
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-2xl border border-white dark:border-gray-700/50 rounded-[2rem] p-6 md:p-8 shadow-2xl animate-fade-in-up">
                  <div className="mb-8">
                     <h3 className="text-2xl md:text-3xl font-black text-darkGray dark:text-white flex items-center tracking-tight">
                       <div className="p-3 bg-accent/10 dark:bg-accent/20 rounded-2xl mr-4 border border-accent/20">
@@ -707,11 +384,11 @@ export default function AccountingPage() {
                  </div>
                  
                  {companyDebts.filter(d => (d.remaining || 0) > 0).length === 0 ? (
-                   <div className="text-center py-20 bg-gray-50/50 dark:bg-gray-900/50 rounded-[1.5rem] sm:rounded-[2rem] border border-dashed border-gray-200 dark:border-gray-700">
+                   <div className="text-center py-20 bg-gray-50/50 dark:bg-gray-900/50 rounded-[2rem] border border-dashed border-gray-200 dark:border-gray-700">
                      <p className="font-bold text-mediumGray">No pending client receivables found.</p>
                    </div>
                  ) : (
-                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                      {companyDebts.filter(d => (d.remaining || 0) > 0).map(debt => (
                        <div key={debt.id || debt.lender} className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 rounded-[1.5rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all relative overflow-hidden group">
                          <div className={`absolute -top-10 -right-10 w-32 h-32 blur-3xl opacity-20 dark:opacity-30 transition-transform duration-700 group-hover:scale-[2] ${debt.status === 'Overdue' ? 'bg-red-500' : 'bg-accent'}`} />
@@ -745,7 +422,7 @@ export default function AccountingPage() {
             )}
 
             {activeTab === 'Project Debts' && (
-              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-2xl border border-white dark:border-gray-700/50 rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 md:p-8 shadow-2xl animate-fade-in-up">
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-2xl border border-white dark:border-gray-700/50 rounded-[2rem] p-6 md:p-8 shadow-2xl animate-fade-in-up">
                  <div className="mb-8">
                     <h3 className="text-2xl md:text-3xl font-black text-darkGray dark:text-white flex items-center tracking-tight">
                       <div className="p-3 bg-blue-500/10 dark:bg-blue-500/20 rounded-2xl mr-4 border border-blue-500/20">
@@ -756,11 +433,11 @@ export default function AccountingPage() {
                  </div>
                  
                  {projectDebts.filter(d => (d.remaining || 0) > 0).length === 0 ? (
-                   <div className="text-center py-20 bg-gray-50/50 dark:bg-gray-900/50 rounded-[1.5rem] sm:rounded-[2rem] border border-dashed border-gray-200 dark:border-gray-700">
+                   <div className="text-center py-20 bg-gray-50/50 dark:bg-gray-900/50 rounded-[2rem] border border-dashed border-gray-200 dark:border-gray-700">
                      <p className="font-bold text-mediumGray">No pending project debts found.</p>
                    </div>
                  ) : (
-                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                      {projectDebts.filter(d => (d.remaining || 0) > 0).map(debt => (
                        <div key={debt.id || debt.project} className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 rounded-[1.5rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all relative overflow-hidden group">
                          <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/10 dark:bg-blue-500/20 blur-3xl transition-transform duration-700 group-hover:scale-[2]" />
@@ -794,7 +471,7 @@ export default function AccountingPage() {
             )}
 
             {activeTab === 'Accounts' && (
-              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-2xl border border-white dark:border-gray-700/50 rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 md:p-8 shadow-2xl animate-fade-in-up">
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-2xl border border-white dark:border-gray-700/50 rounded-[2rem] p-6 md:p-8 shadow-2xl animate-fade-in-up">
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-8 gap-4">
                   <div>
                     <h3 className="text-2xl md:text-3xl font-black text-darkGray dark:text-white flex items-center tracking-tight">
@@ -809,7 +486,7 @@ export default function AccountingPage() {
                   </Link>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {accounts.map(acc => (
                      <div key={acc.id} className="relative group bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-[1.5rem] p-6 shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden flex flex-col justify-between min-h-[220px]">
                        <div className={`absolute -bottom-10 -right-10 w-40 h-40 blur-[50px] opacity-20 group-hover:opacity-40 transition-all duration-700 ${
@@ -866,8 +543,8 @@ export default function AccountingPage() {
                     <p className="text-mediumGray font-bold mt-2 tracking-wide text-sm ml-[4.5rem]">Generate comprehensive financial insights.</p>
                  </div>
                  
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                    <Link href="/reports/profit-loss" className="group relative bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-8 rounded-[1.5rem] sm:rounded-[2rem] shadow-lg hover:shadow-2xl md:hover:-translate-y-2 transition-all duration-300 overflow-hidden">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <Link href="/reports/profit-loss" className="group relative bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-8 rounded-[2rem] shadow-lg hover:shadow-2xl md:hover:-translate-y-2 transition-all duration-300 overflow-hidden">
                        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent -z-10" />
                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-blue-500/10 rounded-full blur-2xl group-hover:scale-[2] transition-transform duration-700" />
                        <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 shadow-[0_10px_20px_rgba(59,130,246,0.3)] rounded-2xl mb-8 flex items-center justify-center transform group-hover:rotate-6 transition-transform duration-300">
@@ -880,7 +557,7 @@ export default function AccountingPage() {
                        </div>
                     </Link>
 
-                    <Link href="/reports/bank" className="group relative bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-8 rounded-[1.5rem] sm:rounded-[2rem] shadow-lg hover:shadow-2xl md:hover:-translate-y-2 transition-all duration-300 overflow-hidden">
+                    <Link href="/reports/bank" className="group relative bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-8 rounded-[2rem] shadow-lg hover:shadow-2xl md:hover:-translate-y-2 transition-all duration-300 overflow-hidden">
                        <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-transparent dark:from-green-900/10 dark:to-transparent -z-10" />
                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-green-500/10 rounded-full blur-2xl group-hover:scale-[2] transition-transform duration-700" />
                        <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 shadow-[0_10px_20px_rgba(34,197,94,0.3)] rounded-2xl mb-8 flex items-center justify-center transform group-hover:-rotate-6 transition-transform duration-300">
@@ -893,7 +570,7 @@ export default function AccountingPage() {
                        </div>
                     </Link>
 
-                    <Link href="/reports/expenses" className="group relative bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-8 rounded-[1.5rem] sm:rounded-[2rem] shadow-lg hover:shadow-2xl md:hover:-translate-y-2 transition-all duration-300 overflow-hidden">
+                    <Link href="/reports/expenses" className="group relative bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-8 rounded-[2rem] shadow-lg hover:shadow-2xl md:hover:-translate-y-2 transition-all duration-300 overflow-hidden">
                        <div className="absolute inset-0 bg-gradient-to-br from-red-50/50 to-transparent dark:from-red-900/10 dark:to-transparent -z-10" />
                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-red-500/10 rounded-full blur-2xl group-hover:scale-[2] transition-transform duration-700" />
                        <div className="w-16 h-16 bg-gradient-to-br from-red-400 to-red-600 shadow-[0_10px_20px_rgba(239,68,68,0.3)] rounded-2xl mb-8 flex items-center justify-center transform group-hover:rotate-6 transition-transform duration-300">
@@ -906,7 +583,7 @@ export default function AccountingPage() {
                        </div>
                     </Link>
 
-                    <Link href="/reports/debts" className="group relative bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-8 rounded-[1.5rem] sm:rounded-[2rem] shadow-lg hover:shadow-2xl md:hover:-translate-y-2 transition-all duration-300 overflow-hidden">
+                    <Link href="/reports/debts" className="group relative bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-8 rounded-[2rem] shadow-lg hover:shadow-2xl md:hover:-translate-y-2 transition-all duration-300 overflow-hidden">
                        <div className="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-transparent dark:from-orange-900/10 dark:to-transparent -z-10" />
                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-orange-500/10 rounded-full blur-2xl group-hover:scale-[2] transition-transform duration-700" />
                        <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 shadow-[0_10px_20px_rgba(249,115,22,0.3)] rounded-2xl mb-8 flex items-center justify-center transform group-hover:-rotate-6 transition-transform duration-300">
@@ -928,3 +605,8 @@ export default function AccountingPage() {
     </Layout>
   );
 }
+"""
+
+new_content = top_part + new_ui
+file_path.write_text(new_content, encoding='utf-8')
+print("Successfully generated ultra premium UI without duplicate HTML blocks!")

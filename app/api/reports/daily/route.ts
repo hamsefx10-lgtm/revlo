@@ -434,6 +434,8 @@ export async function GET(request: Request) {
         category: tx.category || null,
         note: tx.note || null,
         transactionDate: tx.transactionDate?.toISOString().slice(0, 10) || '',
+        vendorId: tx.vendorId || null,
+        expenseId: tx.expenseId || null,
       }));
     } catch (otherTxError: any) {
       console.error('Error fetching other transactions:', otherTxError);
@@ -470,7 +472,8 @@ export async function GET(request: Request) {
           type: true,
           transactionDate: true,
           vendorId: true,
-          expenseId: true
+          expenseId: true,
+          description: true
         }
       });
 
@@ -531,7 +534,10 @@ export async function GET(request: Request) {
     }
 
     const debtsTaken = otherTransactionsList.filter(tx => tx.type === 'DEBT_TAKEN');
-    const debtsRepaid = otherTransactionsList.filter(tx => tx.type === 'DEBT_REPAID');
+    const debtsRepaid = otherTransactionsList.filter(tx => 
+      tx.type === 'DEBT_REPAID' && 
+      (!!tx.vendorId || !!tx.expenseId || (tx.description && tx.description.includes('Flipped to Outflow')))
+    );
     const totalDebtsTaken = debtsTaken.reduce((s: number, t: any) => s + t.amount, 0);
     const totalDebtsRepaid = debtsRepaid.reduce((s: number, t: any) => s + t.amount, 0);
     const totalTransfersOut = transfers.reduce((s: number, t: any) => s + t.amount, 0);

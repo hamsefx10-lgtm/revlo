@@ -384,27 +384,35 @@ export default function AddTransactionPage() {
 
   return (
     <Layout>
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">
-          <Link href="/projects/accounting/transactions" className="text-mediumGray dark:text-gray-400 hover:text-primary transition-colors duration-200 mr-4">
-            <ArrowLeft size={28} className="inline-block" />
+      {/* Background Glow Effects */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-[-10%] right-[-5%] w-[40vw] h-[40vw] rounded-full bg-primary/10 blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-[-10%] left-[-10%] w-[35vw] h-[35vw] rounded-full bg-emerald-400/5 dark:bg-emerald-500/10 blur-[100px] animate-pulse" style={{ animationDelay: '1s' }}></div>
+      </div>
+      <div className="relative z-10">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-6 sm:mb-8 lg:mb-10 gap-4 sm:gap-6">
+        <div>
+           <Link href="/projects/accounting/transactions" className="inline-flex items-center text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-primary transition-colors mb-3">
+            <ArrowLeft size={16} className="mr-2" /> Ku Noqo Liiska
           </Link>
-          Diiwaan Geli Dhaqdhaqaaq Cusub
-        </h1>
+          <h1 className="text-2xl sm:text-3xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight">
+            Diiwaangeli Dhaqdhaqaaq
+          </h1>
+        </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md animate-fade-in-up">
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="relative bg-white/70 dark:bg-gray-800/70 backdrop-blur-2xl p-5 sm:p-8 md:p-10 rounded-[1.5rem] sm:rounded-[2rem] shadow-xl border border-white/50 dark:border-gray-700/50 animate-fade-in-up">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           {/* Transaction Type */}
           <div>
-            <label htmlFor="transactionType" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Nooca Dhaqdhaqaaqa <span className="text-redError">*</span></label>
+            <label htmlFor="transactionType" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Nooca Dhaqdhaqaaqa <span className="text-rose-500">*</span></label>
             <div className="relative">
               <TagIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
               <select
                 id="transactionType"
                 value={transactionType}
                 onChange={(e) => setTransactionType(e.target.value)}
-                className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.transactionType ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                className={`w-full p-3 pl-10 border rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-md text-gray-900 dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-inner ${validationErrors.transactionType ? 'border-rose-500 ring-1 ring-rose-500' : 'border-lightGray dark:border-gray-700'}`}
               >
                 <option value="">-- Dooro Nooca Dhaqdhaqaaqa --</option>
                 <option value="INCOME">Dakhli (Soo Gal)</option>
@@ -418,14 +426,14 @@ export default function AddTransactionPage() {
               </select>
               <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
             </div>
-            {validationErrors.transactionType && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.transactionType}</p>}
+            {validationErrors.transactionType && <p className="text-rose-500 text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.transactionType}</p>}
           </div>
 
           {/* Description & Amount (Common for most) */}
           {transactionType && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 animate-fade-in">
               <div>
-                <label htmlFor="description" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Sharaxaad <span className="text-redError">*</span></label>
+                <label htmlFor="description" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Sharaxaad <span className="text-rose-500">*</span></label>
                 <div className="relative">
                   <MessageSquare className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
                   <input
@@ -434,13 +442,13 @@ export default function AddTransactionPage() {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Tusaale: Mushahar Shaqaale, Iibka Alaabta"
-                    className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.description ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    className={`w-full p-3 pl-10 border rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-md text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-inner ${validationErrors.description ? 'border-rose-500 ring-1 ring-rose-500' : 'border-lightGray dark:border-gray-700'}`}
                   />
                 </div>
-                {validationErrors.description && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.description}</p>}
+                {validationErrors.description && <p className="text-rose-500 text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.description}</p>}
               </div>
               <div>
-                <label htmlFor="amount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Qiimaha ($) <span className="text-redError">*</span></label>
+                <label htmlFor="amount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Qiimaha ($) <span className="text-rose-500">*</span></label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
                   <input
@@ -449,10 +457,10 @@ export default function AddTransactionPage() {
                     value={amount}
                     onChange={(e) => setAmount(parseFloat(e.target.value) || '')}
                     placeholder="Tusaale: 500.00"
-                    className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.amount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    className={`w-full p-3 pl-10 border rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-md text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-inner ${validationErrors.amount ? 'border-rose-500 ring-1 ring-rose-500' : 'border-lightGray dark:border-gray-700'}`}
                   />
                 </div>
-                {validationErrors.amount && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.amount}</p>}
+                {validationErrors.amount && <p className="text-rose-500 text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.amount}</p>}
               </div>
             </div>
           )}
@@ -460,30 +468,30 @@ export default function AddTransactionPage() {
           {/* Account Selection */}
           {transactionType && (
             <div className="animate-fade-in">
-              <label htmlFor="selectedAccount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Account-ka <span className="text-redError">*</span></label>
+              <label htmlFor="selectedAccount" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Account-ka <span className="text-rose-500">*</span></label>
               <div className="relative">
                 <Banknote className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
                 <select
                   id="selectedAccount"
                   value={selectedAccount}
                   onChange={(e) => setSelectedAccount(e.target.value)}
-                  className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.selectedAccount ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                  className={`w-full p-3 pl-10 border rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-md text-gray-900 dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-inner ${validationErrors.selectedAccount ? 'border-rose-500 ring-1 ring-rose-500' : 'border-lightGray dark:border-gray-700'}`}
                 >
                   <option value="">-- Dooro Account --</option>
                   {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name} (${acc.balance?.toLocaleString?.() ?? acc.balance})</option>)}
                 </select>
                 <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
               </div>
-              {validationErrors.selectedAccount && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.selectedAccount}</p>}
+              {validationErrors.selectedAccount && <p className="text-rose-500 text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.selectedAccount}</p>}
             </div>
           )}
 
 
           {/* Debt Taken Specific Fields */}
           {transactionType === 'DEBT_TAKEN' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border border-redError/20 rounded-lg bg-redError/5 animate-fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 p-4 border border-rose-500 ring-1 ring-rose-500/20 rounded-lg bg-rose-500/5 animate-fade-in">
               <div className="col-span-full flex justify-between items-center mb-2">
-                <h3 className="text-lg font-bold text-redError dark:text-red-300">Faahfaahinta Deynta (La Qaatay)</h3>
+                <h3 className="text-lg font-bold text-rose-500 dark:text-red-300">Faahfaahinta Deynta (La Qaatay)</h3>
                 <button
                   type="button"
                   onClick={() => setShowQuickAddCustomer(!showQuickAddCustomer)}
@@ -494,7 +502,7 @@ export default function AddTransactionPage() {
               </div>
 
               {showQuickAddCustomer ? (
-                <div className="col-span-full bg-white dark:bg-gray-700 p-4 rounded-lg shadow-inner mb-4 border border-redError/30 animate-fade-in">
+                <div className="col-span-full bg-white dark:bg-gray-700 p-4 rounded-lg shadow-inner mb-4 border border-rose-500 ring-1 ring-rose-500/30 animate-fade-in">
                   <h4 className="text-sm font-bold mb-3 text-darkGray dark:text-gray-200">Ku Dar Macmiil Cusub (Quick Add)</h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <input
@@ -545,7 +553,7 @@ export default function AddTransactionPage() {
                       const cust = customers.find(c => c.id === e.target.value);
                       if (cust) setLenderName(cust.name);
                     }}
-                    className="w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full p-3 pl-10 border rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-md text-gray-900 dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-inner"
                   >
                     <option value="">-- Dooro Macmiil --</option>
                     {customers.map(cust => <option key={cust.id} value={cust.id}>{cust.name}</option>)}
@@ -555,7 +563,7 @@ export default function AddTransactionPage() {
               </div>
 
               <div>
-                <label htmlFor="lenderName" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Magaca Deyn Bixiyaha (Haddii kale) <span className="text-redError">*</span></label>
+                <label htmlFor="lenderName" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Magaca Deyn Bixiyaha (Haddii kale) <span className="text-rose-500">*</span></label>
                 <div className="relative">
                   <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
                   <input
@@ -564,14 +572,14 @@ export default function AddTransactionPage() {
                     value={lenderName}
                     onChange={(e) => setLenderName(e.target.value)}
                     placeholder="Tusaale: Bank X"
-                    className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.lenderName ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    className={`w-full p-3 pl-10 border rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-md text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-inner ${validationErrors.lenderName ? 'border-rose-500 ring-1 ring-rose-500' : 'border-lightGray dark:border-gray-700'}`}
                   />
                 </div>
-                {validationErrors.lenderName && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.lenderName}</p>}
+                {validationErrors.lenderName && <p className="text-rose-500 text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.lenderName}</p>}
               </div>
 
               <div className="col-span-full">
-                <label htmlFor="loanDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Deynta <span className="text-redError">*</span></label>
+                <label htmlFor="loanDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Deynta <span className="text-rose-500">*</span></label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
                   <input
@@ -579,17 +587,17 @@ export default function AddTransactionPage() {
                     id="loanDate"
                     value={loanDate}
                     onChange={(e) => setLoanDate(e.target.value)}
-                    className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.loanDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    className={`w-full p-3 pl-10 border rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-md text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-inner ${validationErrors.loanDate ? 'border-rose-500 ring-1 ring-rose-500' : 'border-lightGray dark:border-gray-700'}`}
                   />
                 </div>
-                {validationErrors.loanDate && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.loanDate}</p>}
+                {validationErrors.loanDate && <p className="text-rose-500 text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.loanDate}</p>}
               </div>
             </div>
           )}
 
           {/* Debt Received Specific Fields */}
           {transactionType === 'DEBT_RECEIVED' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border border-blue-500/20 rounded-lg bg-blue-500/5 animate-fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 p-4 border border-blue-500/20 rounded-lg bg-blue-500/5 animate-fade-in">
               <div className="col-span-full flex justify-between items-center mb-2">
                 <h3 className="text-lg font-bold text-blue-600 dark:text-blue-400">Faahfaahinta Payables (Dayn la Qaatay)</h3>
                 <div className="flex gap-2">
@@ -684,7 +692,7 @@ export default function AddTransactionPage() {
                         if (ven) setLenderName(ven.name);
                       }
                     }}
-                    className="w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full p-3 pl-10 border rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-md text-gray-900 dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-inner"
                   >
                     <option value="">-- Dooro Iibiye / Vendor --</option>
                     {vendors.map(ven => <option key={ven.id} value={ven.id}>{ven.name}</option>)}
@@ -711,7 +719,7 @@ export default function AddTransactionPage() {
                         if (cust) setLenderName(cust.name);
                       }
                     }}
-                    className="w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full p-3 pl-10 border rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-md text-gray-900 dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-inner"
                   >
                     <option value="">-- Dooro Macmiil / Customer --</option>
                     {customers.map(cust => <option key={cust.id} value={cust.id}>{cust.name}</option>)}
@@ -723,7 +731,7 @@ export default function AddTransactionPage() {
               {/* Manual lender name */}
               <div>
                 <label htmlFor="lenderName" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">
-                  Magaca Deyn Bixiyaha (Haddii kale) <span className="text-redError">*</span>
+                  Magaca Deyn Bixiyaha (Haddii kale) <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
                   <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
@@ -733,16 +741,16 @@ export default function AddTransactionPage() {
                     value={lenderName}
                     onChange={(e) => setLenderName(e.target.value)}
                     placeholder="Tusaale: Bankiga / Shirkadda / Qofka"
-                    className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.lenderName ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    className={`w-full p-3 pl-10 border rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-md text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-inner ${validationErrors.lenderName ? 'border-rose-500 ring-1 ring-rose-500' : 'border-lightGray dark:border-gray-700'}`}
                   />
                 </div>
-                {validationErrors.lenderName && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.lenderName}</p>}
+                {validationErrors.lenderName && <p className="text-rose-500 text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.lenderName}</p>}
               </div>
 
               {/* Loan Date */}
               <div>
                 <label htmlFor="loanDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">
-                  Taariikhda Deynta La Qaatay <span className="text-redError">*</span>
+                  Taariikhda Deynta La Qaatay <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
@@ -751,27 +759,27 @@ export default function AddTransactionPage() {
                     id="loanDate"
                     value={loanDate}
                     onChange={(e) => setLoanDate(e.target.value)}
-                    className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.loanDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    className={`w-full p-3 pl-10 border rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-md text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-inner ${validationErrors.loanDate ? 'border-rose-500 ring-1 ring-rose-500' : 'border-lightGray dark:border-gray-700'}`}
                   />
                 </div>
-                {validationErrors.loanDate && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.loanDate}</p>}
+                {validationErrors.loanDate && <p className="text-rose-500 text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.loanDate}</p>}
               </div>
             </div>
           )}
 
           {/* Pay Vendor Debt (Accounts Payable) */}
           {transactionType === 'PAY_VENDOR_DEBT' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border border-orange-500/20 rounded-lg bg-orange-500/5 animate-fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 p-4 border border-orange-500/20 rounded-lg bg-orange-500/5 animate-fade-in">
               <h3 className="col-span-full text-lg font-bold text-orange-600 dark:text-orange-400 mb-2">Bixi Deyn (Vendor/Iibiye)</h3>
               <div className="col-span-2">
-                <label htmlFor="selectedDebtToRepay" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Dooro Deynta La Bixinayo (Vendor) <span className="text-redError">*</span></label>
+                <label htmlFor="selectedDebtToRepay" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Dooro Deynta La Bixinayo (Vendor) <span className="text-rose-500">*</span></label>
                 <div className="relative">
                   <Scale className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
                   <select
                     id="selectedDebtToRepay"
                     value={selectedDebtToRepay}
                     onChange={(e) => setSelectedDebtToRepay(e.target.value)}
-                    className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.selectedDebtToRepay ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    className={`w-full p-3 pl-10 border rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-md text-gray-900 dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-inner ${validationErrors.selectedDebtToRepay ? 'border-rose-500 ring-1 ring-rose-500' : 'border-lightGray dark:border-gray-700'}`}
                   >
                     <option value="">-- Dooro Deyn la siinayo (Amaah) --</option>
                     {debts && debts.filter(d => d.isLiability).length > 0 ? debts.filter(d => d.isLiability).map(debt => (
@@ -790,17 +798,17 @@ export default function AddTransactionPage() {
 
           {/* Collect Customer Debt (Accounts Receivable) */}
           {transactionType === 'COLLECT_CUSTOMER_DEBT' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border border-green-500/20 rounded-lg bg-green-500/5 animate-fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 p-4 border border-green-500/20 rounded-lg bg-green-500/5 animate-fade-in">
               <h3 className="col-span-full text-lg font-bold text-green-600 dark:text-green-400 mb-2">Soo Xaree Deyn (Macmiil)</h3>
               <div className="col-span-2">
-                <label htmlFor="selectedDebtToRepay" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Dooro Deynta La Soo Xareynayo <span className="text-redError">*</span></label>
+                <label htmlFor="selectedDebtToRepay" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Dooro Deynta La Soo Xareynayo <span className="text-rose-500">*</span></label>
                 <div className="relative">
                   <Scale className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
                   <select
                     id="selectedDebtToRepay"
                     value={selectedDebtToRepay}
                     onChange={(e) => setSelectedDebtToRepay(e.target.value)}
-                    className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.selectedDebtToRepay ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    className={`w-full p-3 pl-10 border rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-md text-gray-900 dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-inner ${validationErrors.selectedDebtToRepay ? 'border-rose-500 ring-1 ring-rose-500' : 'border-lightGray dark:border-gray-700'}`}
                   >
                     <option value="">-- Dooro Macmiil --</option>
                     {debts && debts.filter(d => d.isReceivable && d.type !== 'Project Debt').length > 0 ? debts.filter(d => d.isReceivable && d.type !== 'Project Debt').map(debt => (
@@ -819,17 +827,17 @@ export default function AddTransactionPage() {
 
           {/* Collect Project Debt (New Feature) */}
           {transactionType === 'REPAY_PROJECT_DEBT' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border border-blue-500/20 rounded-lg bg-blue-500/5 animate-fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 p-4 border border-blue-500/20 rounded-lg bg-blue-500/5 animate-fade-in">
               <h3 className="col-span-full text-lg font-bold text-blue-600 dark:text-blue-400 mb-2">Soo Xaree Deyn (Mashruuc)</h3>
               <div className="col-span-2">
-                <label htmlFor="selectedDebtToRepay" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Dooro Deynta Mashruuca <span className="text-redError">*</span></label>
+                <label htmlFor="selectedDebtToRepay" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Dooro Deynta Mashruuca <span className="text-rose-500">*</span></label>
                 <div className="relative">
                   <HardHat className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
                   <select
                     id="selectedDebtToRepay"
                     value={selectedDebtToRepay}
                     onChange={(e) => setSelectedDebtToRepay(e.target.value)}
-                    className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.selectedDebtToRepay ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                    className={`w-full p-3 pl-10 border rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-md text-gray-900 dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-inner ${validationErrors.selectedDebtToRepay ? 'border-rose-500 ring-1 ring-rose-500' : 'border-lightGray dark:border-gray-700'}`}
                   >
                     <option value="">-- Dooro Mashruuc --</option>
                     {debts && debts.filter(d => d.type === 'Project Debt' && d.remaining > 0).length > 0 ? debts.filter(d => d.type === 'Project Debt' && d.remaining > 0).map(debt => (
@@ -850,18 +858,18 @@ export default function AddTransactionPage() {
           {/* Legacy DEBT_REPAID Specific Fields (Fallback if needed, or we can just hide it if we strictly use the two above) */}
           {
             transactionType === 'DEBT_REPAID' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border border-green-500/20 rounded-lg bg-green-500/5 animate-fade-in">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 p-4 border border-green-500/20 rounded-lg bg-green-500/5 animate-fade-in">
 
                 <h3 className="col-span-full text-lg font-bold text-green-500 dark:text-green-300 mb-2">Faahfaahinta Dib U Bixinta Deynta</h3>
                 <div>
-                  <label htmlFor="selectedDebtToRepay" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Dooro Deynta La Bixinayo <span className="text-redError">*</span></label>
+                  <label htmlFor="selectedDebtToRepay" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Dooro Deynta La Bixinayo <span className="text-rose-500">*</span></label>
                   <div className="relative">
                     <Scale className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
                     <select
                       id="selectedDebtToRepay"
                       value={selectedDebtToRepay}
                       onChange={(e) => setSelectedDebtToRepay(e.target.value)}
-                      className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.selectedDebtToRepay ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                      className={`w-full p-3 pl-10 border rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-md text-gray-900 dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-inner ${validationErrors.selectedDebtToRepay ? 'border-rose-500 ring-1 ring-rose-500' : 'border-lightGray dark:border-gray-700'}`}
                     >
                       <option value="">-- Dooro Deynta --</option>
                       {debts && debts.length > 0 ? debts.map(debt => (
@@ -874,7 +882,7 @@ export default function AddTransactionPage() {
                     </select>
                     <ChevronRight className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400 transform rotate-90" size={20} />
                   </div>
-                  {validationErrors.selectedDebtToRepay && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.selectedDebtToRepay}</p>}
+                  {validationErrors.selectedDebtToRepay && <p className="text-rose-500 text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.selectedDebtToRepay}</p>}
                   {(selectedDebtToRepay && debts && debts.length > 0) && (() => {
                     const debt = debts.find(d => d.id === selectedDebtToRepay);
                     if (!debt) return null;
@@ -904,9 +912,9 @@ export default function AddTransactionPage() {
           }
 
           {/* Transaction Date & Note */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div>
-              <label htmlFor="transactionDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Dhaqdhaqaaqa <span className="text-redError">*</span></label>
+              <label htmlFor="transactionDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda Dhaqdhaqaaqa <span className="text-rose-500">*</span></label>
               <div className="relative">
                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
                 <input
@@ -914,10 +922,10 @@ export default function AddTransactionPage() {
                   id="transactionDate"
                   value={transactionDate}
                   onChange={(e) => setTransactionDate(e.target.value)}
-                  className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${validationErrors.transactionDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
+                  className={`w-full p-3 pl-10 border rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-md text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-inner ${validationErrors.transactionDate ? 'border-rose-500 ring-1 ring-rose-500' : 'border-lightGray dark:border-gray-700'}`}
                 />
               </div>
-              {validationErrors.transactionDate && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.transactionDate}</p>}
+              {validationErrors.transactionDate && <p className="text-rose-500 text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.transactionDate}</p>}
             </div>
             <div>
               <label htmlFor="note" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Fiiro Gaar Ah (Optional)</label>
@@ -938,13 +946,13 @@ export default function AddTransactionPage() {
           {/* Related Entities (Conditional based on type) */}
           {
             transactionType && (transactionType === 'EXPENSE' || transactionType === 'INCOME' || transactionType === 'OTHER') && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4 border border-gray-400/20 rounded-lg bg-gray-400/5 animate-fade-in">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-4 border border-gray-400/20 rounded-lg bg-gray-400/5 animate-fade-in">
                 <h3 className="col-span-full text-lg font-bold text-darkGray dark:text-gray-100 mb-2">La Xiriira (Optional)</h3>
                 <div>
                   <label htmlFor="relatedProject" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Mashruuc</label>
                   <div className="relative">
                     <BriefcaseIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
-                    <select id="relatedProject" value={relatedProject} onChange={(e) => setRelatedProject(e.target.value)} className="w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200">
+                    <select id="relatedProject" value={relatedProject} onChange={(e) => setRelatedProject(e.target.value)} className="w-full p-3 pl-10 border rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-md text-gray-900 dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-inner">
                       <option value="">-- Dooro Mashruuc --</option>
                       {projects.map(proj => {
                         const relatedDebt = debts.find(d => d.projectId === proj.id);
@@ -962,7 +970,7 @@ export default function AddTransactionPage() {
                   <label htmlFor="relatedExpense" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Kharash (Diiwaan Gashan)</label>
                   <div className="relative">
                     <ReceiptText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
-                    <select id="relatedExpense" value={relatedExpense} onChange={(e) => setRelatedExpense(e.target.value)} className="w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200">
+                    <select id="relatedExpense" value={relatedExpense} onChange={(e) => setRelatedExpense(e.target.value)} className="w-full p-3 pl-10 border rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-md text-gray-900 dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-inner">
                       <option value="">-- Dooro Kharash --</option>
                       {/* expenses.map(exp => <option key={exp.id} value={exp.id}>{exp.description} (${exp.amount})</option>) */}
                     </select>
@@ -973,7 +981,7 @@ export default function AddTransactionPage() {
                   <label htmlFor="relatedCustomer" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Macmiil</label>
                   <div className="relative">
                     <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
-                    <select id="relatedCustomer" value={relatedCustomer} onChange={(e) => setRelatedCustomer(e.target.value)} className="w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200">
+                    <select id="relatedCustomer" value={relatedCustomer} onChange={(e) => setRelatedCustomer(e.target.value)} className="w-full p-3 pl-10 border rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-md text-gray-900 dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-inner">
                       <option value="">-- Dooro Macmiil --</option>
                       {customers.map(cust => <option key={cust.id} value={cust.id}>{cust.name}</option>)}
                     </select>
@@ -984,7 +992,7 @@ export default function AddTransactionPage() {
                   <label htmlFor="relatedVendor" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Iibiye</label>
                   <div className="relative">
                     <Truck className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
-                    <select id="relatedVendor" value={relatedVendor} onChange={(e) => setRelatedVendor(e.target.value)} className="w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200">
+                    <select id="relatedVendor" value={relatedVendor} onChange={(e) => setRelatedVendor(e.target.value)} className="w-full p-3 pl-10 border rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-md text-gray-900 dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-inner">
                       <option value="">-- Dooro Iibiye --</option>
                       {vendors.map(ven => <option key={ven.id} value={ven.id}>{ven.name}</option>)}
                     </select>
@@ -995,7 +1003,7 @@ export default function AddTransactionPage() {
                   <label htmlFor="relatedEmployee" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Shaqaale</label>
                   <div className="relative">
                     <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
-                    <select id="relatedEmployee" value={relatedEmployee} onChange={(e) => setRelatedEmployee(e.target.value)} className="w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200">
+                    <select id="relatedEmployee" value={relatedEmployee} onChange={(e) => setRelatedEmployee(e.target.value)} className="w-full p-3 pl-10 border rounded-2xl bg-white/60 dark:bg-gray-900/40 backdrop-blur-md text-gray-900 dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-inner">
                       <option value="">-- Dooro Shaqaale --</option>
                       {employees.map(emp => <option key={emp.id} value={emp.id}>{emp.fullName}</option>)}
                     </select>
@@ -1009,7 +1017,7 @@ export default function AddTransactionPage() {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-primary text-white py-3 px-4 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md transform hover:scale-105 flex items-center justify-center"
+            className="w-full bg-gradient-to-r from-blue-600 to-primary text-white py-4 px-6 rounded-2xl font-black text-lg hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 hover:-translate-y-1 flex items-center justify-center"
             disabled={loading}
           >
             {loading ? (
@@ -1019,8 +1027,9 @@ export default function AddTransactionPage() {
             )}
             {loading ? 'Diiwaan Gelinaya Dhaqdhaqaaq...' : 'Diiwaan Geli Dhaqdhaqaaq'}
           </button>
-        </form >
-      </div >
+        </form>
+      </div>
+      </div>
 
       {toastMessage && (
         <Toast message={toastMessage.message} type={toastMessage.type} onClose={() => setToastMessage(null)} />

@@ -16,7 +16,7 @@ export async function POST(request: Request) {
 
     const requestBody = await request.json();
     const {
-      fromAccountId, toAccountId, amount, description, transactionDate, note, feeAmount
+      fromAccountId, toAccountId, amount, description, transactionDate, note, feeAmount, allowOverdraft
     } = requestBody;
 
     // 1. Xaqiijinta Input-ka
@@ -47,9 +47,9 @@ export async function POST(request: Request) {
     // Hubi in account-ka laga wareejinayo uu leeyahay lacag ku filan (Amount + Fee)
     const totalDeduction = amount + (Number(feeAmount) || 0);
 
-    if (sourceAccount.balance < totalDeduction) {
+    if (sourceAccount.balance < totalDeduction && !allowOverdraft) {
       return NextResponse.json(
-        { message: `Account-ka '${sourceAccount.name}' ma laha lacag ku filan. Waxay u baahan tahay ${totalDeduction.toLocaleString()} ${sourceAccount.currency} (Wareejin + Khidmad), laakiin waxaa ku jirta ${sourceAccount.balance.toLocaleString()} ${sourceAccount.currency}.` },
+        { message: `Account-ka '${sourceAccount.name}' ma laha lacag ku filan. Waxay u baahan tahay ${totalDeduction.toLocaleString()} ${sourceAccount.currency} (Wareejin + Khidmad), laakiin waxaa ku jirta ${sourceAccount.balance.toLocaleString()} ${sourceAccount.currency}. Haddii aad rabto inaad maynis ku dirto, isticmaal Override checkbox-ka.` },
         { status: 400 }
       );
     }

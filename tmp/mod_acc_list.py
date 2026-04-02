@@ -1,31 +1,13 @@
-//app/accounting/accounts/page.tsx - Accounts List Page (10000% Design - API Integration)
-'use client';
+import os
+import re
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import Layout from '@/components/layouts/Layout';
-import {
-  ArrowLeft, Plus, Search, Filter, Calendar, List, LayoutGrid,
-  DollarSign, CreditCard, Banknote, RefreshCw, Eye, Edit, Trash2, Coins, Loader2,
-  TrendingUp, TrendingDown, Info as InfoIcon, CheckCircle, XCircle, Clock as ClockIcon,
-  User as UserIcon, Briefcase as BriefcaseIcon, Tag as TagIcon, ChevronRight, Repeat, FileX2, Download, Component // Added FileX2, Download, Component
-} from 'lucide-react';
-import Toast from '@/components/common/Toast';
+file_path = r'c:\Users\OMEN\projects\revlo-vr\app\projects\accounting\accounts\page.tsx'
 
-// --- Account Data Interface (Refined for API response) ---
-interface Account {
-  id: string;
-  name: string;
-  type: string; // e.g., "BANK", "CASH", "MOBILE_MONEY"
-  balance: number; // Converted from Decimal
-  currency: string;
-  createdAt: string;
-  updatedAt: string;
-}
+with open(file_path, 'r', encoding='utf-8') as f:
+    content = f.read()
 
-// --- Account Table Row Component ---
-const AccountRow: React.FC<{ account: Account; onEdit: (id: string) => void; onDelete: (id: string) => void }> = ({ account, onEdit, onDelete }) => (
+# 1. Premium AccountRow
+row_replacement = """const AccountRow: React.FC<{ account: Account; onEdit: (id: string) => void; onDelete: (id: string) => void }> = ({ account, onEdit, onDelete }) => (
   <tr className="hover:bg-white/40 dark:hover:bg-gray-800/40 transition-all duration-300 border-b border-gray-200/50 dark:border-gray-700/50 last:border-b-0 group backdrop-blur-md">
     <td className="p-4 whitespace-nowrap">
       <div className="flex items-center gap-3">
@@ -68,10 +50,12 @@ const AccountRow: React.FC<{ account: Account; onEdit: (id: string) => void; onD
       </div>
     </td>
   </tr>
-);
+);"""
 
-// --- Account Card Component (for Mobile View) ---
-const AccountCard: React.FC<{ account: Account; onEdit: (id: string) => void; onDelete: (id: string) => void }> = ({ account, onEdit, onDelete }) => {
+content = re.sub(r'const AccountRow: React\.FC<.*?> = \(\{.*?\}\) => \(\s*<tr.*?</tr>\s*\);\n', row_replacement + "\n", content, flags=re.DOTALL)
+
+# 2. Premium AccountCard
+card_replacement = """const AccountCard: React.FC<{ account: Account; onEdit: (id: string) => void; onDelete: (id: string) => void }> = ({ account, onEdit, onDelete }) => {
   let borderColor = 'from-gray-200 to-gray-100 dark:from-gray-700 dark:to-gray-800';
   let iconColorClass = 'text-gray-500 bg-gray-500/10';
 
@@ -84,10 +68,10 @@ const AccountCard: React.FC<{ account: Account; onEdit: (id: string) => void; on
   }
 
   return (
-    <div className="relative group p-[1px] rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 animate-fade-in-up hover:-translate-y-1">
+    <div className="relative group p-[1px] rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 animate-fade-in-up hover:-translate-y-1">
       {/* Animated gradient border wrapper */}
       <div className={`absolute inset-0 bg-gradient-to-br ${borderColor} opacity-40 group-hover:opacity-100 transition-opacity duration-500`}></div>
-      <div className="relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl p-6 rounded-[1.5rem] sm:rounded-[2rem] h-full flex flex-col justify-between">
+      <div className="relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl p-6 rounded-[2rem] h-full flex flex-col justify-between">
         <div>
           <div className="flex justify-between items-start mb-6">
             <div className={`p-3 rounded-2xl flex-shrink-0 ${iconColorClass}`}>
@@ -134,98 +118,12 @@ const AccountCard: React.FC<{ account: Account; onEdit: (id: string) => void; on
       </div>
     </div>
   );
-};
+};"""
 
+content = re.sub(r'const AccountCard: React\.FC<.*?> = \(\{.*?\}\) => \{.*?\n\};\n', card_replacement + "\n", content, flags=re.DOTALL)
 
-export default function AccountsPage() {
-  const router = useRouter();
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('All');
-  const [filterCurrency, setFilterCurrency] = useState('All');
-  const [viewMode, setViewMode] = useState<'list' | 'cards'>('list');
-  const [pageLoading, setPageLoading] = useState(true);
-  const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
-
-  // Dummy filter options (will be fetched from API in real app)
-  const accountTypes = ['All', 'BANK', 'CASH', 'MOBILE_MONEY'];
-  const currencies = ['All', 'ETB', 'USD', 'EUR', 'GBP'];
-
-  // --- API Functions ---
-  const fetchAccounts = async () => {
-    setPageLoading(true);
-    try {
-      const response = await fetch('/api/projects/accounting/accounts');
-      if (!response.ok) throw new Error('Failed to fetch accounts');
-      const data = await response.json();
-      setAccounts(data.accounts.map((acc: any) => ({ ...acc, balance: parseFloat(acc.balance) }))); // Convert Decimal to Number
-    } catch (error: any) {
-      console.error('Error fetching accounts:', error);
-      setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka accounts-ka la soo gelinayay.', type: 'error' });
-      setAccounts([]);
-    } finally {
-      setPageLoading(false);
-    }
-  };
-
-  const handleDeleteAccount = async (id: string) => {
-    if (window.confirm('Ma hubtaa inaad tirtirto account-kan? Tan lama soo celin karo!')) {
-      try {
-        const response = await fetch(`/api/projects/accounting/accounts/${id}`, {
-          method: 'DELETE',
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'Failed to delete account');
-
-        setToastMessage({ message: data.message || 'Account-ka si guul leh ayaa loo tirtiray!', type: 'success' });
-        fetchAccounts(); // Re-fetch accounts after deleting
-      } catch (error: any) {
-        console.error('Error deleting account:', error);
-        setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka account-ka la tirtirayay.', type: 'error' });
-      }
-    }
-  };
-
-  const handleEditAccount = (id: string) => {
-    router.push(`/projects/accounting/accounts/edit/${id}`); // Navigate to edit account page
-  };
-
-  useEffect(() => {
-    fetchAccounts(); // Fetch accounts on component mount
-    // Listen for custom event to refresh accounts (e.g. after project add/edit/transaction)
-    const handler = () => fetchAccounts();
-    window.addEventListener('accountsShouldRefresh', handler);
-    // Also listen for storage event (multi-tab)
-    const storageHandler = (e: StorageEvent) => {
-      if (e.key === 'accountsShouldRefresh') fetchAccounts();
-    };
-    window.addEventListener('storage', storageHandler);
-    return () => {
-      window.removeEventListener('accountsShouldRefresh', handler);
-      window.removeEventListener('storage', storageHandler);
-    };
-  }, []);
-
-
-  const filteredAccounts = accounts.filter(account => {
-    const matchesSearch = account.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      account.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      account.currency.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === 'All' || account.type === filterType;
-    const matchesCurrency = filterCurrency === 'All' || account.currency === filterCurrency;
-
-    return matchesSearch && matchesType && matchesCurrency;
-  });
-
-  // Statistics
-  const totalAccountsCount = filteredAccounts.length;
-  const totalBalance = filteredAccounts.reduce((sum, acc) => sum + acc.balance, 0);
-  const bankAccountsCount = filteredAccounts.filter(acc => acc.type === 'BANK').length;
-  const cashAccountsCount = filteredAccounts.filter(acc => acc.type === 'CASH').length;
-  const mobileMoneyAccountsCount = filteredAccounts.filter(acc => acc.type === 'MOBILE_MONEY').length;
-
-
-  return (
+# 3. Main Return Block replacement
+main_return = """  return (
     <Layout>
       {/* Background Glow Effects */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
@@ -235,12 +133,12 @@ export default function AccountsPage() {
 
       <div className="relative z-10">
         {/* Header - Ultra Premium */}
-        <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-6 sm:mb-8 lg:mb-10 gap-4 sm:gap-6">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-8 lg:mb-10 gap-6">
           <div>
             <Link href="/projects/accounting" className="inline-flex items-center text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-primary transition-colors mb-3">
               <ArrowLeft size={16} className="mr-2" /> Ku Noqo Dashboard-ka
             </Link>
-            <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
+            <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
               Accounts-ka
               <span className="px-3 py-1 rounded-full text-sm font-bold bg-primary/10 text-primary border border-primary/20 backdrop-blur-md hidden sm:inline-block">Diiwaanka Rasmiga</span>
             </h1>
@@ -258,7 +156,7 @@ export default function AccountsPage() {
 
         {/* Bento Stats Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10 animate-fade-in-up">
-          <div className="relative p-[1px] rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden group col-span-2 md:col-span-1 border border-white/50 dark:border-gray-700/50 shadow-lg">
+          <div className="relative p-[1px] rounded-[2rem] overflow-hidden group col-span-2 md:col-span-1 border border-white/50 dark:border-gray-700/50 shadow-lg">
             <div className="absolute inset-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl"></div>
             <div className="relative p-6 flex flex-col items-center justify-center text-center h-full">
               <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-2xl text-gray-500 mb-3 shadow-sm border border-transparent dark:border-gray-700">
@@ -269,23 +167,23 @@ export default function AccountsPage() {
             </div>
           </div>
 
-          <div className="relative p-[1px] rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden group col-span-2 shadow-xl border border-white/60 dark:border-gray-700/50">
+          <div className="relative p-[1px] rounded-[2rem] overflow-hidden group col-span-2 shadow-xl border border-white/60 dark:border-gray-700/50">
             <div className="absolute inset-0 bg-gradient-to-br from-white/90 to-white/40 dark:from-gray-800/90 dark:to-gray-900/40 backdrop-blur-2xl"></div>
             <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent"></div>
-            <div className="relative p-6 flex items-center gap-4 sm:gap-6 h-full">
+            <div className="relative p-6 flex items-center gap-6 h-full">
               <div className="p-4 bg-primary/10 rounded-[1.5rem] text-primary shadow-inner border border-primary/20">
                  <DollarSign size={32} />
               </div>
               <div>
                 <h4 className="text-[11px] font-extrabold tracking-widest uppercase text-primary mb-1">Wadarta Balance (Total)</h4>
-                <p className="text-2xl sm:text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tighter">
+                <p className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tighter">
                   ${totalBalance.toLocaleString()}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="relative p-[1px] rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden group col-span-2 md:col-span-1 border border-white/50 dark:border-gray-700/50 shadow-lg">
+          <div className="relative p-[1px] rounded-[2rem] overflow-hidden group col-span-2 md:col-span-1 border border-white/50 dark:border-gray-700/50 shadow-lg">
             <div className="absolute inset-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl"></div>
             <div className="relative p-6 flex flex-col items-center justify-center text-center h-full">
               <div className="flex gap-2">
@@ -311,9 +209,9 @@ export default function AccountsPage() {
         </div>
 
         {/* Filters Bento Box */}
-        <div className="relative p-[1px] rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden mb-10 animate-fade-in group border border-white/60 dark:border-gray-700/50 shadow-sm">
+        <div className="relative p-[1px] rounded-[2rem] overflow-hidden mb-10 animate-fade-in group border border-white/60 dark:border-gray-700/50 shadow-sm">
            <div className="absolute inset-0 bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl"></div>
-           <div className="relative p-4 sm:p-6 md:p-8">
+           <div className="relative p-6 md:p-8">
               <div className="flex items-center gap-3 mb-6">
                 <Filter size={20} className="text-primary" />
                 <h3 className="font-bold text-gray-800 dark:text-gray-200">Kala Shaandheyn</h3>
@@ -395,12 +293,12 @@ export default function AccountsPage() {
 
         {/* Accounts Content */}
         {pageLoading ? (
-          <div className="h-[400px] flex flex-col items-center justify-center bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl rounded-[1.5rem] sm:rounded-[2rem] border border-white/50 dark:border-gray-700/50 shadow-xl">
+          <div className="h-[400px] flex flex-col items-center justify-center bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl rounded-[2rem] border border-white/50 dark:border-gray-700/50 shadow-xl">
             <Loader2 className="animate-spin text-primary mb-4" size={48} /> 
             <p className="text-gray-500 dark:text-gray-400 font-bold tracking-widest uppercase text-sm animate-pulse">Helaya Xisaabaadka...</p>
           </div>
         ) : filteredAccounts.length === 0 ? (
-          <div className="h-[300px] flex flex-col items-center justify-center bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl rounded-[1.5rem] sm:rounded-[2rem] border border-white/50 dark:border-gray-700/50 shadow-xl text-center px-6">
+          <div className="h-[300px] flex flex-col items-center justify-center bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl rounded-[2rem] border border-white/50 dark:border-gray-700/50 shadow-xl text-center px-6">
             <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700/50 rounded-full flex items-center justify-center mb-4 text-gray-400">
                <FileX2 size={32} />
             </div>
@@ -408,7 +306,7 @@ export default function AccountsPage() {
             <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto">Majiro Account waafaqsan raadintada, fadlan bedel miiraha.</p>
           </div>
         ) : viewMode === 'list' ? (
-          <div className="hidden md:block animate-fade-in bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-[1.5rem] sm:rounded-[2rem] shadow-xl border border-white/50 dark:border-gray-700/50 overflow-hidden">
+          <div className="hidden md:block animate-fade-in bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-[2rem] shadow-xl border border-white/50 dark:border-gray-700/50 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200/50 dark:divide-gray-700/50">
                 <thead className="bg-gray-50/50 dark:bg-gray-800/50 backdrop-blur-md">
@@ -429,7 +327,7 @@ export default function AccountsPage() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 animate-fade-in">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in">
             {filteredAccounts.map(account => (
               <AccountCard key={account.id} account={account} onEdit={handleEditAccount} onDelete={handleDeleteAccount} />
             ))}
@@ -442,4 +340,10 @@ export default function AccountsPage() {
       )}
     </Layout>
   );
-}
+}"""
+
+content = re.sub(r'  return \(\s*<Layout>.*</Layout>\s*\);\s*\}\s*$', main_return + "\n", content, flags=re.DOTALL)
+
+with open(file_path, 'w', encoding='utf-8') as f:
+    f.write(content)
+print("Updated accounts page!")

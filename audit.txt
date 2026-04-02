@@ -1,0 +1,6 @@
+﻿Analyzing 0 Unified Transfers and 8 Dual-Leg Transfers...
+ΓÜá∩╕Å ANOMALIES FOUND:
+≡ƒöÑ E-Birr sent 39982 to CBE on 2026-03-24 but CBE NEVER received it (Missing TRANSFER_IN on CBE). Description: "Wareejin Habeen (E-Birr -> CBE)"
+≡ƒæ╗ E-Birr received 23030 on 2026-03-22 from CBE, BUT CBE has no record of sending it! (Orphaned Record in E-Birr). Description: "Wareejin Habeen (CBE -> E-Birr)"
+≡ƒæ╗ E-Birr received 80000 on 2026-03-23 from CBE, BUT CBE has no record of sending it! (Orphaned Record in E-Birr). Description: "Wareejin Habeen (CBE -> E-Birr)"
+≡ƒæ╗ E-Birr received 20018 on 2026-03-25 from CBE, BUT CBE has no record of sending it! (Orphaned Record in E-Birr). Description: "Wareejin Habeen (CBE -> E-Birr)"

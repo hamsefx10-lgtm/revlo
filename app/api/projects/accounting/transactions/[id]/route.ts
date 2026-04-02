@@ -234,17 +234,42 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 
     // Tirtir dhaqdhaqaaqa
+    let affectedAccountIds = new Set<string>();
+    if (existingTransaction.accountId) affectedAccountIds.add(existingTransaction.accountId);
+    if (existingTransaction.fromAccountId) affectedAccountIds.add(existingTransaction.fromAccountId);
+    if (existingTransaction.toAccountId) affectedAccountIds.add(existingTransaction.toAccountId);
+
+    // Hubi haddii ay tahay wareejin (Internal Transfer) oo u baahan in laga tirtiro labada dhinac
+    if (existingTransaction.type === 'TRANSFER_IN' || existingTransaction.type === 'TRANSFER_OUT') {
+      // Raadi transaction-ka mataanka ah (the twin leg)
+      const oppositeType = existingTransaction.type === 'TRANSFER_IN' ? 'TRANSFER_OUT' : 'TRANSFER_IN';
+      
+      const twinTransaction = await prisma.transaction.findFirst({
+        where: {
+          companyId: existingTransaction.companyId,
+          type: oppositeType,
+          amount: existingTransaction.amount,
+          transactionDate: existingTransaction.transactionDate,
+          fromAccountId: existingTransaction.fromAccountId,
+          toAccountId: existingTransaction.toAccountId,
+          description: existingTransaction.description,
+          id: { not: existingTransaction.id }
+        }
+      });
+
+      if (twinTransaction) {
+        await prisma.transaction.delete({ where: { id: twinTransaction.id } });
+        if (twinTransaction.accountId) affectedAccountIds.add(twinTransaction.accountId);
+      }
+    }
+
+    // Tirtir kan hadda la doortay
     await prisma.transaction.delete({
       where: { id: id },
     });
 
     // Cusboonaysii balance-ka accounts-ka
     const { recalculateAccountBalance, updateExpenseStatus, updateProjectAdvancePaid, updateEmployeeSalaryStats } = await import('@/lib/accounting');
-
-    const affectedAccountIds = new Set<string>();
-    if (existingTransaction.accountId) affectedAccountIds.add(existingTransaction.accountId);
-    if (existingTransaction.fromAccountId) affectedAccountIds.add(existingTransaction.fromAccountId);
-    if (existingTransaction.toAccountId) affectedAccountIds.add(existingTransaction.toAccountId);
 
     for (const accId of affectedAccountIds) {
       await recalculateAccountBalance(accId);
@@ -275,7 +300,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     };
 
     return NextResponse.json(
-      { message: 'Dhaqdhaqaaqa lacagta si guul leh ayaa loo tirtiray!', event: transactionEvent },
+      { message: 'Dhaqdhaqaaqa lacagta (iyo mataankiisa haddii ay wareejin ahayd) si guul leh ayaa loo tirtiray!', event: transactionEvent },
       { status: 200 } // OK
     );
   } catch (error) {

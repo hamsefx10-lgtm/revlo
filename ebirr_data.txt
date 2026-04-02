@@ -1,0 +1,774 @@
+Taariikhda	Sharaxaad	Nooca	La Xiriira	Soo Galay (In)	Baxay (Out)	Haraaga (Bal)
+[FADLAN HALKAN HOOSE SOO DHIG/PASTE GAREY XOGTA EXCEL-KA AGAHA 16-KA BISHAA IYO KHADKA KA HOOSEEYA]
+[KADIB FILE-KA SAVE DHEH OO IGUSOO NOQO]
+Taariikhda	Sharaxaad	Nooca	Category	La Xiriira	Soo Galay (In)	Baxay (Out)	Haraaga (Bal)
+5/30/2025	Hilux expneses	EXPENSE	N/A	hamse moalin	0	328785	-328785
+5/30/2025	xamaal	EXPENSE	N/A	New Masjid Decore	0	900	-329685
+5/31/2025	laxaamadle	EXPENSE	N/A	New Masjid Decore	0	2000	-331685
+6/1/2025	Transport	EXPENSE	N/A	New Masjid Decore	0	1000	-332685
+6/1/2025	laxaamadle	EXPENSE	N/A	New Masjid Decore	0	1000	-333685
+6/1/2025	jarjaris mdf weeye transport mahan form kii adegyada gud inta laga samaynayo halkanay ku jiri 	EXPENSE	N/A	New Masjid Decore	0	15000	-348685
+6/1/2025	Material expense - 2025-10-13	EXPENSE	N/A	New Masjid Decore	0	2000	-350685
+6/1/2025	alaabo looso qaaday xamal	EXPENSE	N/A	Wajahada Dukaanka Dool	0	1000	-351685
+6/1/2025	Material expense - 2025-10-26	EXPENSE	N/A	Wajahada Dukaanka Dool	0	7000	-358685
+6/1/2025	Material expense - 2025-10-26	EXPENSE	N/A	Wajahada Dukaanka Dool	0	3900	-362585
+6/1/2025	Material expense - 2025-10-26	EXPENSE	N/A	Wajahada Dukaanka Dool	0	9279	-371864
+6/1/2025	Material expense - 2025-10-28	EXPENSE	N/A	Wajahada Dukaanka Dool	0	3500	-375364
+6/2/2025	laxaamadle	EXPENSE	N/A	New Masjid Decore	0	1000	-376364
+6/3/2025	salamun farsamayaqan	EXPENSE	N/A	New Masjid Decore	0	1000	-377364
+6/3/2025	laxaamadle	EXPENSE	N/A	New Masjid Decore	0	1000	-378364
+6/4/2025	salamun farsamayaqan 	EXPENSE	N/A	New Masjid Decore	0	1200	-379564
+6/4/2025	xamaal?	EXPENSE	N/A	New Masjid Decore	0	700	-380264
+6/5/2025	project expense ayaa ku qoran un waxay tahay ?	EXPENSE	N/A	New Masjid Decore	0	2450	-382714
+6/8/2025	Transport	EXPENSE	N/A	New Ganjel	0	1000	-383714
+6/9/2025	project expense aya ku qoran 	EXPENSE	N/A	New Ganjel	0	500	-384214
+6/9/2025	Transport	EXPENSE	N/A	New Ganjel	0	1500	-385714
+6/9/2025	labor	EXPENSE	N/A	New Ganjel	0	1000	-386714
+6/9/2025	Material expense - 2025-10-13	EXPENSE	N/A	New Ganjel	0	1680	-388394
+6/9/2025	Transport	EXPENSE	N/A	New Ganjel	0	200	-388594
+6/9/2025	Material expense - 2025-10-26	EXPENSE	N/A	Masjid Garab Case	0	90600	-479194
+6/9/2025	Material expense - 2025-10-28	EXPENSE	N/A	New Ganjel	0	1300	-480494
+6/10/2025	omer yamani 	EXPENSE	N/A	New Masjid Decore	0	75000	-555494
+6/10/2025	Fixed Asset Purchase - daynabo 	EXPENSE	FIXED_ASSET_PURCHASE	N/A	0	22000	-577494
+6/10/2025	Fixed Asset Purchase - mashiinka jarjarista	EXPENSE	FIXED_ASSET_PURCHASE	N/A	0	22000	-599494
+6/11/2025	--wu ka shaqeyay?	EXPENSE	N/A	New Ganjel	0	1500	-600994
+6/13/2025	xamaale alaabta loogu qaaday 	EXPENSE	N/A	Bakhaarka Abdirashid Yusuf	0	2000	-602994
+6/13/2025	farxaan taxi 	EXPENSE	N/A	New Masjid Decore	0	1000	-603994
+6/14/2025	laguma cadaynin laborkads magicisa telegramka 	EXPENSE	N/A	New Ganjel	0	3000	-606994
+6/14/2025	labor 	EXPENSE	N/A	Wajahada Dukaanka Dool	0	600	-607594
+6/15/2025	labor	EXPENSE	N/A	Bakhaarka Abdirashid Yusuf	0	5000	-612594
+6/15/2025	Material expense - 2025-10-13	EXPENSE	N/A	New Masjid Decore	0	450	-613044
+6/16/2025	riinjiile	EXPENSE	N/A	New Ganjel	0	1000	-614044
+6/16/2025	taxi riinji lagusoo qaaday 	EXPENSE	N/A	New Masjid Decore	0	250	-614294
+6/18/2025	labor aya  laguso qoroay un 	EXPENSE	N/A	New Ganjel	0	1000	-615294
+6/18/2025	Material expense - 2025-10-13	EXPENSE	N/A	New Masjid Decore	0	5300	-620594
+6/18/2025	Material expense - 2025-10-13	EXPENSE	N/A	New Masjid Decore	0	1500	-622094
+6/18/2025	Material expense - 2025-10-13	EXPENSE	N/A	New Masjid Decore	0	500	-622594
+6/18/2025	Fixed Asset Purchase - driling charge	EXPENSE	FIXED_ASSET_PURCHASE	N/A	0	12000	-634594
+6/18/2025	Fixed Asset Purchase - jiingad stodka 	EXPENSE	FIXED_ASSET_PURCHASE	N/A	0	55980	-690574
+6/19/2025	laxamadle	EXPENSE	N/A	Bakhaarka Abdirashid Yusuf	0	7000	-697574
+6/19/2025	Material expense - 2025-10-11	EXPENSE	N/A	Bakhaarka Abdirashid Yusuf	0	6550	-704124
+6/19/2025	Material expense - 2025-10-11	EXPENSE	N/A	Bakhaarka Abdirashid Yusuf	0	1850	-705974
+6/19/2025	riinjiile 	EXPENSE	N/A	Wajahada Dukaanka Dool	0	1300	-707274
+6/19/2025	Material expense - 2025-10-26	EXPENSE	N/A	Wajahada Dukaanka Dool	0	800	-708074
+6/21/2025	laxaamadle	EXPENSE	N/A	Bakhaarka Abdirashid Yusuf	0	5000	-713074
+6/24/2025	Material expense - 2025-10-11	EXPENSE	N/A	Bakhaarka Abdirashid Yusuf	0	1500	-714574
+6/26/2025	laxamadle	EXPENSE	N/A	Bakhaarka Abdirashid Yusuf	0	2000	-716574
+6/27/2025	Fixed Asset Purchase - jiingada stodka	EXPENSE	FIXED_ASSET_PURCHASE	N/A	0	55980	-772554
+6/27/2025	Fixed Asset Purchase - jiingad	EXPENSE	FIXED_ASSET_PURCHASE	N/A	0	7800	-780354
+6/28/2025	laxaamadle	EXPENSE	N/A	Bakhaarka Abdirashid Yusuf	0	3200	-783554
+6/28/2025	xamaal iyo transport	EXPENSE	N/A	Dhoobawayn site birta	0	6800	-790354
+6/29/2025	Riinjiile	EXPENSE	N/A	Bakhaarka Abdirashid Yusuf	0	2000	-792354
+6/29/2025	Riinjiile	EXPENSE	N/A	Bakhaarka Abdirashid Yusuf	0	2000	-794354
+6/29/2025	Riinjiile	EXPENSE	N/A	Bakhaarka Abdirashid Yusuf	0	2000	-796354
+7/1/2025	Material expense - 2025-10-13	EXPENSE	N/A	Bakhaarka Abdirashid Yusuf	0	5800	-802154
+7/1/2025	Material expense - 2025-10-13	EXPENSE	N/A	New Masjid Decore	0	1000	-803154
+7/1/2025	riinjiile	EXPENSE	N/A	New Masjid Decore	0	2000	-805154
+7/1/2025	Transport	EXPENSE	N/A	New Masjid Decore	0	500	-805654
+7/2/2025	riinjiile	EXPENSE	N/A	Bakhaarka Abdirashid Yusuf	0	3900	-809554
+7/2/2025	Material expense - 2025-10-13	EXPENSE	N/A	Mamo Trik	0	2300	-811854
+7/2/2025	laxaamadle	EXPENSE	N/A	Mamo Trik	0	1500	-813354
+7/2/2025	laxaamadle	EXPENSE	N/A	Mamo Trik	0	1499	-814853
+7/2/2025	laxaamadle 	EXPENSE	N/A	Sh Abdulahi SIte	0	1500	-816353
+7/3/2025	transport weeye
+	EXPENSE	N/A	Mamo Trik	0	700	-817053
+7/3/2025	laxaamadle	EXPENSE	N/A	Mamo Trik	0	2000	-819053
+7/4/2025	Salary payment for hamse maolin amiin - 2026-03-03	EXPENSE	N/A	hamse maolin amiin	0	514.07	-819567.07
+7/5/2025	riinjiile	EXPENSE	N/A	Mamo Trik	0	1100	-820667.07
+7/5/2025	Transport	EXPENSE	N/A	Siciid SIte	0	800	-821467.07
+7/7/2025	Material expense - 2025-10-13	EXPENSE	N/A	Bakhaarka Abdirashid Yusuf	0	2800	-824267.07
+7/7/2025	Fixed Asset Purchase - mator 	EXPENSE	FIXED_ASSET_PURCHASE	N/A	0	180000	-1004267.07
+7/7/2025	Fixed Asset Purchase - xadhiko laydh	EXPENSE	FIXED_ASSET_PURCHASE	N/A	0	21400	-1025667.07
+7/7/2025	Fixed Asset Purchase - comporosor	EXPENSE	FIXED_ASSET_PURCHASE	N/A	0	60000	-1085667.07
+7/7/2025	Fixed Asset Purchase - matoor celis	EXPENSE	FIXED_ASSET_PURCHASE	N/A	0	8500	-1094167.07
+7/8/2025	Material expense - 2025-10-26	EXPENSE	N/A	Siciid SIte	0	14500	-1108667.07
+7/8/2025	Material expense - 2025-10-26	EXPENSE	N/A	Siciid SIte	0	13500	-1122167.07
+7/8/2025	laxaamadle	EXPENSE	N/A	Siciid SIte	0	3000	-1125167.07
+7/10/2025	laxaamadle	EXPENSE	N/A	Mahamed Daud SIte	0	1500	-1126667.07
+7/11/2025	riinjiile	EXPENSE	N/A	Mahamed Daud SIte	0	1000	-1127667.07
+7/11/2025	xamaale suhayb	EXPENSE	N/A	Hayat Hotel	0	1000	-1128667.07
+7/11/2025	laxaamadle	EXPENSE	N/A	Hayat Hotel	0	1000	-1129667.07
+7/12/2025	riinjiile	EXPENSE	N/A	Mahamed Daud SIte	0	1500	-1131167.07
+7/12/2025	laxaamadle	EXPENSE	N/A	Hayat Hotel	0	2540	-1133707.07
+7/12/2025	Material expense - 2025-10-26	EXPENSE	N/A	Hayat Hotel	0	1350	-1135057.07
+7/12/2025	Material expense - 2025-10-26	EXPENSE	N/A	Hayat Hotel	0	1180	-1136237.07
+7/13/2025	laxaamadle	EXPENSE	N/A	Mahamed Daud SIte	0	2000	-1138237.07
+7/13/2025	Material expense - 2025-10-26	EXPENSE	N/A	Hayat Hotel	0	1100	-1139337.07
+7/14/2025	Material expense - 2025-10-26	EXPENSE	N/A	Sh Abdulahi SIte	0	3800	-1143137.07
+7/14/2025	Material expense - 2025-10-26	EXPENSE	N/A	Hayat Hotel	0	3560	-1146697.07
+7/15/2025	Material expense - 2025-10-27	EXPENSE	N/A	Hayat Hotel	0	18750	-1165447.07
+7/19/2025		DEBT_TAKEN	N/A	Farxaan mohamed ali	0	6000	-1171447.07
+7/20/2025	riijiile	EXPENSE	N/A	New Ganjel	0	700	-1172147.07
+7/20/2025	sadam cali xamalka almuniamka 	EXPENSE	N/A	Dhobawayn Almuniam Site	0	3500	-1175647.07
+7/21/2025	Material expense - 2025-10-26	EXPENSE	N/A	Sh Abdulahi SIte	0	46790	-1222437.07
+7/21/2025	Material expense - 2025-10-26	EXPENSE	N/A	Mahamed Daud SIte	0	25650	-1248087.07
+7/22/2025	c wasac	EXPENSE	N/A	Sh Abdulahi SIte	0	2500	-1250587.07
+7/22/2025	Material expense - 2025-10-26	EXPENSE	N/A	Sh Abdulahi SIte	0	2850	-1253437.07
+7/23/2025	Fixed Asset Purchase - musbaaro iyo jingado 	EXPENSE	FIXED_ASSET_PURCHASE	N/A	0	15480	-1268917.07
+7/29/2025	Material expense - 2025-10-26	EXPENSE	N/A	Masjid Garab Case	0	130000	-1398917.07
+7/30/2025	shaqo gacmed	EXPENSE	N/A	New Masjid Decore	0	3000	-1401917.07
+7/30/2025	almuniam ka shaqeeyay 	EXPENSE	N/A	Dhobawayn Almuniam Site	0	50000	-1451917.07
+8/1/2025	Material expense - 2025-10-13	EXPENSE	N/A	Bakhaarka Abdirashid Yusuf	0	2100	-1454017.07
+8/4/2025	Laxaamadle	EXPENSE	N/A	Nasra SIte	0	1000	-1455017.07
+8/4/2025	Material expense - 2025-10-27	EXPENSE	N/A	Nasra SIte	0	18440	-1473457.07
+8/4/2025	Material expense - 2025-10-28	EXPENSE	N/A	Nimco SIte	0	13165	-1486622.07
+8/6/2025	Laxaamadle	EXPENSE	N/A	Nasra SIte	0	2000	-1488622.07
+8/6/2025	Material expense - 2025-10-27	EXPENSE	N/A	Nasra SIte	0	2650	-1491272.07
+8/8/2025	Riinjiile	EXPENSE	N/A	Nasra SIte	0	1000	-1492272.07
+8/8/2025	totalka labor ka nasra site ku baxay 	EXPENSE	N/A	Nasra SIte	0	6400	-1498672.07
+8/11/2025	Material expense - 2025-10-27	EXPENSE	N/A	Xasan C Mursal	0	78530	-1577202.07
+8/11/2025	Xamaalka alaabta	EXPENSE	N/A	Xasan C Mursal	0	800	-1578002.07
+8/13/2025	maykal	EXPENSE	N/A	Dhobawayn Almuniam Site	0	45009	-1623011.07
+8/14/2025	Material expense - 2025-10-28	EXPENSE	N/A	Dhoobawayn site birta	0	138300	-1761311.07
+8/15/2025	shaqalaha ka shaqeeyay wixii ku baxay 	EXPENSE	N/A	Dhoobawayn site birta	0	17100	-1778411.07
+8/16/2025	Xamaal c abdiwali	EXPENSE	N/A	Ganjelka Ugaas Ibrahim	0	1500	-1779911.07
+8/18/2025	Material expense - 2025-10-27	EXPENSE	N/A	Nasra SIte	0	163620	-1943531.07
+8/18/2025	Material expense - 2025-10-27	EXPENSE	N/A	Ganjelka Ugaas Ibrahim	0	51400	-1994931.07
+8/22/2025	Riinjiile	EXPENSE	N/A	Xasan C Mursal	0	2300	-1997231.07
+8/23/2025	Material expense - 2025-10-27	EXPENSE	N/A	Ganjelka Ugaas Ibrahim	0	3000	-2000231.07
+8/23/2025	Material expense - 2025-10-27	EXPENSE	N/A	Ganjelka Ugaas Ibrahim	0	550	-2000781.07
+8/23/2025	Material expense - 2025-10-28	EXPENSE	N/A	Shugri Mohamed SIte	0	2160	-2002941.07
+8/24/2025	Laxaamadle afar phase oo lakala siiayay weeye 	EXPENSE	N/A	Xasan C Mursal	0	7300	-2010241.07
+8/24/2025	Laxaamadle	EXPENSE	N/A	Ganjelka Ugaas Ibrahim	0	3000	-2013241.07
+8/24/2025	Laxaamadle	EXPENSE	N/A	Ganjelka Ugaas Ibrahim	0	2500	-2015741.07
+8/24/2025	Laxaamadle	EXPENSE	N/A	Ganjelka Ugaas Ibrahim	0	4000	-2019741.07
+8/24/2025	totalka shaqalah abdulahi kuras site	EXPENSE	N/A	Sh Abdulahi Kuras SIte	0	15000	-2034741.07
+8/25/2025	Riinjiile halmar ayaan diwaan galiyay lacagtii uu isticmaalay	EXPENSE	N/A	Masjid Hagarlaawe	0	8500	-2043241.07
+8/25/2025	Material expense - 2025-10-27	EXPENSE	N/A	Ganjelka Ugaas Ibrahim	0	11950	-2055191.07
+8/26/2025	waa totalka lacagtii uu c waasac kaga shaqeeyay projectiga hagarlaawe 	EXPENSE	N/A	Masjid Hagarlaawe	0	41500	-2096691.07
+8/26/2025	Material expense - 2025-08-26	EXPENSE	N/A	hamse moalin	0	25350	-2122041.07
+8/27/2025	XAMAAL DHOBWYN SIT MATERIAL	EXPENSE	N/A	Dhobawayn Almuniam Site	0	800	-2122841.07
+8/27/2025	Material expense - 2025-10-28	EXPENSE	N/A	Sh Abdulahi Kuras SIte	0	39750	-2162591.07
+8/28/2025	XAMAAL ALMUnium	EXPENSE	N/A	Dhobawayn Almuniam Site	0	300	-2162891.07
+8/30/2025	jarjaris tawale	EXPENSE	N/A	Dhobawayn Almuniam Site	0	500	-2163391.07
+8/30/2025	samayn sanduq	EXPENSE	N/A	Dhobawayn Almuniam Site	0	1200	-2164591.07
+8/31/2025	samaynta sanduq muraydaha	EXPENSE	N/A	Dhobawayn Almuniam Site	0	1200	-2165791.07
+9/2/2025	Material expense - 2025-10-28	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	450900	-2616691.07
+9/4/2025	Material expense - 2025-10-28	EXPENSE	N/A	Nasra Mohamed miis site	0	8900	-2625591.07
+9/4/2025	shaqaalaha ka shaqeeyay 	EXPENSE	N/A	Nasra Mohamed miis site	0	1100	-2626691.07
+9/5/2025	xidhxidhis kuraas 	EXPENSE	N/A	Masjid Garab Case	0	1500	-2628191.07
+9/8/2025	xamaalka miiska lagu qaaday 	EXPENSE	N/A	Nasra Mohamed miis site	0	2500	-2630691.07
+9/9/2025	lacagta transport iyo xamaal ku baxday dhagaxbuur site	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	22000	-2652691.07
+9/10/2025	kharakhska shaqalaha ku baxay oo dhan 	EXPENSE	N/A	Xasan Sulub Site	0	4500	-2657191.07
+9/11/2025	transport 	EXPENSE	N/A	Dhobawayn Almuniam Site	0	6000	-2663191.07
+9/11/2025	Material expense - 2025-10-28	EXPENSE	N/A	Xasan C Mursal	0	3000	-2666191.07
+9/11/2025	Transport	EXPENSE	N/A	Dhobawayn Almuniam Site	0	3600	-2669791.07
+9/12/2025	kirada alabta iyo wiilasha babuurka 	EXPENSE	N/A	Dhobawayn Almuniam Site	0	6000	-2675791.07
+9/13/2025	Material expense - 2025-10-28	EXPENSE	N/A	Xasan Sulub Site	0	27080	-2702871.07
+9/14/2025	xamaal 	EXPENSE	N/A	Xasan Sulub Site	0	800	-2703671.07
+9/17/2025	Material expense - 2025-10-26	EXPENSE	N/A	Dhobawayn Almuniam Site	0	11000	-2714671.07
+9/17/2025	totalka lacagta ku baxday shaqalaha shugri site	EXPENSE	N/A	Shugri Mohamed SIte	0	28800	-2743471.07
+9/17/2025	totalka kharashka shaqalaha ku baxay 	EXPENSE	N/A	New Sh/ abdulahi kuras site	0	17800	-2761271.07
+9/17/2025	Material expense - 2025-10-28	EXPENSE	N/A	New Sh/ abdulahi kuras site	0	24190	-2785461.07
+9/18/2025	maykal	EXPENSE	N/A	Dhobawayn Almuniam Site	0	5000	-2790461.07
+9/18/2025	Fixed Asset Purchase - faylal	EXPENSE	FIXED_ASSET_PURCHASE	N/A	0	1150	-2791611.07
+9/19/2025	totalka shaqalaha dhagaxbuur waxa ku baxay 	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	135200	-2926811.07
+9/20/2025	subayb damer qadiye	EXPENSE	N/A	New Sh/ abdulahi kuras site	0	1000	-2927811.07
+9/27/2025	Khidmad transactions 3months	EXPENSE	N/A	hamse moalin	0	2785.75	-2930596.82
+9/28/2025		DEBT_GIVEN	N/A	Ma'amiin Gcc	0	192650	-3123246.82
+9/30/2025	Material expense - 2025-10-28	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	68750	-3191996.82
+10/1/2025	alab transport dhoobawayn site 5000+5000	EXPENSE	N/A	Dhobawayn Almuniam Site	0	10000	-3201996.82
+10/2/2025		DEBT_GIVEN	N/A	Eng nuur moalin	0	272050	-3474046.82
+10/10/2025	Material expense - 2025-10-28	EXPENSE	N/A	C yare Cilmi site	0	47550	-3521596.82
+10/10/2025	Advance Payment for Project: New Masjid Decore	INCOME	N/A	New Masjid Decore	400000	0	-3121596.82
+10/10/2025	Advance Payment for Project: New Ganjel	INCOME	N/A	New Ganjel	55000	0	-3066596.82
+10/10/2025	Advance Payment for Project: Bakhaarka Abdirashid Yusuf	INCOME	N/A	Bakhaarka Abdirashid Yusuf	500000	0	-2566596.82
+10/10/2025	Advance Payment for Project: Abdi Wali Moalin Site	INCOME	N/A	Abdi Wali Moalin Site	400000	0	-2166596.82
+10/10/2025	Advance Payment for Project: Siciid SIte	INCOME	N/A	Siciid SIte	63000	0	-2103596.82
+10/10/2025	Advance Payment for Project: Mamo Trik	INCOME	N/A	Mamo Trik	48000	0	-2055596.82
+10/10/2025	Advance Payment for Project: Wajahada Dukaanka Dool	INCOME	N/A	Wajahada Dukaanka Dool	39000	0	-2016596.82
+10/10/2025	Advance Payment for Project: Sh Abdulahi SIte	INCOME	N/A	Sh Abdulahi SIte	200000	0	-1816596.82
+10/10/2025	Advance Payment for Project: Mahamed Daud SIte	INCOME	N/A	Mahamed Daud SIte	45000	0	-1771596.82
+10/10/2025	Advance Payment for Project: Hayat Hotel	INCOME	N/A	Hayat Hotel	50000	0	-1721596.82
+10/10/2025	Advance Payment for Project: Masjid Hagarlaawe	INCOME	N/A	Masjid Hagarlaawe	30000	0	-1691596.82
+10/10/2025	Advance Payment for Project: Nasra SIte	INCOME	N/A	Nasra SIte	233850	0	-1457746.82
+10/10/2025	Advance Payment for Project: Xasan C Mursal 	INCOME	N/A	Xasan C Mursal	143000	0	-1314746.82
+10/10/2025	Advance Payment for Project: Ganjelka Ugaas Ibrahim 	INCOME	N/A	Ganjelka Ugaas Ibrahim	90000	0	-1224746.82
+10/10/2025	Advance Payment for Project: Nimco SIte	INCOME	N/A	Nimco SIte	38000	0	-1186746.82
+10/10/2025	Advance Payment for Project: Shuri Mohamed SIte	INCOME	N/A	Shugri Mohamed SIte	50000	0	-1136746.82
+10/10/2025	Advance Payment for Project: Sh Abdulahi Kuras SIte	INCOME	N/A	Sh Abdulahi Kuras SIte	120000	0	-1016746.82
+10/10/2025	Advance Payment for Project: Dhagaxbur Masjid Yusuf	INCOME	N/A	Dhagaxbur Masjid Yusuf	1322299	0	305552.18
+10/10/2025	Advance Payment for Project: Nasra Mohamed miis site	INCOME	N/A	Nasra Mohamed miis site	18000	0	323552.18
+10/10/2025	Advance Payment for Project: Xasan Sulub Site	INCOME	N/A	Xasan Sulub Site	45000	0	368552.18
+10/10/2025	Advance Payment for Project: New Sh/ abdulahi kuras site	INCOME	N/A	New Sh/ abdulahi kuras site	22000	0	390552.18
+10/10/2025	Advance Payment for Project: New Sh/ abdulahi kuras site	INCOME	N/A	New Sh/ abdulahi kuras site	50000	0	440552.18
+10/11/2025	labor	EXPENSE	N/A	Bakhaarka Abdirashid Yusuf	0	5000	435552.18
+10/13/2025	Material expense - 2025-10-13	EXPENSE	N/A	New Masjid Decore	0	21000	414552.18
+10/13/2025	Material expense - 2025-10-13	EXPENSE	N/A	New Masjid Decore	0	1000	413552.18
+10/13/2025	error	EXPENSE	N/A	Mamo Trik	0	1	413551.18
+10/14/2025	xamaalka alaabta 	EXPENSE	N/A	C yare Cilmi site	0	1200	412351.18
+10/14/2025		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	384727	27624.18
+10/15/2025	laxaamadle	EXPENSE	N/A	C yare Cilmi site	0	3000	24624.18
+10/15/2025	laxaamadle	EXPENSE	N/A	C yare Cilmi site	0	4000	20624.18
+10/15/2025		EXPENSE	N/A	hamse moalin	0	263583	-242958.82
+10/15/2025	Wareejin: transfer	TRANSFER_OUT	N/A	hamse moalin	126610.01	0	-116348.81
+10/15/2025	revlo database	EXPENSE	N/A	hamse moalin	0	6513.07	-122861.88
+10/18/2025	Xamaalka alabta	EXPENSE	N/A	Ganjelka Ugaas Ibrahim	0	790	-123651.88
+10/19/2025	Salary payment for hamse maolin amiin - 2025-11-20	EXPENSE	N/A	hamse moalin	0	118699	-242350.88
+10/20/2025	riinjiile	EXPENSE	N/A	C yare Cilmi site	0	1000	-243350.88
+10/21/2025	Material expense - 2025-11-05	EXPENSE	N/A	Hayat hotel janjarta	0	43700	-287050.88
+10/21/2025	riinjiile	EXPENSE	N/A	C yare Cilmi site	0	1000	-288050.88
+10/21/2025	Salary payment for Farxaan Mohamed - 2025-11-21	EXPENSE	N/A	hamse moalin	0	10000	-298050.88
+10/22/2025	Xamaal	EXPENSE	N/A	Hayat hotel janjarta	0	1500	-299550.88
+10/22/2025		EXPENSE	N/A	hamse moalin	0	1800	-301350.88
+10/22/2025	almuniamka ayuu ka shaqeeyay 	EXPENSE	N/A	Dhobawayn Almuniam Site	0	25000	-326350.88
+10/22/2025	MAGCC dayn kaso xarotay 	DEBT_REPAID	N/A	Ma'amiin Gcc	25000	0	-301350.88
+10/23/2025	kirada ganjeelka 
+	EXPENSE	N/A	C yare Cilmi site	0	3500	-304850.88
+10/23/2025	Salary payment for Farxaan Mohamed - 2025-11-22	EXPENSE	N/A	hamse moalin	0	2000	-306850.88
+10/25/2025	mahamed abdi qadir 	EXPENSE	N/A	C yare Cilmi site	0	2500	-309350.88
+10/25/2025	Material expense - 2025-11-09	EXPENSE	N/A	Dhobawayn Almuniam Site	0	1200	-310550.88
+10/25/2025	Salary payment for Ahmad  - 2025-11-22	EXPENSE	N/A	hamse moalin	0	5000	-315550.88
+10/25/2025		EXPENSE	N/A	hamse moalin	0	550	-316100.88
+10/27/2025	Material expense - 2025-10-27	EXPENSE	N/A	Ganjelka Ugaas Ibrahim	0	3600	-319700.88
+10/27/2025	Material expense - 2025-11-07	EXPENSE	N/A	Hayat hotel janjarta	0	3300	-323000.88
+10/27/2025	salamun wixi ku baxay 	EXPENSE	N/A	Hayat hotel janjarta	0	10000	-333000.88
+10/27/2025	salamuun 	EXPENSE	N/A	C yare Cilmi site	0	10000	-343000.88
+10/28/2025	shaqalaha nimco site wixii ku baxay oo dhan 	EXPENSE	N/A	Nimco SIte	0	6400	-349400.88
+10/28/2025	Advance Payment for Project: Dhoobawayn site birta	INCOME	N/A	Dhoobawayn site birta	250000	0	-99400.88
+10/28/2025	Advance Payment for Project: C yare Cilmi site	INCOME	N/A	C yare Cilmi site	100000	0	599.12
+10/28/2025	Advance Payment for Project: Hayat hotel janjarta	INCOME	N/A	Hayat hotel janjarta	45000	0	45599.12
+10/28/2025	Advance Payment for Project: Hayat hotel janjarta	INCOME	N/A	Hayat hotel janjarta	105000	0	150599.12
+10/29/2025		EXPENSE	N/A	hamse moalin	0	4500	146099.12
+10/29/2025		EXPENSE	N/A	hamse moalin	0	700	145399.12
+10/30/2025		EXPENSE	N/A	hamse moalin	0	2000	143399.12
+10/30/2025	Salary payment for Farxaan Mohamed - 2025-11-22	EXPENSE	N/A	hamse moalin	0	4000	139399.12
+10/30/2025		EXPENSE	N/A	hamse moalin	0	2000	137399.12
+10/30/2025	nijaar ayuu ka shaqeeyay	EXPENSE	N/A	Maykal Melaku	0	1000	136399.12
+10/30/2025	salamun laxamadle	EXPENSE	N/A	Hayat hotel janjarta	0	6500	129899.12
+10/30/2025	amaniwal nijaar	EXPENSE	N/A	Amanwal 	0	1400	128499.12
+10/30/2025	Salary payment for Farxaan Mohamed - 2025-11-29	EXPENSE	N/A	Farxaan Mohamed	0	1000	127499.12
+10/31/2025	Salary payment for Ahmed Mohamed - 2025-11-04	EXPENSE	N/A	hamse moalin	0	20000	107499.12
+10/31/2025	Taxi/Xamaal - Xamaal	EXPENSE	N/A	hamse moalin	0	600	106899.12
+10/31/2025	Salary payment for Farxaan Mohamed - 2025-12-01	EXPENSE	N/A	Farxaan Mohamed	0	3000	103899.12
+10/31/2025		EXPENSE	N/A	hamse moalin	0	1000	102899.12
+10/31/2025		EXPENSE	N/A	hamse moalin	0	1000	101899.12
+10/31/2025	Salary payment for hamse maolin amiin - 2025-12-01	EXPENSE	N/A	hamse maolin amiin	0	399	101500.12
+11/1/2025	Salary payment for Ahmad  - 2025-11-04	EXPENSE	N/A	hamse moalin	0	44000	57500.12
+11/1/2025	Taxi/Xamaal - Xamaal	EXPENSE	N/A	hamse moalin	0	589	56911.12
+11/1/2025	Salary payment for Farxaan Mohamed - 2025-12-01	EXPENSE	N/A	Farxaan Mohamed	0	1000	55911.12
+11/1/2025		EXPENSE	N/A	hamse moalin	0	1050	54861.12
+11/1/2025	Salary payment for hamse maolin amiin - 2025-12-01	EXPENSE	N/A	hamse maolin amiin	0	2058	52803.12
+11/2/2025	Salary payment for Farxaan Laxaamadle - 2025-12-01	EXPENSE	N/A	Farxaan Laxaamadle	0	2000	50803.12
+11/2/2025		EXPENSE	N/A	hamse moalin	0	1500	49303.12
+11/2/2025		EXPENSE	N/A	hamse moalin	0	1000	48303.12
+11/2/2025	Taxi/Xamaal - Xamaal	EXPENSE	N/A	Nasra SIte	0	1000	47303.12
+11/3/2025	Salary payment for Farxaan Mohamed - 2025-11-03	EXPENSE	N/A	hamse moalin	0	62460	-15156.88
+11/4/2025	Salary payment for Farxaan Mohamed - 2025-12-01	EXPENSE	N/A	Farxaan Mohamed	0	2000	-17156.88
+11/4/2025		EXPENSE	N/A	hamse moalin	0	10000	-27156.88
+11/4/2025	Salary payment for hamse maolin amiin - 2025-12-02	EXPENSE	N/A	hamse maolin amiin	0	1550	-28706.88
+11/5/2025	Advance Payment for Project: Xasan Abdi Mursal Ganjel	INCOME	N/A	Xasan Abdi Mursal Ganjel	18000	0	-10706.88
+11/5/2025	Advance Payment for Project: Xasan Abdi Mursal Ganjel	INCOME	N/A	Xasan Abdi Mursal Ganjel	20000	0	9293.12
+11/6/2025	Kiep mashiino	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	600	8693.12
+11/6/2025	nuur loo diray - nuur loo diray	DEBT_GIVEN	N/A	Eng nuur moalin	0	1500	7193.12
+11/9/2025		EXPENSE	N/A	hamse moalin	0	2000	5193.12
+11/11/2025	Material expense - 2025-11-29	EXPENSE	N/A	maxamed xasan sit	0	1000	4193.12
+11/11/2025	Salary payment for Farxaan Mohamed - 2025-12-07	EXPENSE	N/A	Farxaan Mohamed	0	2000	2193.12
+11/11/2025	Salary payment for Farxaan Mohamed - 2025-12-07	EXPENSE	N/A	Farxaan Mohamed	0	1000	1193.12
+11/12/2025	Material expense - 2025-11-29	EXPENSE	N/A	maxamed xasan sit	0	2000	-806.88
+11/12/2025	Salary payment for Farxaan Mohamed - 2025-12-07	EXPENSE	N/A	Farxaan Mohamed	0	3000	-3806.88
+11/12/2025	sacada laydhka farxaan - sacada laydhka farxaan	DEBT_GIVEN	N/A	Farxaan mohamed ali	0	12000	-15806.88
+11/12/2025	shaqale mashruc	EXPENSE	N/A	maxamed xasan sit	0	4000	-19806.88
+11/14/2025	c waasax	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	2000	-21806.88
+11/14/2025	Salary payment for hamse maolin amiin - 2025-12-07	EXPENSE	N/A	hamse maolin amiin	0	370	-22176.88
+11/15/2025	Material expense - 2025-11-29	EXPENSE	N/A	maxamed xasan sit	0	4000	-26176.88
+11/15/2025	Taxi/Xamaal - Taxi	EXPENSE	N/A	hamse moalin	0	400	-26576.88
+11/15/2025	c wasac masjid hoob ka shaqeeyay 	EXPENSE	N/A	masjid Hoob	0	10000	-36576.88
+11/15/2025	Material expense - 2025-12-07	EXPENSE	N/A	masjid Hoob	0	71800	-108376.88
+11/15/2025	Salary payment for hamse maolin amiin - 2025-12-07	EXPENSE	N/A	hamse maolin amiin	0	710	-109086.88
+11/16/2025	Salary payment for Farxaan Mohamed - 2025-12-07	EXPENSE	N/A	Farxaan Mohamed	0	2000	-111086.88
+11/16/2025	Taxi/Xamaal - Xamaal	EXPENSE	N/A	masjid Hoob	0	2800	-113886.88
+11/16/2025	Salary payment for Farxaan Mohamed - 2025-12-07	EXPENSE	N/A	Farxaan Mohamed	0	5000	-118886.88
+11/16/2025	Taxi/Xamaal - Xamaal	EXPENSE	N/A	masjid Hoob	0	1000	-119886.88
+11/16/2025	haawo ayaa loo diray  - haawo ayaa loo diray	DEBT_GIVEN	N/A	Farxaan mohamed ali	0	15000	-134886.88
+11/17/2025	Taxi/Xamaal - Taxi	EXPENSE	N/A	masjid Hoob	0	1000	-135886.88
+11/17/2025		EXPENSE	N/A	hamse moalin	0	400	-136286.88
+11/17/2025	Taxi/Xamaal - Taxi	EXPENSE	N/A	hamse moalin	0	200	-136486.88
+11/17/2025	Salary payment for Ahmad  - 2025-12-07	EXPENSE	N/A	Ahmad 	0	3700	-140186.88
+11/17/2025	Salary payment for Farxaan Mohamed - 2025-12-07	EXPENSE	N/A	Farxaan Mohamed	0	2000	-142186.88
+11/17/2025	Wareejin: ebirr lagu diray (Laga Wareejiyay: CBE)	TRANSFER_IN	N/A	hamse moalin	60000	0	-82186.88
+11/17/2025	Salary payment for hamse maolin amiin - 2025-12-07	EXPENSE	N/A	hamse maolin amiin	0	70	-82256.88
+11/18/2025	Taxi/Xamaal - Taxi	EXPENSE	N/A	hamse moalin	0	300	-82556.88
+11/18/2025	Taxi/Xamaal - Taxi	EXPENSE	N/A	hamse moalin	0	150	-82706.88
+11/18/2025	suhayra lo diray	DEBT_GIVEN	N/A	Eng nuur moalin	0	10000	-92706.88
+11/19/2025	xamaal	EXPENSE	N/A	Nasra SIte	0	800	-93506.88
+11/19/2025	hibo loo diray  - hibo loo diray	DEBT_GIVEN	N/A	Farxaan mohamed ali	0	5000	-98506.88
+11/20/2025	Salary payment for Farxaan Mohamed - 2025-12-07	EXPENSE	N/A	Farxaan Mohamed	0	2000	-100506.88
+11/20/2025	Salary payment for hamse maolin amiin - 2025-12-08	EXPENSE	N/A	hamse maolin amiin	0	1925	-102431.88
+11/20/2025	Salary payment for Farxaan Mohamed - 2025-12-08	EXPENSE	N/A	Farxaan Mohamed	0	2000	-104431.88
+11/20/2025	dayn kaso xarootay xasan c mursal	DEBT_REPAID	N/A	Xasan Abdi Mursal Ganjel	52000	0	-52431.88
+11/20/2025		DEBT_GIVEN	N/A	Ma'amiin Gcc	0	22094	-74525.88
+11/20/2025	dayn kasoo xarootay nasra	DEBT_REPAID	N/A	Nasra SIte	88000	0	13474.12
+11/20/2025	dayn kaso xarootay ugaas ibraahim	DEBT_REPAID	N/A	Ganjelka Ugaas Ibrahim	30000	0	43474.12
+11/20/2025		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	30000	13474.12
+11/21/2025	Taxi/Xamaal - Taxi	EXPENSE	N/A	hamse moalin	0	350	13124.12
+11/21/2025	Taxi/Xamaal - Xamaal	EXPENSE	N/A	hamse moalin	0	1000	12124.12
+11/21/2025	Material expense - 2025-11-28	EXPENSE	N/A	Nasra SIte	0	13000	-875.88
+11/21/2025	Taxi/Xamaal - Taxi	EXPENSE	N/A	Nasra SIte	0	600	-1475.88
+11/21/2025	Material expense - 2025-11-29	EXPENSE	N/A	maxamed xasan sit	0	52000	-53475.88
+11/21/2025	Material expense - 2025-11-29	EXPENSE	N/A	Nasra SIte	0	5500	-58975.88
+11/21/2025	Salary payment for hamse maolin amiin - 2025-12-08	EXPENSE	N/A	hamse maolin amiin	0	495	-59470.88
+11/21/2025	c waasac	EXPENSE	N/A	masjid Hoob	0	10000	-69470.88
+11/21/2025	hibo loo diray - hibo loo diray	DEBT_GIVEN	N/A	Farxaan mohamed ali	0	15000	-84470.88
+11/21/2025	Transport	EXPENSE	N/A	maxamed xasan sit	0	1000	-85470.88
+11/22/2025	Material expense - 2025-12-08	EXPENSE	N/A	mohamed sh mahdi	0	14900	-100370.88
+11/22/2025	Material expense - 2025-12-08	EXPENSE	N/A	mohamed sh mahdi	0	12200	-112570.88
+11/22/2025	Material expense - 2025-12-08	EXPENSE	N/A	mohamed sh mahdi	0	700	-113270.88
+11/22/2025	laxaamadle	EXPENSE	N/A	Xasan Abdi Mursal Ganjel	0	2000	-115270.88
+11/22/2025	Taxi/Xamaal - Taxi	EXPENSE	N/A	masjid Hoob	0	200	-115470.88
+11/22/2025	Taxi/Xamaal - Xamaal	EXPENSE	N/A	mohamed sh mahdi	0	1000	-116470.88
+11/22/2025	Salary payment for hamse maolin amiin - 2025-12-09	EXPENSE	N/A	hamse maolin amiin	0	6950	-123420.88
+11/22/2025	farxaan loo diray - farxaan loo diray	DEBT_GIVEN	N/A	Farxaan mohamed ali	0	90000	-213420.88
+11/22/2025	bare loo diray 	DEBT_GIVEN	N/A	Farxaan mohamed ali	0	5000	-218420.88
+11/23/2025	Taxi/Xamaal - Xamaal	EXPENSE	N/A	hamse moalin	0	600	-219020.88
+11/23/2025		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	3200	-222220.88
+11/23/2025	Material expense - 2025-12-09	EXPENSE	N/A	masjid Hoob	0	5740	-227960.88
+11/23/2025	Taxi/Xamaal - Taxi	EXPENSE	N/A	masjid Hoob	0	150	-228110.88
+11/23/2025	Taxi/Xamaal - Xamaal	EXPENSE	N/A	masjid Hoob	0	1000	-229110.88
+11/23/2025	cwaasac	EXPENSE	N/A	masjid Hoob	0	2000	-231110.88
+11/23/2025	Salary payment for hamse maolin amiin - 2025-12-10	EXPENSE	N/A	hamse maolin amiin	0	1310	-232420.88
+11/23/2025	salamuun	EXPENSE	N/A	Hayat hotel janjarta	0	6500	-238920.88
+11/24/2025	almuniam	EXPENSE	N/A	Nasra SIte	0	5000	-243920.88
+11/24/2025	cwaasac	EXPENSE	N/A	masjid Hoob	0	5000	-248920.88
+11/24/2025	Taxi/Xamaal - Xamaal	EXPENSE	N/A	mohamed sh mahdi	0	1000	-249920.88
+11/24/2025	Dhasalayn abara rinjile	EXPENSE	N/A	masjid Hoob	0	5000	-254920.88
+11/24/2025	laxaamadle	EXPENSE	N/A	Xasan Abdi Mursal Ganjel	0	4500	-259420.88
+11/24/2025	Salary payment for hamse maolin amiin - 2025-12-10	EXPENSE	N/A	hamse maolin amiin	0	855	-260275.88
+11/24/2025		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	10000	-270275.88
+11/24/2025	Material expense - 2026-01-26	EXPENSE	N/A	masjid Hoob	0	15670	-285945.88
+11/24/2025	laxaamadle	EXPENSE	N/A	Xasan Abdi Mursal Ganjel	0	4500	-290445.88
+11/25/2025	Transport	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	1200	-291645.88
+11/25/2025	Salary payment for hamse maolin amiin - 2026-01-26	EXPENSE	N/A	hamse maolin amiin	0	6050	-297695.88
+11/25/2025	Material expense - 2026-01-26	EXPENSE	N/A	masjid Hoob	0	5450	-303145.88
+11/25/2025	salamun laxamadle	EXPENSE	N/A	Hayat hotel janjarta	0	6500	-309645.88
+11/26/2025	c waasac 	EXPENSE	N/A	masjid Hoob	0	5000	-314645.88
+11/26/2025	Material expense - 2026-01-26	EXPENSE	N/A	Xasan Abdi Mursal Ganjel	0	4650	-319295.88
+11/26/2025	Salary payment for Farxaan Mohamed - 2026-01-26	EXPENSE	N/A	Farxaan Mohamed	0	2000	-321295.88
+11/26/2025	Salary payment for hamse maolin amiin - 2026-01-26	EXPENSE	N/A	hamse maolin amiin	0	695	-321990.88
+11/26/2025	Salary payment for Farxaan Mohamed - 2026-01-26	EXPENSE	N/A	Farxaan Mohamed	0	1000	-322990.88
+11/27/2025	Taxi/Xamaal - Xamaal	EXPENSE	N/A	Nasra SIte	0	500	-323490.88
+11/27/2025	Material expense - 2025-12-10	EXPENSE	N/A	Nasra SIte	0	1800	-325290.88
+11/27/2025	laxaamadle	EXPENSE	N/A	mohamed sh mahdi	0	2300	-327590.88
+11/27/2025	c waasac	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	5000	-332590.88
+11/27/2025	riinjiile 	EXPENSE	N/A	masjid Hoob	0	5000	-337590.88
+11/28/2025	tigisdh dhoobawayn 	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	1200	-338790.88
+11/28/2025	Material expense - 2025-12-10	EXPENSE	N/A	masjid Hoob	0	2550	-341340.88
+11/28/2025	Material expense - 2025-12-10	EXPENSE	N/A	Nasra SIte	0	88500	-429840.88
+11/28/2025	Salary payment for hamse maolin amiin - 2026-01-26	EXPENSE	N/A	hamse maolin amiin	0	3830	-433670.88
+11/28/2025	Salary payment for Farxaan Mohamed - 2026-01-26	EXPENSE	N/A	Farxaan Mohamed	0	3000	-436670.88
+11/28/2025	Advance Payment for Project: mohamed sh mahdi	INCOME	N/A	mohamed sh mahdi	95000	0	-341670.88
+11/29/2025	riinjiile	EXPENSE	N/A	masjid Hoob	0	5000	-346670.88
+11/29/2025	riinjiiile	EXPENSE	N/A	Xasan Abdi Mursal Ganjel	0	1500	-348170.88
+11/29/2025		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	2000	-350170.88
+11/29/2025	Advance Payment for Project: maxamed xasan sit	INCOME	N/A	maxamed xasan sit	105000	0	-245170.88
+11/30/2025	c wwasac	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	400	-245570.88
+11/30/2025	Material expense - 2025-11-30	EXPENSE	N/A	Eng Ahmed Site	0	500	-246070.88
+11/30/2025	tacab	EXPENSE	N/A	Xasan Abdi Mursal Ganjel	0	1998	-248068.88
+11/30/2025	riinjiile	EXPENSE	N/A	Xasan Abdi Mursal Ganjel	0	2000	-250068.88
+11/30/2025	Taxi/Xamaal - Xamaal	EXPENSE	N/A	Eng Ahmed Site	0	1400	-251468.88
+11/30/2025	ahmed matoor hagajiyay 	EXPENSE	N/A	Eng Ahmed Site	0	1000	-252468.88
+11/30/2025	Wareejin: Transfer to wallet (Laga Wareejiyay: CBE)	TRANSFER_IN	N/A	hamse moalin	16353.21	0	-236115.67
+12/1/2025	Salary payment for Ahmad  - 2025-12-11	EXPENSE	N/A	Ahmad 	0	13000	-249115.67
+12/2/2025	Taxi/Xamaal - Xamaal	EXPENSE	N/A	hamse moalin	0	375	-249490.67
+12/2/2025	c waasac 	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	700	-250190.67
+12/2/2025	MAGCC dayn kaso xarotay 	DEBT_REPAID	N/A	Ma'amiin Gcc	22703	0	-227487.67
+12/3/2025	Wareejin: transfer (Laga Wareejiyay: CBE)	TRANSFER_IN	N/A	hamse moalin	44145	0	-183342.67
+12/4/2025	barakat nijaar	EXPENSE	N/A	barakad 	0	2000	-185342.67
+12/5/2025		EXPENSE	N/A	hamse moalin	0	10000	-195342.67
+12/5/2025	farxaan almunaim	EXPENSE	N/A	Nasra SIte	0	5000	-200342.67
+12/5/2025	laxaamadle 	EXPENSE	N/A	Eng Ahmed Site	0	2000	-202342.67
+12/5/2025		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	7000	-209342.67
+12/5/2025	Salary payment for Ahmad  - 2026-01-27	EXPENSE	N/A	Ahmad 	0	13000	-222342.67
+12/6/2025	mohamed aadan	EXPENSE	N/A	masjid Hoob	0	1290	-223632.67
+12/6/2025	laxaamadle	EXPENSE	N/A	Eng Ahmed Site	0	3000	-226632.67
+12/6/2025	Taxi/Xamaal - Xamaal	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	3000	-229632.67
+12/6/2025	riinjiile	EXPENSE	N/A	masjid Hoob	0	1000	-230632.67
+12/6/2025	Material expense - 2025-12-11	EXPENSE	N/A	masjid Hoob	0	1050	-231682.67
+12/6/2025		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	1000	-232682.67
+12/6/2025	MAGCC dayn kaso xarotay 	DEBT_REPAID	N/A	Ma'amiin Gcc	20000	0	-212682.67
+12/7/2025	waraqu riinjiile	EXPENSE	N/A	Sh Abdulahi SIte	0	2000	-214682.67
+12/7/2025	Taxi/Xamaal - Taxi	EXPENSE	N/A	hamse moalin	0	600	-215282.67
+12/7/2025	Material expense - 2025-12-07	EXPENSE	N/A	masjid Hoob	0	1100	-216382.67
+12/7/2025	Material expense - 2025-12-11	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	1000	-217382.67
+12/7/2025	Taxi/Xamaal - Xamaal	EXPENSE	N/A	masjid Hoob	0	2500	-219882.67
+12/7/2025	Salary payment for Farxaan Mohamed - 2026-01-27	EXPENSE	N/A	Farxaan Mohamed	0	1000	-220882.67
+12/7/2025	Advance Payment for Project: masjid Hoob	INCOME	N/A	masjid Hoob	180000	0	-40882.67
+12/7/2025	Advance Payment for Project: masjid Hoob	INCOME	N/A	masjid Hoob	420000	0	379117.33
+12/8/2025	riinjiile	EXPENSE	N/A	Eng Ahmed Site	0	3600	375517.33
+12/8/2025	MAGCC dayn kaso xarotay 	DEBT_REPAID	N/A	Ma'amiin Gcc	11700	0	387217.33
+12/9/2025	Taxi/Xamaal - Xamaal	EXPENSE	N/A	masjid Hoob	0	1000	386217.33
+12/9/2025	Material expense - 2025-12-09	EXPENSE	N/A	masjid Hoob	0	9000	377217.33
+12/9/2025	Salary payment for Farxaan Mohamed - 2026-01-28	EXPENSE	N/A	Farxaan Mohamed	0	1000	376217.33
+12/10/2025	Material expense - 2025-12-10	EXPENSE	N/A	Eng Ahmed Site	0	2800	373417.33
+12/10/2025	riinjile	EXPENSE	N/A	masjid Hoob	0	3300	370117.33
+12/10/2025	warsame hashim loo diray	EXPENSE	N/A	masjid Hoob	0	3600	366517.33
+12/11/2025	c waasac	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	3000	363517.33
+12/11/2025		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	3000	360517.33
+12/11/2025	c wasac loodiray 	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	2000	358517.33
+12/11/2025	c waasac	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	3000	355517.33
+12/11/2025	Advance Payment for Project: Sh c laahi bakhaar	INCOME	N/A	Sh c laahi bakhaar	42500	0	398017.33
+12/11/2025	Advance Payment for Project: Sh c laahi bakhaar	INCOME	N/A	Sh c laahi bakhaar	100000	0	498017.33
+12/12/2025		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	4000	494017.33
+12/12/2025	Material expense - 2026-01-29	EXPENSE	N/A	Eng Ahmed Site	0	87650	406367.33
+12/13/2025		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	2150	404217.33
+12/14/2025	Aluminium ayu ka shaqeeyay 	EXPENSE	N/A	Nasra SIte	0	2000	402217.33
+12/14/2025	Laxaamadle	EXPENSE	N/A	Sh c laahi bakhaar	0	6000	396217.33
+12/15/2025	laxaamadle	EXPENSE	N/A	Sh c laahi bakhaar	0	2000	394217.33
+12/15/2025	Salary payment for Farxaan Mohamed - 2026-01-28	EXPENSE	N/A	Farxaan Mohamed	0	4000	390217.33
+12/17/2025	Material expense - 2025-07-24	EXPENSE	N/A	Ahmed abdule ganjel	0	51400	338817.33
+12/17/2025		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	10000	328817.33
+12/17/2025		DEBT_GIVEN	N/A	Eng nuur moalin	0	7000	321817.33
+12/17/2025	aluniam ayuu ka shaqeeyay	EXPENSE	N/A	Nasra SIte	0	2000	319817.33
+12/17/2025	laxaamadle	EXPENSE	N/A	Sh c laahi bakhaar	0	6000	313817.33
+12/18/2025	Salary payment for Farxaan Mohamed - 2026-01-29	EXPENSE	N/A	Farxaan Mohamed	0	3000	310817.33
+12/19/2025	Material expense - 2025-12-22	EXPENSE	N/A	Ahmed abdule ganjel	0	4000	306817.33
+12/19/2025	Material expense - 2025-12-22	EXPENSE	N/A	Ahmed abdule ganjel	0	8950	297867.33
+12/19/2025	Riinjiile	EXPENSE	N/A	mohamed sh mahdi	0	1200	296667.33
+12/19/2025	Taxi/Xamaal - Xamaal	EXPENSE	N/A	hamse moalin	0	1000	295667.33
+12/19/2025	Material expense - 2025-12-19	EXPENSE	N/A	hamse moalin	0	41000	254667.33
+12/20/2025	Taxi/Xamaal - Xamaal	EXPENSE	N/A	Ahmed abdule ganjel	0	1000	253667.33
+12/21/2025	Taxi/Xamaal - Xamaal	EXPENSE	N/A	Sh c laahi bakhaar	0	2500	251167.33
+12/21/2025	Riinjiile	EXPENSE	N/A	Sh c laahi bakhaar	0	3600	247567.33
+12/21/2025	Laxaamadle	EXPENSE	N/A	Ahmed abdule ganjel	0	2000	245567.33
+12/22/2025		EXPENSE	N/A	hamse moalin	0	2200	243367.33
+12/22/2025		DEBT_GIVEN	N/A	Eng nuur moalin	0	3000	240367.33
+12/22/2025		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	12000	228367.33
+12/22/2025	Advance Payment for Project: Ahmed abdule ganjel	INCOME	N/A	Ahmed abdule ganjel	70000	0	298367.33
+12/23/2025	laxaamadle 	EXPENSE	N/A	Ahmed abdule ganjel	0	5000	293367.33
+12/23/2025	Salary payment for Farxaan Mohamed - 2026-01-30	EXPENSE	N/A	Farxaan Mohamed	0	2000	291367.33
+12/24/2025	dayn kasoo xarootay	DEBT_REPAID	N/A	Xasan Abdi Mursal Ganjel	10000	0	301367.33
+12/24/2025	Material expense - 2026-01-30	EXPENSE	N/A	fadumo sharif site	0	6140	295227.33
+12/24/2025		DEBT_GIVEN	N/A	Eng nuur moalin	0	7000	288227.33
+12/24/2025		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	3999	284228.33
+12/24/2025		DEBT_GIVEN	N/A	Eng nuur moalin	0	1400	282828.33
+12/24/2025	xamaal	EXPENSE	N/A	fadumo sharif site	0	200	282628.33
+12/25/2025	Material expense - 2025-12-25	EXPENSE	N/A	maxamed xasan sit	0	20500	262128.33
+12/26/2025	riinjiile rinjiga ayuu ka shaqeeyay 	EXPENSE	N/A	Ahmed abdule ganjel	0	2500	259628.33
+12/26/2025	Taxi/Xamaal - Xamaal	EXPENSE	N/A	fadumo sharif site	0	1000	258628.33
+12/26/2025	Material expense - 2026-01-30	EXPENSE	N/A	Ahmed abdule ganjel	0	3000	255628.33
+12/26/2025	Salary payment for Farxaan Mohamed - 2026-01-30	EXPENSE	N/A	Farxaan Mohamed	0	1000	254628.33
+12/26/2025		DEBT_GIVEN	N/A	Eng nuur moalin	0	1800	252828.33
+12/27/2025	Salary payment for Farxaan Mohamed - 2026-01-31	EXPENSE	N/A	Farxaan Mohamed	0	1000	251828.33
+12/30/2025	Salary payment for Farxaan Mohamed - 2026-01-31	EXPENSE	N/A	Farxaan Mohamed	0	1000	250828.33
+12/30/2025		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	30000	220828.33
+12/30/2025	dayn kaso xarootay 	DEBT_REPAID	N/A	Ahmed abdule ganjel	30000	0	250828.33
+12/31/2025	Advance Payment for Project: maxamed duulane 	INCOME	N/A	maxamed duulane 	35000	0	285828.33
+12/31/2025	Salary payment for hamse maolin amiin - 2026-01-31	EXPENSE	N/A	hamse maolin amiin	0	36370	249458.33
+12/31/2025	revlo database	EXPENSE	N/A	hamse moalin	0	4000	245458.33
+1/1/2026	Material expense - 2026-01-20	EXPENSE	N/A	maxamed duulane 	0	750	244708.33
+1/1/2026	Taxi/Xamaal - Taxi	EXPENSE	N/A	hamse moalin	0	250	244458.33
+1/1/2026	laxaamadle	EXPENSE	N/A	maxamed duulane 	0	1000	243458.33
+1/1/2026	riinjiile 	EXPENSE	N/A	Sh c laahi bakhaar	0	3600	239858.33
+1/1/2026	laxaamadle	EXPENSE	N/A	maxamed duulane 	0	3500	236358.33
+1/1/2026	Taxi/Xamaal - Xamaal	EXPENSE	N/A	maxamed duulane 	0	1000	235358.33
+1/1/2026	Wareejin: transfer	TRANSFER_OUT	N/A	hamse moalin	0	4985	230373.33
+1/3/2026	2000	EXPENSE	N/A	maxamed duulane 	0	2000	228373.33
+1/3/2026	riinjiile 	EXPENSE	N/A	maxamed duulane 	0	2000	226373.33
+1/5/2026	Material expense - 2026-01-21	EXPENSE	N/A	Qolaji Site 	0	300000	-73626.67
+1/6/2026	tadase wilder	EXPENSE	N/A	Saylada Yucub	0	60000	-133626.67
+1/8/2026	dayn kaso xarootay 	INCOME	N/A	Ma'amiin Gcc	31000	0	-102626.67
+1/8/2026	Salary payment for Ahmad  - 2026-01-22	EXPENSE	N/A	Ahmad 	0	11000	-113626.67
+1/8/2026		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	7000	-120626.67
+1/8/2026	laxaamadle 	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	3000	-123626.67
+1/8/2026	fildhi dhagaxbuur	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	3000	-126626.67
+1/9/2026		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	10000	-136626.67
+1/10/2026		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	25000	-161626.67
+1/10/2026		DEBT_GIVEN	N/A	Eng nuur moalin	0	15000	-176626.67
+1/11/2026	biraha lo qadayay yucub shaqalaha	EXPENSE	N/A	Saylada Yucub	0	4500	-181126.67
+1/11/2026		DEBT_GIVEN	N/A	Eng nuur moalin	0	15000	-196126.67
+1/11/2026	Salary payment for Farxaan Mohamed - 2026-01-31	EXPENSE	N/A	Farxaan Mohamed	0	2000	-198126.67
+1/12/2026	Material expense - 2026-01-22	EXPENSE	N/A	Qolaji Site 	0	50000	-248126.67
+1/12/2026	Material expense - 2026-01-22	EXPENSE	N/A	ahmed abdule site	0	97050	-345176.67
+1/12/2026	xamaale	EXPENSE	N/A	ahmed abdule site	0	3000	-348176.67
+1/12/2026	Salary payment for Farxaan Mohamed - 2026-01-22	EXPENSE	N/A	Farxaan Mohamed	0	2000	-350176.67
+1/12/2026	tadase welder (2an paymant)	EXPENSE	N/A	Saylada Yucub	0	100000	-450176.67
+1/12/2026		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	4000	-454176.67
+1/12/2026	xamaale	EXPENSE	N/A	ahmed abdule site	0	1000	-455176.67
+1/12/2026	Material expense - 2026-01-31	EXPENSE	N/A	ahmed abdule site	0	39900	-495076.67
+1/13/2026	baazin	EXPENSE	N/A	Qolaji Site 	0	3200	-498276.67
+1/13/2026	Material expense - 2026-01-22	EXPENSE	N/A	Qolaji Site 	0	3500	-501776.67
+1/13/2026	Material expense - 2026-01-22	EXPENSE	N/A	ahmed abdule site	0	284000	-785776.67
+1/13/2026	Material expense - 2026-01-22	EXPENSE	N/A	ahmed abdule site	0	11700	-797476.67
+1/13/2026		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	10000	-807476.67
+1/13/2026	riinjile 	EXPENSE	N/A	Qolaji Site 	0	2500	-809976.67
+1/14/2026	adan xamalka almuniamka	EXPENSE	N/A	ahmed abdule site	0	2200	-812176.67
+1/14/2026	bajaaj farxaan	EXPENSE	N/A	ahmed abdule site	0	1000	-813176.67
+1/14/2026	Material expense - 2026-01-22	EXPENSE	N/A	Qolaji Site 	0	11000	-824176.67
+1/14/2026	darawal fermada qaaday	EXPENSE	N/A	Qolaji Site 	0	4000	-828176.67
+1/14/2026	bajaaj farxaan	EXPENSE	N/A	hamse moalin	0	1000	-829176.67
+1/14/2026	adis gala fermo galiye	EXPENSE	N/A	Qolaji Site 	0	5000	-834176.67
+1/14/2026	Material expense - 2026-01-22	EXPENSE	N/A	Qolaji Site 	0	26119	-860295.67
+1/14/2026	Material expense - 2026-01-23	EXPENSE	N/A	ahmed abdule site	0	23280	-883575.67
+1/14/2026		DEBT_GIVEN	N/A	Eng nuur moalin	0	1600	-885175.67
+1/14/2026	Salary payment for Farxaan Mohamed - 2026-01-31	EXPENSE	N/A	Farxaan Mohamed	0	500	-885675.67
+1/15/2026	bajaaj farxaan	EXPENSE	N/A	Qolaji Site 	0	500	-886175.67
+1/15/2026	farxan abal qolaji	EXPENSE	N/A	Qolaji Site 	0	2000	-888175.67
+1/15/2026		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	2000	-890175.67
+1/15/2026	Sadiiq maxamad taxi	EXPENSE	N/A	Qolaji Site 	0	6000	-896175.67
+1/15/2026	Material expense - 2026-01-22	EXPENSE	N/A	ahmed abdule site	0	5223	-901398.67
+1/15/2026	fermo xidhe	EXPENSE	N/A	Qolaji Site 	0	5000	-906398.67
+1/15/2026	Salary payment for Farxaan Mohamed - 2026-01-31	EXPENSE	N/A	Farxaan Mohamed	0	1000	-907398.67
+1/15/2026		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	2000	-909398.67
+1/16/2026	samaynta  almuniamka 	EXPENSE	N/A	ahmed abdule site	0	10000	-919398.67
+1/16/2026	muraayad jabtay	EXPENSE	N/A	Nasra SIte	0	2580	-921978.67
+1/16/2026	samaynta albabada loxa 	EXPENSE	N/A	ahmed abdule site	0	10000	-931978.67
+1/16/2026	Material expense - 2026-01-23	EXPENSE	N/A	ahmed abdule site	0	11350	-943328.67
+1/16/2026	Material expense - 2026-01-23	EXPENSE	N/A	ahmed abdule site	0	17500	-960828.67
+1/17/2026	Material expense - 2026-01-23	EXPENSE	N/A	ahmed abdule site	0	16400	-977228.67
+1/17/2026	Material expense - 2026-01-23	EXPENSE	N/A	Nuur Moalin Site	0	13499	-990727.67
+1/17/2026	adisu fermo xidhe	EXPENSE	N/A	Qolaji Site 	0	5000	-995727.67
+1/17/2026	Fixed Asset Purchase - morse	EXPENSE	FIXED_ASSET_PURCHASE	N/A	0	16800	-1012527.67
+1/17/2026	aadan damerqadiye	EXPENSE	N/A	ahmed abdule site	0	1000	-1013527.67
+1/17/2026		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	10000	-1023527.67
+1/17/2026	material guriga nuur	EXPENSE	N/A	Nuur Moalin Site	0	32900	-1056427.67
+1/18/2026	xamaal almuniam dirdawa	EXPENSE	N/A	ahmed abdule site	0	2500	-1058927.67
+1/18/2026	Material expense - 2026-01-23	EXPENSE	N/A	ahmed abdule site	0	12000	-1070927.67
+1/18/2026	Material expense - 2026-01-23	EXPENSE	N/A	Nuur Moalin Site	0	33200	-1104127.67
+1/18/2026	Material expense - 2026-01-23	EXPENSE	N/A	Nuur Moalin Site	0	21600	-1125727.67
+1/18/2026	Material expense - 2026-01-23	EXPENSE	N/A	Nuur Moalin Site	0	32000	-1157727.67
+1/18/2026	xamaal adan	EXPENSE	N/A	ahmed abdule site	0	1000	-1158727.67
+1/18/2026	Salary payment for Farxaan Mohamed - 2026-01-31	EXPENSE	N/A	Farxaan Mohamed	0	2500	-1161227.67
+1/18/2026	Material expense - 2026-01-31	EXPENSE	N/A	Nuur Moalin Site	0	4430	-1165657.67
+1/19/2026	Material expense - 2026-01-25	EXPENSE	N/A	masjid hoob kutubsar	0	9750	-1175407.67
+1/19/2026	taxi farxaan	EXPENSE	N/A	Qolaji Site 	0	500	-1175907.67
+1/19/2026	shaah	EXPENSE	N/A	hamse moalin	0	350	-1176257.67
+1/20/2026	tadase welder	EXPENSE	N/A	Saylada Yucub	0	20000	-1196257.67
+1/20/2026	Material expense - 2026-01-26	EXPENSE	N/A	masjid hoob kutubsar	0	4330	-1200587.67
+1/20/2026	laxamadle	EXPENSE	N/A	Nuur Moalin Site	0	1500	-1202087.67
+1/20/2026	riinjile	EXPENSE	N/A	masjid hoob kutubsar	0	4000	-1206087.67
+1/20/2026	Material expense - 2026-01-26	EXPENSE	N/A	ahmed abdule site	0	1300	-1207387.67
+1/20/2026	Material expense - 2026-01-26	EXPENSE	N/A	Nuur Moalin Site	0	600	-1207987.67
+1/20/2026	xamaale	EXPENSE	N/A	masjid hoob kutubsar	0	2500	-1210487.67
+1/20/2026	tadase welder	EXPENSE	N/A	Saylada Yucub	0	20000	-1230487.67
+1/20/2026	Advance Payment for Project: fadumo sharif site	INCOME	N/A	fadumo sharif site	12000	0	-1218487.67
+1/21/2026	samaynta kitabsarka iyo riinjiga 	EXPENSE	N/A	masjid hoob kutubsar	0	4000	-1222487.67
+1/21/2026	Material expense - 2026-01-26	EXPENSE	N/A	masjid hoob kutubsar	0	3500	-1225987.67
+1/21/2026	Advance Payment for Project: Qolaji Site 	INCOME	N/A	Qolaji Site 	300000	0	-925987.67
+1/22/2026		EXPENSE	N/A	hamse moalin	0	10000	-935987.67
+1/22/2026	lacagtii alabta lagu qaaday	EXPENSE	N/A	Saylada Yucub	0	2000	-937987.67
+1/22/2026	Adis fermo xidhe	EXPENSE	N/A	Qolaji Site 	0	5000	-942987.67
+1/22/2026	Advance Payment for Project: ahmed abdule site	INCOME	N/A	ahmed abdule site	1074000	0	131012.33
+1/23/2026	Material expense - 2026-01-23	EXPENSE	N/A	ahmed abdule site	0	11350	119662.33
+1/23/2026	xidhida albada	EXPENSE	N/A	ahmed abdule site	0	5000	114662.33
+1/23/2026	farxaan transportetion	EXPENSE	N/A	Qolaji Site 	0	3000	111662.33
+1/24/2026	albaabada ahmed abdule	EXPENSE	N/A	ahmed abdule site	0	5000	106662.33
+1/24/2026	ahmed mohamed abal	EXPENSE	N/A	hamse moalin	0	1000	105662.33
+1/25/2026	Material expense - 2026-01-26	EXPENSE	N/A	Qolaji Site 	0	1500	104162.33
+1/25/2026	abal qolaji ahmed	EXPENSE	N/A	Qolaji Site 	0	2000	102162.33
+1/25/2026	fermo xidhe	EXPENSE	N/A	Qolaji Site 	0	5000	97162.33
+1/25/2026	Material expense	EXPENSE	N/A	ahmed abdule site	0	4000	93162.33
+1/25/2026		MAGCC dayn laga qaatay	DEBT_RECEIVED	N/A	Ma'amiin Gcc	20000	0	113162.33
+1/26/2026	Material expense - 2026-01-26	EXPENSE	N/A	ahmed abdule site	0	9750	103412.33
+1/26/2026	adan xamalka	EXPENSE	N/A	ahmed abdule site	0	3500	99912.33
+1/26/2026	Transport	EXPENSE	N/A	Qolaji Site 	0	300	99612.33
+1/26/2026	albabo xidhe 	EXPENSE	N/A	ahmed abdule site	0	5000	94612.33
+1/26/2026	hagajin laydhka meherada	EXPENSE	N/A	hamse moalin	0	500	94112.33
+1/26/2026	Salary payment for Ahmed Mohamed - 2026-02-01	EXPENSE	N/A	Ahmed Mohamed	0	1000	93112.33
+1/26/2026	fermo xidhe	EXPENSE	N/A	Qolaji Site 	0	3000	90112.33
+1/26/2026	fermo xidhe 	EXPENSE	N/A	Qolaji Site 	0	2000	88112.33
+1/27/2026	c wasac	EXPENSE	N/A	mohamed sh mahdi	0	6000	82112.33
+1/27/2026	cabi cabdulahi 	EXPENSE	N/A	ahmed abdule site	0	2000	80112.33
+1/27/2026	CABDI ABDILAHI	EXPENSE	N/A	Qolaji Site 	0	2000	78112.33
+1/28/2026	dayn kaso xarootay 	DEBT_REPAID	N/A	Ma'amiin Gcc	40980	0	119092.33
+1/28/2026	Material expense - 2026-02-01	EXPENSE	N/A	ahmed abdule site	0	980	118112.33
+1/28/2026	abal ahmed mohamed	EXPENSE	N/A	Qolaji Site 	0	2000	116112.33
+1/28/2026	Transport	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	1200	114912.33
+1/29/2026	farxan abal sonoqosho dhagaxbur	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	3000	111912.33
+1/29/2026	mohamed fermo xidhe	EXPENSE	N/A	Qolaji Site 	0	2000	109912.33
+1/29/2026	c wasac ba ka shaqeyay 	EXPENSE	N/A	ahmed abdule site	0	3000	106912.33
+1/29/2026		DEBT_GIVEN	N/A	Eng nuur moalin	0	2500	104412.33
+1/30/2026	Material expense - 2026-02-01	EXPENSE	N/A	Qolaji Site 	0	5000	99412.33
+1/31/2026	Material expense - 2026-01-31	EXPENSE	N/A	ahmed abdule site	0	11350	88062.33
+1/31/2026	fermo xidhe	EXPENSE	N/A	Qolaji Site 	0	7000	81062.33
+1/31/2026	Material expense - 2026-02-01	EXPENSE	N/A	Qolaji Site 	0	1000	80062.33
+1/31/2026	shaah	EXPENSE	N/A	hamse moalin	0	530	79532.33
+1/31/2026	Salary payment for hamse maolin amiin - 2026-02-01	EXPENSE	N/A	hamse maolin amiin	0	51201	28331.33
+1/31/2026	Advance Payment for Project: New Xasan C Mursal	INCOME	N/A	New Xasan C Mursal	40000	0	68331.33
+2/1/2026	Wareejin: trn (Laga Wareejiyay: CBE)	TRANSFER_IN	N/A	hamse moalin	20000	0	88331.33
+2/1/2026	Wareejin: to wallet (Laga Wareejiyay: CBE)	TRANSFER_IN	N/A	hamse moalin	5000	0	93331.33
+2/1/2026	Wareejin: To Wallet (Laga Wareejiyay: CBE)	TRANSFER_IN	N/A	hamse moalin	10000	0	103331.33
+2/1/2026	Wareejin: To Wallet (Laga Wareejiyay: CBE)	TRANSFER_IN	N/A	hamse moalin	5300	0	108631.33
+2/1/2026	 rahinu muraayad xidhe 	EXPENSE	N/A	Qolaji Site 	0	25000	83631.33
+2/1/2026	Salary payment for hamse maolin amiin - 2026-02-06	EXPENSE	N/A	hamse maolin amiin	0	1264	82367.33
+2/1/2026	Comition bank 3 month	EXPENSE	N/A	hamse moalin	0	1800	80567.33
+2/2/2026	Salary payment for Farxaan Mohamed - 2026-02-06	EXPENSE	N/A	Farxaan Mohamed	0	2000	78567.33
+2/2/2026	from Eng Nuur 	DEBT_REPAID	N/A	Nuur Moalin Site	66000	0	144567.33
+2/2/2026	Material expense - 2026-02-06	EXPENSE	N/A	Nuur Moalin Site	0	66100	78467.33
+2/2/2026	from Eng Nuur 	DEBT_REPAID	N/A	Nuur Moalin Site	7000	0	85467.33
+2/2/2026	Material expense - 2026-02-06	EXPENSE	N/A	Nuur Moalin Site	0	7000	78467.33
+2/2/2026	Material expense - 2026-02-06	EXPENSE	N/A	Nuur Moalin Site	0	10000	68467.33
+2/2/2026	alab looso gaday	EXPENSE	N/A	New Xasan C Mursal	0	1400	67067.33
+2/3/2026		EXPENSE	N/A	hamse moalin	0	2700	64367.33
+2/3/2026	Advance Payment for Project: Maxamad quresh site	INCOME	N/A	Maxamad quresh site	300000	0	364367.33
+2/4/2026	Material expense - 2026-02-10	EXPENSE	N/A	Maxamad quresh site	0	58600	305767.33
+2/4/2026	Material expense - 2026-02-10	EXPENSE	N/A	ahmed abdule site	0	1600	304167.33
+2/4/2026	wastar kuuli shaqo ay qabteen	EXPENSE	N/A	hamse moalin	0	2700	301467.33
+2/4/2026	dhagafe biyoole	EXPENSE	N/A	hamse moalin	0	700	300767.33
+2/4/2026	c wasac ba ka shaqeeyay 	EXPENSE	N/A	Nuur Moalin Site	0	2000	298767.33
+2/4/2026	database ka birshil revlo vee 2months	EXPENSE	N/A	hamse moalin	0	5000	293767.33
+2/4/2026	Salary payment for hamse maolin amiin - 2026-02-10	EXPENSE	N/A	hamse maolin amiin	0	1400	292367.33
+2/4/2026	Salary payment for hamse maolin amiin - 2026-02-21	EXPENSE	N/A	hamse maolin amiin	0	6000	286367.33
+2/5/2026	Material expense - 2026-02-10	EXPENSE	N/A	Maxamad quresh site	0	55000	231367.33
+2/5/2026	Salary payment for Ahmed Mohamed - 2026-02-10	EXPENSE	N/A	Ahmed Mohamed	0	15000	216367.33
+2/5/2026	Material expense - 2026-02-10	EXPENSE	N/A	Maxamad quresh site	0	35900	180467.33
+2/5/2026	bajaaj yirtagajiq	EXPENSE	N/A	Maxamad quresh site	0	700	179767.33
+2/5/2026		EXPENSE	N/A	hamse moalin	0	3400	176367.33
+2/5/2026	Material expense - 2026-02-10	EXPENSE	N/A	ahmed abdule site	0	2600	173767.33
+2/5/2026	c wasac albaabada ka shaqeeyay 	EXPENSE	N/A	Nuur Moalin Site	0	5000	168767.33
+2/5/2026	xamaale	EXPENSE	N/A	Maxamad quresh site	0	1000	167767.33
+2/6/2026		EXPENSE	N/A	hamse moalin	0	6500	161267.33
+2/6/2026	delivery  lagu qaadya bloomo	EXPENSE	N/A	hamse moalin	0	180	161087.33
+2/6/2026		DEBT_GIVEN	N/A	Taadhase	0	16200	144887.33
+2/7/2026	xamaale	EXPENSE	N/A	hamse moalin	0	225	144662.33
+2/7/2026	xamaale	EXPENSE	N/A	hamse moalin	0	1000	143662.33
+2/7/2026		EXPENSE	N/A	hamse moalin	0	1200	142462.33
+2/7/2026	laxaamadle	EXPENSE	N/A	mahari	0	20000	122462.33
+2/7/2026	hagaajin jeghamar	EXPENSE	N/A	hamse moalin	0	1000	121462.33
+2/7/2026	riinjiile	EXPENSE	N/A	ahmed abdule site	0	6000	115462.33
+2/7/2026	calaamadayn boos	EXPENSE	N/A	hamse moalin	0	3000	112462.33
+2/7/2026	hagaajinta wajahada	EXPENSE	N/A	hamse moalin	0	1000	111462.33
+2/7/2026	riinjiile	EXPENSE	N/A	ahmed abdule site	0	5000	106462.33
+2/7/2026	taxi hamse qaadida drilka	EXPENSE	N/A	hamse moalin	0	500	105962.33
+2/7/2026	hagaajinta wajahada	EXPENSE	N/A	hamse moalin	0	1000	104962.33
+2/7/2026	Payment to Barako compeny	DEBT_REPAID	N/A	hamse moalin	0	29000	75962.33
+2/8/2026	Salary payment for Farxaan Mohamed - 2026-02-13	EXPENSE	N/A	Farxaan Mohamed	0	2000	73962.33
+2/9/2026	hagaajinta wajahada	EXPENSE	N/A	hamse moalin	0	1000	72962.33
+2/9/2026		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	3000	69962.33
+2/9/2026	shidal	EXPENSE	N/A	ahmed abdule site	0	2700	67262.33
+2/9/2026	shaqaale cusub harar transportation	EXPENSE	N/A	hamse moalin	0	1000	66262.33
+2/9/2026	dayn kaso xarootay 	DEBT_REPAID	N/A	Ma'amiin Gcc	20000	0	86262.33
+2/10/2026	xamaale	EXPENSE	N/A	Maxamad quresh site	0	1000	85262.33
+2/10/2026	Wastat             1700 Kuli     6x800=4800 Nijar  1700 Ciid kubuxin    1000	EXPENSE	N/A	hamse moalin	0	8400	76862.33
+2/10/2026	hagajinta wajahada xafiiska cusub	EXPENSE	N/A	hamse moalin	0	1000	75862.33
+2/10/2026	hagaajinta wajahada	EXPENSE	N/A	hamse moalin	0	700	75162.33
+2/10/2026		EXPENSE	N/A	hamse moalin	0	59750	15412.33
+2/10/2026	biyoole	EXPENSE	N/A	hamse moalin	0	1200	14212.33
+2/10/2026	furaashyo sahqale cusub	EXPENSE	N/A	hamse moalin	0	3600	10612.33
+2/10/2026	xamaalka marmarka	EXPENSE	N/A	hamse moalin	0	3600	7012.33
+2/10/2026	abal ahmed mohamed	EXPENSE	N/A	Qolaji Site 	0	1500	5512.33
+2/10/2026		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	5000	512.33
+2/10/2026	bajaaj	EXPENSE	N/A	hamse moalin	0	1000	-487.67
+2/10/2026	nijar loox 	EXPENSE	N/A	Nuur Moalin Site	0	3000	-3487.67
+2/11/2026	riinjiile 	EXPENSE	N/A	ahmed abdule site	0	1000	-4487.67
+2/11/2026	taxi farxaan	EXPENSE	N/A	Qolaji Site 	0	6000	-10487.67
+2/11/2026	nijar albaab 	EXPENSE	N/A	Maxamad quresh site	0	3000	-13487.67
+2/11/2026	riijiile 	EXPENSE	N/A	ahmed abdule site	0	1000	-14487.67
+2/12/2026	Material expense - 2026-02-12	EXPENSE	N/A	ahmed abdule site	0	16100	-30587.67
+2/12/2026	bajaaj farxaan	EXPENSE	N/A	ahmed abdule site	0	200	-30787.67
+2/12/2026		EXPENSE	N/A	hamse moalin	0	3000	-33787.67
+2/12/2026	Material expense - 2026-02-15	EXPENSE	N/A	ahmed abdule site	0	1200	-34987.67
+2/12/2026	albaabda looxa 	EXPENSE	N/A	Nuur Moalin Site	0	4000	-38987.67
+2/12/2026	albaab	EXPENSE	N/A	New Xasan C Mursal	0	6000	-44987.67
+2/12/2026	Shambad  heading line fidhin	EXPENSE	N/A	hamse moalin	0	1900	-46887.67
+2/12/2026	laxaamadle	EXPENSE	N/A	mahari	0	5000	-51887.67
+2/12/2026	marmardhige	EXPENSE	N/A	tamasgan 	0	8000	-59887.67
+2/13/2026	albaabada ayuu ka shaqeeyay 	EXPENSE	N/A	Maxamad quresh site	0	5000	-64887.67
+2/13/2026	tigidh dhagaxbuur c waasac 	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	1200	-66087.67
+2/13/2026		EXPENSE	N/A	hamse moalin	0	3750	-69837.67
+2/13/2026	dayn kaso xarootay 	DEBT_REPAID	N/A	Ma'amiin Gcc	100000	0	30162.33
+2/13/2026	Material expense - 2026-02-15	EXPENSE	N/A	ahmed abdule site	0	1600	28562.33
+2/13/2026	taxi	EXPENSE	N/A	hamse moalin	0	300	28262.33
+2/13/2026	albaabada ayuu ka shaqeeyay 	EXPENSE	N/A	Maxamad quresh site	0	5000	23262.33
+2/13/2026	albaabo iyo daqado samayn	EXPENSE	N/A	Saylada Yucub	0	25000	-1737.67
+2/13/2026	c waasac ka shaqeeyay albaabada 	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	10000	-11737.67
+2/13/2026	Material expense - 2026-02-15	EXPENSE	N/A	Ahmed abdule ganjel	0	1000	-12737.67
+2/13/2026	kaarka saacada laydhka	EXPENSE	N/A	hamse moalin	0	1000	-13737.67
+2/14/2026	hagaajinta wajahada	EXPENSE	N/A	hamse moalin	0	2000	-15737.67
+2/14/2026	nuur kasoo xarootay 	DEBT_REPAID	N/A	Nuur Moalin Site	100000	0	84262.33
+2/14/2026		EXPENSE	N/A	hamse moalin	0	3000	81262.33
+2/14/2026	Material expense - 2026-02-15	EXPENSE	N/A	ahmed abdule site	0	5400	75862.33
+2/14/2026	laxaamadle 	EXPENSE	N/A	Maxamad quresh site	0	7000	68862.33
+2/14/2026	riinjiile 	EXPENSE	N/A	Maxamad quresh site	0	1500	67362.33
+2/14/2026	xamaale	EXPENSE	N/A	hamse moalin	0	1000	66362.33
+2/14/2026	xamaale	DEBT_GIVEN	N/A	Farxaan mohamed ali	0	6000	60362.33
+2/14/2026	xamaal	DEBT_GIVEN	N/A	Eng nuur moalin	0	7000	53362.33
+2/14/2026	riinjiile 	EXPENSE	N/A	ahmed abdule site	0	10000	43362.33
+2/15/2026	xamaal	EXPENSE	N/A	ahmed abdule site	0	5000	38362.33
+2/15/2026	Salary payment for Farxaan Mohamed - 2026-02-15	EXPENSE	N/A	Farxaan Mohamed	0	4000	34362.33
+2/15/2026	riinjiile	EXPENSE	N/A	Maxamad quresh site	0	1000	33362.33
+2/16/2026	albaabada	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	20000	13362.33
+2/18/2026	Albaabxidhe	EXPENSE	N/A	ahmed abdule site	0	5000	8362.33
+2/18/2026		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	6000	2362.33
+2/18/2026		DEBT_GIVEN	N/A	Eng nuur moalin	0	10000	-7637.67
+2/18/2026		DEBT_GIVEN	N/A	Farxaan mohamed ali	0	4000	-11637.67
+2/19/2026	Salary payment for hamse maolin amiin - 2026-02-19	EXPENSE	N/A	hamse maolin amiin	0	2105	-13742.67
+2/20/2026	Riinjiile	EXPENSE	N/A	Nuur Moalin Site	0	3000	-16742.67
+2/20/2026	Xamaal	EXPENSE	N/A	hamse moalin	0	2000	-18742.67
+2/21/2026	Salary payment for hamse maolin amiin - 2026-02-21	EXPENSE	N/A	hamse maolin amiin	0	3000	-21742.67
+2/21/2026	albaabada looxa 	EXPENSE	N/A	ahmed abdule site	0	5000	-26742.67
+2/21/2026	MAGCC dayn kaso xarotay 	DEBT_REPAID	N/A	Ma'amiin Gcc	50000	0	23257.33
+2/21/2026	Expense	EXPENSE	N/A	hamse moalin	0	7200	16057.33
+2/21/2026	bajaaj farxaan	EXPENSE	N/A	Ahmed abdule ganjel	0	80	15977.33
+2/22/2026	riijiile 	EXPENSE	N/A	New Xasan C Mursal	0	2000	13977.33
+2/23/2026	Material expense - 2026-02-25	EXPENSE	N/A	ahmed abdule site	0	150	13827.33
+2/23/2026	Material expense - 2026-02-25	EXPENSE	N/A	ahmed abdule site	0	16800	-2972.67
+2/23/2026	bajaaj albaabada loxadhobawayn	EXPENSE	N/A	Dhobawayn albabada loxa	0	200	-3172.67
+2/23/2026	almuniam ka shaqeeyay 	EXPENSE	N/A	ahmed abdule site	0	1000	-4172.67
+2/24/2026	phase two kasoo xarootay 	DEBT_REPAID	N/A	Dhobawayn albabada loxa	200000	0	195827.33
+2/24/2026	Material expense - 2026-02-26	EXPENSE	N/A	Dhobawayn albabada loxa	0	121000	74827.33
+2/24/2026	riinjiile 	EXPENSE	N/A	Maxamad quresh site	0	4000	70827.33
+2/24/2026	bajaaj farxaan	EXPENSE	N/A	hamse moalin	0	300	70527.33
+2/24/2026	albaabada 	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	10000	60527.33
+2/24/2026	Salary payment for hamse maolin amiin - 2026-03-01	EXPENSE	N/A	hamse maolin amiin	0	1000	59527.33
+2/25/2026		EXPENSE	N/A	hamse moalin	0	5800	53727.33
+2/25/2026	laxaamadle	EXPENSE	N/A	mahari	0	5000	48727.33
+2/25/2026	nasir xafiiska cusub ka shaqeeyay	EXPENSE	N/A	nasir bakistaani 	0	1000	47727.33
+2/25/2026	Laboe work  China board	EXPENSE	N/A	nasir bakistaani 	0	20000	27727.33
+2/25/2026	henok riinjiile 	EXPENSE	N/A	Maxamad quresh site	0	3000	24727.33
+2/26/2026	xamaale	EXPENSE	N/A	Maxamad quresh site	0	3000	21727.33
+2/26/2026	qoloda faatka	EXPENSE	N/A	hamse moalin	0	5000	16727.33
+2/28/2026	Advance Payment for Project: mahamed sh ganjeel 	INCOME	N/A	mahamed sh ganjeel 	60000	0	76727.33
+2/28/2026	Material expense - 2026-03-01	DEBT_REPAID	N/A	mahamed sh ganjeel 	0	60000	16727.33
+2/28/2026		DEBT_TAKEN	N/A	Eng nuur moalin	0	1500	15227.33
+2/28/2026	Salary payment for hamse maolin amiin - 2026-02-28	EXPENSE	N/A	hamse moalin	0	500	14727.33
+3/1/2026	china board	EXPENSE	N/A	hamse moalin	0	1500	13227.33
+3/1/2026	samaynta almuniamka	EXPENSE	N/A	ahmed abdule site	0	5000	8227.33
+3/1/2026	Salary payment for hamse maolin amiin - 2026-03-02	EXPENSE	N/A	hamse maolin amiin	0	500	7727.33
+3/2/2026	Wareejin: To Wallet	TRANSFER_OUT	N/A	hamse moalin	60000	0	67727.33
+3/2/2026	Salary payment for Ahmad  - 2026-03-03	EXPENSE	N/A	Ahmad 	0	11000	56727.33
+3/2/2026	Samaynta almuniamka	EXPENSE	N/A	ahmed abdule site	0	9000	47727.33
+3/2/2026		DEBT_TAKEN	N/A	Eng nuur moalin	0	10000	37727.33
+3/2/2026	Salary payment for Farxaan Mohamed - 2026-03-03	EXPENSE	N/A	Farxaan Mohamed	0	1000	36727.33
+3/2/2026	Salary payment for hamse maolin amiin - 2026-03-03	EXPENSE	N/A	hamse maolin amiin	0	550	36177.33
+3/2/2026	taxi hamse	EXPENSE	N/A	hamse moalin	0	400	35777.33
+3/2/2026	Salary payment for hamse maolin amiin - 2026-03-05	EXPENSE	N/A	hamse maolin amiin	0	1350	34427.33
+3/3/2026	kaarka saacadalaydhka	EXPENSE	N/A	hamse moalin	0	500	33927.33
+3/3/2026	Xamal  Albabada masjidka kililka	EXPENSE	N/A	Macadka ibnu xajar 	0	4500	29427.33
+3/3/2026	nimcan xamaale	EXPENSE	N/A	mahamed sh ganjeel 	0	1200	28227.33
+3/3/2026		DEBT_TAKEN	N/A	Eng nuur moalin	0	6000	22227.33
+3/3/2026		DEBT_TAKEN	N/A	Eng nuur moalin	0	2375	19852.33
+3/3/2026	Tadese welder 	EXPENSE	N/A	Saylada Yucub	0	15000	4852.33
+3/3/2026	Salary payment for hamse maolin amiin - 2026-03-05	EXPENSE	N/A	hamse maolin amiin	0	3040	1812.33
+3/4/2026	Wareejin: To Wallet	TRANSFER_OUT	N/A	hamse moalin	20000	0	21812.33
+3/4/2026		DEBT_TAKEN	N/A	Farxaan mohamed ali	0	5000	16812.33
+3/4/2026	basin	EXPENSE	N/A	hamse moalin	0	3100	13712.33
+3/4/2026	xamaal looxa	EXPENSE	N/A	Dhobawayn albabada loxa	0	7000	6712.33
+3/4/2026	xamalka rogay mdfta	EXPENSE	N/A	Dhobawayn albabada loxa	0	4000	2712.33
+3/4/2026	Salary payment for hamse maolin amiin - 2026-03-06	EXPENSE	N/A	hamse maolin amiin	0	1340	1372.33
+3/5/2026	dayn xaawo laga qaatay 	DEBT_RECEIVED	N/A	Xaawo 	20000	0	21372.33
+3/5/2026	naasir china bourd	EXPENSE	N/A	nasir bakistaani 	0	15000	6372.33
+3/5/2026	taxi soo warejin qoloji site	EXPENSE	N/A	Qolaji Site 	0	4000	2372.33
+3/5/2026	Wareejin: To Wallet	TRANSFER_OUT	N/A	hamse moalin	2200	0	4572.33
+3/5/2026	Material expense - 2026-03-06	EXPENSE	N/A	Qolaji Site 	0	3000	1572.33
+3/5/2026	Salary payment for hamse maolin amiin - 2026-03-06	EXPENSE	N/A	hamse maolin amiin	0	1567	5.33
+3/7/2026	dayn xaawo laga qaatay	DEBT_RECEIVED	N/A	Xaawo 	20000	0	20005.33
+3/7/2026	samynta albabda loxa	EXPENSE	N/A	Dhobawayn albabada loxa	0	10000	10005.33
+3/7/2026	taxi farxaan	EXPENSE	N/A	hamse moalin	0	500	9505.33
+3/7/2026	Material expense - 2026-03-09	EXPENSE	N/A	Qolaji Site 	0	6900	2605.33
+3/7/2026	gadhi rac ahmed	EXPENSE	N/A	Qolaji Site 	0	1000	1605.33
+3/7/2026	Salary payment for Farxaan Mohamed - 2026-03-09	EXPENSE	N/A	Farxaan Mohamed	0	1600	5.33
+3/9/2026	kirada birshiil work shop	EXPENSE	N/A	hamse moalin	0	10000	-9994.67
+3/9/2026	Advance Payment for Project: Ali Muhumed Abdi Site 	INCOME	N/A	Ali Muhumed Abdi Site 	10000	0	5.33
+3/12/2026	Wareejin: To Wallet	TRANSFER_OUT	N/A	hamse moalin	20000	0	20005.33
+3/12/2026	Salary payment for mahamed hasan  - 2026-03-18	EXPENSE	N/A	mahamed hasan 	0	8000	12005.33
+3/12/2026	laxaamadle 	EXPENSE	N/A	mahamed sh ganjeel 	0	5000	7005.33
+3/12/2026	Salary payment for hamse maolin amiin - 2026-03-18	EXPENSE	N/A	hamse maolin amiin	0	1180	5825.33
+3/13/2026	c waasac alabada ka shaqeeyay 	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	5000	825.33
+3/13/2026	Salary payment for hamse maolin amiin - 2026-03-18	EXPENSE	N/A	hamse maolin amiin	0	505	320.33
+3/14/2026	Wareejin: To Wallet	TRANSFER_OUT	N/A	hamse moalin	20000	0	20320.33
+3/14/2026	kaarka saacada laydhka	EXPENSE	N/A	hamse moalin	0	3000	17320.33
+3/14/2026	Salary payment for hamse maolin amiin - 2026-03-18	EXPENSE	N/A	hamse maolin amiin	0	4280	13040.33
+3/15/2026	kaarka saacada laydhka	EXPENSE	N/A	mahamed sh ganjeel 	0	700	12340.33
+3/15/2026	Salary payment for hamse maolin amiin - 2026-03-18	EXPENSE	N/A	hamse maolin amiin	0	895	11445.33
+3/16/2026	kaarka saacada laydhka	DEBT_TAKEN	N/A	Farxaan mohamed ali	0	3000	8445.33
+3/16/2026	albabada dhagaxbuur masjidka	EXPENSE	N/A	Dhagaxbur Masjid Yusuf	0	5000	3445.33

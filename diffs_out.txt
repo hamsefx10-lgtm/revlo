@@ -1,0 +1,7 @@
+﻿MISMATCH: TRANSFER_OUT | Excel IN:126610.01 OUT:0 | DB rules IN: 0 OUT: 126610.01 | Wareejin: transfer
+MISMATCH: TRANSFER_OUT | Excel IN:60000 OUT:0 | DB rules IN: 0 OUT: 60000 | Wareejin: To Wallet
+MISMATCH: TRANSFER_OUT | Excel IN:20000 OUT:0 | DB rules IN: 0 OUT: 20000 | Wareejin: To Wallet
+MISMATCH: TRANSFER_OUT | Excel IN:2200 OUT:0 | DB rules IN: 0 OUT: 2200 | Wareejin: To Wallet
+MISMATCH: TRANSFER_OUT | Excel IN:20000 OUT:0 | DB rules IN: 0 OUT: 20000 | Wareejin: To Wallet
+MISMATCH: TRANSFER_OUT | Excel IN:20000 OUT:0 | DB rules IN: 0 OUT: 20000 | Wareejin: To Wallet
+Total Mismatched Rows: 6

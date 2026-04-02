@@ -1,46 +1,13 @@
-// app/accounting/transactions/page.tsx - Transactions List Page (10000% Design - API Integration)
-'use client';
+import os
+import re
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import Layout from '@/components/layouts/Layout';
-import {
-  ArrowLeft, Plus, Search, Filter, Calendar, List, LayoutGrid,
-  DollarSign, CreditCard, Banknote, RefreshCw, Eye, Edit, Trash2,
-  TrendingUp, TrendingDown, Info as InfoIcon, CheckCircle, XCircle, Clock as ClockIcon,
-  User as UserIcon, Briefcase as BriefcaseIcon, Tag as TagIcon, ChevronRight, Loader2, HardDrive, Repeat // Added Repeat for transfers
-} from 'lucide-react';
-import Toast from '@/components/common/Toast';
+file_path = r'c:\Users\OMEN\projects\revlo-vr\app\projects\accounting\transactions\page.tsx'
 
-// --- Transaction Data Interface (Refined for API response) ---
-interface Transaction {
-  id: string;
-  description: string;
-  amount: number; // Converted from Decimal
-  type: string; // e.g., "INCOME", "EXPENSE", "TRANSFER_IN", "TRANSFER_OUT", "DEBT_TAKEN", "DEBT_REPAID", "DEBT_GIVEN"
-  category?: string; // e.g., "FIXED_ASSET_PURCHASE"
-  transactionDate: string;
-  note?: string;
-  account?: { name: string; }; // Primary account
-  fromAccount?: { name: string; }; // For transfers
-  toAccount?: { name: string; };   // For transfers
-  project?: { name: string; };     // If linked to project
-  expense?: { description: string; }; // If linked to expense
-  customer?: { name: string; };    // If linked to customer
-  vendor?: { name: string; };      // If linked to vendor
-  employee?: { fullName: string; }; // If linked to employee (DEBT_TAKEN = loan given out)
-  user?: { fullName: string; };    // Who recorded
-  isVirtual?: boolean;             // Flag indicating if this is a synthesized transaction (e.g. from Project records)
-  expenseId?: string;
-  customerId?: string;
-  vendorId?: string;
-  projectId?: string;
-  fixedAssetId?: string;
-}
+with open(file_path, 'r', encoding='utf-8') as f:
+    content = f.read()
 
-// --- Transaction Table Row Component ---
-const TransactionRow: React.FC<{ transaction: Transaction; onEdit: (trx: Transaction) => void; onDelete: (id: string) => void }> = ({ transaction, onEdit, onDelete }) => {
+# 1. Premium TransactionRow
+row_replacement = """const TransactionRow: React.FC<{ transaction: Transaction; onEdit: (trx: Transaction) => void; onDelete: (id: string) => void }> = ({ transaction, onEdit, onDelete }) => {
   const isIncome =
     transaction.type === 'INCOME' ||
     transaction.type === 'TRANSFER_IN' ||
@@ -92,10 +59,12 @@ const TransactionRow: React.FC<{ transaction: Transaction; onEdit: (trx: Transac
       </td>
     </tr>
   );
-};
+};"""
 
-// --- Transaction Card Component (Mobile Optimized) ---
-const TransactionCard: React.FC<{ transaction: Transaction; onEdit: (trx: Transaction) => void; onDelete: (id: string) => void }> = ({ transaction, onEdit, onDelete }) => {
+content = re.sub(r'const TransactionRow: React\.FC<.*?> = \(\{.*?\}\) => \{.*?\n\};\n', row_replacement + "\n", content, flags=re.DOTALL)
+
+# 2. Premium TransactionCard
+card_replacement = """const TransactionCard: React.FC<{ transaction: Transaction; onEdit: (trx: Transaction) => void; onDelete: (id: string) => void }> = ({ transaction, onEdit, onDelete }) => {
   const isIncome =
     transaction.type === 'INCOME' ||
     transaction.type === 'TRANSFER_IN' ||
@@ -182,167 +151,14 @@ const TransactionCard: React.FC<{ transaction: Transaction; onEdit: (trx: Transa
       </div>
     </div>
   );
-};
+};"""
 
+content = re.sub(r'const TransactionCard: React\.FC<.*?> = \(\{.*?\}\) => \{.*?\n\};\n', card_replacement + "\n", content, flags=re.DOTALL)
 
-export default function TransactionsPage() {
-  const router = useRouter();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('All');
-  const [filterAccount, setFilterAccount] = useState('All');
-  const [filterCategory, setFilterCategory] = useState('All');
-  const [filterDateRange, setFilterDateRange] = useState('All');
-  const [viewMode, setViewMode] = useState<'list' | 'cards'>('cards');
-  const [pageLoading, setPageLoading] = useState(true);
-  const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
-  const [overviewStats, setOverviewStats] = useState<any>(null); // Added for dashboard syncing
-
-  // Dynamic filter options derived from real transaction data
-  const transactionTypes = ['All', 'INCOME', 'EXPENSE', 'DEBT_TAKEN', 'DEBT_GIVEN', 'DEBT_RECEIVED', 'DEBT_REPAID', 'TRANSFER_IN', 'TRANSFER_OUT'];
-  const accountNames = ['All', ...Array.from(new Set(transactions.map(t => t.account?.name).filter(Boolean)))];
-  const categories = ['All', ...Array.from(new Set(transactions.map(t => t.category).filter(Boolean)))];
-  const dateRanges = ['All', 'Today', 'This Week', 'This Month', 'Last 30 Days', 'Last 3 Months', 'This Year'];
-
-  // --- API Functions ---
-  const fetchTransactions = async () => {
-    setPageLoading(true);
-    try {
-      const [trxResponse, statsResponse] = await Promise.all([
-        fetch('/api/projects/accounting/transactions'),
-        fetch('/api/projects/accounting/reports')
-      ]);
-
-      if (!trxResponse.ok) throw new Error('Failed to fetch transactions');
-      if (!statsResponse.ok) throw new Error('Failed to fetch stats');
-
-      const trxData = await trxResponse.json();
-      const statsData = await statsResponse.json();
-
-      setTransactions(trxData.transactions.map((trx: any) => ({ ...trx, amount: parseFloat(trx.amount) }))); // Convert Decimal to Number
-      setOverviewStats(statsData);
-    } catch (error: any) {
-      console.error('Error fetching data:', error);
-      setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka xogta la soo gelinayay.', type: 'error' });
-      setTransactions([]);
-    } finally {
-      setPageLoading(false);
-    }
-  };
-
-  const handleDeleteTransaction = async (id: string) => {
-    if (window.confirm('Ma hubtaa inaad tirtirto dhaqdhaqaaqan lacagta ah? Tan lama soo celin karo!')) {
-      try {
-        const response = await fetch(`/api/projects/accounting/transactions/${id}`, {
-          method: 'DELETE',
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'Failed to delete transaction');
-
-        setToastMessage({ message: data.message || 'Dhaqdhaqaaqa lacagta si guul leh ayaa loo tirtiray!', type: 'success' });
-        fetchTransactions(); // Re-fetch transactions after deleting
-      } catch (error: any) {
-        console.error('Error deleting transaction:', error);
-        setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka dhaqdhaqaaqa lacagta la tirtirayay.', type: 'error' });
-      }
-    }
-  };
-
-  const handleEditTransaction = (transaction: Transaction) => {
-    if (transaction.expenseId) {
-      // Redirect to expense edit page
-      router.push(`/projects/expenses/edit/${transaction.expenseId}`);
-    } else if (transaction.fixedAssetId) {
-      // Redirect to fixed asset page
-      router.push(`/projects/accounting/fixed-assets`);
-    } else {
-      // Default to general accounting edit
-      router.push(`/projects/accounting/transactions/edit/${transaction.id}`);
-    }
-  };
-
-  useEffect(() => {
-    fetchTransactions(); // Fetch transactions on component mount
-  }, []);
-
-
-  const filteredTransactions = transactions.filter(transaction => {
-    const matchesSearch =
-      transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (transaction.account?.name && transaction.account.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (transaction.project?.name && transaction.project.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (transaction.customer?.name && transaction.customer.name.toLowerCase().includes(searchTerm.toLowerCase()));
-
-    const matchesType = filterType === 'All' || transaction.type === filterType;
-    const matchesAccount = filterAccount === 'All' || transaction.account?.name === filterAccount;
-    const matchesCategory = filterCategory === 'All' || transaction.category === filterCategory;
-
-    // Date range filtering — now actually works
-    let matchesDate = true;
-    if (filterDateRange !== 'All') {
-      const txDate = new Date(transaction.transactionDate);
-      const now = new Date();
-      const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-      const today = startOfDay(now);
-      if (filterDateRange === 'Today') {
-        matchesDate = txDate >= today;
-      } else if (filterDateRange === 'This Week') {
-        const weekStart = new Date(today); weekStart.setDate(today.getDate() - today.getDay());
-        matchesDate = txDate >= weekStart;
-      } else if (filterDateRange === 'This Month') {
-        matchesDate = txDate.getMonth() === now.getMonth() && txDate.getFullYear() === now.getFullYear();
-      } else if (filterDateRange === 'Last 30 Days') {
-        const d = new Date(now); d.setDate(d.getDate() - 30);
-        matchesDate = txDate >= d;
-      } else if (filterDateRange === 'Last 3 Months') {
-        const d = new Date(now); d.setMonth(d.getMonth() - 3);
-        matchesDate = txDate >= d;
-      } else if (filterDateRange === 'This Year') {
-        matchesDate = txDate.getFullYear() === now.getFullYear();
-      }
-    }
-
-    return matchesSearch && matchesType && matchesAccount && matchesCategory && matchesDate;
-  });
-
-
-  // Statistics
-  const totalTransactionsCount = filteredTransactions.length;
-
-  // ─────────────────────────────────────────────────────────────
-  // CALCULATION RULES (companyId is enforced by the API — only
-  // this company's transactions are ever in filteredTransactions)
-  //
-  // TRUE INCOME = money earned by the company
-  //   ✅ INCOME              — direct revenue
-  //   ✅ DEBT_REPAID(customer)— customer paying back debt owed to us
-  //   ❌ DEBT_TAKEN          — money BORROWED (liability, not income)
-  //   ❌ TRANSFER_IN         — internal move (no value created)
-  //
-  // TRUE EXPENSES = money spent by the company
-  //   ✅ EXPENSE             — operating costs
-  //   ✅ DEBT_REPAID(vendor) — paying back our debt to supplier
-  //   ❌ TRANSFER_OUT        — internal move
-  //   ❌ FIXED_ASSET_PURCHASE— tracked separately
-  // ─────────────────────────────────────────────────────────────
-
-  // 1. Total Operating Income (Business Revenue)
-  const totalIncome = overviewStats?.totalIncome || 0;
-
-  // 2. Total Gross Inflow (Every shilling into accounts) - NEW
-  const totalCashInflow = overviewStats?.totalCashInflow || 0;
-
-  // 3. Total Expenses (Operating)
-  const totalExpenses = overviewStats?.totalExpenses || 0;
-
-  // 4. Fixed Asset Purchases
-  const fixedAssetExpenses = overviewStats?.fixedAssetExpenses || 0;
-
-  // 5. Net Flow — real operating performance
-  const netFlow = totalIncome - totalExpenses - fixedAssetExpenses;
-
-  return (
+# 3. Main Return Block replacement
+# We need to replace everything starting from '  return ('
+# to the end
+main_return = """  return (
     <Layout>
       {/* Background Glow Effects */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
@@ -352,12 +168,12 @@ export default function TransactionsPage() {
 
       <div className="relative z-10">
         {/* Header - Ultra Premium */}
-        <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-6 sm:mb-8 lg:mb-10 gap-4 sm:gap-6">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-8 lg:mb-10 gap-6">
           <div>
              <Link href="/projects/accounting" className="inline-flex items-center text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-primary transition-colors mb-3">
               <ArrowLeft size={16} className="mr-2" /> Ku Noqo Dashboard-ka
             </Link>
-            <h1 className="text-2xl sm:text-3xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
+            <h1 className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
               Liska Dhaqdhaqaaqa
               <span className="px-3 py-1 rounded-full text-sm font-bold bg-primary/10 text-primary border border-primary/20 backdrop-blur-md hidden sm:inline-block">Diiwaanka Rasmiga</span>
             </h1>
@@ -374,9 +190,9 @@ export default function TransactionsPage() {
 
         {/* Bento Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10 animate-fade-in-up">
-          <div className="relative p-[1px] rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-white/10 dark:from-gray-700/60 dark:to-gray-800/10 rounded-[1.5rem] sm:rounded-[2rem]"></div>
-            <div className="relative bg-white/70 dark:bg-gray-800/70 backdrop-blur-2xl p-6 rounded-[1.5rem] sm:rounded-[2rem] h-full shadow-lg border border-white/50 dark:border-gray-700/50">
+          <div className="relative p-[1px] rounded-[2rem] overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-white/10 dark:from-gray-700/60 dark:to-gray-800/10 rounded-[2rem]"></div>
+            <div className="relative bg-white/70 dark:bg-gray-800/70 backdrop-blur-2xl p-6 rounded-[2rem] h-full shadow-lg border border-white/50 dark:border-gray-700/50">
               <div className="flex items-center mb-4 text-emerald-600 dark:text-emerald-400">
                 <div className="p-3 bg-emerald-500/10 rounded-2xl mr-3">
                   <TrendingUp size={24} />
@@ -392,9 +208,9 @@ export default function TransactionsPage() {
             </div>
           </div>
 
-          <div className="relative p-[1px] rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-white/10 dark:from-gray-700/60 dark:to-gray-800/10 rounded-[1.5rem] sm:rounded-[2rem]"></div>
-            <div className="relative bg-white/70 dark:bg-gray-800/70 backdrop-blur-2xl p-6 rounded-[1.5rem] sm:rounded-[2rem] h-full shadow-lg border border-white/50 dark:border-gray-700/50">
+          <div className="relative p-[1px] rounded-[2rem] overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-white/10 dark:from-gray-700/60 dark:to-gray-800/10 rounded-[2rem]"></div>
+            <div className="relative bg-white/70 dark:bg-gray-800/70 backdrop-blur-2xl p-6 rounded-[2rem] h-full shadow-lg border border-white/50 dark:border-gray-700/50">
               <div className="flex items-center mb-4 text-rose-600 dark:text-rose-400">
                 <div className="p-3 bg-rose-500/10 rounded-2xl mr-3">
                   <TrendingDown size={24} />
@@ -410,9 +226,9 @@ export default function TransactionsPage() {
             </div>
           </div>
 
-          <div className="relative p-[1px] rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-b from-primary/30 to-blue-500/5 dark:from-primary/20 dark:to-blue-900/10 rounded-[1.5rem] sm:rounded-[2rem]"></div>
-            <div className="relative bg-gradient-to-br from-white/90 to-white/40 dark:from-gray-800/90 dark:to-gray-900/40 backdrop-blur-2xl p-6 rounded-[1.5rem] sm:rounded-[2rem] h-full shadow-xl border border-white/60 dark:border-gray-700/50">
+          <div className="relative p-[1px] rounded-[2rem] overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-b from-primary/30 to-blue-500/5 dark:from-primary/20 dark:to-blue-900/10 rounded-[2rem]"></div>
+            <div className="relative bg-gradient-to-br from-white/90 to-white/40 dark:from-gray-800/90 dark:to-gray-900/40 backdrop-blur-2xl p-6 rounded-[2rem] h-full shadow-xl border border-white/60 dark:border-gray-700/50">
               <div className="flex items-center mb-4 text-primary">
                 <div className="p-3 bg-primary/10 rounded-2xl mr-3 animate-pulse">
                   <RefreshCw size={24} />
@@ -430,9 +246,9 @@ export default function TransactionsPage() {
         </div>
 
         {/* Filters Bento Box */}
-        <div className="relative p-[1px] rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden mb-10 animate-fade-in">
-           <div className="absolute inset-0 bg-white/40 dark:bg-gray-800/40 rounded-[1.5rem] sm:rounded-[2rem]"></div>
-           <div className="relative bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl p-4 sm:p-6 md:p-8 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-white/60 dark:border-gray-700/50">
+        <div className="relative p-[1px] rounded-[2rem] overflow-hidden mb-10 animate-fade-in">
+           <div className="absolute inset-0 bg-white/40 dark:bg-gray-800/40 rounded-[2rem]"></div>
+           <div className="relative bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl p-6 md:p-8 rounded-[2rem] shadow-sm border border-white/60 dark:border-gray-700/50">
               <div className="flex items-center gap-3 mb-6">
                 <Filter size={20} className="text-primary" />
                 <h3 className="font-bold text-gray-800 dark:text-gray-200">Kala Shaandheyn</h3>
@@ -514,12 +330,12 @@ export default function TransactionsPage() {
 
         {/* Transactions Content */}
         {pageLoading ? (
-          <div className="h-[400px] flex flex-col items-center justify-center bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl rounded-[1.5rem] sm:rounded-[2rem] border border-white/50 dark:border-gray-700/50 shadow-xl">
+          <div className="h-[400px] flex flex-col items-center justify-center bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl rounded-[2rem] border border-white/50 dark:border-gray-700/50 shadow-xl">
             <Loader2 className="animate-spin text-primary mb-4" size={48} /> 
             <p className="text-gray-500 dark:text-gray-400 font-bold tracking-widest uppercase text-sm animate-pulse">Raadinaya Xogta...</p>
           </div>
         ) : filteredTransactions.length === 0 ? (
-          <div className="h-[300px] flex flex-col items-center justify-center bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl rounded-[1.5rem] sm:rounded-[2rem] border border-white/50 dark:border-gray-700/50 shadow-xl text-center px-6">
+          <div className="h-[300px] flex flex-col items-center justify-center bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl rounded-[2rem] border border-white/50 dark:border-gray-700/50 shadow-xl text-center px-6">
             <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700/50 rounded-full flex items-center justify-center mb-4">
               <Search className="text-gray-400" size={32} />
             </div>
@@ -538,7 +354,7 @@ export default function TransactionsPage() {
             {/* Desktop */}
             <div className="hidden md:block">
               {viewMode === 'list' ? (
-                <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-[1.5rem] sm:rounded-[2rem] shadow-xl border border-white/50 dark:border-gray-700/50 overflow-hidden">
+                <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-[2rem] shadow-xl border border-white/50 dark:border-gray-700/50 overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200/50 dark:divide-gray-700/50">
                       <thead className="bg-gray-50/50 dark:bg-gray-800/50 backdrop-blur-md">
@@ -559,7 +375,7 @@ export default function TransactionsPage() {
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                <div className="grid grid-cols-2 xl:grid-cols-3 gap-6">
                   {filteredTransactions.map(trx => (
                     <TransactionCard key={trx.id} transaction={trx} onEdit={handleEditTransaction} onDelete={handleDeleteTransaction} />
                   ))}
@@ -575,4 +391,10 @@ export default function TransactionsPage() {
       )}
     </Layout>
   );
-}
+}"""
+
+content = re.sub(r'  return \(\s*<Layout>.*</Layout>\s*\);\s*\}\s*$', main_return + "\n", content, flags=re.DOTALL)
+
+with open(file_path, 'w', encoding='utf-8') as f:
+    f.write(content)
+print("Updated transactions page!")

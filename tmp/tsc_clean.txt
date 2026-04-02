@@ -1,0 +1,5 @@
+﻿app/projects/accounting/accounts/edit/[id]/page.tsx(256,9): error TS17002: Expected corresponding JSX closing tag for 'Layout'.
+app/projects/accounting/accounts/edit/[id]/page.tsx(257,5): error TS1005: ')' expected.
+app/projects/accounting/accounts/edit/[id]/page.tsx(258,3): error TS1109: Expression expected.
+app/projects/accounting/transactions/edit/[id]/page.tsx(276,8): error TS17008: JSX element 'div' has no corresponding closing tag.
+app/projects/accounting/transactions/edit/[id]/page.tsx(291,8): error TS17008: JSX element 'div' has no corresponding closing tag.
