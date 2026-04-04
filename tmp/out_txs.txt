@@ -1,0 +1,20 @@
+c7b98c8a-e9b6-429d-9930-35d0abc90662 | DEBT_TAKEN | 10000 | 
+575f6d28-1358-4717-8654-d8d3eaa8c9ce | EXPENSE | -2700 | Salary payment for hamse maolin amiin - 2026-03-26
+22bbdd08-72c0-4f02-9a31-893a897ba276 | EXPENSE | 18000 | Hanti Iib: Cutter 2000w
+6ad4bdb0-02a3-4522-8a68-a383886162e3 | EXPENSE | 9000 | Hanti Iib: Drill 1100
+d353ea63-4e8d-428e-8930-31a383b3d16d | EXPENSE | 12000 | Hanti Iib: Hilti
+5dc9f42b-5777-4fc2-b5fe-acfe93d11f12 | EXPENSE | 6500 | Hanti Iib: Shuter
+8c1f3b84-4bb1-4d29-abf2-c038a7d1b8d7 | EXPENSE | 24000 | Hanti Iib: Welding
+0b912d3e-b937-44e5-89a1-b28a4e3c1fdd | EXPENSE | -5180 | 
+75af54d1-7c3c-44f1-925d-ea5b7307fb5d | EXPENSE | -51000 | 
+8e75b42a-594c-4efe-b475-1c1242bd0110 | EXPENSE | -162560 | 
+aedd188f-819d-4a6b-afdf-f3f344a7fcbf | EXPENSE | 11000 | Hanti Iib: JigSaw
+d925f3ab-ee89-4ff2-88b7-207cd00a3659 | EXPENSE | 11000 | Hanti Iib: Router
+5e5e1f0d-9314-458a-992c-285a48c40293 | DEBT_TAKEN | 140000 | 
+a00cd469-054b-48bf-b6b6-1cca0cfc1481 | EXPENSE | -15000 | Salary payment for Ahmed Mohamed - 2026-03-26
+98b0f0fe-df7d-43da-a338-88e54a71fff6 | DEBT_TAKEN | 6000 | 
+c2f0b089-2d41-4e5f-a171-596fddce0e08 | EXPENSE | -15000 | dilaal qoloji site
+9ec02321-d2f7-455d-badd-a0a9ee949242 | EXPENSE | -10000 | dilaal maxamed cabdi khalf ayaa loo diray
+18733540-429b-4e70-9d4e-d44fa6174f59 | EXPENSE | -10000 | badri maamulaha iskulka qolaji
+a6fb0462-d4ce-481e-ba6c-a261c6cff5f1 | EXPENSE | -2000 | kala hagaajin iyo qashin guris
+c62786eb-e2fc-4d77-9d0d-1c7713e332f8 | DEBT_TAKEN | 6000 | kala hagaajin iyo qashin guris

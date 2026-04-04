@@ -2,1011 +2,456 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-    Save,
-    Plus,
-    Trash2,
-    User,
-    FileText,
-    ArrowLeft,
-    CheckCircle2,
-    Package,
-    ChevronDown,
-    ScanLine,
-    UploadCloud,
-    Loader2,
-    X,
-    UserPlus,
-    Receipt,
-    Percent,
-    CreditCard,
-    Wallet,
-    AlertCircle
+    Save, Plus, Minus, Trash2, User, FileText, ArrowLeft, CheckCircle2, Package,
+    ChevronDown, ScanLine, Loader2, X, UserPlus, Receipt, Wallet, PauseCircle,
+    Library, ShoppingCart, Clock, AlertCircle, Calendar, Smartphone, Banknote,
+    Globe, Briefcase, UploadCloud, Search, Sparkles, Printer, ArrowLeftCircle
 } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import Link from 'next/link';
 
 // --- TYPES ---
-interface LineItem {
-    id: number;
-    productId: string;
-    description: string;
-    qty: number;
-    price: number;
-    stock?: number;
-    matched?: boolean; // did AI receipt match this to a product?
-}
+interface LineItem { id: number; productId: string; description: string; qty: number; price: number; discount: number; stock?: number; matched?: boolean; }
+interface Customer { id: string; name: string; phone?: string; }
+interface Product { id: string; name: string; sellingPrice: number; stock: number; sku: string; }
+interface Account { id: string; name: string; type: string; currency: string; }
+interface Employee { id: string; fullName: string; }
+interface PaymentRow { id: number; accountId: string; amount: string; method: string; }
 
-interface Customer {
-    id: string;
-    name: string;
-    phone?: string;
-}
-
-interface Product {
-    id: string;
-    name: string;
-    sellingPrice: number;
-    stock: number;
-}
-
-interface Account {
-    id: string;
-    name: string;
-    type: string;
-}
-
-const defaultItems = (): LineItem[] => [
-    { id: Date.now(), productId: '', description: '', qty: 1, price: 0 },
-    { id: Date.now() + 1, productId: '', description: '', qty: 1, price: 0 },
-    { id: Date.now() + 2, productId: '', description: '', qty: 1, price: 0 },
-];
+const defaultItems = (): LineItem[] => [{ id: Date.now(), productId: '', description: '', qty: 1, price: 0, discount: 0 }];
 
 export default function ManualEntryPage() {
     const router = useRouter();
-
-    // Core form state
-    const [customerId, setCustomerId] = useState('');
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [invoiceNumber, setInvoiceNumber] = useState(`INV-${Date.now()}`);
     const [supplierReceiptNumber, setSupplierReceiptNumber] = useState('');
+    const [customerId, setCustomerId] = useState('');
+    const [employeeId, setEmployeeId] = useState('');
     const [notes, setNotes] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [saveMode, setSaveMode] = useState<'submit' | 'again'>('submit');
     const [discountAmount, setDiscountAmount] = useState('0');
-
-    // Data
+    const [currency, setCurrency] = useState<'ETB' | 'USD'>('ETB');
+    const [exchangeRate, setExchangeRate] = useState('1');
+    const [applyVAT, setApplyVAT] = useState(false);
+    const [companyTaxRate, setCompanyTaxRate] = useState(15);
+    const [autoConvertDebt, setAutoConvertDebt] = useState(true);
+    const [convertDebtAfterDays, setConvertDebtAfterDays] = useState('7');
+    const [isScanning, setIsScanning] = useState(false);
+    const [items, setItems] = useState<LineItem[]>(defaultItems());
+    const [paymentRows, setPaymentRows] = useState<PaymentRow[]>([{ id: Date.now(), accountId: '', amount: '', method: 'Cash' }]);
+    const [paymentMethod, setPaymentMethod] = useState<'Cash' | 'Card' | 'Credit'>('Cash');
+    const [dueDate, setDueDate] = useState('');
+    const [sendWhatsApp, setSendWhatsApp] = useState(true);
+    const [shouldPrint, setShouldPrint] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [products, setProducts] = useState<Product[]>([]);
     const [accounts, setAccounts] = useState<Account[]>([]);
-    const [selectedAccountId, setSelectedAccountId] = useState('');
-
-    // Payment
-    const [paymentMethod, setPaymentMethod] = useState<'Cash' | 'Card' | 'Credit'>('Cash');
-    const [partialPaidAmount, setPartialPaidAmount] = useState('');
-    const [dueDate, setDueDate] = useState('');
-
-    // VAT
-    const [applyVAT, setApplyVAT] = useState(false);
-    const [companyTaxRate, setCompanyTaxRate] = useState(15);
-    const [requireReceiptNumber, setRequireReceiptNumber] = useState(false);
-    const [currency, setCurrency] = useState<'ETB' | 'USD'>('ETB');
-    const [exchangeRate, setExchangeRate] = useState('1');
-    const [autoConvertDebt, setAutoConvertDebt] = useState(true);
-    const [convertDebtAfterDays, setConvertDebtAfterDays] = useState('7');
-
-    // Line items
-    const [items, setItems] = useState<LineItem[]>(defaultItems());
-
-    // Quick-add customer modal
+    const [employees, setEmployees] = useState<Employee[]>([]);
+    const [heldSales, setHeldSales] = useState<any[]>([]);
+    const [isHeldModalOpen, setIsHeldModalOpen] = useState(false);
     const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
     const [quickAddName, setQuickAddName] = useState('');
     const [quickAddPhone, setQuickAddPhone] = useState('');
-    const [isAddingCustomer, setIsAddingCustomer] = useState(false);
+    const [companySettings, setCompanySettings] = useState<any>(null);
 
-    // Receipt AI scanner
-    const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const productsRef = useRef<Product[]>([]);
+    const barcodeBuffer = useRef<string>('');
+    const lastKeyTime = useRef<number>(0);
 
-    // -----------------------------------------------
-    // FETCH DATA
-    // -----------------------------------------------
     useEffect(() => {
-        fetchCustomers();
-        fetchProducts();
-        fetchAccounts();
-        fetchCompany();
+        const saved = localStorage.getItem('revlo_manual_held_sales');
+        if (saved) setHeldSales(JSON.parse(saved));
+        fetchInitialData();
     }, []);
 
-    // Paste image (Ctrl+V)
-    useEffect(() => {
-        const handlePaste = (e: ClipboardEvent) => {
-            const items = e.clipboardData?.items;
-            if (!items) return;
-            for (let i = 0; i < items.length; i++) {
-                if (items[i].type.startsWith('image/')) {
-                    const file = items[i].getAsFile();
-                    if (file) { processReceiptFile(file); e.preventDefault(); break; }
-                }
-            }
-        };
-        document.addEventListener('paste', handlePaste);
-        return () => document.removeEventListener('paste', handlePaste);
-    }, [products]); // products in dep so fuzzy match has fresh list
-
-    const fetchCustomers = async () => {
+    const fetchInitialData = async () => {
         try {
-            const res = await fetch('/api/shop/customers');
-            if (res.ok) {
-                const data = await res.json();
-                setCustomers([{ id: 'walk-in', name: 'Walk-in Customer' }, ...(data.customers || [])]);
+            const [custRes, prodRes, accRes, empRes, compRes] = await Promise.all([
+                fetch('/api/shop/customers'), fetch('/api/shop/inventory'), fetch('/api/shop/accounts'), fetch('/api/shop/employees'), fetch('/api/shop/company')
+            ]);
+            if (custRes.ok) setCustomers([{ id: 'walk-in', name: 'Walk-in Customer' }, ...( (await custRes.json()).customers || [] )]);
+            if (prodRes.ok) { const p = (await prodRes.json()).products || []; setProducts(p); productsRef.current = p; }
+            if (accRes.ok) {
+                const a = (await accRes.json()).accounts || []; setAccounts(a);
+                if (a.length > 0) setPaymentRows([{ id: Date.now(), accountId: a[0].id, amount: '', method: 'Cash' }]);
             }
-        } catch { }
-    };
-
-    const fetchProducts = async () => {
-        try {
-            const res = await fetch('/api/shop/inventory');
-            if (res.ok) {
-                const data = await res.json();
-                setProducts(data.products || []);
-            }
-        } catch { }
-    };
-
-    const fetchAccounts = async () => {
-        try {
-            const res = await fetch('/api/shop/accounts');
-            if (res.ok) {
-                const data = await res.json();
-                setAccounts(data.accounts || []);
-                if (data.accounts?.length > 0) setSelectedAccountId(data.accounts[0].id);
-            }
-        } catch { }
-    };
-
-    const fetchCompany = async () => {
-        try {
-            const res = await fetch('/api/shop/company');
-            if (res.ok) {
-                const data = await res.json();
-                if (data.company?.taxRate) setCompanyTaxRate(Number(data.company.taxRate));
-                if (data.company?.requireReceiptNumber !== undefined) setRequireReceiptNumber(Boolean(data.company.requireReceiptNumber));
-
-                // Fetch daily exchange rate
+            if (empRes.ok) setEmployees((await empRes.json()).employees || []);
+            if (compRes.ok) {
+                const c = (await compRes.json()).company; setCompanySettings(c);
+                if (c?.taxRate) setCompanyTaxRate(Number(c.taxRate));
                 const rateRes = await fetch('/api/settings/exchange-rate');
-                if (rateRes.ok) {
-                    const rateData = await rateRes.json();
-                    if (rateData.rate && rateData.rate.rate) {
-                        setExchangeRate(String(rateData.rate.rate));
-                    }
-                }
+                if (rateRes.ok) { const r = await rateRes.json(); setExchangeRate(String(r.rate?.rate || 1)); }
             }
         } catch { }
     };
 
-    // -----------------------------------------------
-    // QUICK-ADD CUSTOMER
-    // -----------------------------------------------
-    const handleQuickAddCustomer = async () => {
-        if (!quickAddName.trim()) return;
-        setIsAddingCustomer(true);
-        try {
-            const res = await fetch('/api/shop/customers', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: quickAddName.trim(), phone: quickAddPhone.trim() || undefined })
-            });
-            if (!res.ok) throw new Error('Failed');
-            const data = await res.json();
-            const newCustomer = data.customer;
-            setCustomers(prev => [...prev, { id: newCustomer.id, name: newCustomer.name, phone: newCustomer.phone }]);
-            setCustomerId(newCustomer.id);
-            setIsQuickAddOpen(false);
-            setQuickAddName('');
-            setQuickAddPhone('');
-            toast.success(`Customer "${newCustomer.name}" added!`);
-        } catch {
-            toast.error('Failed to add customer. Try again.');
-        } finally {
-            setIsAddingCustomer(false);
-        }
-    };
-
-    // -----------------------------------------------
-    // LINE ITEM ACTIONS
-    // -----------------------------------------------
-    const addItem = () => {
-        setItems(prev => [...prev, { id: Date.now(), productId: '', description: '', qty: 1, price: 0 }]);
-    };
-
-    const removeItem = (id: number) => {
-        if (items.length === 1) return;
-        setItems(prev => prev.filter(item => item.id !== id));
-    };
-
-    const handleProductSelect = (id: number, productId: string) => {
-        const product = products.find(p => p.id === productId);
-        setItems(prev => prev.map(item =>
-            item.id === id
-                ? { ...item, productId, description: product?.name || '', price: product?.sellingPrice || 0, stock: product?.stock, matched: true }
-                : item
-        ));
-    };
-
-    const updateItem = (id: number, field: keyof LineItem, value: any) => {
-        setItems(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
-    };
-
-    // -----------------------------------------------
-    // CALCULATIONS
-    // -----------------------------------------------
-    const subtotal = items.reduce((sum, item) => sum + (item.qty * item.price), 0);
-    const discount = parseFloat(discountAmount) || 0;
-    const discountedSubtotal = Math.max(0, subtotal - discount);
-    const taxAmount = applyVAT ? discountedSubtotal * (companyTaxRate / 100) : 0;
-    const total = discountedSubtotal + taxAmount;
-
-    const partialAmount = parseFloat(partialPaidAmount) || 0;
-    const balance = total - partialAmount;
-
-    // -----------------------------------------------
-    // AI RECEIPT SCANNER
-    // -----------------------------------------------
-    const fuzzyMatch = useCallback((aiName: string): Product | null => {
-        const normalized = aiName.toLowerCase().trim();
-        // Exact match first
-        let match = products.find(p => p.name.toLowerCase() === normalized);
-        if (match) return match;
-        // Contains match
-        match = products.find(p =>
-            p.name.toLowerCase().includes(normalized) || normalized.includes(p.name.toLowerCase())
-        );
-        if (match) return match;
-        // Word-level match (any word in common)
-        const aiWords = normalized.split(/\s+/).filter(w => w.length > 2);
-        match = products.find(p => {
-            const pWords = p.name.toLowerCase().split(/\s+/);
-            return aiWords.some(w => pWords.some(pw => pw.includes(w) || w.includes(pw)));
-        });
-        return match || null;
-    }, [products]);
-
-    const processReceiptFile = async (file: File) => {
-        if (!file.type.startsWith('image/')) {
-            toast.error('Fadlan sawir kaliya soo geli!');
-            return;
-        }
-        setIsAnalyzing(true);
-        const formData = new FormData();
-        formData.append('image', file);
-        try {
-            const res = await fetch('/api/analyze-receipt', { method: 'POST', body: formData });
-            if (!res.ok) throw new Error(`Server error: ${res.status}`);
-            const data = await res.json();
-
-            if (data.items && Array.isArray(data.items) && data.items.length > 0) {
-                const newItems: LineItem[] = data.items.map((aiItem: any, idx: number) => {
-                    const matched = fuzzyMatch(aiItem.name || '');
-                    return {
-                        id: Date.now() + idx,
-                        productId: matched?.id || '',
-                        description: matched?.name || aiItem.name || '',
-                        qty: parseInt(String(aiItem.qty)) || 1,
-                        price: matched?.sellingPrice || parseFloat(String(aiItem.price)) || 0,
-                        matched: !!matched,
-                    };
-                });
-                setItems(newItems);
-            }
-
-            // Auto-fill supplier receipt number if available
-            if (data.invoiceNumber || data.receiptNumber) {
-                setSupplierReceiptNumber(data.invoiceNumber || data.receiptNumber || '');
-            }
-
-            const matchedCount = (data.items || []).filter((_: any, i: number) => {
-                const ai = data.items[i];
-                return !!fuzzyMatch(ai?.name || '');
-            }).length;
-
-            toast.success(`Receipt scanned! ${matchedCount}/${(data.items || []).length} items matched to inventory.`);
-        } catch (err: any) {
-            toast.error(`Scan failed: ${err.message}`);
-        } finally {
-            setIsAnalyzing(false);
-        }
-    };
-
-    const handleFileInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) await processReceiptFile(file);
-        e.target.value = '';
-    };
-
-    const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
-    const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(false); };
-    const handleDrop = (e: React.DragEvent) => {
-        e.preventDefault(); setIsDragging(false);
-        const file = e.dataTransfer.files?.[0];
-        if (file?.type.startsWith('image/')) processReceiptFile(file);
-        else toast.error('Fadlan sawir kaliya soo geli!');
-    };
-
-    // -----------------------------------------------
-    // SUBMIT
-    // -----------------------------------------------
-    const buildPayload = () => {
-        const validItems = items.filter(item => item.productId && item.qty > 0);
-        if (!customerId) { toast.error('Please select a customer'); return null; }
-        if (paymentMethod === 'Credit' && customerId === 'walk-in') {
-            toast.error('Credit sales require a registered customer.'); return null;
-        }
-        if (validItems.length === 0) { toast.error('Add at least one product'); return null; }
-        if (requireReceiptNumber && !supplierReceiptNumber.trim()) {
-            toast.error('Supplier Receipt # is required. Please enter the receipt number.');
-            return null;
-        }
-
-        let finalPaidAmount = total;
-        let finalStatus = 'Paid';
-
-        if (paymentMethod === 'Credit') {
-            finalPaidAmount = partialAmount;
-            finalStatus = partialAmount > 0 ? 'Partial' : 'Unpaid';
-        }
-
-        const needsAccount = paymentMethod !== 'Credit' || partialAmount > 0;
-
-        return {
-            customerId: customerId === 'walk-in' ? null : customerId,
-            items: validItems.map(item => ({ productId: item.productId, quantity: item.qty, unitPrice: item.price })),
-            paymentMethod,
-            notes: notes || null,
-            accountId: needsAccount ? selectedAccountId : undefined,
-            paidAmount: finalPaidAmount,
-            paymentStatus: finalStatus,
-            supplierReceiptNumber: supplierReceiptNumber || undefined,
-            taxAmount: applyVAT ? taxAmount : 0,
-            invoiceNumber: invoiceNumber || undefined,
-            dueDate: paymentMethod === 'Credit' && dueDate ? dueDate : undefined,
-            currency,
-            exchangeRate: parseFloat(exchangeRate) || 1,
-            autoConvertDebt,
-            convertDebtAfterDays: parseInt(convertDebtAfterDays) || 7,
+    // --- BARCODE ENGINE ---
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) return;
+            const now = Date.now();
+            if (now - lastKeyTime.current > 60) barcodeBuffer.current = '';
+            lastKeyTime.current = now;
+            if (e.key === 'Enter') {
+                if (barcodeBuffer.current.length > 2) {
+                    const product = productsRef.current.find(p => p.sku === barcodeBuffer.current || p.id === barcodeBuffer.current);
+                    if (product) {
+                        addItemFromProduct(product);
+                        toast.success(`Scanned: ${product.name}`);
+                    } else toast.error(`Not found: ${barcodeBuffer.current}`);
+                }
+                barcodeBuffer.current = '';
+            } else if (e.key.length === 1) barcodeBuffer.current += e.key;
         };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
+    const addItemFromProduct = (p: Product) => {
+        setItems(prev => {
+            const last = prev[prev.length - 1];
+            if (!last?.productId && !last?.description) {
+                return prev.map((item, i) => i === prev.length - 1 ? { ...item, productId: p.id, description: p.name, price: p.sellingPrice, matched: true, qty: 1 } : item);
+            }
+            return [...prev, { id: Date.now(), productId: p.id, description: p.name, price: p.sellingPrice, matched: true, qty: 1, discount: 0 }];
+        });
     };
 
-    const submitSale = async () => {
-        const payload = buildPayload();
-        if (!payload) return;
-
-        setIsSubmitting(true);
+    // --- AI SMART SCAN ---
+    const handleScan = async (file: File) => {
+        if (!file) return;
+        setIsScanning(true);
+        const toastId = toast.loading('AI analyzing receipt...');
+        const fd = new FormData(); fd.append('image', file);
         try {
-            const res = await fetch('/api/shop/sales', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+            const res = await fetch('/api/analyze-receipt', { method: 'POST', body: fd });
+            if (!res.ok) throw new Error('Scan failed');
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed to create sale');
-            return data.sale;
-        } catch (err: any) {
-            toast.error(err.message || 'Failed to create sale');
-            return null;
-        } finally {
-            setIsSubmitting(false);
-        }
+            if (data.date) setDate(data.date);
+            if (data.receiptNumber) setSupplierReceiptNumber(data.receiptNumber);
+            const scannedItems = (data.items || []).map((si: any) => {
+                const match = productsRef.current.find(p => p.name.toLowerCase().includes(si.name.toLowerCase()) || si.name.toLowerCase().includes(p.name.toLowerCase()));
+                return { id: Date.now() + Math.random(), productId: match?.id || '', description: si.name, qty: si.qty || 1, price: si.price || 0, discount: 0, matched: !!match };
+            });
+            setItems(prev => [...prev.filter(p => p.productId || p.description), ...scannedItems]);
+            toast.success('Smart scan complete!', { id: toastId });
+        } catch (e: any) { toast.error(e.message, { id: toastId }); }
+        finally { setIsScanning(false); }
     };
 
-    const handleSubmitReceipt = async () => {
-        setSaveMode('submit');
-        const sale = await submitSale();
-        if (sale) {
-            toast.success(`Sale ${sale.invoiceNumber} saved!`);
-            router.push(`/shop/sales/${sale.id}`);
-        }
+    const addItem = () => setItems(prev => [...prev, { id: Date.now(), productId: '', description: '', qty: 1, price: 0, discount: 0 }]);
+    const removeItem = (id: number) => items.length === 1 ? setItems(defaultItems()) : setItems(prev => prev.filter(i => i.id !== id));
+    const handleProductSelect = (id: number, pid: string) => {
+        const p = products.find(prod => prod.id === pid);
+        setItems(prev => prev.map(i => i.id === id ? { ...i, productId: pid, description: p?.name || '', price: p?.sellingPrice || 0, stock: p?.stock, matched: true } : i));
+    };
+    const updateItem = (id: number, f: keyof LineItem, v: any) => setItems(prev => prev.map(i => i.id === id ? { ...i, [f]: v } : i));
+
+    const subtotal = items.reduce((sum, i) => sum + (i.qty * i.price) - ((i.qty * i.price) * (i.discount / 100)), 0);
+    const globalDisc = parseFloat(discountAmount) || 0;
+    const discounted = Math.max(0, subtotal - globalDisc);
+    const tax = applyVAT ? discounted * (companyTaxRate / 100) : 0;
+    const totalETB = discounted + tax;
+    const rateVal = parseFloat(exchangeRate) || 1;
+    const totalDisp = currency === 'USD' ? (totalETB / rateVal) : totalETB;
+    const subtotalDisp = currency === 'USD' ? (subtotal / rateVal) : subtotal;
+    const discountDisp = currency === 'USD' ? (globalDisc / rateVal) : globalDisc;
+    const taxDisp = currency === 'USD' ? (tax / rateVal) : tax;
+    const balanceDisp = Math.max(0, totalDisp - paymentRows.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0));
+
+    const handleFinalize = async () => {
+        if (!customerId) return toast.error('Select customer');
+        const vItems = items.filter(i => i.productId && i.qty > 0);
+        if (vItems.length === 0) return toast.error('No items selected');
+        setIsSubmitting(true);
+        const payload = {
+            customerId: customerId === 'walk-in' ? null : customerId,
+            items: vItems, paymentMethod, notes, paidAmount: totalDisp - balanceDisp,
+            taxAmount: tax / rateVal, discountAmount: globalDisc / rateVal, invoiceNumber, supplierReceiptNumber,
+            date, currency, exchangeRate: rateVal, autoConvertDebt, convertDebtAfterDays, employeeId,
+            payments: paymentRows.filter(p => p.accountId && p.amount).map(p => ({ ...p, amount: parseFloat(p.amount) }))
+        };
+        try {
+            const res = await fetch('/api/shop/sales', { method: 'POST', body: JSON.stringify(payload) });
+            if (res.ok) {
+                 toast.success('Sale Finalized');
+                 router.push(`/shop/sales`);
+            } else {
+                 const d = await res.json();
+                 throw new Error(d.error);
+            }
+        } catch (e: any) { toast.error(e.message); }
+        finally { setIsSubmitting(false); }
     };
 
-    const handleSaveAndAddAnother = async () => {
-        setSaveMode('again');
-        const sale = await submitSale();
-        if (sale) {
-            toast.success(`Sale ${sale.invoiceNumber} saved! Ready for next entry.`);
-            // Reset form
-            setCustomerId('');
-            setInvoiceNumber(`INV-${Date.now()}`);
-            setSupplierReceiptNumber('');
-            setNotes('');
-            setPaymentMethod('Cash');
-            setPartialPaidAmount('');
-            setApplyVAT(false);
-            setDiscountAmount('0');
-            setCurrency('ETB');
-            setAutoConvertDebt(true);
-            setConvertDebtAfterDays('7');
-            setItems(defaultItems());
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+    const saveHeldSales = (l: any[]) => { setHeldSales(l); localStorage.setItem('revlo_manual_held_sales', JSON.stringify(l)); };
+    const handleHoldSale = () => {
+        saveHeldSales([...heldSales, { id: Date.now(), invoiceNumber, customerId, items, paymentRows, notes, date, supplierReceiptNumber, timestamp: new Date().toISOString() }]);
+        toast.success('Draft Saved'); setItems(defaultItems()); setCustomerId('');
     };
 
-    // -----------------------------------------------
-    // RENDER
-    // -----------------------------------------------
     return (
-        <div className="min-h-screen animate-fade-in pb-24 font-sans w-full relative">
-
-            {/* HEADER */}
-            <div className="flex items-center gap-4 mb-6">
-                <Link href="/shop/pos" className="p-2 bg-gray-100 dark:bg-gray-800 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                    <ArrowLeft size={20} className="text-gray-600 dark:text-gray-300" />
-                </Link>
-                <div>
-                    <h1 className="text-2xl font-black text-gray-900 dark:text-white">New Sale (Manual Entry)</h1>
-                    <p className="text-sm text-gray-500">Record a sale manually. Scan a receipt to auto-fill.</p>
+        <div className="min-h-screen bg-[#F8FAFC] pb-20 font-sans text-gray-900 overflow-y-auto">
+            {isScanning && (
+                <div className="fixed inset-0 z-[200] bg-white/60 backdrop-blur-md flex flex-col items-center justify-center animate-in fade-in">
+                    <Loader2 className="w-10 h-10 animate-spin text-[#3498DB]" />
+                    <h2 className="mt-4 text-sm font-black uppercase tracking-widest text-gray-600">AI Reading Receipt...</h2>
                 </div>
-            </div>
+            )}
 
-            {/* ─── AI RECEIPT SCANNER BANNER ─── */}
-            <div
-                className={`mb-6 rounded-2xl border-2 transition-all duration-200 ${isDragging
-                    ? 'border-[#3498DB] bg-blue-50 dark:bg-blue-900/20'
-                    : 'border-dashed border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/30'
-                    }`}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-            >
-                <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-4 md:p-5">
+            <div className="w-full mx-auto p-4 md:p-6 space-y-4">
+                
+                {/* --- COMPACT HEADER --- */}
+                <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-[#3498DB]/10 flex items-center justify-center">
-                            <ScanLine size={20} className="text-[#3498DB]" />
-                        </div>
+                        <Link href="/shop/pos" className="p-1.5 bg-white rounded-lg border border-gray-100 hover:bg-gray-50 transition-all text-gray-400">
+                            <ArrowLeft size={18}/>
+                        </Link>
                         <div>
-                            <p className="font-bold text-gray-800 dark:text-white text-sm">Smart Receipt Scan (AI)</p>
-                            <p className="text-xs text-gray-500">
-                                {isDragging ? '🎯 Sii daa — ha yimaaddo!' : 'Upload, drag & drop, or Ctrl+V to paste a receipt image'}
-                            </p>
+                            <h1 className="text-lg font-black tracking-tight text-gray-900 leading-none">New Sale (Manual Entry)</h1>
+                            <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-tighter">Enter details manually or scan image</p>
                         </div>
                     </div>
-                    <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileInput} disabled={isAnalyzing} />
-                    <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isAnalyzing}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-[#3498DB] hover:bg-[#2980B9] text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-                    >
-                        {isAnalyzing ? <><Loader2 size={16} className="animate-spin" /> Analyzing...</> : <><UploadCloud size={16} /> Upload Receipt</>}
-                    </button>
+                    <div className="flex gap-2">
+                         <button onClick={handleHoldSale} className="px-4 py-2 bg-white border border-gray-100 rounded-lg text-[10px] font-black text-orange-500 hover:bg-orange-50 transition-all flex items-center gap-2 uppercase tracking-widest"><PauseCircle size={14}/> Pause</button>
+                         <button onClick={()=>setIsHeldModalOpen(true)} className="px-4 py-2 bg-white border border-gray-100 rounded-lg text-[10px] font-black text-[#3498DB] hover:bg-blue-50 transition-all flex items-center gap-2 relative uppercase tracking-widest"><Clock size={14}/> Drafts {heldSales.length > 0 && <span className="ml-1 bg-red-500 text-white w-4 h-4 rounded-full flex items-center justify-center text-[8px]">{heldSales.length}</span>}</button>
+                    </div>
                 </div>
-            </div>
 
-            {/* ─── MAIN FORM CARD ─── */}
-            <div className="bg-white dark:bg-[#1f2937] border border-gray-100 dark:border-gray-800 rounded-[2rem] shadow-xl overflow-hidden">
+                {/* --- SLIM AI SCAN BANNER --- */}
+                <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-4 bg-white border border-gray-100 rounded-2xl flex items-center justify-between shadow-sm hover:border-[#3498DB]/30 transition-all cursor-pointer group"
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-[#3498DB]">
+                             <ScanLine size={20}/>
+                        </div>
+                        <div>
+                            <h4 className="text-[11px] font-black text-gray-900 uppercase tracking-widest">Smart Receipt Scan (AI)</h4>
+                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Auto-fill form from image</p>
+                        </div>
+                    </div>
+                    <button className="px-5 py-2 bg-[#3498DB] text-white rounded-lg text-[10px] font-black shadow-sm active:scale-95 transition-all flex items-center gap-2 uppercase tracking-widest">
+                         <UploadCloud size={14}/> Upload Receipt
+                    </button>
+                    <input type="file" ref={fileInputRef} onChange={e=>e.target.files?.[0]&&handleScan(e.target.files[0])} className="hidden" accept="image/*" />
+                </div>
 
-                {/* ── TOP SECTION ── */}
-                <div className="p-6 md:p-8 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-
-                        {/* Customer */}
-                        <div className="md:col-span-3">
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Customer *</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <User size={16} className="text-gray-400" />
-                                </div>
-                                <select
-                                    value={customerId}
-                                    onChange={(e) => setCustomerId(e.target.value)}
-                                    className="block w-full pl-9 pr-8 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB] transition-all font-medium text-sm appearance-none"
-                                    required
-                                >
-                                    <option value="" disabled>Select Customer...</option>
-                                    {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                </select>
-                                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-gray-400">
-                                    <ChevronDown size={14} />
-                                </div>
-                            </div>
-                            {/* Quick-add link */}
-                            <button
-                                type="button"
-                                onClick={() => setIsQuickAddOpen(true)}
-                                className="mt-1.5 text-xs text-[#3498DB] hover:underline font-bold flex items-center gap-1"
-                            >
-                                <UserPlus size={12} /> New Customer
-                            </button>
+                {/* --- MAIN FORM (FULL WIDTH) --- */}
+                <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm space-y-6">
+                    
+                    {/* ENTITIES GRID */}
+                    <div className="grid grid-cols-12 gap-5">
+                        <div className="col-span-12 lg:col-span-3 space-y-1.5">
+                             <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest pl-1">Customer *</label>
+                             <div className="relative">
+                                 <select value={customerId} onChange={e=>setCustomerId(e.target.value)} className="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-xl font-bold text-xs outline-none appearance-none">
+                                     <option value="">Select Customer...</option>
+                                     {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                 </select>
+                                 <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none" />
+                             </div>
+                             <button onClick={()=>setIsQuickAddOpen(true)} className="text-[9px] font-black text-[#3498DB] hover:underline flex items-center gap-1 uppercase tracking-tighter"><Plus size={8}/> New Customer</button>
                         </div>
 
-                        {/* Payment Method */}
-                        <div className="md:col-span-4">
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Payment Method</label>
-                            <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
-                                {(['Cash', 'Card', 'Credit'] as const).map(method => (
-                                    <button
-                                        key={method}
-                                        type="button"
-                                        onClick={() => { setPaymentMethod(method); setPartialPaidAmount(''); }}
-                                        className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${paymentMethod === method
-                                            ? 'bg-white dark:bg-gray-700 shadow text-[#3498DB]'
-                                            : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                                            }`}
-                                    >
-                                        {method}
+                        <div className="col-span-12 lg:col-span-3 space-y-1.5">
+                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest pl-1">Payment Method</label>
+                            <div className="flex p-1 bg-gray-50 rounded-xl border border-gray-100 h-10">
+                                {['Cash', 'Card', 'Credit'].map(m => (
+                                    <button key={m} onClick={() => setPaymentMethod(m as any)} className={`flex-1 rounded-lg text-[9px] font-black transition-all ${paymentMethod === m ? 'bg-white text-[#3498DB] shadow-sm' : 'text-gray-400'}`}>
+                                        {m.toUpperCase()}
                                     </button>
                                 ))}
                             </div>
-
-                            {/* Credit Due Date */}
-                            {paymentMethod === 'Credit' && (
-                                <div className="mt-3 relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">Due Date</span>
-                                    <input
-                                        type="date"
-                                        value={dueDate}
-                                        onChange={(e) => setDueDate(e.target.value)}
-                                        className="block w-full pl-20 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB]"
-                                    />
-                                </div>
-                            )}
-
-                            {/* Credit: partial + account */}
-                            {paymentMethod === 'Credit' && (
-                                <div className="mt-3 space-y-2">
-                                    <div className="relative">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">Paid</span>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            max={total}
-                                            placeholder="Partial Amount (optional)"
-                                            value={partialPaidAmount}
-                                            onChange={(e) => setPartialPaidAmount(e.target.value)}
-                                            className="block w-full pl-12 pr-4 py-2.5 border border-red-200 dark:border-red-800 rounded-xl bg-red-50 dark:bg-red-900/10 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-red-400/20 focus:border-red-400"
-                                        />
-                                    </div>
-                                    {partialAmount > 0 && (
-                                        <p className="text-xs font-bold text-red-500 flex items-center gap-1">
-                                            <AlertCircle size={12} /> Balance remaining: ETB {balance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                                        </p>
-                                    )}
-                                    {/* Account selector (needed to deposit partial) */}
-                                    {partialAmount > 0 && accounts.length > 0 && (
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <Wallet size={14} className="text-gray-400" />
-                                            </div>
-                                            <select
-                                                value={selectedAccountId}
-                                                onChange={(e) => setSelectedAccountId(e.target.value)}
-                                                className="block w-full pl-9 pr-8 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB] appearance-none"
-                                            >
-                                                <option value="">Deposit partial to...</option>
-                                                {accounts.map(a => <option key={a.id} value={a.id}>{a.name} ({a.type})</option>)}
-                                            </select>
-                                            <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-gray-400">
-                                                <ChevronDown size={12} />
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Cash/Card: account selector */}
-                            {paymentMethod !== 'Credit' && accounts.length > 0 && (
-                                <div className="relative mt-3">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Wallet size={14} className="text-gray-400" />
-                                    </div>
-                                    <select
-                                        value={selectedAccountId}
-                                        onChange={(e) => setSelectedAccountId(e.target.value)}
-                                        className="block w-full pl-9 pr-8 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB] appearance-none"
-                                        required
-                                    >
-                                        <option value="">Deposit to account...</option>
-                                        {accounts.map(a => <option key={a.id} value={a.id}>{a.name} ({a.type})</option>)}
+                            
+                            {/* Standard Account Select for Cash/Card */}
+                            {paymentMethod !== 'Credit' && (
+                                <div className="relative mt-1 animate-in fade-in slide-in-from-top-1">
+                                    <select value={paymentRows[0].accountId} onChange={e => setPaymentRows(paymentRows.map((r,idx) => idx === 0 ? {...r, accountId: e.target.value} : r))} className="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-xl font-bold text-xs outline-none appearance-none">
+                                        <option value="">Select Account...</option>
+                                        {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                                     </select>
-                                    <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-gray-400">
-                                        <ChevronDown size={12} />
-                                    </div>
+                                    <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none" />
                                 </div>
                             )}
                         </div>
 
-                        {/* Invoice # + Receipt # */}
-                        <div className="md:col-span-2">
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Invoice #</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <FileText size={14} className="text-gray-400" />
-                                </div>
-                                <input
-                                    type="text"
-                                    value={invoiceNumber}
-                                    onChange={(e) => setInvoiceNumber(e.target.value)}
-                                    className="block w-full pl-9 pr-3 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 text-sm font-mono font-bold focus:outline-none focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB]"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="md:col-span-2">
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                                Supplier Receipt #
-                                {requireReceiptNumber
-                                    ? <span className="ml-1 text-red-500">*</span>
-                                    : <span className="ml-1 normal-case font-normal text-gray-400">(optional)</span>
-                                }
-                            </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Receipt size={14} className="text-gray-400" />
-                                </div>
-                                <input
-                                    type="text"
-                                    value={supplierReceiptNumber}
-                                    onChange={(e) => setSupplierReceiptNumber(e.target.value)}
-                                    placeholder="e.g. REC-001"
-                                    required={requireReceiptNumber}
-                                    className={`block w-full pl-9 pr-3 py-3 border rounded-xl bg-white dark:bg-gray-900 text-sm font-mono focus:outline-none focus:ring-2 transition-all ${requireReceiptNumber && !supplierReceiptNumber.trim()
-                                        ? 'border-red-300 dark:border-red-700 focus:ring-red-400/20 focus:border-red-400'
-                                        : 'border-gray-200 dark:border-gray-700 focus:ring-[#3498DB]/20 focus:border-[#3498DB]'
-                                        }`}
-                                />
-                            </div>
-                            {requireReceiptNumber && !supplierReceiptNumber.trim() && (
-                                <p className="mt-1 text-xs text-red-500 font-medium">Receipt # is required by your company settings</p>
-                            )}
-                        </div>
-
-                        {/* Date */}
-                        <div className="md:col-span-1">
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Date</label>
-                            <input
-                                type="date"
-                                value={date}
-                                onChange={(e) => setDate(e.target.value)}
-                                className="block w-full px-3 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB]"
-                            />
-                        </div>
-
-                        {/* ── NEW: Currency & Rate ── */}
-                        <div className="md:col-span-12 pt-4 border-t border-gray-100 dark:border-gray-800 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
-                            <div className="w-full md:w-auto">
-                                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Sale Currency</label>
-                                <div className="flex bg-blue-50 dark:bg-blue-900/10 p-1 rounded-xl border border-blue-100 dark:border-blue-800/50">
-                                    {(['ETB', 'USD'] as const).map(curr => (
-                                        <button
-                                            key={curr}
-                                            type="button"
-                                            onClick={() => setCurrency(curr)}
-                                            className={`px-8 py-2 rounded-lg text-xs font-black transition-all ${currency === curr
-                                                ? 'bg-[#3498DB] text-white shadow-lg shadow-blue-500/25'
-                                                : 'text-blue-600/60 hover:text-blue-600'
-                                                }`}
-                                        >
-                                            {curr}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="w-full md:w-48 relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-blue-500/50 uppercase">Rate</span>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={exchangeRate}
-                                    onChange={e => setExchangeRate(e.target.value)}
-                                    className="w-full pl-14 pr-3 py-3 border border-blue-100 dark:border-blue-800/50 rounded-xl bg-blue-50/30 dark:bg-blue-900/5 text-sm font-black text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                                    placeholder="1.00"
-                                />
-                            </div>
-
-                            <div className="flex-1 md:text-right">
-                                <p className="text-[10px] font-bold text-gray-400 italic">
-                                    {currency === 'USD'
-                                        ? `💵 Iibka USD: Alaabta geli qiimaheeda USD. Waxaa loo badali doonaa ETB (@ ${exchangeRate}) xisaabaadka accounting-ka.`
-                                        : `⚖️ Iibka ETB: Qiyaasta Exchange rate-ka waxaa loo isticmaali doonaa badalaada deynta hadii loo baahdo.`
-                                    }
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* ── NEW: Debt Conversion Rules ── */}
+                        {/* CREDIT DETAILS SECTION */}
                         {paymentMethod === 'Credit' && (
-                            <div className="md:col-span-12 p-5 bg-amber-50/50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800/50 rounded-[1.5rem] mt-2">
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                    <div className="flex items-center gap-4">
-                                        <div
-                                            onClick={() => setAutoConvertDebt(!autoConvertDebt)}
-                                            className={`relative w-12 h-6 rounded-full transition-all cursor-pointer shadow-inner flex items-center px-1 ${autoConvertDebt ? 'bg-amber-500' : 'bg-gray-300 dark:bg-gray-700'}`}
-                                        >
-                                            <div className={`w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-300 ${autoConvertDebt ? 'translate-x-6' : 'translate-x-0'}`} />
-                                        </div>
-                                        <div>
-                                            <p className="text-xs font-black text-amber-800 dark:text-amber-400 uppercase tracking-wider">Amaanada Maamul (Auto-convert to USD)</p>
-                                            <p className="text-[10px] font-bold text-amber-700/60 dark:text-amber-500/60 italic">Hadii lacag bixintu dhafto mudada loo qabtay, nidaamku USD ayuu u badalaya.</p>
-                                        </div>
+                            <div className="col-span-12 lg:col-span-9 grid grid-cols-12 gap-5 p-4 bg-red-50/30 rounded-2xl border border-red-100/50 animate-in zoom-in-95">
+                                <div className="col-span-4 space-y-1.5">
+                                    <label className="text-[9px] font-black text-red-400 uppercase tracking-widest pl-1">Paid Upfront</label>
+                                    <div className="relative">
+                                        <input type="number" placeholder="0.00" value={paymentRows[0].amount} onChange={e => setPaymentRows(paymentRows.map((r,idx) => idx === 0 ? {...r, amount: e.target.value} : r))} className="w-full p-2.5 bg-white border border-red-100 rounded-xl font-black text-xs text-red-600 outline-none" />
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black text-red-300 uppercase">{currency}</div>
                                     </div>
-
-                                    {autoConvertDebt && (
-                                        <div className="flex items-center gap-3 bg-white dark:bg-gray-900/50 p-2 px-4 rounded-xl border border-amber-200 dark:border-amber-800/50">
-                                            <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Badal kadib (Maalmood):</span>
-                                            <input
-                                                type="number"
-                                                min="1"
-                                                value={convertDebtAfterDays}
-                                                onChange={e => setConvertDebtAfterDays(e.target.value)}
-                                                className="w-14 bg-transparent text-sm font-black text-center text-amber-600 focus:outline-none"
-                                            />
-                                        </div>
-                                    )}
+                                </div>
+                                <div className="col-span-4 space-y-1.5">
+                                    <label className="text-[9px] font-black text-red-400 uppercase tracking-widest pl-1">Deposit Account</label>
+                                    <div className="relative">
+                                        <select value={paymentRows[0].accountId} onChange={e => setPaymentRows(paymentRows.map((r,idx) => idx === 0 ? {...r, accountId: e.target.value} : r))} className="w-full p-2.5 bg-white border border-red-100 rounded-xl font-bold text-xs text-red-600 outline-none appearance-none">
+                                            <option value="">Select Account...</option>
+                                            {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                                        </select>
+                                        <ChevronDown size={12} className="absolute right-3 top-1/2 -translate-y-1/2 text-red-200 pointer-events-none" />
+                                    </div>
+                                </div>
+                                <div className="col-span-2 space-y-1.5">
+                                    <label className="text-[9px] font-black text-red-400 uppercase tracking-widest pl-1">Due Date</label>
+                                    <input type="date" value={dueDate} onChange={e=>setDueDate(e.target.value)} className="w-full p-2.5 bg-white border border-red-100 rounded-xl font-black text-xs text-red-600 outline-none" />
+                                </div>
+                                <div className="col-span-2 space-y-1.5">
+                                    <label className="text-[9px] font-black text-red-400 uppercase tracking-widest pl-1">Auto-Conv</label>
+                                    <div onClick={() => setAutoConvertDebt(!autoConvertDebt)} className={`h-10 flex items-center justify-center rounded-xl border transition-all cursor-pointer ${autoConvertDebt?'bg-red-500 border-red-500 text-white':'bg-white border-red-100 text-red-300'}`}>
+                                        <Globe size={16} className={autoConvertDebt?'animate-pulse':''}/>
+                                    </div>
                                 </div>
                             </div>
                         )}
+
+                        <div className="col-span-6 lg:col-span-2 space-y-1.5">
+                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest pl-1">Invoice #</label>
+                            <input value={invoiceNumber} onChange={e=>setInvoiceNumber(e.target.value)} className="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-xl font-bold text-xs outline-none" />
+                        </div>
+
+                        <div className="col-span-6 lg:col-span-2 space-y-1.5">
+                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest pl-1">Supplier Ref</label>
+                            <input placeholder="e.g. REC-001" value={supplierReceiptNumber} onChange={e=>setSupplierReceiptNumber(e.target.value)} className="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-xl font-bold text-xs outline-none" />
+                        </div>
+
+                        <div className="col-span-12 lg:col-span-2 space-y-1.5">
+                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest pl-1">Date</label>
+                            <input type="date" value={date} onChange={e=>setDate(e.target.value)} className="w-full p-2.5 bg-gray-50 border border-gray-100 rounded-xl font-black text-xs outline-none" />
+                        </div>
                     </div>
-                </div>
 
-                {/* ── PRODUCT ROWS ── */}
-                <div className="p-6 md:p-8">
-                    {/* Column headers */}
-                    <div className="grid grid-cols-12 gap-3 mb-3 text-xs font-bold text-gray-400 uppercase tracking-wider px-1">
-                        <div className="col-span-5">Product</div>
-                        <div className="col-span-2 text-center">Qty</div>
-                        <div className="col-span-2 text-center">Unit Price</div>
-                        <div className="col-span-2 text-right">Total</div>
-                        <div className="col-span-1"></div>
+                    {/* CURRENCY SELECTOR (COMPACT) */}
+                    <div className="flex items-center justify-between border-t border-gray-50 pt-5">
+                         <div className="flex items-center gap-6">
+                            <div className="flex p-1 bg-gray-50 rounded-lg border border-gray-100">
+                                {['ETB', 'USD'].map(c => (
+                                    <button key={c} onClick={() => setCurrency(c as any)} className={`px-5 py-1.5 rounded-md text-[10px] font-black transition-all ${currency === c ? 'bg-[#3498DB] text-white shadow-sm' : 'text-gray-400'}`}>
+                                        {c}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="flex items-center gap-2 bg-blue-50/50 px-3 py-1.5 rounded-lg border border-blue-100">
+                                 <span className="text-[9px] font-black text-blue-400 uppercase">Rate:</span>
+                                 <input type="number" step="0.01" value={exchangeRate} onChange={e=>setExchangeRate(e.target.value)} className="w-14 bg-transparent text-xs font-black text-[#3498DB] outline-none" />
+                            </div>
+                         </div>
+                         <p className="text-[9px] font-bold text-gray-300 italic uppercase tracking-tighter">Rate applies to debt conversion</p>
                     </div>
 
-                    <div className="space-y-2.5">
-                        {items.map((item) => {
-                            const isOverStocked = item.stock !== undefined && item.qty > item.stock;
+                    {/* --- DENSE PRODUCT TABLE --- */}
+                    <div className="overflow-x-auto min-h-[300px]">
+                        <div className="grid grid-cols-12 px-4 py-2 bg-gray-50 rounded-lg mb-2 border border-gray-50 text-[9px] font-black text-gray-400 uppercase tracking-widest">
+                            <div className="col-span-6">Product Item</div>
+                            <div className="col-span-2 text-center">Qty</div>
+                            <div className="col-span-2 text-center">Unit Price</div>
+                            <div className="col-span-2 text-right">Line Total</div>
+                        </div>
 
-                            return (
-                                <div
-                                    key={item.id}
-                                    className={`grid grid-cols-12 gap-3 items-center p-3 rounded-xl border transition-all ${item.productId && !item.matched
-                                        ? 'border-orange-200 dark:border-orange-700/40 bg-orange-50/50 dark:bg-orange-900/5'
-                                        : item.matched
-                                            ? 'border-green-200 dark:border-green-700/40 bg-green-50/50 dark:bg-green-900/5'
-                                            : 'border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30'
-                                        } hover:border-[#3498DB]/30`}
-                                >
-                                    {/* Product selector */}
-                                    <div className="col-span-5 relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <Package size={14} className="text-gray-400" />
-                                        </div>
-                                        <select
-                                            value={item.productId}
-                                            onChange={(e) => handleProductSelect(item.id, e.target.value)}
-                                            className={`block w-full pl-9 pr-6 py-2.5 border rounded-lg bg-white dark:bg-gray-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB] appearance-none ${isOverStocked ? 'border-red-400 ring-1 ring-red-400/20' : 'border-gray-200 dark:border-gray-700'}`}
-                                        >
-                                            <option value="">Select product...</option>
-                                            {products.map(p => (
-                                                <option key={p.id} value={p.id}>
-                                                    {p.name} {p.stock <= 5 ? `(Stock: ${p.stock})` : ''}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none text-gray-400">
-                                            <ChevronDown size={12} />
-                                        </div>
-                                        {item.stock !== undefined && (
-                                            <div className={`absolute -bottom-4 left-2 text-[10px] font-bold ${isOverStocked ? 'text-red-500' : 'text-gray-400'}`}>
-                                                {isOverStocked ? 'Not enough stock!' : `${item.stock} in stock`}
-                                            </div>
-                                        )}
+                        <div className="space-y-1">
+                            {items.map((item) => (
+                                <div key={item.id} className="grid grid-cols-12 items-center px-4 py-2 bg-white hover:bg-gray-50/50 rounded-xl border border-transparent hover:border-gray-100 group transition-all">
+                                    <div className="col-span-6 relative pr-8">
+                                         <select value={item.productId} onChange={e=>handleProductSelect(item.id, e.target.value)} className="w-full bg-transparent font-black text-xs text-gray-900 outline-none appearance-none truncate">
+                                             <option value="">Search product...</option>
+                                             {products.map(p => <option key={p.id} value={p.id}>{p.name.toUpperCase()} (STK: {p.stock})</option>)}
+                                         </select>
+                                         <ChevronDown size={10} className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none" />
+                                         {!item.matched && item.description && <p className="text-[8px] text-orange-500 font-bold mt-0.5 uppercase flex items-center gap-1"><Sparkles size={8}/> AI: {item.description}</p>}
                                     </div>
-
-                                    {/* Qty */}
-                                    <div className="col-span-2">
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            value={item.qty || ''}
-                                            onChange={(e) => updateItem(item.id, 'qty', parseInt(e.target.value) || 0)}
-                                            className={`block w-full px-3 py-2.5 text-center border rounded-lg text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB] ${isOverStocked ? 'bg-red-50 text-red-600 border-red-400' : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white'}`}
-                                        />
+                                    <div className="col-span-2 px-6">
+                                         <input type="number" value={item.qty} onChange={e=>updateItem(item.id, 'qty', parseInt(e.target.value)||0)} className="w-full bg-transparent font-black text-xs text-center outline-none" />
                                     </div>
-
-                                    {/* Price (Editable) */}
-                                    <div className="col-span-2 relative">
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            step="0.01"
-                                            value={item.price || ''}
-                                            onChange={(e) => updateItem(item.id, 'price', parseFloat(e.target.value) || 0)}
-                                            className="block w-full px-3 py-2.5 text-center border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm font-bold text-[#3498DB] focus:outline-none focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB]"
-                                        />
+                                    <div className="col-span-2 px-6">
+                                         <input type="number" value={item.price} onChange={e=>updateItem(item.id, 'price', parseFloat(e.target.value)||0)} className="w-full bg-gray-50/80 p-1.5 rounded-lg font-black text-xs text-center outline-none border border-transparent focus:border-blue-100" />
                                     </div>
-
-                                    {/* Row total */}
-                                    <div className="col-span-2 text-right text-sm font-black text-gray-900 dark:text-white">
-                                        {item.price > 0 && item.qty > 0 ? (item.qty * item.price).toLocaleString() : <span className="text-gray-300">—</span>}
-                                    </div>
-
-                                    {/* Delete */}
-                                    <div className="col-span-1 flex justify-center">
-                                        <button
-                                            type="button"
-                                            onClick={() => removeItem(item.id)}
-                                            disabled={items.length === 1}
-                                            className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
+                                    <div className="col-span-2 flex items-center justify-between pl-6">
+                                         <span className="text-[10px] font-black text-gray-300">ETB</span>
+                                         <span className="flex-1 text-right font-black text-xs text-gray-900">{(item.qty * item.price).toLocaleString()}</span>
+                                         <button onClick={() => removeItem(item.id)} className="ml-4 p-1.5 text-gray-200 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100">
+                                             <Trash2 size={14}/>
+                                         </button>
                                     </div>
                                 </div>
-                            )
-                        })}
+                            ))}
+                        </div>
+
+                        <button onClick={addItem} className="mt-4 text-[10px] font-black text-[#3498DB] hover:underline flex items-center gap-1 px-4 py-2 uppercase tracking-widest">
+                            <Plus size={12}/> Add Item row
+                        </button>
                     </div>
 
-                    <button
-                        type="button"
-                        onClick={addItem}
-                        className="mt-3 px-4 py-2 text-sm font-bold text-[#3498DB] hover:text-[#2980B9] hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all flex items-center gap-2"
-                    >
-                        <Plus size={15} /> Add Item
+                    {/* --- SUMMARY SECTION --- */}
+                    <div className="grid grid-cols-12 gap-10 border-t border-gray-50 pt-6">
+                        <div className="col-span-5 space-y-2">
+                             <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest pl-1">Remarks</label>
+                             <textarea value={notes} onChange={e=>setNotes(e.target.value)} placeholder="Entry details..." className="w-full h-24 p-4 bg-gray-50 border border-gray-100 rounded-xl text-xs font-bold outline-none resize-none placeholder:text-gray-200 shadow-inner" />
+                        </div>
+
+                        <div className="col-span-7 space-y-4">
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center px-2">
+                                    <span className="text-[10px] font-bold text-gray-400 uppercase">Subtotal</span>
+                                    <span className="text-xs font-black text-gray-900">ETB {subtotal.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between items-center px-2">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <div onClick={() => setApplyVAT(!applyVAT)} className={`relative w-7 h-4 rounded-full transition-all ${applyVAT ? 'bg-green-500' : 'bg-gray-200'}`}>
+                                            <div className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-all ${applyVAT ? 'translate-x-3' : ''}`}/>
+                                        </div>
+                                        <span className="text-[9px] font-black text-gray-400 uppercase">VAT (15%)</span>
+                                    </label>
+                                    <span className="text-xs font-bold text-gray-400">+{tax.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between items-center px-2">
+                                    <span className="text-[10px] font-bold text-gray-400 uppercase">Discount</span>
+                                    <input type="number" value={discountAmount} onChange={e=>setDiscountAmount(e.target.value)} className="w-20 bg-gray-50 p-1.5 rounded-lg font-black text-xs text-right outline-none" placeholder="0.00" />
+                                </div>
+                            </div>
+                            <div className="flex justify-between items-center p-5 bg-gray-50/50 rounded-2xl border border-gray-100">
+                                 <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Total Payable</h3>
+                                 <div className="text-right">
+                                     <span className="text-3xl font-black text-green-500 tabular-nums">ETB {totalETB.toLocaleString()}</span>
+                                     {currency === 'USD' && <p className="text-[10px] font-bold text-gray-300 uppercase tracking-widest mt-0.5">≈ USD {totalDisp.toLocaleString()}</p>}
+                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* --- FLUID BOTTOM BAR --- */}
+            <div className="fixed bottom-0 left-0 right-0 p-3 bg-white border-t border-gray-100 flex items-center justify-between gap-4 z-[100] shadow-2xl">
+                 <div className="flex gap-2">
+                    <button onClick={() => setShouldPrint(!shouldPrint)} className={`px-4 py-2 rounded-lg font-black text-[9px] uppercase flex items-center gap-2 transition-all ${shouldPrint ? 'bg-[#3498DB]/10 text-[#3498DB] border-[#3498DB]' : 'bg-gray-50 text-gray-400 border-transparent'} border`}>
+                        <Printer size={16}/> {shouldPrint ? 'Print' : 'No Print'}
                     </button>
-                </div>
-
-                {/* ── FOOTER : TOTALS + NOTES + VAT ── */}
-                <div className="bg-gray-50 dark:bg-[#111827] px-6 md:px-8 py-6 border-t border-gray-100 dark:border-gray-800">
-                    <div className="flex flex-col md:flex-row gap-6 justify-between">
-
-                        {/* Notes */}
-                        <div className="flex-1 max-w-md">
-                            <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">Notes (Optional)</label>
-                            <textarea
-                                value={notes}
-                                onChange={e => setNotes(e.target.value)}
-                                rows={3}
-                                className="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB]"
-                                placeholder="Add a note for this sale..."
-                            />
-                        </div>
-
-                        {/* Totals */}
-                        <div className="w-64 shrink-0 space-y-2.5">
-                            <div className="flex justify-between text-sm text-gray-500">
-                                <span>Subtotal</span>
-                                <span className="font-bold text-gray-900 dark:text-white">ETB {subtotal.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-                            </div>
-
-                            {/* VAT Toggle */}
-                            <div className="flex items-center justify-between py-1">
-                                <label className="flex items-center gap-2 text-sm text-gray-500 cursor-pointer select-none">
-                                    <div
-                                        onClick={() => setApplyVAT(!applyVAT)}
-                                        className={`relative w-9 h-5 rounded-full transition-colors duration-200 ${applyVAT ? 'bg-[#3498DB]' : 'bg-gray-300 dark:bg-gray-700'}`}
-                                    >
-                                        <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${applyVAT ? 'translate-x-4' : 'translate-x-0'}`} />
-                                    </div>
-                                    <Percent size={12} /> VAT ({companyTaxRate}%)
-                                </label>
-                                {applyVAT && (
-                                    <span className="font-bold text-sm text-gray-900 dark:text-white">
-                                        ETB {taxAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                                    </span>
-                                )}
-                            </div>
-
-                            {/* Discount Field */}
-                            <div className="flex items-center justify-between py-1 border-t border-dashed border-gray-200 dark:border-gray-700 mt-1 pt-1">
-                                <span className="text-sm text-gray-500 font-bold">Discount (ETB)</span>
-                                <input
-                                    type="number"
-                                    min="0"
-                                    value={discountAmount === '0' ? '' : discountAmount}
-                                    placeholder="0.00"
-                                    onChange={(e) => setDiscountAmount(e.target.value)}
-                                    className="w-24 px-2 py-1 text-right border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-sm font-bold text-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500/20 focus:border-orange-500"
-                                />
-                            </div>
-
-                            <div className="flex justify-between text-xl font-black text-[#2ECC71] pt-2.5 border-t border-gray-200 dark:border-gray-700">
-                                <span>Total</span>
-                                <span>{currency === 'USD' ? '$' : 'ETB'} {total.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-                            </div>
-
-                            {paymentMethod === 'Credit' && partialAmount > 0 && (
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">Paid now</span>
-                                    <span className="font-bold text-gray-700 dark:text-gray-300">ETB {partialAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-                                </div>
-                            )}
-                            {paymentMethod === 'Credit' && balance > 0 && (
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-red-500 font-bold">Balance (Deyn)</span>
-                                    <span className="font-black text-red-500">ETB {balance.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-                                </div>
-                            )}
-                        </div>
+                    <div onClick={() => setSendWhatsApp(!sendWhatsApp)} className={`px-4 py-2 rounded-lg font-black text-[9px] uppercase flex items-center gap-2 transition-all cursor-pointer ${sendWhatsApp ? 'bg-green-50 text-green-600 border-green-500' : 'bg-gray-50 text-gray-400 border-transparent'} border`}>
+                        <Smartphone size={16}/> WhatsApp
                     </div>
-                </div>
+                 </div>
+
+                 <div className="flex gap-3 flex-1 max-w-[600px]">
+                     <button onClick={handleHoldSale} className="flex-1 py-3 border border-[#3498DB] text-[#3498DB] rounded-xl font-black text-[10px] uppercase hover:bg-blue-50 transition-all">
+                         Save & Draft
+                     </button>
+                     <button disabled={isSubmitting||isScanning} onClick={handleFinalize} className="flex-[2] py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-black text-sm uppercase shadow-lg shadow-green-500/20 active:scale-[0.99] transition-all flex items-center justify-center gap-3">
+                         {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle2 size={18}/>} Submit Receipt
+                     </button>
+                 </div>
             </div>
 
-            {/* ─── ACTION BUTTONS ─── */}
-            <div className="flex flex-col sm:flex-row gap-3 mt-6">
-                <button
-                    type="button"
-                    onClick={handleSaveAndAddAnother}
-                    disabled={isSubmitting}
-                    className="flex-1 sm:flex-none sm:w-auto px-6 py-3.5 rounded-xl border-2 border-[#3498DB] text-[#3498DB] font-bold transition-all flex items-center justify-center gap-2 hover:bg-[#3498DB]/5 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {isSubmitting && saveMode === 'again' ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                    Save & Add Another
-                </button>
-                <button
-                    type="button"
-                    onClick={handleSubmitReceipt}
-                    disabled={isSubmitting}
-                    className="flex-1 px-8 py-3.5 rounded-xl bg-[#2ECC71] hover:bg-[#27AE60] text-white font-bold shadow-lg shadow-green-500/20 hover:shadow-green-500/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {isSubmitting && saveMode === 'submit' ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
-                    Submit Receipt
-                </button>
-            </div>
-
-            {/* ─── QUICK-ADD CUSTOMER MODAL ─── */}
-            {isQuickAddOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white dark:bg-[#1f2937] rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
-                        <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                            <h3 className="font-black text-gray-900 dark:text-white flex items-center gap-2">
-                                <UserPlus size={18} className="text-[#3498DB]" /> New Customer
-                            </h3>
-                            <button onClick={() => setIsQuickAddOpen(false)} className="text-gray-400 hover:text-gray-600">
-                                <X size={18} />
-                            </button>
-                        </div>
-                        <div className="p-5 space-y-3">
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Name *</label>
-                                <input
-                                    autoFocus
-                                    type="text"
-                                    value={quickAddName}
-                                    onChange={e => setQuickAddName(e.target.value)}
-                                    onKeyDown={e => e.key === 'Enter' && handleQuickAddCustomer()}
-                                    placeholder="Customer name"
-                                    className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB]"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Phone (optional)</label>
-                                <input
-                                    type="tel"
-                                    value={quickAddPhone}
-                                    onChange={e => setQuickAddPhone(e.target.value)}
-                                    placeholder="Phone number"
-                                    className="w-full px-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB]"
-                                />
-                            </div>
-                            <div className="flex gap-2 pt-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsQuickAddOpen(false)}
-                                    className="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-500 text-sm hover:bg-gray-50"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={handleQuickAddCustomer}
-                                    disabled={!quickAddName.trim() || isAddingCustomer}
-                                    className="flex-1 py-2.5 rounded-xl bg-[#3498DB] hover:bg-[#2980B9] text-white font-bold text-sm shadow-md shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isAddingCustomer ? <Loader2 size={14} className="animate-spin mx-auto" /> : 'Add Customer'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            {/* DRAFT MODAL */}
+            {isHeldModalOpen && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/30 backdrop-blur-sm p-4"><div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl relative"><button onClick={()=>setIsHeldModalOpen(false)} className="absolute right-6 top-6 text-gray-300"><X size={20}/></button><h3 className="text-sm font-black mb-6 text-[#3498DB] uppercase tracking-widest">Active Drafts</h3><div className="space-y-3 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar">{heldSales.map(h=>(<div key={h.id} className="p-4 bg-gray-50 rounded-2xl border flex justify-between items-center"><div className="flex-1"><p className="font-black text-sm text-gray-800">{h.invoiceNumber}</p><p className="text-[8px] text-gray-400 uppercase font-black">{new Date(h.timestamp).toLocaleString()}</p></div><div className="flex gap-2"><button onClick={()=>{setItems(h.items);setCustomerId(h.customerId);setHeldSales(heldSales.filter(x=>x.id!==h.id));setIsHeldModalOpen(false);}} className="px-4 py-2 bg-[#3498DB] text-white rounded-lg font-black text-[9px] uppercase">Restore</button></div></div>))}</div></div></div>
             )}
         </div>
     );

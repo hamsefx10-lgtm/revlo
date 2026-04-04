@@ -12,8 +12,9 @@ interface SaleRequestBody {
     items: { productId: string; quantity: number }[];
     paymentMethod?: string;
     notes?: string;
-    accountId?: string;
-    paidAmount?: number;
+    accountId?: string; // Legacy/Single
+    paidAmount?: number; // Legacy/Single
+    payments?: { accountId: string; amount: number; method: string }[]; // Multi-payment
     paymentStatus?: string;
     supplierReceiptNumber?: string;
     taxAmount?: number;
@@ -23,6 +24,8 @@ interface SaleRequestBody {
     exchangeRate?: number;
     autoConvertDebt?: boolean;
     convertDebtAfterDays?: number;
+    employeeId?: string;
+    sendWhatsApp?: boolean;
 }
 
 // POST /api/shop/sales - Create new sale (Checkout)
@@ -38,10 +41,11 @@ export async function POST(req: NextRequest) {
 
         const {
             customerId, items, paymentMethod, notes, accountId,
-            paidAmount, paymentStatus, supplierReceiptNumber,
+            paidAmount, payments, paymentStatus, supplierReceiptNumber,
             taxAmount, invoiceNumber, dueDate,
             currency, exchangeRate,
-            autoConvertDebt, convertDebtAfterDays
+            autoConvertDebt, convertDebtAfterDays,
+            employeeId, sendWhatsApp
         } = body;
 
         // Fetch user to get accurate Company ID and Name
@@ -163,6 +167,7 @@ export async function POST(req: NextRequest) {
                     exchangeRate: activeRate,
                     autoConvertDebt: autoConvertDebt !== undefined ? autoConvertDebt : true,
                     convertDebtAfterDays: convertDebtAfterDays !== undefined ? Number(convertDebtAfterDays) : 7,
+                    employeeId: employeeId || null,
                     items: {
                         create: saleItems.map(({ productId, productName, quantity, unitPrice, total, costPrice, totalCost, unitPriceUSD, costPriceUSD }) => ({
                             productId, productName, quantity, unitPrice, total, costPrice, totalCost, unitPriceUSD, costPriceUSD
@@ -177,31 +182,45 @@ export async function POST(req: NextRequest) {
             });
 
             // 3. Handle Accounting (Revenue Entry)
-            if (accountId && (paidAmount === undefined || paidAmount > 0)) {
-                const rawAmount = paidAmount !== undefined ? paidAmount : total;
-                // Convert to ETB for the account balance (assuming ETB accounts)
-                const amountToDeposit = activeCurrency === 'USD' ? (rawAmount * activeRate) : rawAmount;
+            // 3. Handle Accounting (Revenue Entry - Multiple or Single)
+            const activePayments = payments && payments.length > 0
+                ? payments
+                : (accountId ? [{ accountId, amount: paidAmount !== undefined ? paidAmount : total, method: paymentMethod || 'Cash' }] : []);
 
-                await tx.account.update({
-                    where: { id: accountId },
-                    data: {
-                        balance: { increment: amountToDeposit }
-                    }
-                });
+            for (const p of activePayments) {
+                if (!p.accountId || p.amount <= 0) continue;
 
-                await tx.transaction.create({
-                    data: {
-                        type: 'INCOME',
-                        amount: amountToDeposit,
-                        description: `Sale Receipt #${finalInvoiceNumber}${activeCurrency === 'USD' ? ` ($${rawAmount})` : ''}`,
-                        category: 'Sales',
-                        transactionDate: new Date(),
-                        accountId: accountId,
-                        note: `Ref Sale: ${sale.id}`,
-                        userId: session.user.id,
-                        companyId: currentUser.companyId
+                const targetAccount = await tx.account.findUnique({ where: { id: p.accountId } });
+                if (targetAccount) {
+                    let amountToDeposit = p.amount;
+                    const accCurrency = targetAccount.currency || 'ETB';
+
+                    if (activeCurrency === 'USD' && accCurrency === 'ETB') {
+                        amountToDeposit = p.amount * activeRate;
+                    } else if (activeCurrency === 'ETB' && accCurrency === 'USD') {
+                        amountToDeposit = p.amount / activeRate;
                     }
-                });
+
+                    await tx.account.update({
+                        where: { id: p.accountId },
+                        data: { balance: { increment: amountToDeposit } }
+                    });
+
+                    await tx.transaction.create({
+                        data: {
+                            type: 'INCOME',
+                            amount: amountToDeposit,
+                            description: `Sale Receipt #${finalInvoiceNumber}${activeCurrency === 'USD' ? ` ($${p.amount})` : ''} - [${p.method}]`,
+                            category: 'Sales',
+                            transactionDate: new Date(),
+                            accountId: p.accountId,
+                            note: `Ref Sale: ${sale.id} | Sale Currency: ${activeCurrency} | Rate: ${activeRate}`,
+                            userId: session.user.id,
+                            companyId: currentUser.companyId,
+                            employeeId: employeeId || null
+                        }
+                    });
+                }
             }
 
             return sale;
@@ -212,8 +231,8 @@ export async function POST(req: NextRequest) {
 
         console.log("Sale Created Successfully:", result.id);
 
-        // Auto-send WhatsApp receipt if there is a customer mapped
-        if (result.customer && result.customer.phone && currentUser.company?.name) {
+        // Auto-send WhatsApp receipt if triggered and customer phone exists
+        if (sendWhatsApp && result.customer && result.customer.phone && currentUser.company?.name) {
             logToFile(`[WhatsApp API] Auto-triggering receipt for ${result.invoiceNumber} to ${result.customer.phone}`);
             sendShopReceiptViaWhatsApp(
                 currentUser.companyId,

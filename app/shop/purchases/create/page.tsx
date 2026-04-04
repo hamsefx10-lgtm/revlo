@@ -11,9 +11,15 @@ import {
     Plus,
     Trash2,
     ChevronDown,
-    Globe
+    Globe,
+    Loader2,
+    DollarSign,
+    Scale,
+    CreditCard
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface PurchaseItem {
     id: number;
@@ -21,57 +27,83 @@ interface PurchaseItem {
     productName: string;
     quantity: number;
     unitCost: number;
+    sku?: string;
 }
 
-const MOCK_VENDORS = [
-    { id: '1', name: 'Al-Nur Wholesalers' },
-    { id: '2', name: 'SomFresh Distributors' },
-    { id: '3', name: 'TechWorld Imports' },
-    { id: '4', name: 'Golden Grain Co.' }
-];
+interface Vendor {
+    id: string;
+    name: string;
+    companyName?: string;
+}
 
-const MOCK_PRODUCTS = [
-    { id: 'p1', name: 'iPhone 15 Pro Max', cost: 1000 },
-    { id: 'p2', name: 'Samsung Galaxy S24', cost: 900 },
-    { id: 'p3', name: 'MacBook Air M2', cost: 1200 },
-    { id: 'p4', name: 'AirPods Pro 2', cost: 200 }
-];
+interface Product {
+    id: string;
+    name: string;
+    sku: string;
+    sellingPrice: number;
+}
 
 export default function CreatePurchaseOrderPage() {
+    const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Form state
     const [vendorId, setVendorId] = useState('');
-    const [orderDate, setOrderDate] = useState(new Date().toISOString().split('T')[0]);
     const [expectedDelivery, setExpectedDelivery] = useState('');
+    const [notes, setNotes] = useState('');
     const [currency, setCurrency] = useState('USD');
     const [exchangeRate, setExchangeRate] = useState<number>(1);
-    const [fetchingRate, setFetchingRate] = useState(false);
+    
+    // Landed Cost & Payment
+    const [shippingCost, setShippingCost] = useState('0');
+    const [customsFee, setCustomsFee] = useState('0');
+    const [otherExpenses, setOtherExpenses] = useState('0');
+    const [paidAmount, setPaidAmount] = useState('0');
+    const [paymentMethod, setPaymentMethod] = useState('Check');
+
+    // Data lists
+    const [vendors, setVendors] = useState<Vendor[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
+    const [items, setItems] = useState<PurchaseItem[]>([
+        { id: Date.now(), productId: '', productName: '', quantity: 1, unitCost: 0 }
+    ]);
 
     useEffect(() => {
-        if (currency === 'USD') {
-            fetchTodayRate();
-        } else {
-            setExchangeRate(1);
-        }
-    }, [currency]);
+        fetchVendors();
+        fetchProducts();
+        fetchExchangeRate();
+    }, []);
 
-    const fetchTodayRate = async () => {
-        setFetchingRate(true);
+    const fetchVendors = async () => {
         try {
-            const res = await fetch('/api/settings/exchange-rate');
+            const res = await fetch('/api/shop/vendors');
             const data = await res.json();
-            if (data.rate) {
-                setExchangeRate(data.rate.rate);
-            }
+            setVendors(data.vendors || []);
         } catch (e) {
-            console.error(e);
-        } finally {
-            setFetchingRate(false);
+            toast.error('Failed to load vendors');
         }
     };
 
-    const [items, setItems] = useState<PurchaseItem[]>([
-        { id: 1, productId: '', productName: '', quantity: 1, unitCost: 0 }
-    ]);
+    const fetchProducts = async () => {
+        try {
+            const res = await fetch('/api/shop/inventory');
+            const data = await res.json();
+            setProducts(data.products || []);
+        } catch (e) {
+            toast.error('Failed to load inventory');
+        }
+    };
+
+    const fetchExchangeRate = async () => {
+        try {
+            const res = await fetch('/api/settings/exchange-rate');
+            const data = await res.json();
+            if (data.rate?.rate) {
+                setExchangeRate(data.rate.rate);
+            }
+        } catch (e) {}
+    };
 
     const addItem = () => {
         setItems([...items, { id: Date.now(), productId: '', productName: '', quantity: 1, unitCost: 0 }]);
@@ -83,10 +115,10 @@ export default function CreatePurchaseOrderPage() {
     };
 
     const handleProductSelect = (id: number, productId: string) => {
-        const product = MOCK_PRODUCTS.find(p => p.id === productId);
+        const product = products.find(p => p.id === productId);
         if (product) {
             setItems(items.map(item =>
-                item.id === id ? { ...item, productId, productName: product.name, unitCost: product.cost } : item
+                item.id === id ? { ...item, productId, productName: product.name, sku: product.sku } : item
             ));
         }
     };
@@ -95,256 +127,263 @@ export default function CreatePurchaseOrderPage() {
         setItems(items.map(item => item.id === id ? { ...item, [field]: value } : item));
     };
 
+    // Calculations
     const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitCost), 0);
-    const tax = subtotal * 0.15;
-    const total = subtotal + tax;
+    const shipping = parseFloat(shippingCost) || 0;
+    const customs = parseFloat(customsFee) || 0;
+    const other = parseFloat(otherExpenses) || 0;
+    const additionalCosts = shipping + customs + other;
+    const total = subtotal + additionalCosts;
+
+    // ETB Equivalents for reference
+    const totalETB = currency === 'USD' ? total * exchangeRate : total;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!vendorId) {
-            alert('Please select a vendor');
-            return;
-        }
-        setIsLoading(true);
+        const validItems = items.filter(i => i.productId && i.quantity > 0);
+        
+        if (!vendorId) return toast.error('Please select a vendor');
+        if (validItems.length === 0) return toast.error('Please add at least one product');
+
+        setIsSubmitting(true);
         try {
             const res = await fetch('/api/shop/purchases', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     vendorId,
-                    expectedDelivery,
-                    notes: '', // Can add a notes field later
-                    items: items.map(i => ({
+                    expectedDelivery: expectedDelivery || null,
+                    notes,
+                    items: validItems.map(i => ({
                         productId: i.productId,
                         productName: i.productName,
                         quantity: i.quantity,
-                        unitCost: i.unitCost
+                        unitCost: i.unitCost,
+                        sku: i.sku
                     })),
                     currency,
-                    exchangeRate
+                    exchangeRate,
+                    shippingCost: shipping,
+                    customsFee: customs,
+                    otherExpenses: other,
+                    paidAmount: parseFloat(paidAmount) || 0,
+                    paymentMethod,
+                    sendWhatsApp: true
                 })
             });
 
             if (res.ok) {
-                alert('Purchase Order created successfully!');
-                window.location.href = '/shop/purchases';
+                toast.success('Purchase Order created!');
+                router.push('/shop/purchases');
             } else {
                 const data = await res.json();
                 throw new Error(data.error || 'Failed to create PO');
             }
         } catch (e: any) {
-            alert('Error: ' + e.message);
+            toast.error(e.message);
         } finally {
-            setIsLoading(false);
+            setIsSubmitting(false);
         }
     };
 
     return (
-        <div className="min-h-screen animate-fade-in pb-20 font-sans w-full">
-
-            {/* HEADER */}
+        <div className="min-h-screen animate-fade-in pb-20 font-sans w-full p-4 md:p-8">
+            {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                 <div>
-                    <div className="flex items-center gap-2 mb-2">
-                        <Link href="/shop/purchases" className="text-gray-400 hover:text-[#3498DB] transition-colors flex items-center gap-1 text-xs font-bold uppercase tracking-wider">
-                            <ArrowLeft size={14} /> Back to Purchases
-                        </Link>
-                    </div>
-                    <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
-                        <div className="p-3 bg-gradient-to-br from-[#3498DB] to-[#2980B9] rounded-xl shadow-lg shadow-blue-500/20 text-white">
-                            <Truck size={28} />
+                    <Link href="/shop/purchases" className="text-gray-400 hover:text-[#3498DB] transition-colors flex items-center gap-1 text-xs font-bold uppercase tracking-wider mb-2">
+                        <ArrowLeft size={14} /> Back
+                    </Link>
+                    <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
+                        <div className="p-3 bg-blue-500 rounded-xl text-white shadow-lg shadow-blue-500/20">
+                            <Truck size={24} />
                         </div>
-                        Create Purchase Order
+                        New Purchase Order
                     </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1 ml-16 text-sm">Order inventory from suppliers.</p>
                 </div>
 
                 <div className="flex gap-3">
-                    <button className="px-6 py-3 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2">
-                        <Save size={18} /> Save Draft
-                    </button>
-                    <button
+                    <button 
                         onClick={handleSubmit}
-                        disabled={isLoading}
-                        className="px-6 py-3 rounded-xl bg-[#2ECC71] hover:bg-[#27AE60] text-white font-bold shadow-lg shadow-green-500/20 hover:shadow-green-500/30 transition-all flex items-center gap-2"
+                        disabled={isSubmitting}
+                        className="px-8 py-3.5 rounded-2xl bg-[#2ECC71] hover:bg-[#27AE60] text-white font-black shadow-xl shadow-green-500/20 hover:shadow-green-500/30 transition-all flex items-center gap-2 disabled:opacity-50"
                     >
-                        <CheckCircle2 size={18} /> {isLoading ? 'Creating...' : 'Create Order'}
+                        {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle2 size={18} />}
+                        Confirm & Create Order
                     </button>
                 </div>
             </div>
 
-            {/* MAIN FORM */}
-            <div className="bg-white dark:bg-[#1f2937] border border-gray-100 dark:border-gray-800 rounded-[2rem] shadow-xl overflow-hidden max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-7xl mx-auto">
+                {/* Main Form Section */}
+                <div className="lg:col-span-8 space-y-6">
+                    <div className="bg-white dark:bg-gray-900 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-xl overflow-hidden">
+                        <div className="p-6 md:p-8 border-b border-gray-50 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Supplier (Vendor)</label>
+                                <select 
+                                    value={vendorId} 
+                                    onChange={e => setVendorId(e.target.value)}
+                                    className="w-full p-3.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl font-bold appearance-none cursor-pointer focus:ring-2 focus:ring-blue-500/20"
+                                >
+                                    <option value="">Select Vendor...</option>
+                                    {vendors.map(v => <option key={v.id} value={v.id}>{v.name || v.companyName}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Expected Delivery</label>
+                                <input 
+                                    type="date" 
+                                    value={expectedDelivery} 
+                                    onChange={e => setExpectedDelivery(e.target.value)}
+                                    className="w-full p-3.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl font-bold focus:ring-2 focus:ring-blue-500/20"
+                                />
+                            </div>
+                        </div>
 
-                {/* Top Section */}
-                <div className="p-8 border-b border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/20 grid grid-cols-1 md:grid-cols-3 gap-6">
-
-                    <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Currency</label>
-                        <div className="flex gap-2">
-                            <select
-                                value={currency}
-                                onChange={(e) => setCurrency(e.target.value)}
-                                className="block w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB] transition-all font-bold"
-                            >
-                                <option value="USD">USD (Dollar)</option>
-                                <option value="ETB">ETB (Birr)</option>
-                            </select>
-                            {currency === 'USD' && (
-                                <div className="relative w-32">
-                                    <input
-                                        type="number"
-                                        value={exchangeRate}
-                                        onChange={(e) => setExchangeRate(parseFloat(e.target.value))}
-                                        className="w-full px-3 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-bold text-center"
-                                        placeholder="Rate"
-                                    />
-                                    <div className="absolute -top-6 left-0 text-[8px] font-black text-blue-500 uppercase tracking-widest flex items-center gap-1">
-                                        <Globe size={8} /> Rate
+                        {/* Items Table */}
+                        <div className="p-6 md:p-8">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="font-black text-gray-400 text-xs uppercase tracking-widest">Order Items</h3>
+                                <button onClick={addItem} className="flex items-center gap-1 text-blue-500 font-bold text-xs hover:underline"><Plus size={14}/> Add Row</button>
+                            </div>
+                            
+                            <div className="space-y-3">
+                                {items.map((item, idx) => (
+                                    <div key={item.id} className="grid grid-cols-12 gap-3 items-center group">
+                                        <div className="col-span-6">
+                                            <select 
+                                                value={item.productId} 
+                                                onChange={e => handleProductSelect(item.id, e.target.value)}
+                                                className="w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-bold appearance-none"
+                                            >
+                                                <option value="">Select Product...</option>
+                                                {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="col-span-2">
+                                            <input 
+                                                type="number" 
+                                                min="1" 
+                                                value={item.quantity} 
+                                                onChange={e => updateItem(item.id, 'quantity', parseInt(e.target.value) || 0)}
+                                                className="w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-center font-black"
+                                            />
+                                        </div>
+                                        <div className="col-span-3">
+                                            <div className="relative">
+                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-black">{currency}</span>
+                                                <input 
+                                                    type="number" 
+                                                    min="0" 
+                                                    step="0.01"
+                                                    value={item.unitCost} 
+                                                    onChange={e => updateItem(item.id, 'unitCost', parseFloat(e.target.value) || 0)}
+                                                    className="w-full pl-10 pr-3 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-right font-black text-blue-600"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="col-span-1 text-center">
+                                            <button onClick={() => removeItem(item.id)} className="text-gray-300 hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
+                                        </div>
                                     </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Vendor</label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Truck size={18} className="text-gray-400" />
-                            </div>
-                            <select
-                                value={vendorId}
-                                onChange={(e) => setVendorId(e.target.value)}
-                                className="block w-full pl-10 pr-10 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB] transition-all font-medium appearance-none cursor-pointer"
-                                required
-                            >
-                                <option value="" disabled>Select Vendor...</option>
-                                {MOCK_VENDORS.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
-                            </select>
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
-                                <ChevronDown size={16} />
+                                ))}
                             </div>
                         </div>
                     </div>
 
-                    <div>
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Expected Delivery</label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Calendar size={18} className="text-gray-400" />
-                            </div>
-                            <input
-                                type="date"
-                                value={expectedDelivery}
-                                onChange={(e) => setExpectedDelivery(e.target.value)}
-                                className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB] transition-all font-medium text-gray-700 dark:text-gray-200"
-                            />
-                        </div>
+                    {/* Notes Area */}
+                    <div className="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 p-6 shadow-sm">
+                        <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Order Notes / Terms</label>
+                        <textarea 
+                            value={notes}
+                            onChange={e => setNotes(e.target.value)}
+                            rows={3}
+                            placeholder="Add specific instructions for the supplier..."
+                            className="w-full p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-[1.5rem] text-sm focus:ring-2 focus:ring-blue-500/20"
+                        />
                     </div>
                 </div>
 
-                {/* Items Section */}
-                <div className="p-8">
-                    <div className="grid grid-cols-12 gap-4 mb-4 px-2">
-                        <div className="col-span-6 text-xs font-bold text-gray-400 uppercase">Product</div>
-                        <div className="col-span-2 text-xs font-bold text-gray-400 uppercase text-center">Quantity</div>
-                        <div className="col-span-2 text-xs font-bold text-gray-400 uppercase text-right">Unit Cost</div>
-                        <div className="col-span-2 text-xs font-bold text-gray-400 uppercase text-right">Total</div>
-                    </div>
-
-                    <div className="space-y-3">
-                        {items.map((item, index) => (
-                            <div key={item.id} className="grid grid-cols-12 gap-4 items-center group">
-                                <div className="col-span-6 relative">
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <Package size={16} className="text-gray-400" />
-                                        </div>
-                                        <select
-                                            value={item.productId}
-                                            onChange={(e) => handleProductSelect(item.id, e.target.value)}
-                                            className="w-full pl-9 pr-8 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:border-[#3498DB] transition-all font-medium appearance-none cursor-pointer"
-                                        >
-                                            <option value="" disabled>Select Product...</option>
-                                            {MOCK_PRODUCTS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                                        </select>
-                                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
-                                            <ChevronDown size={14} />
-                                        </div>
-                                    </div>
-                                    <span className="absolute left-[-24px] top-1/2 -translate-y-1/2 text-xs font-bold text-gray-300">{index + 1}</span>
-                                </div>
-
-                                <div className="col-span-2">
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        value={item.quantity}
-                                        onChange={(e) => updateItem(item.id, 'quantity', parseInt(e.target.value) || 0)}
-                                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:border-[#3498DB] transition-all font-bold text-center"
-                                    />
-                                </div>
-
-                                <div className="col-span-2">
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        value={item.unitCost}
-                                        onChange={(e) => updateItem(item.id, 'unitCost', parseFloat(e.target.value) || 0)}
-                                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:border-[#3498DB] transition-all font-bold text-right"
-                                    />
-                                </div>
-
-                                <div className="col-span-2 flex items-center justify-end gap-3">
-                                    <div className="font-bold text-gray-900 dark:text-white w-20 text-right">
-                                        {(item.quantity * item.unitCost).toLocaleString()}
-                                    </div>
-                                    <button
-                                        onClick={() => removeItem(item.id)}
-                                        className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all opacity-0 group-hover:opacity-100"
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
-                                </div>
+                {/* Sidebar Details / Totals */}
+                <div className="lg:col-span-4 space-y-6">
+                    {/* Currency & Exchange Rate */}
+                    <div className="bg-blue-600 rounded-[2rem] p-6 text-white shadow-xl shadow-blue-500/20">
+                        <h3 className="font-black text-xs uppercase tracking-widest opacity-70 mb-4 flex items-center gap-2">
+                            <Globe size={14}/> Currency Settings
+                        </h3>
+                        <div className="flex bg-white/10 p-1 rounded-xl mb-4">
+                            {['USD', 'ETB'].map(curr => (
+                                <button
+                                    key={curr}
+                                    onClick={() => setCurrency(curr)}
+                                    className={`flex-1 py-2 rounded-lg text-sm font-black transition-all ${currency === curr ? 'bg-white text-blue-600 shadow-lg' : 'text-white/60 hover:text-white'}`}
+                                >
+                                    {curr}
+                                </button>
+                            ))}
+                        </div>
+                        {currency === 'USD' && (
+                            <div className="bg-white/10 rounded-xl p-4 border border-white/10">
+                                <label className="block text-[10px] font-black uppercase tracking-widest text-white/60 mb-1">Exchange Rate (ETB)</label>
+                                <input 
+                                    type="number"
+                                    value={exchangeRate}
+                                    onChange={e => setExchangeRate(parseFloat(e.target.value))}
+                                    className="bg-transparent text-2xl font-black w-full outline-none"
+                                />
                             </div>
-                        ))}
+                        )}
                     </div>
 
-                    <button
-                        onClick={addItem}
-                        className="mt-6 flex items-center gap-2 text-[#3498DB] font-bold text-sm hover:underline transition-all px-2"
-                    >
-                        <Plus size={16} /> Add Item
-                    </button>
-                </div>
+                    {/* Landed Cost & Payment */}
+                    <div className="bg-white dark:bg-gray-900 rounded-[2rem] border border-gray-100 dark:border-gray-800 p-6 shadow-xl space-y-4">
+                        <h3 className="font-black text-xs text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                            <Scale size={14}/> Costs & Payment
+                        </h3>
+                        <div>
+                            <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Shipping Cost ({currency})</label>
+                            <input type="number" value={shippingCost} onChange={e => setShippingCost(e.target.value)} className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold" />
+                        </div>
+                        <div>
+                            <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Customs/Taxes ({currency})</label>
+                            <input type="number" value={customsFee} onChange={e => setCustomsFee(e.target.value)} className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold" />
+                        </div>
+                        <div className="pt-4 border-t border-dashed border-gray-100">
+                            <label className="block text-[10px] font-black text-gray-600 uppercase mb-1">Amount Paid Now ({currency})</label>
+                            <input type="number" value={paidAmount} onChange={e => setPaidAmount(e.target.value)} className="w-full p-3 bg-green-50 border border-green-100 rounded-xl text-sm font-black text-green-600" />
+                        </div>
+                    </div>
 
-                {/* Totals */}
-                <div className="bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800 p-8">
-                    <div className="flex justify-end">
-                        <div className="w-full md:w-1/3 space-y-3">
-                            <div className="flex justify-between text-sm text-gray-500 font-medium">
+                    {/* Final Totals Card */}
+                    <div className="bg-gray-900 rounded-[2rem] p-8 text-white shadow-2xl relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-all">
+                            <DollarSign size={80} />
+                        </div>
+                        <div className="relative z-10 space-y-4">
+                            <div className="flex justify-between items-center text-sm opacity-60">
                                 <span>Subtotal</span>
-                                <span>{currency} {subtotal.toLocaleString()}</span>
+                                <span className="font-bold">{currency} {subtotal.toLocaleString()}</span>
                             </div>
-                            {currency === 'USD' && (
-                                <div className="flex justify-between text-[10px] text-blue-500 font-black uppercase tracking-widest">
-                                    <span>Equivalent in ETB</span>
-                                    <span>ETB {(subtotal * exchangeRate).toLocaleString()}</span>
+                            <div className="flex justify-between items-center text-sm opacity-60">
+                                <span>Additional Costs</span>
+                                <span className="font-bold">{currency} {additionalCosts.toLocaleString()}</span>
+                            </div>
+                            <div className="pt-4 border-t border-white/10 mt-4">
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-1">Grand Total</p>
+                                <div className="flex justify-between items-end">
+                                    <h2 className="text-4xl font-black text-[#2ECC71] tracking-tighter">
+                                        <span className="text-xl mr-1">{currency}</span>
+                                        {total.toLocaleString()}
+                                    </h2>
                                 </div>
-                            )}
-                            <div className="flex justify-between text-sm text-gray-500 font-medium">
-                                <span>Tax (0%)</span>
-                                <span>{currency} 0.00</span>
-                            </div>
-                            <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
-                                <span className="text-lg font-bold text-gray-900 dark:text-white">Total</span>
-                                <span className="text-2xl font-black text-[#2ECC71]">{currency} {subtotal.toLocaleString()}</span>
+                                {currency === 'USD' && (
+                                    <p className="mt-2 text-xs font-bold text-gray-400 italic">≈ ETB {totalETB.toLocaleString()}</p>
+                                )}
                             </div>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     );

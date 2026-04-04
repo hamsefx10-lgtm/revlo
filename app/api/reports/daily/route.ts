@@ -533,7 +533,42 @@ export async function GET(request: Request) {
       });
     }
 
-    const debtsTaken = otherTransactionsList.filter(tx => tx.type === 'DEBT_TAKEN');
+    // Process all Dayn La Siiyay (Receivables Given / Debts Taken against us)
+    const mapDebtExpense = (exp: any) => ({
+      id: exp.id,
+      description: exp.description || 'Deyn La Siiyay (Expense)',
+      amount: Number(exp.amount),
+      type: 'DEBT_GIVEN',
+      account: exp.paidFrom || 'N/A',
+      project: exp.project?.name || null,
+      customerName: exp.customer?.name || exp.employee?.fullName || exp.vendor?.name || null,
+      vendorName: exp.vendor?.name || null,
+      employeeName: exp.employee?.fullName || null,
+      note: exp.note || null,
+      transactionDate: exp.expenseDate?.toISOString().slice(0, 10) || ''
+    });
+
+    const debtExpensesMapped = companyExpenses
+      .filter((exp: any) => exp.category === 'Debt' || exp.subCategory === 'Debt')
+      .map(mapDebtExpense);
+
+    // Also include any raw transaction that effectively means we gave out a debt
+    const rawDebtsGivenOrTaken = otherTransactionsList.filter(tx => 
+      tx.type === 'DEBT_TAKEN' || 
+      tx.type === 'DEBT_GIVEN' || 
+      (tx.type === 'EXPENSE' && (tx.category === 'Debt' || (tx.description || '').toLowerCase().includes('debt')))
+    );
+
+    // Combine them while avoiding exact duplicate transaction/expense pairs
+    const combinedDebtsGiven = [...rawDebtsGivenOrTaken];
+    debtExpensesMapped.forEach((exp: any) => {
+      // If we don't already have a transaction representing this exact expense
+      if (!combinedDebtsGiven.some((tx: any) => tx.expenseId === exp.id || (tx.amount === exp.amount && tx.transactionDate === exp.transactionDate))) {
+        combinedDebtsGiven.push(exp);
+      }
+    });
+
+    const debtsTaken = combinedDebtsGiven;
     const debtsRepaid = otherTransactionsList.filter(tx => 
       tx.type === 'DEBT_REPAID' && 
       (!!tx.vendorId || !!tx.expenseId || (tx.description && tx.description.includes('Flipped to Outflow')))

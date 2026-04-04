@@ -42,6 +42,16 @@ export async function GET(
         const totalOrders = stats._count.id || 0;
         const averageOrderValue = totalOrders > 0 ? totalSpent / totalOrders : 0;
 
+        // Calculate Remaining Debt
+        const unpaidSales = await prisma.sale.aggregate({
+            where: { 
+                customerId: id,
+                paymentStatus: { in: ['Unpaid', 'Partial'] }
+            },
+            _sum: { total: true, paidAmount: true }
+        });
+        const totalDebt = (Number(unpaidSales._sum.total) || 0) - (Number(unpaidSales._sum.paidAmount) || 0);
+
         return NextResponse.json({
             customer: {
                 ...customer,
@@ -51,7 +61,8 @@ export async function GET(
             analytics: {
                 totalSpent,
                 totalOrders,
-                averageOrderValue
+                averageOrderValue,
+                remainingDebt: totalDebt
             }
         });
 

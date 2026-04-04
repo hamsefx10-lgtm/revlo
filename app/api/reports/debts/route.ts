@@ -227,7 +227,42 @@ export async function GET(req: Request) {
     // -------------------------------------------------------------------------
     const customerReceivableMap: Record<string, any> = {};
 
-    // Process transactions for receivables
+    // 1. Process expenses for receivables (Debts given out via Expenses tab)
+    allExpenses.forEach((expense: any) => {
+      if (!expense.customerId || expense.companyId !== companyId) return;
+      
+      const customerKey = `${expense.customerId}_${expense.companyId}_${expense.projectId || 'general'}`;
+      const amount = Math.abs(Number(expense.amount) || 0);
+
+      if (!customerReceivableMap[customerKey]) {
+        customerReceivableMap[customerKey] = {
+          id: expense.customerId,
+          client: expense.customer?.name || 'Unknown Client',
+          clientId: expense.customerId,
+          companyId: expense.companyId,
+          companyName: 'Company',
+          project: expense.project?.name || (expense.projectId ? 'Project Account' : 'General'),
+          projectId: expense.projectId || '',
+          amount: 0,
+          received: 0,
+          remaining: 0,
+          issueDate: expense.createdAt,
+          dueDate: new Date(new Date(expense.createdAt).getTime() + (30 * 24 * 60 * 60 * 1000)).toISOString(),
+          status: 'Upcoming',
+          type: expense.projectId ? 'Project Related' : 'Direct Loan',
+          phoneNumber: expense.customer?.phoneNumber || '',
+          email: expense.customer?.email || '',
+          isLiability: false,
+          isReceivable: true,
+          transactions: []
+        };
+      }
+
+      // Money out to a customer from expenses = We loaned them money. Increase amount they owe.
+      customerReceivableMap[customerKey].amount += amount;
+    });
+
+    // 2. Process transactions for receivables
     allTransactions.forEach((transaction: any) => {
       if (!transaction.customerId || transaction.companyId !== companyId) return;
       
@@ -262,7 +297,10 @@ export async function GET(req: Request) {
       // DEBT_GIVEN: Company gave to customer (+)
       // DEBT_TAKEN/RECEIVED/REPAID: Customer gave to company (-)
       if (transaction.type === 'DEBT_GIVEN') {
-        customerReceivableMap[customerKey].amount += amount;
+        // Only add if not linked to an expense (avoid double counting)
+        if (!transaction.expenseId) {
+          customerReceivableMap[customerKey].amount += amount;
+        }
       } else {
         customerReceivableMap[customerKey].received += amount;
       }

@@ -1049,11 +1049,13 @@ model Sale {
   autoConvertDebt      Boolean     @default(true)
   convertDebtAfterDays Int         @default(7)
   realCustomerId       String?
+  employeeId           String?
   items                SaleItem[]
   company              Company?    @relation(fields: [companyId], references: [id])
   customer             ShopClient? @relation(fields: [customerId], references: [id])
   realCustomer         Customer?   @relation(fields: [realCustomerId], references: [id])
   user                 User        @relation("UserSales", fields: [userId], references: [id])
+  employee             Employee?   @relation(fields: [employeeId], references: [id])
 
   @@map("sales")
 }

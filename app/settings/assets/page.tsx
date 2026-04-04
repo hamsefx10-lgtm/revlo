@@ -34,7 +34,7 @@ const FixedAssetRow: React.FC<{ asset: FixedAsset; onEdit: (id: string) => void;
     <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300 flex items-center space-x-2">
       <Tag size={16} className="text-secondary" /> <span>{asset.type}</span>
     </td>
-    <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-semibold">${Number((asset as any).value ?? 0).toLocaleString()}</td>
+    <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-semibold">{Number((asset as any).value ?? 0).toLocaleString()}</td>
     <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">{new Date(asset.purchaseDate).toLocaleDateString()}</td>
     <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300 flex items-center space-x-2">
       {asset.assignedTo === 'Factory' ? <Building size={16} /> : asset.assignedTo === 'Office' ? <Home size={16} /> : <Briefcase size={16} />}
@@ -164,7 +164,7 @@ const AssetForm: React.FC<AssetFormProps> = ({ onSubmit, onCancel, editingAsset 
         {errors.type && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.type}</p>}
       </div>
       <div>
-        <label htmlFor="assetValue" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Qiimaha ($) <span className="text-redError">*</span></label>
+        <label htmlFor="assetValue" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Qiimaha <span className="text-redError">*</span></label>
         <input type="number" id="assetValue" value={value} onChange={(e) => setValue(parseFloat(e.target.value) || '')} placeholder="Tusaale: 25000.00" className={`w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary ${errors.value ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} />
         {errors.value && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.value}</p>}
       </div>
@@ -199,7 +199,7 @@ const AssetForm: React.FC<AssetFormProps> = ({ onSubmit, onCancel, editingAsset 
           <input type="number" step="0.01" id="depRate" value={depreciationRate} onChange={(e) => setDepreciationRate(parseFloat(e.target.value) || 0)} placeholder="Tusaale: 0.10" className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary border-lightGray dark:border-gray-700" />
         </div>
         <div>
-          <label htmlFor="bookValue" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Current Book Value ($)</label>
+          <label htmlFor="bookValue" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Current Book Value</label>
           <input type="number" id="bookValue" value={currentBookValue} onChange={(e) => setCurrentBookValue(parseFloat(e.target.value) || '')} placeholder="Tusaale: 24000.00" className="w-full p-3 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:ring-primary border-lightGray dark:border-gray-700" />
         </div>
       </div>
@@ -218,7 +218,6 @@ const AssetForm: React.FC<AssetFormProps> = ({ onSubmit, onCancel, editingAsset 
 // Main Fixed Assets Page Component
 export default function FixedAssetsSettingsPage() {
   const [assets, setAssets] = useState<FixedAsset[]>([]);
-  const [totalAssetExpense, setTotalAssetExpense] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('All');
@@ -238,7 +237,6 @@ export default function FixedAssetsSettingsPage() {
       if (!response.ok) throw new Error('Failed to fetch assets');
       const data = await response.json();
       setAssets(data.assets || []);
-      if (data.totalAssetExpense !== undefined) setTotalAssetExpense(data.totalAssetExpense);
     } catch (error) {
       console.error('Error fetching assets:', error);
       setToastMessage({ message: 'Qalad ayaa dhacay markii la soo saarayay hantida', type: 'error' });
@@ -249,7 +247,7 @@ export default function FixedAssetsSettingsPage() {
 
   // Statistics
   const totalAssetsCount = assets.length;
-  const totalAssetsValue = totalAssetExpense; // Replaced client-sum with server-calculated true expenses
+  const totalAssetsValue = assets.reduce((sum, asset) => sum + Number((asset as any).value ?? 0), 0);
   // Treat an asset as assigned if it has a non-empty assignedTo value
   const assignedAssetsCount = assets.filter(asset => (asset.assignedTo || '').trim().length > 0).length;
 
@@ -345,7 +343,7 @@ export default function FixedAssetsSettingsPage() {
               </div>
               <div>
                 <div className="text-sm text-mediumGray dark:text-gray-400 font-medium">Wadarta Qiimaha Hantida</div>
-                <div className="text-2xl font-extrabold text-darkGray dark:text-gray-100">${totalAssetsValue.toLocaleString()}</div>
+                <div className="text-2xl font-extrabold text-darkGray dark:text-gray-100">{totalAssetsValue.toLocaleString()}</div>
               </div>
             </div>
           </div>
@@ -439,7 +437,7 @@ export default function FixedAssetsSettingsPage() {
                     <Tag size={16} className="text-secondary mr-1 shrink-0" />
                     <span className="truncate">{asset.type}</span>
                   </div>
-                  <div className="col-span-2 text-darkGray dark:text-gray-100 font-semibold">${Number((asset as any).value ?? 0).toLocaleString()}</div>
+                  <div className="col-span-2 text-darkGray dark:text-gray-100 font-semibold">{Number((asset as any).value ?? 0).toLocaleString()}</div>
                   <div className="col-span-2 text-mediumGray dark:text-gray-300">{new Date(asset.purchaseDate).toLocaleDateString()}</div>
                   <div className="col-span-2 flex items-center text-mediumGray dark:text-gray-300 min-w-0">
                     {asset.assignedTo === 'Factory' ? <Building size={16} className="mr-1" /> : asset.assignedTo === 'Office' ? <Home size={16} className="mr-1" /> : <Briefcase size={16} className="mr-1" />}
@@ -484,7 +482,7 @@ export default function FixedAssetsSettingsPage() {
                         <Tag size={14} className="mr-1 shrink-0" />
                         <span className="truncate">{asset.type}</span>
                       </div>
-                      <div className="text-darkGray dark:text-gray-100 font-semibold">${Number((asset as any).value ?? 0).toLocaleString()}</div>
+                      <div className="text-darkGray dark:text-gray-100 font-semibold">{Number((asset as any).value ?? 0).toLocaleString()}</div>
                       <div className="flex items-center text-mediumGray dark:text-gray-400">
                         <Calendar size={16} className="mr-1" /> {new Date(asset.purchaseDate).toLocaleDateString()}
                       </div>

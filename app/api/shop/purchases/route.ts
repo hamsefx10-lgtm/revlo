@@ -118,11 +118,13 @@ export async function POST(req: NextRequest) {
         const taxETB = 0;
         const totalETB = subtotalETB + taxETB + totalAdditionalCostsETB;
 
-        // Determine Payment Status
-        const paid = parseFloat(paidAmount || 0);
+        // Determine Payment Status (Convert paid to ETB for comparison)
+        const paidRaw = parseFloat(paidAmount || 0);
+        const paidETB = currency === 'USD' ? paidRaw * exchangeRate : paidRaw;
+        
         let paymentStatus = 'Unpaid';
-        if (paid >= totalETB) paymentStatus = 'Paid';
-        else if (paid > 0) paymentStatus = 'Partial';
+        if (paidETB >= totalETB) paymentStatus = 'Paid';
+        else if (paidETB > 0) paymentStatus = 'Partial';
 
         // Transaction
         const result = await prisma.$transaction(async (tx) => {
@@ -137,7 +139,7 @@ export async function POST(req: NextRequest) {
                     subtotal: subtotalETB,
                     tax: taxETB,
                     total: totalETB,
-                    paidAmount: paid,
+                    paidAmount: paidETB,
                     paymentStatus,
                     notes,
                     expectedDelivery: expectedDelivery ? new Date(expectedDelivery) : null,
@@ -190,7 +192,7 @@ export async function POST(req: NextRequest) {
                 await tx.expense.create({
                     data: {
                         description: `Payment for Purchase Order ${poNumber}`,
-                        amount: paid,
+                        amount: paidETB,
                         paidFrom: paymentMethod || 'Check',
                         category: 'Inventory Purchase',
                         vendorId: vendorId,

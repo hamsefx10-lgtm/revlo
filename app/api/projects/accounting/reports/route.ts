@@ -185,6 +185,48 @@ export async function GET(request: Request) {
       where: { companyId },
     });
 
+    // Chart Data calculations
+    const allAccounts = await prisma.account.findMany({ where: { companyId } });
+    const accountDistribution = allAccounts.map(acc => ({
+      name: String(acc.name),
+      value: Number(acc.balance)
+    })).filter(acc => acc.value > 0);
+
+    const monthlyCashFlowMap: Record<string, { month: string; income: number; expense: number; net: number }> = {};
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+      const monthStr = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+      monthlyCashFlowMap[monthStr] = { month: monthStr, income: 0, expense: 0, net: 0 };
+    }
+
+    allTransactions.forEach(trx => {
+      const d = new Date(trx.transactionDate);
+      const monthStr = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+      
+      if (monthlyCashFlowMap[monthStr]) {
+        const amount = Math.abs(typeof trx.amount.toNumber === 'function' ? trx.amount.toNumber() : Number(trx.amount));
+        const isAutoAdvance = (trx.description || '').toLowerCase().includes('advance payment for project');
+
+        let isIncome = false;
+        let isExpense = false;
+
+        if (trx.type === 'INCOME' && !isAutoAdvance) isIncome = true;
+        if (trx.type === 'DEBT_REPAID' && !trx.vendorId) isIncome = true;
+
+        if (trx.type === 'EXPENSE' || trx.type === 'DEBT_TAKEN' || trx.type === 'DEBT_GIVEN' || (trx.type === 'DEBT_REPAID' && trx.vendorId)) {
+           if (trx.category !== 'FIXED_ASSET_PURCHASE') isExpense = true;
+        }
+
+        if (isIncome) monthlyCashFlowMap[monthStr].income += amount;
+        if (isExpense) monthlyCashFlowMap[monthStr].expense += amount;
+        monthlyCashFlowMap[monthStr].net = monthlyCashFlowMap[monthStr].income - monthlyCashFlowMap[monthStr].expense;
+      }
+    });
+
+    const monthlyCashFlow = Object.values(monthlyCashFlowMap);
+
     const totalBankAccounts = accountTypeCounts.find(count => count.type === 'BANK')?._count.id || 0;
     const totalCashAccounts = accountTypeCounts.find(count => count.type === 'CASH')?._count.id || 0;
     const totalMobileMoneyAccounts = accountTypeCounts.find(count => count.type === 'MOBILE_MONEY')?._count.id || 0;
@@ -207,6 +249,8 @@ export async function GET(request: Request) {
         totalBankAccounts: totalBankAccounts,
         totalCashAccounts: totalCashAccounts,
         totalMobileMoneyAccounts: totalMobileMoneyAccounts,
+        monthlyCashFlow: monthlyCashFlow,
+        accountDistribution: accountDistribution,
       },
       { status: 200 }
     );

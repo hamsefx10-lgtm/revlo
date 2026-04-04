@@ -12,9 +12,12 @@ import {
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
+import { exportExcel } from './exportExcel';
 
 // Types for report data
-interface DailyReport {
+export interface DailyReport {
   date: string;
   companyName?: string;
   companyLogoUrl?: string;
@@ -411,7 +414,7 @@ async function exportPDF(data: DailyReport) {
               // Based on user: "kuwaana tirooyinka numbarada sii kalaro ku haboon waana qaybta accountska"
               if (colIndex === 1 || colIndex === 2 || colIndex === 3) {
                 hookData.cell.styles.textColor = [15, 23, 42]; // slate-900 
-                
+
                 // Color the Change column specifically
                 if (colIndex === 3) {
                   const val = String(hookData.cell.raw);
@@ -665,7 +668,7 @@ async function exportPDF(data: DailyReport) {
       }
       doc.setFont('helvetica', isTotal ? 'bold' : 'normal');
       doc.setFontSize(isTotal ? 10 : 9);
-      doc.setTextColor(...(color ?? [50, 50, 50] as [number,number,number]));
+      doc.setTextColor(...(color ?? [50, 50, 50] as [number, number, number]));
       const labelX = indent ? summaryX1 + 6 : summaryX1;
       doc.text(label, labelX, summaryY);
 
@@ -679,14 +682,14 @@ async function exportPDF(data: DailyReport) {
     };
 
     // Opening balance
-    drawRow('Jaban Hore (Opening Balance)', openingBal, false, [15, 23, 42], false, true);
+    drawRow('Lcagtii hore ugu jirtay  (Opening Balance)', openingBal, false, [15, 23, 42], false, true);
     summaryY += 1;
 
     // Inflows
     if (incomeAmt > 0) drawRow('  + Dakhli (Income)', incomeAmt, false, [22, 163, 74], true);
     if (debtColl > 0) drawRow('  + Deyn Soo Xarootay (Debt Collected)', debtColl, false, [22, 163, 74], true);
     if (loansRec > 0) drawRow('  + Dayn La Qaaday (Loans Received)', loansRec, false, [22, 163, 74], true);
-    
+
     // Total Inflows Sub-total
     const totalIn = incomeAmt + debtColl + loansRec;
     if (totalIn > 0) {
@@ -736,7 +739,7 @@ async function exportPDF(data: DailyReport) {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11);
     doc.setTextColor(15, 23, 42);
-    doc.text('Jaban Hada (Closing Balance)', summaryX1, summaryY + 5);
+    doc.text('Lacagta hada taala  (Closing Balance)', summaryX1, summaryY + 5);
 
     if (closingBal >= 0) {
       doc.setTextColor(22, 163, 74);
@@ -866,8 +869,8 @@ export default function DailyReportPage() {
     if (amount === 0) return null;
     const color = type === 'in' ? 'text-green-600 dark:text-green-400'
       : type === 'out' ? 'text-red-500 dark:text-red-400'
-      : type === 'total' ? (closingBal >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-red-600 dark:text-red-400')
-      : 'text-gray-700 dark:text-gray-200';
+        : type === 'total' ? (closingBal >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-red-600 dark:text-red-400')
+          : 'text-gray-700 dark:text-gray-200';
     const sign = type === 'in' ? '+' : type === 'out' ? '−' : '';
     const fontClass = type === 'total' ? 'font-black text-lg' : 'font-semibold text-sm';
     return (
@@ -938,19 +941,35 @@ export default function DailyReportPage() {
 
               <div className="h-6 w-px bg-gray-300 dark:bg-gray-600 mx-1 hidden md:block"></div>
 
-              <button
-                onClick={() => exportPDF(report)}
-                className="hidden md:flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide transition shadow-lg shadow-blue-500/20"
-              >
-                <Download size={14} /> PDF
-              </button>
+              <div className="hidden md:flex items-center gap-2">
+                <button
+                  onClick={() => exportPDF(report)}
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide transition shadow-lg shadow-blue-500/20"
+                >
+                  <Download size={14} /> PDF
+                </button>
+                <button
+                  onClick={() => exportExcel(report)}
+                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wide transition shadow-lg shadow-green-500/20"
+                >
+                  <Download size={14} /> EXCEL
+                </button>
+              </div>
 
-              <button
-                onClick={() => exportPDF(report)}
-                className="md:hidden p-2 bg-blue-600 text-white rounded-lg shadow-lg shadow-blue-500/30"
-              >
-                <Download size={18} />
-              </button>
+              <div className="md:hidden flex items-center gap-2">
+                <button
+                  onClick={() => exportPDF(report)}
+                  className="p-2 bg-blue-600 text-white rounded-lg shadow-lg shadow-blue-500/30"
+                >
+                  <Download size={18} />
+                </button>
+                <button
+                  onClick={() => exportExcel(report)}
+                  className="p-2 bg-green-600 text-white rounded-lg shadow-lg shadow-green-500/30"
+                >
+                  <Download size={18} />
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1012,7 +1031,7 @@ export default function DailyReportPage() {
               )}
 
               {/* Closing */}
-              <WRow label="Jaban Hada (Closing Balance)" amount={closingBal} type="total" />
+              <WRow label="Lacagta hada taala  (Closing Balance)" amount={closingBal} type="total" />
             </div>
           </div>
 
@@ -1227,46 +1246,94 @@ export default function DailyReportPage() {
 
           </div>
 
-          {/* 6. Vendor Debt Repayments */}
-          {(report.debtsRepaid?.filter(tx => tx.vendorName) ?? []).length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
-              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-orange-50/30">
-                <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                  <Receipt size={18} className="text-orange-500" /> Lacag Bixinta Iibiyayaasha
-                </h3>
-                <span className="text-xs font-semibold text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full">
-                  {(report.debtsRepaid?.filter(tx => tx.vendorName) ?? []).length} Items
-                </span>
-              </div>
-              <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                {report.debtsRepaid?.filter(tx => tx.vendorName).map((tx, idx) => (
-                  <div key={idx} className="p-4 flex justify-between items-start hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
-                    <div>
-                      <p className="font-semibold text-gray-900 dark:text-white">{tx.description || 'Lacag bixin'}</p>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {tx.vendorName && (
-                          <span className="text-xs text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-100 font-medium">
-                            Iibiye: {tx.vendorName}
-                          </span>
-                        )}
-                        {tx.project && (
-                          <span className="text-xs text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-100 font-medium">
-                            Mashruuc: {tx.project}
-                          </span>
-                        )}
-                        {tx.account && (
-                          <span className="text-xs text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">
-                            {tx.account}
-                          </span>
-                        )}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+            {/* Receivables Given (Debts Taken) */}
+            {(report.debtsTaken?.length ?? 0) > 0 && (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 h-full flex flex-col">
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-red-50/30">
+                  <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                    <Receipt size={18} className="text-red-500" /> Deyn La Siiyay (Receivables Given)
+                  </h3>
+                  <span className="text-xs font-semibold text-red-700 bg-red-100 px-2 py-0.5 rounded-full">
+                    {report.debtsTaken?.length ?? 0} Items
+                  </span>
+                </div>
+                <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {report.debtsTaken?.map((tx, idx) => {
+                    const entity = tx.customerName || tx.vendorName || tx.employeeName || '-';
+                    return (
+                      <div key={`dt-${idx}`} className="p-4 flex justify-between items-start hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+                        <div>
+                          <p className="font-semibold text-gray-900 dark:text-white">{tx.description || 'Deyn bixin'}</p>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {entity !== '-' && (
+                              <span className="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 font-medium">
+                                Ku Socota: {entity}
+                              </span>
+                            )}
+                            {tx.account && (
+                              <span className="text-xs text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">
+                                {tx.account}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <span className="font-bold text-red-500 whitespace-nowrap">-{tx.amount.toLocaleString()}</span>
                       </div>
+                    );
+                  })}
+                  <div className="p-4 bg-gray-50 border-t border-gray-100 mt-auto">
+                    <div className="flex justify-between items-center text-sm font-bold">
+                      <span className="text-gray-500">Total Given</span>
+                      <span className="text-red-600">-{(report.totalDebtsTaken ?? 0).toLocaleString()}</span>
                     </div>
-                    <span className="font-bold text-red-500 whitespace-nowrap">-{tx.amount.toLocaleString()}</span>
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+
+            {/* 6. Vendor Debt Repayments */}
+            {(report.debtsRepaid?.filter(tx => tx.vendorName) ?? []).length > 0 && (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-orange-50/30">
+                  <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                    <Receipt size={18} className="text-orange-500" /> Lacag Bixinta Iibiyayaasha
+                  </h3>
+                  <span className="text-xs font-semibold text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full">
+                    {(report.debtsRepaid?.filter(tx => tx.vendorName) ?? []).length} Items
+                  </span>
+                </div>
+                <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {report.debtsRepaid?.filter(tx => tx.vendorName).map((tx, idx) => (
+                    <div key={idx} className="p-4 flex justify-between items-start hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+                      <div>
+                        <p className="font-semibold text-gray-900 dark:text-white">{tx.description || 'Lacag bixin'}</p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {tx.vendorName && (
+                            <span className="text-xs text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-100 font-medium">
+                              Iibiye: {tx.vendorName}
+                            </span>
+                          )}
+                          {tx.project && (
+                            <span className="text-xs text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-100 font-medium">
+                              Mashruuc: {tx.project}
+                            </span>
+                          )}
+                          {tx.account && (
+                            <span className="text-xs text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">
+                              {tx.account}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <span className="font-bold text-red-500 whitespace-nowrap">-{tx.amount.toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+          </div>
 
         </div>
       </div>
