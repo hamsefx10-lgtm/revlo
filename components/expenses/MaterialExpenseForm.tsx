@@ -135,7 +135,10 @@ export function MaterialExpenseForm({
 
     // Process receipt file (shared by upload, drag-drop, and paste)
     const processReceiptFile = async (file: File) => {
-        if (!file.type.startsWith('image/')) {
+        // Handle Telegram Desktop dragging where file.type might be empty
+        const isImage = file.type.startsWith('image/') || /\.(jpg|jpeg|png|webp|gif)$/i.test(file.name) || file.type === '';
+        
+        if (!isImage) {
             toast.error('Fadlan sawir kaliya soo geli!');
             return;
         }
@@ -205,6 +208,12 @@ export function MaterialExpenseForm({
     };
 
     // Drag and drop handlers
+    const handleDragEnter = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(true);
+    };
+
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
         e.stopPropagation();
@@ -217,20 +226,77 @@ export function MaterialExpenseForm({
         setIsDragging(false);
     };
 
-    const handleDrop = (e: React.DragEvent) => {
+    const handleDrop = async (e: React.DragEvent) => {
         e.preventDefault();
         e.stopPropagation();
         setIsDragging(false);
 
         const files = e.dataTransfer.files;
+        
+        // 1. First check for File objects (Desktop drag)
         if (files && files.length > 0) {
             const file = files[0];
-            if (file.type.startsWith('image/')) {
+            const isImage = file.type.startsWith('image/') || /\.(jpg|jpeg|png|webp|gif|heic)$/i.test(file.name) || file.type === '';
+            if (isImage) {
                 processReceiptFile(file);
+                return;
             } else {
-                toast.error('Fadlan sawir kaliya soo geli!');
+                toast.error(`Fadlan sawir soo geli! (File ah: ${file.name}, type: ${file.type})`);
+                return;
             }
         }
+        
+        // 2. Look through items just in case Chrome hid it from files list
+        if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+            for (let i = 0; i < e.dataTransfer.items.length; i++) {
+                const item = e.dataTransfer.items[i];
+                if (item.kind === 'file' && item.type.indexOf('image') !== -1) {
+                    const file = item.getAsFile();
+                    if (file) {
+                        processReceiptFile(file);
+                        return;
+                    }
+                }
+            }
+        }
+
+        // 3. Alternative Telegram drag handling: checking HTML for img src
+        const htmlData = e.dataTransfer.getData('text/html');
+        if (htmlData) {
+            const match = htmlData.match(/src="([^"]+)"/);
+            if (match && match[1]) {
+                const src = match[1];
+                if (src.startsWith('data:image')) {
+                    try {
+                        const res = await fetch(src);
+                        const blob = await res.blob();
+                        const file = new File([blob], "telegram_receipt.png", { type: blob.type });
+                        processReceiptFile(file);
+                        return;
+                    } catch (err) {
+                        toast.error('Galdalool sawirka jiidaha (HTML base64)!');
+                        return;
+                    }
+                } else if (src.startsWith('http')) {
+                    toast.error('Waa URL sawir. Fadlan ku samee COPY SAWIRKA kadibna halkan ku dhufo Ctrl+V.');
+                    return;
+                } else if (src.startsWith('file://') || src.includes('C:\\')) {
+                    toast.error('Browser-ku ma akhrin karo sawirka sababo dhanka amniga ah (Security Sandbox). Fadlan sawirka Telegram COPY Dheh, ka dibna halkan ku dhufo Ctrl+V.');
+                    return;
+                }
+            }
+        }
+
+        // 4. Debug text
+        const plainText = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('text/uri-list');
+        if (plainText) {
+             toast.error('Browser-kaagu ma qaadi karo qaabkan. Fadlan sawirka Telegram COPY Dheh, ka dibna halkan ku dhufo Ctrl+V.');
+             return;
+        }
+
+        // 5. Tell the user what happened
+        const types = Array.from(e.dataTransfer.types).join(', ');
+        toast.error(`Ma arkin wax sawir ah (Types: ${types}). Fadlan COPY u dheh sawirka (Ctrl+C), ka dibna halkan ugu samee PASTE (Ctrl+V).`);
     };
 
     const materialUnits = ['pcs', 'kg', 'm', 'cm', 'l', 'm²', 'm³', 'ton', 'box', 'set', 'bag', 'roll', 'sheet'];
@@ -300,6 +366,7 @@ export function MaterialExpenseForm({
                                 : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10'
                             }
                         `}
+                        onDragEnter={handleDragEnter}
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
                         onDrop={handleDrop}
