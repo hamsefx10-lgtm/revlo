@@ -948,7 +948,9 @@ function AddExpenseContent() {
             expenseData.amount = totalMaterialCost;
             expenseData.materials = materials.map(m => ({ name: m.name, qty: parseFloat(m.qty as string), price: parseFloat(m.price as string), unit: m.unit }));
             expenseData.category = 'Material';
-            expenseData.projectId = null;
+            if (expenseType === 'company') {
+              expenseData.projectId = null;
+            }
             expenseData.expenseDate = materialDate; // Use materialDate instead of expenseDate for Material expenses
 
             // NEW: Vendor payment tracking fields for Company Material Expense
@@ -1093,7 +1095,7 @@ function AddExpenseContent() {
         // If receipt image exists, use FormData
         if (receiptImage) {
           const formData = new FormData();
-          formData.append('file', receiptImage);
+          formData.append('receiptImage', receiptImage);
 
           // Append all other fields as JSON strings or primitive values
           Object.keys(payload).forEach(key => {
