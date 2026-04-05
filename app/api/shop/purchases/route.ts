@@ -188,7 +188,7 @@ export async function POST(req: NextRequest) {
             }
 
             // Create Expense (Payment)
-            if (paid > 0) {
+            if (paidETB > 0) {
                 await tx.expense.create({
                     data: {
                         description: `Payment for Purchase Order ${poNumber}`,

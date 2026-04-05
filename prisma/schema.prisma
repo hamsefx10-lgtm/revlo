@@ -329,6 +329,7 @@ model Employee {
   laborRecords        ProjectLabor[]
   transactions        Transaction[]
   workOrders          WorkOrder[]
+  sales               Sale[]
 
   @@map("employees")
 }

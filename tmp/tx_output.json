@@ -1,0 +1,27 @@
+[
+  {
+    "id": "ac2e8b22-5347-4cae-bbe7-f0aeff9b63da",
+    "description": "phase two kasoo xarootay (La Xiriira: Dhobawayn albabada loxa)",
+    "amount": "200000",
+    "type": "DEBT_REPAID",
+    "transactionDate": "2026-02-24T12:00:00.000Z",
+    "note": null,
+    "createdAt": "2026-03-31T18:31:28.375Z",
+    "updatedAt": "2026-03-31T19:44:19.594Z",
+    "accountId": "3c156507-ea0a-4974-8a54-92f1e9dd519a",
+    "fromAccountId": null,
+    "toAccountId": null,
+    "projectId": null,
+    "expenseId": null,
+    "customerId": null,
+    "vendorId": null,
+    "userId": null,
+    "employeeId": null,
+    "category": null,
+    "receiptUrl": null,
+    "companyId": "081fb675-b41e-4cea-92f7-50a5eb3e6f1e",
+    "fiscalYearId": null,
+    "shareholderId": null,
+    "fixedAssetId": null
+  }
+]
