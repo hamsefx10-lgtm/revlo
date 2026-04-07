@@ -398,29 +398,52 @@ export default function AccountingPage() {
       {/* Floating Segmented Tabs Control */}
       <div className="sticky top-0 z-40 flex justify-start lg:justify-center mb-8 px-2 overflow-x-auto custom-scrollbar pt-2 pb-4 -mx-4 sm:mx-0 pr-4 sm:pr-0">
         <div className="bg-white/70 dark:bg-gray-900/60 backdrop-blur-2xl border border-white/40 dark:border-white/10 p-1.5 rounded-full shadow-lg shadow-black/5 flex space-x-1 min-w-max mx-4 sm:mx-0">
-          {['Overview', 'Transactions', 'Receivables', 'Payables', 'Project Debts', 'Accounts', 'Reports'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`relative flex items-center px-5 py-2.5 text-sm font-bold transition-all duration-300 rounded-full ${
-                activeTab === tab
+          {['Overview', 'Transactions', 'Receivables', 'Payables', 'Project Debts', 'Accounts', 'Reports'].map((tab) => {
+            const isReceivables = tab === 'Receivables';
+            const interactiveClasses = `relative flex items-center px-5 py-2.5 text-sm font-bold transition-all duration-300 rounded-full ${
+                activeTab === tab && !isReceivables
                   ? 'text-primary dark:text-white'
                   : 'text-mediumGray dark:text-gray-400 hover:text-darkGray dark:hover:text-gray-200 hover:bg-gray-100/50 dark:hover:bg-gray-800/50'
-              }`}
-            >
-              {activeTab === tab && (
-                <span className="absolute inset-0 rounded-full bg-white dark:bg-gray-800 shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-black/5 dark:border-white/5 -z-10 transition-all duration-300" />
-              )}
-              {tab === 'Overview' && <LayoutGrid size={16} className={`mr-2 ${activeTab === tab ? '' : 'opacity-70'}`} />}
-              {tab === 'Transactions' && <ReceiptText size={16} className={`mr-2 ${activeTab === tab ? '' : 'opacity-70'}`} />}
-              {tab === 'Receivables' && <Scale size={16} className={`mr-2 ${activeTab === tab ? '' : 'opacity-70'}`} />}
-              {tab === 'Payables' && <ClockIcon size={16} className={`mr-2 ${activeTab === tab ? '' : 'opacity-70'}`} />}
-              {tab === 'Project Debts' && <BriefcaseIcon size={16} className={`mr-2 ${activeTab === tab ? '' : 'opacity-70'}`} />}
-              {tab === 'Accounts' && <Landmark size={16} className={`mr-2 ${activeTab === tab ? '' : 'opacity-70'}`} />}
-              {tab === 'Reports' && <TrendingUp size={16} className={`mr-2 ${activeTab === tab ? '' : 'opacity-70'}`} />}
-              <span className="whitespace-nowrap">{tab === 'Project Debts' ? 'Projects' : tab}</span>
-            </button>
-          ))}
+            }`;
+
+            const icon = (
+              <>
+                {activeTab === tab && !isReceivables && (
+                  <span className="absolute inset-0 rounded-full bg-white dark:bg-gray-800 shadow-[0_2px_10px_rgba(0,0,0,0.06)] border border-black/5 dark:border-white/5 -z-10 transition-all duration-300" />
+                )}
+                {tab === 'Overview' && <LayoutGrid size={16} className={`mr-2 ${(activeTab === tab && !isReceivables) ? '' : 'opacity-70'}`} />}
+                {tab === 'Transactions' && <ReceiptText size={16} className={`mr-2 ${(activeTab === tab && !isReceivables) ? '' : 'opacity-70'}`} />}
+                {tab === 'Receivables' && <Scale size={16} className={`mr-2 opacity-70`} />}
+                {tab === 'Payables' && <ClockIcon size={16} className={`mr-2 ${(activeTab === tab && !isReceivables) ? '' : 'opacity-70'}`} />}
+                {tab === 'Project Debts' && <BriefcaseIcon size={16} className={`mr-2 ${(activeTab === tab && !isReceivables) ? '' : 'opacity-70'}`} />}
+                {tab === 'Accounts' && <Landmark size={16} className={`mr-2 ${(activeTab === tab && !isReceivables) ? '' : 'opacity-70'}`} />}
+                {tab === 'Reports' && <TrendingUp size={16} className={`mr-2 ${(activeTab === tab && !isReceivables) ? '' : 'opacity-70'}`} />}
+                <span className="whitespace-nowrap">{tab === 'Project Debts' ? 'Projects' : tab}</span>
+              </>
+            );
+
+            if (isReceivables) {
+              return (
+                <Link
+                  key={tab}
+                  href="/projects/accounting/receivables"
+                  className={interactiveClasses}
+                >
+                  {icon}
+                </Link>
+              );
+            }
+
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={interactiveClasses}
+              >
+                {icon}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -719,54 +742,7 @@ export default function AccountingPage() {
 
             {/* --- RECEIVABLES & PROJECT DEBTS & ACCOUNTS & REPORTS - reusing upgraded cards above but styling to match glassmorphism --- */}
             {/* Same aesthetic applied to remaining tabs */}
-            {activeTab === 'Receivables' && (
-              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-2xl border border-white dark:border-gray-700/50 rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 md:p-8 shadow-2xl animate-fade-in-up">
-                 <div className="mb-8">
-                    <h3 className="text-2xl md:text-3xl font-black text-darkGray dark:text-white flex items-center tracking-tight">
-                      <div className="p-3 bg-accent/10 dark:bg-accent/20 rounded-2xl mr-4 border border-accent/20">
-                        <Scale className="text-accent" size={24} />
-                      </div>
-                      Client Receivables
-                    </h3>
-                 </div>
-                 
-                 {companyDebts.filter(d => (d.remaining || 0) > 0).length === 0 ? (
-                   <div className="text-center py-20 bg-gray-50/50 dark:bg-gray-900/50 rounded-[1.5rem] sm:rounded-[2rem] border border-dashed border-gray-200 dark:border-gray-700">
-                     <p className="font-bold text-mediumGray">No pending client receivables found.</p>
-                   </div>
-                 ) : (
-                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                     {companyDebts.filter(d => (d.remaining || 0) > 0).map(debt => (
-                       <div key={debt.id || debt.lender} className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 rounded-[1.5rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all relative overflow-hidden group">
-                         <div className={`absolute -top-10 -right-10 w-32 h-32 blur-3xl opacity-20 dark:opacity-30 transition-transform duration-700 group-hover:scale-[2] ${debt.status === 'Overdue' ? 'bg-red-500' : 'bg-accent'}`} />
-                         
-                         <div className="flex justify-between items-start mb-6 relative z-10">
-                           <h4 className="font-black text-xl text-darkGray dark:text-white truncate pr-4">{debt.lender || debt.client || debt.customerName || '--'}</h4>
-                           <span className={`px-3 py-1 font-black text-[10px] tracking-widest uppercase rounded-full shadow-sm ${
-                             debt.status === 'Overdue' ? 'bg-red-100 text-red-600 dark:bg-red-900/40 border border-red-200 dark:border-red-800/50' : 'bg-accent/10 text-accent dark:bg-accent/20 border border-accent/20 dark:border-accent/10'
-                           }`}>{debt.status}</span>
-                         </div>
-                         
-                         <div className="space-y-4 relative z-10 bg-gray-50/80 dark:bg-gray-800/50 p-5 rounded-2xl border border-gray-100 dark:border-gray-700/50 backdrop-blur-md">
-                           <div className="flex justify-between text-sm items-center">
-                             <span className="text-mediumGray font-bold text-[10px] uppercase tracking-widest">Total Value</span>
-                             <span className="font-black text-darkGray dark:text-gray-300">{debt.amount?.toLocaleString()}</span>
-                           </div>
-                           <div className="flex justify-between text-sm items-center">
-                             <span className="text-mediumGray font-bold text-[10px] uppercase tracking-widest">Collected</span>
-                             <span className="font-black text-green-600 dark:text-green-400">{debt.received?.toLocaleString() || debt.paid?.toLocaleString()}</span>
-                           </div>
-                           <div className="flex justify-between pt-4 border-t border-gray-200 dark:border-gray-700 items-center">
-                             <span className="font-black text-darkGray dark:text-white text-xs uppercase tracking-widest">Outstanding</span>
-                             <span className="font-black text-xl text-red-500">{debt.remaining?.toLocaleString()}</span>
-                           </div>
-                         </div>
-                       </div>
-                     ))}
-                   </div>
-                 )}
-              </div>
-            )}
+            {/* Receivables tab content has been extracted to a separate page (/projects/accounting/receivables) */}
 
             {activeTab === 'Payables' && (
               <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-2xl border border-white dark:border-gray-700/50 rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 md:p-8 shadow-2xl animate-fade-in-up">

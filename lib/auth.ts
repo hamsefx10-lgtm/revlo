@@ -27,9 +27,47 @@ export const authOptions = {
       name: 'Credentials',
       credentials: {
         email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
+        impersonateToken: { label: "Impersonate Token", type: "text" }
       },
       async authorize(credentials, req) {
+        // Handle Impersonation Login
+        if (credentials?.impersonateToken) {
+          const tokenDoc = await prisma.verificationToken.findUnique({
+            where: { token: credentials.impersonateToken }
+          });
+          
+          if (!tokenDoc || tokenDoc.expires < new Date() || !tokenDoc.identifier.startsWith('impersonate:')) {
+            throw new Error("Invalid or expired impersonation token");
+          }
+          
+          const parts = tokenDoc.identifier.split(':');
+          const targetUserId = parts[1];
+          const adminId = parts[2];
+          
+          const user = await prisma.user.findUnique({
+            where: { id: targetUserId },
+            include: { company: true }
+          });
+          
+          if (!user) throw new Error("User not found");
+          
+          // Cleanup token
+          await prisma.verificationToken.delete({ where: { token: credentials.impersonateToken } });
+          
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.fullName,
+            role: user.role,
+            companyName: user.company?.name,
+            companyId: user.company?.id,
+            companyLogoUrl: user.company?.logoUrl || undefined,
+            planType: user.company?.planType || 'COMBINED',
+            impersonatedBy: adminId
+          };
+        }
+
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
@@ -109,6 +147,7 @@ export const authOptions = {
         if (customUser.companyId) token.companyId = customUser.companyId;
         if (customUser.companyLogoUrl) token.companyLogoUrl = customUser.companyLogoUrl;
         if (customUser.planType) token.planType = customUser.planType;
+        if (customUser.impersonatedBy) token.impersonatedBy = customUser.impersonatedBy;
       }
       return token;
     },
@@ -122,6 +161,7 @@ export const authOptions = {
         if (token.companyId) session.user.companyId = token.companyId as string;
         if (token.companyLogoUrl) session.user.companyLogoUrl = token.companyLogoUrl as string;
         if (token.planType) session.user.planType = token.planType as string;
+        if (token.impersonatedBy) session.user.impersonatedBy = token.impersonatedBy as string;
       }
       return session;
     },

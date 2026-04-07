@@ -14,6 +14,7 @@ import {
 
 
 import { useSession } from 'next-auth/react';
+import FaceScanner from '@/components/FaceScanner';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import RevloLoader from '@/components/ui/RevloLoader';
@@ -27,6 +28,67 @@ export default function AdminToolsPage() {
   const [sudoPassword, setSudoPassword] = React.useState('');
   const [isVerifying, setIsVerifying] = React.useState(false);
   const [sudoError, setSudoError] = React.useState('');
+  const [faceAttemptError, setFaceAttemptError] = React.useState('');
+
+  const [faceStatus, setFaceStatus] = React.useState<'loading'|'enrolled'|'not_enrolled'>('loading');
+  const [showFaceScanner, setShowFaceScanner] = React.useState(false);
+  const [scannerMode, setScannerMode] = React.useState<'verify'|'enroll'>('verify');
+
+  React.useEffect(() => {
+    if (status === 'authenticated' && (session?.user as any)?.role === 'SUPER_ADMIN') {
+      fetch('/api/admin/face-auth/status')
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.enrolled) {
+            setFaceStatus('enrolled');
+            setScannerMode('verify');
+            setShowFaceScanner(true);
+          } else {
+            setFaceStatus('not_enrolled');
+          }
+        })
+        .catch(() => setFaceStatus('not_enrolled'));
+    }
+  }, [status, session]);
+
+  const handleFaceSuccess = async (descriptor: number[]) => {
+    try {
+      if (scannerMode === 'verify') {
+        const res = await fetch('/api/admin/face-auth/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ liveDescriptor: descriptor })
+        });
+        const data = await res.json();
+        if (data.success) {
+           setIsSudoVerified(true);
+           setShowFaceScanner(false);
+        } else {
+           setFaceAttemptError('Kani ma ahan Maamulihii! Wajigu ma is-waafaqin.');
+           setShowFaceScanner(false);
+        }
+      } else {
+        // Enroll mode
+        const res = await fetch('/api/admin/face-auth/enroll', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ descriptor })
+        });
+        const data = await res.json();
+        if (data.success) {
+           setIsSudoVerified(true);
+           setFaceStatus('enrolled');
+           setShowFaceScanner(false);
+        } else {
+           setSudoError(data.message || 'Waa lagu guuldareystay diiwaangelinta wajiga.');
+           setShowFaceScanner(false);
+        }
+      }
+    } catch(err) {
+      setSudoError('Cillad ayaa dhacday.');
+      setShowFaceScanner(false);
+    }
+  };
   
   const { data: stats, error, isLoading, mutate } = useSWR(
     status === 'authenticated' && (session?.user as any)?.role === 'SUPER_ADMIN' && isSudoVerified
@@ -60,7 +122,13 @@ export default function AdminToolsPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setIsSudoVerified(true);
+        if (faceStatus === 'not_enrolled') {
+          // Instead of immediate entry, prompt them to enroll face
+          setScannerMode('enroll');
+          setShowFaceScanner(true);
+        } else {
+          setIsSudoVerified(true);
+        }
       } else {
         setSudoError(data.error || 'Xaqiijintu way fashilantay');
       }
@@ -81,70 +149,112 @@ export default function AdminToolsPage() {
 
   // Sudo Mode Gate - FULL SCREEN LOCK (No Sidebar/Topbar)
   if (!isSudoVerified) {
+    if (faceStatus === 'loading') {
+      return (
+        <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-[#020617]">
+          <RevloLoader />
+        </div>
+      );
+    }
+
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-[#020617] p-4">
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-gray-700 w-full max-w-md animate-fade-in-up">
-          <div className="text-center mb-8">
-            <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-5 rounded-3xl w-24 h-24 mx-auto mb-6 flex items-center justify-center shadow-inner group">
-              <Lock size={48} className="group-hover:rotate-12 transition-transform duration-300" />
+        {showFaceScanner ? (
+           <FaceScanner 
+             mode={scannerMode} 
+             onSuccess={handleFaceSuccess} 
+             onCancel={scannerMode === 'verify' ? () => setShowFaceScanner(false) : undefined}
+             onError={(err) => setSudoError(err)}
+           />
+        ) : faceAttemptError ? (
+           <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-red-100 dark:border-red-900/30 w-full max-w-md animate-fade-in text-center">
+             <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-5 rounded-3xl w-24 h-24 mx-auto mb-6 flex items-center justify-center shadow-inner group">
+               <XCircle size={48} className="group-hover:scale-110 transition-transform duration-300" />
+             </div>
+             <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight mb-2">Access Denied</h2>
+             <p className="text-red-500 font-bold mb-8 text-lg border-b border-gray-100 dark:border-gray-700 pb-6">
+               {faceAttemptError}
+             </p>
+             
+             <button 
+               onClick={() => { setFaceAttemptError(''); setShowFaceScanner(true); }}
+               className="w-full bg-red-600 text-white py-4 rounded-2xl font-black shadow-lg hover:bg-red-700 hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-2"
+             >
+               <RefreshCw size={22} />
+               Dib u baar Wajiga (Try Again)
+             </button>
+             
+             <button 
+               onClick={() => { setFaceAttemptError(''); setFaceStatus('not_enrolled'); }}
+               className="mt-6 text-sm font-bold text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+             >
+               Ama isticmaal Password-ka
+             </button>
+           </div>
+        ) : (
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-gray-700 w-full max-w-md animate-fade-in-up">
+            <div className="text-center mb-8">
+              <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-5 rounded-3xl w-24 h-24 mx-auto mb-6 flex items-center justify-center shadow-inner group">
+                <Lock size={48} className="group-hover:rotate-12 transition-transform duration-300" />
+              </div>
+              <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Access Restricted</h2>
+              <p className="text-gray-500 dark:text-gray-400 mt-3 font-medium">
+                Boggan wuxuu u gaar yahay <strong>Maamulaha Sare (Super Admin)</strong>. 
+                Fadlan geli password-kaaga si aad u sii wadato.
+              </p>
             </div>
-            <h2 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Access Restricted</h2>
-            <p className="text-gray-500 dark:text-gray-400 mt-3 font-medium">
-              Boggan wuxuu u gaar yahay <strong>Maamulaha Sare (Super Admin)</strong>. 
-              Fadlan geli password-kaaga si aad u sii wadato.
-            </p>
-          </div>
 
-          <form onSubmit={handleSudoVerify} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest ml-1">Password-ka Super Admin</label>
-              <div className="relative group">
-                <input
-                  type="password"
-                  value={sudoPassword}
-                  onChange={(e) => setSudoPassword(e.target.value)}
-                  className="w-full pl-4 pr-12 py-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900 focus:border-primary focus:bg-white dark:focus:bg-gray-950 transition-all outline-none font-medium"
-                  placeholder="••••••••"
-                  autoFocus
-                  required
-                />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
-                   <Shield size={20} />
+            <form onSubmit={handleSudoVerify} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest ml-1">Password-ka Super Admin</label>
+                <div className="relative group">
+                  <input
+                    type="password"
+                    value={sudoPassword}
+                    onChange={(e) => setSudoPassword(e.target.value)}
+                    className="w-full pl-4 pr-12 py-4 rounded-2xl border-2 border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900 focus:border-primary focus:bg-white dark:focus:bg-gray-950 transition-all outline-none font-medium"
+                    placeholder="••••••••"
+                    autoFocus
+                    required
+                  />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                    <Shield size={20} />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {sudoError && (
-              <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-bold border border-red-100 dark:border-red-800/30 flex items-center animate-shake">
-                <AlertTriangle size={18} className="mr-3 shrink-0" />
-                {sudoError}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={isVerifying}
-              className="w-full py-4.5 bg-gray-900 dark:bg-white dark:text-gray-900 text-white rounded-2xl font-black text-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center disabled:opacity-70 disabled:translate-y-0"
-            >
-              {isVerifying ? (
-                <RefreshCw size={26} className="animate-spin" />
-              ) : (
-                <>
-                  <Unlock size={22} className="mr-3" />
-                  Xaqiiji Password-ka
-                </>
+              {sudoError && (
+                <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm font-bold border border-red-100 dark:border-red-800/30 flex items-center animate-shake">
+                  <AlertTriangle size={18} className="mr-3 shrink-0" />
+                  {sudoError}
+                </div>
               )}
-            </button>
-            
-            <button 
-              type="button"
-              onClick={() => router.push('/dashboard')}
-              className="w-full py-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 font-bold transition-colors text-sm"
-            >
-              Dib ugu noqo Dashboard-ka
-            </button>
-          </form>
-        </div>
+
+              <button
+                type="submit"
+                disabled={isVerifying}
+                className="w-full py-4.5 bg-gray-900 dark:bg-white dark:text-gray-900 text-white rounded-2xl font-black text-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center disabled:opacity-70 disabled:translate-y-0"
+              >
+                {isVerifying ? (
+                  <RefreshCw size={26} className="animate-spin" />
+                ) : (
+                  <>
+                    <Unlock size={22} className="mr-3" />
+                    Xaqiiji Password-ka
+                  </>
+                )}
+              </button>
+              
+              <button 
+                type="button"
+                onClick={() => router.push('/dashboard')}
+                className="w-full py-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 font-bold transition-colors text-sm"
+              >
+                Dib ugu noqo Dashboard-ka
+              </button>
+            </form>
+          </div>
+        )}
       </div>
     );
   }
@@ -322,11 +432,11 @@ export default function AdminToolsPage() {
           </div>
           <p className="text-mediumGray dark:text-gray-400 mb-4">Monitor system performance and health.</p>
           <div className="space-y-2">
-            <Link href="/admin/performance-metrics" className="block p-3 rounded-lg bg-lightGray dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
+            <Link href="/admin/analytics" className="block p-3 rounded-lg bg-lightGray dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <BarChart size={18} className="mr-3 text-accent" />
-                  <span className="text-darkGray dark:text-gray-100 font-medium">Performance Metrics</span>
+                  <span className="text-darkGray dark:text-gray-100 font-medium">Audience & Analytics</span>
                 </div>
                 <ArrowLeft size={16} className="text-mediumGray dark:text-gray-400 transform rotate-180" />
               </div>

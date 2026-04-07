@@ -4,6 +4,8 @@ import './globals.css';
 import { Providers } from './Providers';
 import GoogleTranslate from '../components/GoogleTranslate';
 import SmoothScroll from '@/components/SmoothScroll';
+import AnalyticsProvider from '@/components/AnalyticsProvider';
+import ImpersonateBanner from '@/components/ImpersonateBanner';
 import Script from 'next/script';
 import PWAInstallBanner from '@/components/PWAInstallBanner';
 
@@ -139,6 +141,8 @@ export default function RootLayout({
         <SmoothScroll />
         <GoogleTranslate />
         <Providers>
+          <ImpersonateBanner />
+          <AnalyticsProvider />
           {children}
         </Providers>
         <PWAInstallBanner />

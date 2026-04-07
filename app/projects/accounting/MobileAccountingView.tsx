@@ -47,24 +47,33 @@ export function MobileAccountingView({ overviewStats, activeTab, setActiveTab, r
 
       {/* Horizontal Tabs */}
       <div className="px-4 mb-6 overflow-x-auto custom-scrollbar flex space-x-2 pb-2">
-        {['Overview', 'Transactions', 'Receivables', 'Payables', 'Accounts'].map(t => (
-          <button key={t} onClick={() => setActiveTab(t)} className={`px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all ${activeTab === t ? 'bg-primary text-white shadow-md' : 'bg-white dark:bg-gray-800 text-mediumGray dark:text-gray-300'}`}>
-            {t}
-          </button>
-        ))}
+        {['Overview', 'Transactions', 'Receivables', 'Payables', 'Accounts'].map(t => {
+          if (t === 'Receivables') {
+            return (
+              <Link key={t} href="/projects/accounting/receivables" className={`px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all bg-white dark:bg-gray-800 text-mediumGray dark:text-gray-300`}>
+                {t}
+              </Link>
+            );
+          }
+          return (
+            <button key={t} onClick={() => setActiveTab(t)} className={`px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all ${activeTab === t ? 'bg-primary text-white shadow-md' : 'bg-white dark:bg-gray-800 text-mediumGray dark:text-gray-300'}`}>
+              {t}
+            </button>
+          )
+        })}
       </div>
 
       {activeTab === 'Overview' && (
         <div className="px-4 space-y-4">
           {/* Receivables & Payables */}
           <div className="grid grid-cols-2 gap-4">
-            <button onClick={() => setActiveTab('Receivables')} className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 text-left transition-all active:scale-95">
+            <Link href="/projects/accounting/receivables" className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 text-left transition-all active:scale-95">
               <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-3">
                 <Scale size={14} className="text-green-600 dark:text-green-400" />
               </div>
               <p className="text-[10px] font-bold text-mediumGray uppercase tracking-widest mb-1">Receivables</p>
               <p className="text-xl font-black text-darkGray dark:text-white">{overviewStats?.totalReceivables?.toLocaleString() || 0}</p>
-            </button>
+            </Link>
             <button onClick={() => setActiveTab('Payables')} className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 text-left transition-all active:scale-95">
               <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mb-3">
                 <Clock size={14} className="text-orange-600 dark:text-orange-400" />

@@ -10,7 +10,8 @@ import { emitExpenseChange } from '@/lib/client-events';
 import {
   ArrowLeft, Edit, Trash2, Printer, Download,
   User, CheckCircle, AlertCircle, Building2, Briefcase, Store,
-  Package, LayoutGrid, FileDown, FileText, Maximize2, Info
+  Package, LayoutGrid, FileDown, FileText, Maximize2, Info,
+  UploadCloud, Image as ImageIcon
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -49,7 +50,9 @@ export default function ExpenseDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [generatingPDF, setGeneratingPDF] = useState(false);
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
   const voucherRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (id) {
@@ -119,6 +122,78 @@ export default function ExpenseDetailsPage() {
       setGeneratingPDF(false);
     }
   };
+
+  const uploadReceipt = async (file: File) => {
+    setUploadingReceipt(true);
+    setToastMessage({ message: 'Sawirka waa la soo dirayaa...', type: 'info' });
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const res = await fetch(`/api/projects/expenses/${id}/receipt`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.message || 'Cilad ayaa dhacday soo dejinta.');
+      }
+      
+      setToastMessage({ message: 'Si guul leh ayaa loo kaydiyay rasiidka!', type: 'success' });
+      // Refresh expense data
+      setExpense(prev => prev ? { ...prev, receiptUrl: data.receiptUrl } : prev);
+    } catch (error: any) {
+      console.error(error);
+      setToastMessage({ message: error.message || 'Beddelidda sawirku way fashilantay.', type: 'error' });
+    } finally {
+      setUploadingReceipt(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      uploadReceipt(e.dataTransfer.files[0]);
+    } else {
+      // Telegram Desktop fallback - parse html looking for src img
+      const htmlData = e.dataTransfer.getData('text/html');
+      if (htmlData) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlData, 'text/html');
+        const img = doc.querySelector('img');
+        if (img && img.src) {
+           const blob = new Blob([htmlData], { type: 'text/html' }); // We can't really get File directly without cors/fetching but fallback tells them to copy-paste.
+           setToastMessage({ message: 'Sawirka telegram si goos goos loolama soo bixi karo, isticmaal Copy (Ctrl+C) oo Paste ku samee.', type: 'info' });
+        }
+      }
+    }
+  };
+
+  const handlePaste = (e: ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+       if (items[i].type.indexOf('image') !== -1) {
+           const file = items[i].getAsFile();
+           if (file) { uploadReceipt(file); return; }
+       }
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [id]);
 
   if (loading) return <Layout><div className="flex h-[80vh] items-center justify-center text-gray-400">Loading details...</div></Layout>;
 
@@ -371,7 +446,7 @@ export default function ExpenseDetailsPage() {
               </div>
             )}
 
-            {/* Receipt Image - MORE PROMINENT FOR MATERIAL */}
+            {/* Receipt Image(s) - MORE PROMINENT FOR MATERIAL */}
             {expense.receiptUrl && (
               <div className={`mt-10 pt-10 border-t-2 border-dashed border-gray-100 dark:border-gray-700 ${expense.category === 'Material' ? 'bg-blue-50/30 dark:bg-blue-900/10 p-6 rounded-3xl -mx-6' : ''}`}>
                 <div className="flex items-center gap-2 mb-6">
@@ -384,36 +459,75 @@ export default function ExpenseDetailsPage() {
                   </div>
                 </div>
                 
-                <div className="relative group rounded-3xl overflow-hidden border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-900 shadow-2xl inline-block transition-all hover:scale-[1.01] hover:shadow-blue-200/50 dark:hover:shadow-blue-900/20">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img 
-                    src={expense.receiptUrl} 
-                    alt="Receipt" 
-                    className="max-h-[600px] w-auto object-contain cursor-zoom-in" 
-                    onClick={() => window.open(expense.receiptUrl, '_blank')}
-                  />
-                  <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button 
-                      onClick={() => window.open(expense.receiptUrl, '_blank')}
-                      className="bg-white/90 text-darkGray p-2.5 rounded-xl shadow-lg hover:bg-white transition-colors flex items-center gap-2 font-bold text-xs"
-                    >
-                      <Maximize2 size={16} /> Meel Dheer
-                    </button>
-                    <a 
-                      href={expense.receiptUrl} 
-                      download 
-                      target="_blank" 
-                      className="bg-primary text-white p-2.5 rounded-xl shadow-lg hover:bg-primary/90 transition-colors flex items-center gap-2 font-bold text-xs"
-                    >
-                      <Download size={16} /> Download
-                    </a>
-                  </div>
+                <div className="flex flex-wrap gap-6">
+                  {expense.receiptUrl.split(',').filter(Boolean).map((url, index) => (
+                    <div key={index} className="relative group rounded-3xl overflow-hidden border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-900 shadow-2xl inline-block transition-all hover:scale-[1.01] hover:shadow-blue-200/50 dark:hover:shadow-blue-900/20">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img 
+                        src={url} 
+                        alt={`Receipt ${index + 1}`} 
+                        className="max-h-[600px] w-auto object-contain cursor-zoom-in" 
+                        onClick={() => window.open(url, '_blank')}
+                      />
+                      <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          onClick={() => window.open(url, '_blank')}
+                          className="bg-white/90 text-darkGray p-2.5 rounded-xl shadow-lg hover:bg-white transition-colors flex items-center gap-2 font-bold text-xs"
+                        >
+                          <Maximize2 size={16} /> Meel Dheer
+                        </button>
+                        <a 
+                          href={url} 
+                          download 
+                          target="_blank" 
+                          className="bg-primary text-white p-2.5 rounded-xl shadow-lg hover:bg-primary/90 transition-colors flex items-center gap-2 font-bold text-xs"
+                        >
+                          <Download size={16} /> Download
+                        </a>
+                      </div>
+                    </div>
+                  ))}
                 </div>
                 <p className="mt-4 text-xs text-mediumGray dark:text-gray-500 italic flex items-center gap-1">
-                  <Info size={12} /> Guji sawirka si aad u weyn ugu aragto
+                  <Info size={12} /> Guji sawirrada si aad u weyn ugu aragto
                 </p>
               </div>
             )}
+
+            <div className={`mt-10 pt-10 border-t-2 border-dashed border-gray-100 dark:border-gray-700 print:hidden`}>
+              <div className="flex items-center gap-2 mb-6">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${expense.receiptUrl ? 'bg-blue-50 text-blue-500' : 'bg-orange-100 text-orange-500'}`}>
+                  {expense.receiptUrl ? <UploadCloud size={20} /> : <AlertCircle size={20} />}
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-gray-900 dark:text-white leading-none">{expense.receiptUrl ? 'Add Another Receipt' : 'Missing Evidence'}</h3>
+                  <p className={`text-[10px] font-bold uppercase tracking-widest mt-1 ${expense.receiptUrl ? 'text-blue-400' : 'text-orange-400'}`}>{expense.receiptUrl ? 'Upload an additional receipt' : 'Upload missing receipt below'}</p>
+                </div>
+              </div>
+              
+              <div 
+                className={`w-full max-w-xl mx-auto border-2 border-dashed rounded-2xl p-10 text-center transition-all cursor-pointer backdrop-blur-sm ${uploadingReceipt ? 'border-blue-400 bg-blue-50/50' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-gray-800'}`}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input type="file" className="hidden" ref={fileInputRef} onChange={(e) => { if (e.target.files?.[0]) uploadReceipt(e.target.files[0]); }} accept="image/*" />
+                {uploadingReceipt ? (
+                  <div className="flex flex-col items-center gap-4 py-8">
+                     <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                     <p className="font-bold text-blue-600 animate-pulse">Uploading Receipt...</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-3">
+                    <div className={`w-16 h-16 rounded-full shadow-sm flex items-center justify-center mb-2 ${expense.receiptUrl ? 'bg-blue-50 text-blue-600' : 'bg-white dark:bg-gray-900 text-blue-500'}`}>
+                      <UploadCloud size={32} />
+                    </div>
+                    <p className="text-gray-900 dark:text-white font-bold text-lg">{expense.receiptUrl ? 'Click or Drag to add another' : 'Click or Drag & Drop new receipt'}</p>
+                    <p className="text-sm text-gray-500">Supports direct drag from Telegram or Ctrl+V to paste</p>
+                  </div>
+                )}
+              </div>
+            </div>
 
             {/* PDF-ONLY: Signature Section */}
             <div className="hidden print:block mt-12 pt-8 border-t-2 border-dashed border-gray-200">

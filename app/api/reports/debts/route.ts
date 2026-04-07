@@ -260,6 +260,13 @@ export async function GET(req: Request) {
 
       // Money out to a customer from expenses = We loaned them money. Increase amount they owe.
       customerReceivableMap[customerKey].amount += amount;
+      
+      // Store the expense in transactions for ledger history, marked clearly
+      customerReceivableMap[customerKey].transactions.push({
+        ...expense,
+        isExpenseRecord: true,
+        transactionDate: expense.date || expense.createdAt
+      });
     });
 
     // 2. Process transactions for receivables

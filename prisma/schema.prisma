@@ -29,6 +29,11 @@ model User {
   companyId         String
   TwoFAEnabled      Boolean            @default(false)
   lastLogin         DateTime?
+  lastActiveAt      DateTime?
+  lastLocation      String?
+  lastDevice        String?
+  impersonatedBy    String?
+  faceDescriptor    String?            @db.Text
   status            String             @default("Active")
   phone             String             @default("")
   twoFASecret       String?
@@ -62,6 +67,7 @@ model User {
   company           Company            @relation(fields: [companyId], references: [id])
   wallet            Wallet?
   projects          Project[]          @relation("ProjectMembers")
+  pageVisits        PageVisit[]
 
   @@map("users")
 }
@@ -163,6 +169,8 @@ model Company {
   users                   User[]
   workOrders              WorkOrder[]
   workshopJobs            WorkshopJob[]
+  visitors                Visitor[]
+  pageVisits              PageVisit[]
 
   @@map("companies")
 }
@@ -1299,4 +1307,41 @@ enum TransactionType {
   DEBT_GIVEN
   DEBT_RECEIVED
   OTHER
+}
+
+model Visitor {
+  id          String   @id @default(uuid()) @map("_id")
+  companyId   String
+  fingerprint String   // The fingerprint ID
+  ipAddress   String?
+  city        String?
+  country     String?
+  os          String?
+  browser     String?
+  device      String?   // Mobile, Desktop, Tablet
+  firstVisit  DateTime @default(now())
+  lastVisit   DateTime @default(now())
+  
+  company     Company  @relation(fields: [companyId], references: [id])
+  pageVisits  PageVisit[]
+
+  @@unique([fingerprint, companyId])
+  @@map("visitors")
+}
+
+model PageVisit {
+  id          String   @id @default(uuid()) @map("_id")
+  companyId   String
+  visitorId   String?
+  userId      String?
+  path        String
+  referrer    String?
+  duration    Int?     // Duration in seconds
+  timestamp   DateTime @default(now())
+
+  company     Company  @relation(fields: [companyId], references: [id])
+  visitor     Visitor? @relation(fields: [visitorId], references: [id])
+  user        User?    @relation(fields: [userId], references: [id])
+
+  @@map("page_visits")
 }

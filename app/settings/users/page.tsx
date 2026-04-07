@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Layout from '@/components/layouts/Layout';
-import { useSession } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
 import {
   ArrowLeft, Plus, Search, Filter, Edit, Trash2, X, Loader2, Info,
   Tag, CheckCircle, XCircle, ChevronRight, User as UserIcon, Lock, Key, Eye,
-  UserCheck, UserX, UserCog, Mail, Calendar
+  UserCheck, UserX, UserCog, Mail, Calendar, LogIn, MapPin, Smartphone, Monitor
 } from 'lucide-react';
 import Toast from '@/components/common/Toast';
 import { USER_ROLES } from '@/lib/constants';
@@ -18,6 +18,7 @@ const UserRow = ({
   onEdit,
   onDelete,
   onChangeStatus,
+  onImpersonate,
   onSelect,
   isSelected,
   currentUserId,
@@ -26,9 +27,12 @@ const UserRow = ({
   const isCurrentUser = user.id === currentUserId;
   const canDelete = currentUserRole === USER_ROLES.ADMIN && !isCurrentUser;
   const canChangeStatus = currentUserRole === USER_ROLES.ADMIN && !isCurrentUser;
+  const canImpersonate = currentUserRole === USER_ROLES.ADMIN && !isCurrentUser;
   const canEdit =
     currentUserRole === USER_ROLES.ADMIN ||
     (currentUserRole === USER_ROLES.MANAGER && user.role !== USER_ROLES.ADMIN);
+
+  const isOnline = user.lastActiveAt && (new Date().getTime() - new Date(user.lastActiveAt).getTime() < 15 * 60 * 1000);
 
   return (
     <tr className="hover:bg-lightGray dark:hover:bg-gray-700 transition-colors duration-150 border-b border-lightGray dark:border-gray-700 last:border-b-0">
@@ -36,22 +40,26 @@ const UserRow = ({
         <input
           type="checkbox"
           title="Select user"
-          placeholder="Select user"
           checked={isSelected}
           onChange={(e) => onSelect(user.id, e.target.checked)}
           className="h-4 w-4 text-primary rounded border-mediumGray dark:border-gray-600 focus:ring-primary"
           disabled={isCurrentUser}
         />
       </td>
-      <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-medium flex items-center space-x-2">
-        <UserIcon size={18} className="text-primary" />{' '}
-        <span>
-          {user.fullName}{' '}
-          {isCurrentUser && <span className="text-xs text-blue-500">(You)</span>}
-        </span>
-      </td>
-      <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300 flex items-center space-x-2">
-        <span>{user.email}</span>
+      <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-medium">
+        <div className="flex items-center space-x-2">
+          <div className="relative">
+            <UserIcon size={18} className="text-primary" />
+            {isOnline && <span className="absolute -bottom-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></span>}
+          </div>
+          <div className="flex flex-col">
+            <span>
+              {user.fullName}{' '}
+              {isCurrentUser && <span className="text-xs text-blue-500">(You)</span>}
+            </span>
+            <span className="text-xs text-mediumGray dark:text-gray-400">{user.email}</span>
+          </div>
+        </div>
       </td>
       <td className="p-4 whitespace-nowrap">
         <span
@@ -68,22 +76,37 @@ const UserRow = ({
         </span>
       </td>
       <td className="p-4 whitespace-nowrap">
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-semibold ${user.status === 'Active'
-              ? 'bg-secondary/10 text-secondary'
-              : 'bg-mediumGray/10 text-mediumGray'
-            }`}
-        >
-          {user.status}
-        </span>
+        <div className="flex flex-col text-sm text-mediumGray dark:text-gray-300">
+           {user.lastLocation && (
+             <span className="flex items-center gap-1"><MapPin size={12} /> {user.lastLocation.substring(0, 15)}</span>
+           )}
+           {user.lastDevice && (
+             <span className="flex items-center gap-1 mt-0.5">
+               {user.lastDevice === 'Mobile' ? <Smartphone size={12}/> : <Monitor size={12}/>} 
+               {user.lastDevice}
+             </span>
+           )}
+           {!user.lastLocation && !user.lastDevice && '-'}
+        </div>
       </td>
       <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">
-        {user.lastLogin
-          ? new Date(user.lastLogin).toLocaleDateString()
-          : '-'}
+        {user.lastActiveAt ? (
+           <div className="flex flex-col text-sm">
+             <span className={isOnline ? 'text-green-500' : ''}>{isOnline ? 'Online Hadda' : new Date(user.lastActiveAt).toLocaleString()}</span>
+           </div>
+        ) : '-'}
       </td>
       <td className="p-4 whitespace-nowrap text-right">
         <div className="flex items-center justify-end space-x-2">
+          {canImpersonate && (
+            <button
+              onClick={() => onImpersonate(user.id)}
+              className="p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors duration-200"
+              title="Ghost Login (Impersonate)"
+            >
+              <LogIn size={18} />
+            </button>
+          )}
           <button
             onClick={() => onEdit(user.id)}
             className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200"
@@ -99,17 +122,6 @@ const UserRow = ({
             disabled={!canDelete}
           >
             <Trash2 size={18} />
-          </button>
-          <button
-            onClick={() => onChangeStatus(
-              user.id,
-              user.status === 'Active' ? 'Inactive' : 'Active'
-            )}
-            className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors duration-200"
-            title="Toggle Status"
-            disabled={!canChangeStatus}
-          >
-            {user.status === 'Active' ? <UserX size={18} /> : <UserCheck size={18} />}
           </button>
         </div>
       </td>
@@ -573,6 +585,27 @@ export default function UserManagementSettingsPage() {
     }
   };
 
+  const handleImpersonateUser = async (targetUserId: string) => {
+    try {
+      const response = await fetch('/api/admin/impersonate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetUserId }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to impersonate user');
+      
+      setToastMessage({ message: 'Ghost login initiated...', type: 'info' });
+      await signIn('credentials', {
+        impersonateToken: data.token,
+        callbackUrl: '/dashboard'
+      });
+      
+    } catch (error: any) {
+      setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka account-ka la galayay.', type: 'error' });
+    }
+  };
+
   // --- Bulk Actions ---
   const handleSelectUser = (id: string, isSelected: boolean) => {
     if (isSelected) {
@@ -846,19 +879,16 @@ export default function UserManagementSettingsPage() {
                     />
                   </th>
                   <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">
-                    Magaca
-                  </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">
-                    Email
+                    Magaca & Email
                   </th>
                   <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">
                     Doorka
                   </th>
                   <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">
-                    Xaaladda
+                    Goobta / Qalabka
                   </th>
                   <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">
-                    Last Login
+                    Active Status
                   </th>
                   <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-mediumGray dark:text-gray-400 uppercase tracking-wider">
                     Ficillo
@@ -874,6 +904,7 @@ export default function UserManagementSettingsPage() {
                       onEdit={openEditModal}
                       onDelete={handleDeleteUser}
                       onChangeStatus={handleChangeStatus}
+                      onImpersonate={handleImpersonateUser}
                       onSelect={handleSelectUser}
                       isSelected={selectedUserIds.includes(user.id)}
                       currentUserId={currentUserId}

@@ -365,6 +365,16 @@ export default function AccountingPage() {
             </div>
             Wareejin Account-ka
           </Link>
+
+          <Link
+            href="/accounting/receivables"
+            className="group relative inline-flex items-center justify-center px-4 py-3 text-base font-semibold text-slate-700 dark:text-slate-200 transition-all duration-200 bg-white dark:bg-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-200 shadow shadow-slate-200 dark:shadow-slate-900 border border-slate-200 dark:border-slate-700 hover:-translate-y-0.5"
+          >
+            <div className="p-1.5 bg-blue-100/50 dark:bg-blue-900/30 rounded-lg mr-2 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
+              <TrendingUp size={20} className="text-[#3498DB]" />
+            </div>
+            Receivables
+          </Link>
         </div>
       </div>
 

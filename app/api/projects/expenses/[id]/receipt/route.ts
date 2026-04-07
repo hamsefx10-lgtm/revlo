@@ -37,22 +37,25 @@ export async function POST(
     }
 
     // Save image
-    const receiptUrl = await saveReceiptImage(file);
+    const newReceiptUrl = await saveReceiptImage(file);
+    
+    // Append to existing if present
+    const finalReceiptUrl = expense.receiptUrl ? `${expense.receiptUrl},${newReceiptUrl}` : newReceiptUrl;
 
     // Update Expense and all linked Transactions
     await prisma.$transaction([
       prisma.expense.update({
         where: { id: expenseId },
-        data: { receiptUrl },
+        data: { receiptUrl: finalReceiptUrl },
       }),
       prisma.transaction.updateMany({
         where: { expenseId },
-        data: { receiptUrl },
+        data: { receiptUrl: finalReceiptUrl },
       }),
     ]);
 
     return NextResponse.json(
-      { message: 'Rasiidka si guul leh ayaa loo soo geliyay!', receiptUrl },
+      { message: 'Rasiidka si guul leh ayaa loo soo geliyay!', receiptUrl: finalReceiptUrl },
       { status: 200 }
     );
   } catch (error: any) {
