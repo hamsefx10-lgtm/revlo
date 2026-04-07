@@ -23,10 +23,9 @@ export async function saveReceiptImage(file: File): Promise<string> {
         throw new Error('File size exceeds 5MB limit.');
     }
 
-    // Ensure upload directory exists
-    if (!existsSync(UPLOAD_DIR)) {
-        await mkdir(UPLOAD_DIR, { recursive: true });
-    }
+    // Convert file to buffer
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
 
     // Generate unique filename
     const timestamp = Date.now();
@@ -35,13 +34,21 @@ export async function saveReceiptImage(file: File): Promise<string> {
     const filename = `receipt-${timestamp}-${randomStr}${ext}`;
     const filepath = path.join(UPLOAD_DIR, filename);
 
-    // Convert file to buffer and save
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    await writeFile(filepath, buffer);
-
-    // Return public URL path
-    return `/uploads/receipts/${filename}`;
+    try {
+        // Ensure upload directory exists
+        if (!existsSync(UPLOAD_DIR)) {
+            await mkdir(UPLOAD_DIR, { recursive: true });
+        }
+        
+        // Try saving physically (Works on VPS / Local)
+        await writeFile(filepath, buffer);
+        return `/uploads/receipts/${filename}`;
+    } catch (error: any) {
+        // If Serverless (Netlify/Vercel) blocks writing (EROFS/ENOENT),
+        // fallback to storing the direct Base64 string into the database
+        console.warn('File system write blocked (likely serverless). Falling back to Base64:', error.message);
+        return `data:${file.type};base64,${buffer.toString('base64')}`;
+    }
 }
 
 /**

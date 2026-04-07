@@ -67,7 +67,7 @@ function getTypeConfig(type: string) {
 function getAccountGradient(type: string) {
   if (type === 'BANK') return 'from-blue-600 via-blue-700 to-indigo-800';
   if (type === 'CASH') return 'from-emerald-600 via-emerald-700 to-teal-800';
-  if (type === 'MOBILE_MONEY') return 'from-violet-600 via-violet-700 to-purple-800';
+  if (type === 'MOBILE_MONEY') return 'from-cyan-600 via-sky-600 to-blue-800';
   return 'from-slate-700 via-slate-800 to-gray-900';
 }
 
