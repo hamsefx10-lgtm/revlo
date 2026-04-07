@@ -19,6 +19,7 @@ export default function DownloadPage() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
+  const [showBrowserFallback, setShowBrowserFallback] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -34,31 +35,40 @@ export default function DownloadPage() {
         setIsStandalone(true);
       }
 
-      // Listen for PWA install prompt (Chrome/Edge/Android)
-      const handler = (e: any) => {
-        e.preventDefault();
-        setDeferredPrompt(e);
+      // Check for global deferred prompt set by pwa-register.js
+      if ((window as any).deferredPrompt) {
+        setDeferredPrompt((window as any).deferredPrompt);
+      }
+
+      // Listen for the prompt ready event
+      const readyHandler = () => {
+        if ((window as any).deferredPrompt) {
+          setDeferredPrompt((window as any).deferredPrompt);
+        }
       };
 
-      window.addEventListener('beforeinstallprompt', handler);
-      return () => window.removeEventListener('beforeinstallprompt', handler);
+      window.addEventListener('pwa-prompt-ready', readyHandler);
+      return () => window.removeEventListener('pwa-prompt-ready', readyHandler);
     }
   }, []);
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
-      // Show the install prompt
+      // Show the native install prompt
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === 'accepted') {
         setDeferredPrompt(null);
+        (window as any).deferredPrompt = null;
+        setIsStandalone(true); // Assuming they accepted
       }
     } else if (isIOS) {
-      // User is on iOS, but clicked the button (instructions are shown below, this is just a fallback)
-      alert("Si aad ugu rakibto iPhone/iPad-kaaga:\n1. Riix 'Share' (Icon-ka hoose ee leydiga fallaadhu ka baxayso).\n2. Dooro 'Add to Home Screen'.");
+       // Scroll smoothly or show instruction
+       setShowBrowserFallback(true);
     } else {
-      // General fallback (Browser doesn't support automatic prompt or it's already installed)
-      alert("Si aad u rakibto Web App-kan:\nFadlan isticmaal ikhtiyaarka 'Install' (ama 'Add to Home Screen') oo ku jira Settings-ka Browser-kaaga.");
+      // Show elegant fallback instead of alert
+      setShowBrowserFallback(true);
+      setTimeout(() => setShowBrowserFallback(false), 8000);
     }
   };
 
@@ -148,9 +158,23 @@ export default function DownloadPage() {
             )}
 
             {!isIOS && !isStandalone && (
-              <p className="mt-4 text-sm text-gray-400 flex items-center justify-center gap-2">
-                <Info size={16} /> Haddii uusan shaqayn, isticmaal Settings-ka Browser-ka.
-              </p>
+              <div className="mt-6 flex flex-col gap-3">
+                <p className="text-sm text-gray-400 flex items-center justify-center gap-2">
+                  <Info size={16} /> Haddii uusan shaqayn, isticmaal Settings-ka Browser-ka.
+                </p>
+                
+                {showBrowserFallback && (
+                  <div className="animate-fade-in-up bg-cyan-900/40 border border-cyan-500/50 p-4 rounded-xl text-cyan-100 text-sm text-left backdrop-blur-md shadow-lg">
+                    <div className="flex gap-3">
+                      <div className="mt-0.5"><Info size={20} className="text-cyan-400" /></div>
+                      <div>
+                        <strong className="block text-cyan-300 font-bold mb-1">Tilmaanta Rakibaada (Install)</strong>
+                        Browser-kaagu ma ogola in toos loo rakibo. Fadlan taabo summada khaanada Browser-kaaga <strong>(⋮)</strong> ama <strong>(⋯)</strong> kadibna dooro <strong>"Install App"</strong> ama <strong>"Add to Home Screen"</strong>.
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>

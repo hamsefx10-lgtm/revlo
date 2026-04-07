@@ -24,6 +24,8 @@ export default function PWAInstallBanner() {
         const handleBeforeInstallPrompt = (e: Event) => {
             e.preventDefault();
             setDeferredPrompt(e);
+            (window as any).deferredPrompt = e; // Expose globally for /download page
+            window.dispatchEvent(new Event('pwa-prompt-ready')); // Notify listeners
             setShowBanner(true);
         };
 
