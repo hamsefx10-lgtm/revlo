@@ -5,6 +5,9 @@ import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 
 // GET /api/projects/accounting/reports/payment-schedule - Soo deji xogta warbixinta deynaha iyo lacagaha la sugayo
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     // Mustaqbalka, halkan waxaad ku dari doontaa authentication iyo authorization
@@ -103,6 +106,8 @@ export async function GET(request: Request) {
       const matchesStatus = statusFilter === 'All' || item.status === statusFilter;
       const matchesType = typeFilter === 'All' || item.relatedEntity.type === typeFilter;
       // Date filtering is handled by Prisma query, but can add more here if needed
+
+
       return matchesStatus && matchesType;
     });
 

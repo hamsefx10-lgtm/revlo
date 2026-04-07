@@ -1,7 +1,9 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { requireManufacturingAccess } from '@/app/api/manufacturing/auth';
+
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
     try {

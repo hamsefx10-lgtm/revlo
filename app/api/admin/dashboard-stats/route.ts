@@ -2,6 +2,9 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     try {
         // parallel fetching for speed
@@ -16,6 +19,8 @@ export async function GET() {
         // We'll use total users for now as "Registered Users"
 
         // API Calls Approx (using transaction volume + logs as proxy for system activity)
+
+
         const apiCallsProxy = transactionCount + logsCount;
 
         return NextResponse.json({

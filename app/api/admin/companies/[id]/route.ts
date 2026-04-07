@@ -2,6 +2,9 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(
     request: Request,
     { params }: { params: { id: string } }
@@ -96,6 +99,8 @@ export async function DELETE(
     } catch (error: any) {
         console.error('Error deleting company:', error);
         // Likely Foreign Key Constraint violation
+
+
         return NextResponse.json(
             {
                 success: false,

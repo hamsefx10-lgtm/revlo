@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request) {
     try {
         const session = await getServerSession(authOptions);
@@ -86,6 +89,8 @@ export async function POST(req: Request) {
 
             // Calculate expected cash (This would actally need complex aggregation of Cash sales since opening)
             // For now, we update the closing cash provided by user
+
+
             const closingCash = Number(amount);
             const variance = closingCash - (activeSession.expectedCash || closingCash); // Placeholder logic
 

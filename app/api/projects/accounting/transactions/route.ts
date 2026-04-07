@@ -4,6 +4,9 @@ import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 import { getSessionCompanyUser } from '@/lib/auth'; // Use central auth helper
 
 // GET /api/projects/accounting/transactions - Soo deji dhammaan dhaqdhaqaaqa lacagta
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const sessionData = await getSessionCompanyUser();
@@ -278,6 +281,8 @@ export async function POST(request: Request) {
           const updatedExpense = await updateExpenseStatus(expenseId);
 
           // Trigger WhatsApp receipt if vendor is linked
+
+
           if (vendorId && updatedExpense) {
             const company = await prisma.company.findUnique({ where: { id: companyId } });
             const vendor = await prisma.shopVendor.findUnique({ where: { id: vendorId } });

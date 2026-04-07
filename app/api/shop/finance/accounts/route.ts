@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // GET: List all financial accounts with their current balances
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
@@ -63,6 +66,8 @@ export async function POST(req: NextRequest) {
                     companyId: session.user.companyId
                     // In a real multi-table schema, we link companyId properly. 
                     // Based on schema, Transaction has companyId.
+
+
                 }
             });
         }

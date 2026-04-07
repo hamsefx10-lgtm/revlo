@@ -5,6 +5,9 @@ import { isValidEmail } from '@/lib/utils'; // For email validation
 import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 
 // GET /api/customers/[id] - Soo deji macmiil gaar ah
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
@@ -305,6 +308,8 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 
     // Tirtir macmiilka
+
+
     await prisma.customer.delete({
       where: { id: id },
     });

@@ -3,6 +3,9 @@ import prisma from '@/lib/db';
 import bcrypt from 'bcryptjs';
 
 // GET single user (for profile and edit forms)
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const user = await prisma.user.findUnique({
@@ -111,6 +114,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 // DELETE /api/settings/users/[id] - Delete user
+
+
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
     await prisma.user.delete({

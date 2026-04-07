@@ -12,6 +12,9 @@ function toNumber(val: any): number {
     return isNaN(num) ? 0 : num;
 }
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
     try {
         const sessionData = await getSessionCompanyUser();
@@ -450,6 +453,8 @@ export async function GET(request: Request) {
         // ==========================================
         // 5. FIXED ASSETS
         // ==========================================
+
+
         const fixedAssets = await prisma.fixedAsset.findMany({
             where: { companyId }
         });

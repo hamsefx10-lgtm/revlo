@@ -5,6 +5,9 @@ import { getSessionCompanyUser } from '@/lib/auth';
 import { Decimal } from '@prisma/client/runtime/library';
 
 // POST /api/customers/payments - Record customer payment
+
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     const sessionData = await getSessionCompanyUser();
@@ -232,6 +235,8 @@ export async function GET(request: Request) {
     });
 
     // Calculate debt summary
+
+
     const customerDebts = await prisma.transaction.findMany({
       where: {
         customerId,

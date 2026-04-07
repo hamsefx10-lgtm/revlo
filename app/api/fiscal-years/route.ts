@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
 
 // GET - Fetch all fiscal years for the company
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
   const session = (await getServerSession(authOptions)) as import('next-auth').Session | null;
@@ -65,6 +68,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new fiscal year
+
+
     const fiscalYear = await prisma.fiscalYear.create({
       data: {
         year: parseInt(year),

@@ -1,9 +1,11 @@
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { getSessionCompanyUser } from '@/lib/auth';
 
 // Enhanced Debts report: Aggregates company debts and receivables with detailed information
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request) {
   try {
     // Get companyId from session with proper authentication

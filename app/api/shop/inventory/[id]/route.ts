@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // GET /api/shop/inventory/[id] - Get single product details
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(
     req: NextRequest,
     { params }: { params: { id: string } }
@@ -125,6 +128,8 @@ export async function PUT(
 
         // Check stock change to record movement if needed (simplified)
         // For accurate stock tracking, adjustments should use a specific endpoint, but editing is allowed here too.
+
+
 
         const updatedProduct = await prisma.product.update({
             where: { id },

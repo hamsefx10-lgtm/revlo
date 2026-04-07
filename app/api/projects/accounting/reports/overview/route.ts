@@ -4,6 +4,9 @@ import prisma from '@/lib/db';
 import { getSessionCompanyUser } from '@/lib/auth';
 
 // GET /api/projects/accounting/reports/overview - Overview stats for dashboard
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const session = await getSessionCompanyUser();
@@ -134,6 +137,8 @@ export async function GET(request: Request) {
     });
 
     // Bank & Cash
+
+
     const totalBankBalance = await prisma.account.aggregate({
       _sum: { balance: true },
       where: { companyId, type: 'BANK' },

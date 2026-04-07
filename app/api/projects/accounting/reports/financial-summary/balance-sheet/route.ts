@@ -13,6 +13,9 @@ function toNumber(val: any): number {
     return isNaN(num) ? 0 : num;
 }
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
@@ -238,6 +241,8 @@ export async function GET(req: NextRequest) {
                     cashAndBank: { value: cashAndBank, drillType: 'account', drillLink: '/reports/cashbook' },
                     inventory: { value: inventoryTotal, drillType: 'inventory', drillLink: '/reports/inventory' },
                     // WIP Removed
+
+
                     workInProgress: { value: 0, drillType: 'none', drillLink: '#' },
                     accountsReceivable: {
                         value: totalReceivables,

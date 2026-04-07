@@ -11,6 +11,9 @@ let reviews: Array<{
 }> = [];
 
 // GET - Fetch all reviews
+
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     // Sort reviews by creation date (newest first)
@@ -79,6 +82,8 @@ export async function POST(request: NextRequest) {
 }
 
 // DELETE - Delete a review (admin only)
+
+
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

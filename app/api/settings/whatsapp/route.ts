@@ -10,6 +10,9 @@ function logToFile(msg: string) {
     fs.appendFileSync(LOG_FILE, `[${new Date().toISOString()}] [API] ${msg}\n`);
 }
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
     logToFile('GET /api/settings/whatsapp');
     try {
@@ -17,6 +20,8 @@ export async function GET(request: Request) {
         logToFile(`Company ID: ${companyId}`);
 
         // Trigger session initialization or get existing
+
+
         const session = await whatsappManager.getSession(companyId);
         logToFile(`Session Status: ${session.status}`);
 

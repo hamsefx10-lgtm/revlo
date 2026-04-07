@@ -6,6 +6,9 @@ import { getSessionCompanyId } from './auth';
 
 // GET /api/inventory/projects - Soo deji dhammaan alaabta loo isticmaalay mashaariicda
 // Tani waxay soo celinaysaa diiwaanka alaabta loo isticmaalay mashaariicda kala duwan.
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const companyId = await getSessionCompanyId();
@@ -28,6 +31,8 @@ export async function GET(request: Request) {
 
 // POST /api/inventory/projects - Ku dar diiwaan cusub oo alaab loo isticmaalay mashruuc
 // Tani waxay diiwaan galinaysaa isticmaalka alaab gaar ah mashruuc gaar ah.
+
+
 export async function POST(request: Request) {
   try {
     const companyId = await getSessionCompanyId();

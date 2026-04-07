@@ -1,10 +1,12 @@
 
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getSessionCompanyId } from '@/app/api/admin/auth';
 import { createBackup, listBackups, BACKUP_DIR } from '@/lib/backup';
 import fs from 'fs';
 import path from 'path';
+
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {

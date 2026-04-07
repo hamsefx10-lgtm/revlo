@@ -4,6 +4,9 @@ import prisma from '@/lib/db';
 import { getSessionCompanyUser } from '@/lib/auth';
 
 // GET /api/project-labors - Fetch all project labor records
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const session = await getSessionCompanyUser();
@@ -37,6 +40,8 @@ export async function GET(request: Request) {
     });
 
     // Transform to frontend format with safe Decimal/null handling
+
+
     const toNumeric = (v: any): number => {
       if (v == null) return 0;
       if (typeof v === 'object' && 'toNumber' in v && typeof v.toNumber === 'function') {

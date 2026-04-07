@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
 
 // GET - Fetch all accounts for the company
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions) as any;
@@ -36,6 +39,8 @@ export async function GET(request: NextRequest) {
 }
 
 // POST - Create new account
+
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions) as any;

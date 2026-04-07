@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const session = (await getServerSession(authOptions)) as import('next-auth').Session | null;
@@ -21,6 +24,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch manufacturing used records with related data
+
+
     const manufacturingUsed = await prisma.manufacturingUsed.findMany({
       where: {
         companyId: user.company.id

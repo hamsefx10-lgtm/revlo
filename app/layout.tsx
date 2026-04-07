@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
@@ -69,6 +70,11 @@ export const metadata: Metadata = {
       'en-US': 'https://revlo.me/en',
       'so-SO': 'https://revlo.me/so',
     },
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Revlo',
   },
   verification: {
     google: 'google-site-verification-code', // Add verification code if available later
@@ -142,7 +148,9 @@ export default function RootLayout({
         <GoogleTranslate />
         <Providers>
           <ImpersonateBanner />
-          <AnalyticsProvider />
+          <Suspense fallback={null}>
+            <AnalyticsProvider />
+          </Suspense>
           {children}
         </Providers>
         <PWAInstallBanner />

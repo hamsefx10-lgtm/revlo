@@ -2,6 +2,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(
     request: Request,
     { params }: { params: { id: string } }
@@ -39,6 +42,8 @@ export async function GET(
         }
 
         // Fetch associated payment transactions based on the invoice number description
+
+
         const payments = await prisma.transaction.findMany({
             where: {
                 OR: [

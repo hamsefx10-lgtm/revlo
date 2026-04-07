@@ -3,6 +3,9 @@ import prisma from '@/lib/db';
 import { getSessionCompanyId } from './auth';
 
 // GET /api/projects/[id]/expenses - Get all expenses for a project
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id: projectId } = params;
@@ -66,6 +69,8 @@ export async function POST(request: Request, { params }: { params: { id: string 
       },
     });
     // Notify about expense creation for real-time updates
+
+
     const expenseEvent = {
       id: newExpense.id,
       projectId: projectId,

@@ -6,6 +6,9 @@ import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { getSessionCompanyId } from './auth';
 
 // GET /api/settings/company - Soo deji profile-ka shirkadda
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const companyId = await getSessionCompanyId();
@@ -24,6 +27,8 @@ export async function GET(request: Request) {
 }
 
 // PUT /api/settings/company - Cusboonaysii profile-ka shirkadda
+
+
 export async function PUT(request: Request) {
   try {
     const companyId = await getSessionCompanyId();

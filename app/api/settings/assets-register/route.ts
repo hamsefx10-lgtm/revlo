@@ -3,6 +3,9 @@ import { getSessionCompanyUser } from '@/lib/auth';
 import prisma from '@/lib/db';
 
 // GET /api/settings/assets-register - Get all assets with register details
+
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const session = await getSessionCompanyUser();
@@ -17,6 +20,8 @@ export async function GET() {
     });
 
     // Calculate depreciation and book values
+
+
     const assetsWithDepreciation = assets.map((asset: any) => {
       const depreciationRate = 0.15; // Default 15% annual depreciation
       const yearsSincePurchase = (new Date().getFullYear() - new Date(asset.purchaseDate).getFullYear());

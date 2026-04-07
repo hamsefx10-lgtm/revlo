@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // GET /api/shop/inventory - List all products
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
@@ -113,6 +116,8 @@ export async function POST(req: NextRequest) {
         });
 
         // Track initial stock movement
+
+
         if (stock > 0) {
             await prisma.stockMovement.create({
                 data: {

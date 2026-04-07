@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // GET /api/shop/customers/[id]
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(
     req: NextRequest,
     context: { params: { id: string } }
@@ -119,6 +122,8 @@ export async function DELETE(
         const { id } = context.params;
 
         // Check for dependencies (Sales)
+
+
         const salesCount = await prisma.sale.count({
             where: { customerId: id }
         });

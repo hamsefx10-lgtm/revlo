@@ -1,8 +1,10 @@
 // app/api/admin/check-transactions/route.ts - Check existing transactions and their project links
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { getSessionCompanyUser } from '@/lib/auth';
+
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   try {

@@ -1,10 +1,12 @@
 // app/api/reports/scheduled/route.ts - Scheduled Reports API
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { reportScheduler } from '@/lib/scheduler';
 import { getSessionCompanyUser } from '@/lib/auth';
 
 // GET /api/reports/scheduled - Get scheduled reports
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const session = await getSessionCompanyUser();

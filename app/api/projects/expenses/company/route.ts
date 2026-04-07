@@ -6,6 +6,9 @@ import { sendReceiptViaWhatsApp } from '@/lib/whatsapp/send-receipt';
 import { logToFile } from '@/lib/whatsapp/manager';
 
 // GET /api/expenses/company - List all company expenses
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const sessionData = await getSessionCompanyUser();
@@ -344,6 +347,8 @@ export async function POST(request: Request) {
     }
 
     // 4. Send automated WhatsApp receipt to vendor if applicable
+
+
     logToFile(`[WhatsApp Debug] Checking trigger conditions (Company): vendorId=${vendorId}, paymentStatus=${paymentStatus}, finalStatus=${finalPaymentStatus}, hasExpense=${!!newExpense}`);
     if (vendorId && (finalPaymentStatus === 'PAID' || finalPaymentStatus === 'PARTIAL') && newExpense) {
       try {

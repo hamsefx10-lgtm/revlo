@@ -4,6 +4,9 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
 // GET /api/shop/accounts/[id] - Get Account Details & Summary
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     try {
         const session = await getServerSession(authOptions);
@@ -96,6 +99,8 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         if (transactions > 0) {
             // Alternatively, mark as inactive instead of delete?
             // For now, prevent delete.
+
+
             return NextResponse.json({ error: 'Cannot delete account with existing transactions.' }, { status: 400 });
         }
 

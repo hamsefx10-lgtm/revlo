@@ -18,6 +18,9 @@ const MONEY_IN_TYPES: TransactionType[] = [
   TransactionType.TRANSFER_IN
 ];
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -300,6 +303,8 @@ export async function PUT(
 }
 
 // DELETE - Delete vendor
+
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }

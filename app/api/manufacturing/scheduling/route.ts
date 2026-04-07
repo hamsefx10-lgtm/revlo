@@ -5,6 +5,9 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
 
 // GET - Get production schedule and capacity planning
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
   const session = await getServerSession(authOptions) as Session | null;
@@ -365,6 +368,8 @@ async function getCapacityPlanning(companyId: string) {
   });
 
   // Get pending production orders
+
+
   const pendingOrders = await prisma.productionOrder.findMany({
     where: {
       companyId,

@@ -6,6 +6,9 @@ import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 import { getSessionCompanyId } from './auth';
 
 // GET /api/projects/accounting/fixed-assets - Soo deji dhammaan hantida go'an
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const companyId = await getSessionCompanyId();
@@ -105,6 +108,8 @@ export async function POST(request: Request) {
       });
 
       // Deduct from account balance
+
+
       await prisma.account.update({
         where: { id: accountId },
         data: { balance: { decrement: Number(value) } },

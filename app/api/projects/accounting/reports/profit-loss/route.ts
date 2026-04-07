@@ -4,6 +4,9 @@ import { getSessionCompanyUser } from '@/lib/auth';
 import { Decimal } from '@prisma/client/runtime/library';
 
 // GET /api/projects/accounting/reports/profit-loss - Soo deji xogta warbixinta faa'iidada & khasaaraha
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const sessionData = await getSessionCompanyUser();
@@ -242,6 +245,8 @@ export async function GET(request: Request) {
       .reduce((sum, p) => sum + p.netProfit, 0);
 
     // Generate monthly summary for charts
+
+
     const monthlySummary = [];
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 

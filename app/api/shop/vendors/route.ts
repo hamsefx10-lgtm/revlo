@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // GET /api/shop/vendors
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
@@ -102,6 +105,8 @@ export async function POST(req: NextRequest) {
         });
 
         // Return with companyName for frontend consistency
+
+
         return NextResponse.json({
             vendor: { ...vendor, companyName: vendor.name }
         }, { status: 201 });

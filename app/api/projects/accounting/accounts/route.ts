@@ -4,6 +4,9 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { getSessionCompanyUser } from '@/lib/auth';
 
 // GET /api/projects/accounting/accounts - Soo deji dhammaan accounts-ka shirkadda user-ka
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const sessionData = await getSessionCompanyUser();
@@ -83,6 +86,8 @@ export async function POST(request: Request) {
     }
 
     // Abuur account cusub
+
+
     const newAccount = await prisma.account.create({
       data: {
         name,

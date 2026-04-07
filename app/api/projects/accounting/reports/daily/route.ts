@@ -5,6 +5,9 @@ import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 
 // GET /api/projects/accounting/reports/daily - Soo deji xogta warbixinta maalinlaha ah
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     // Mustaqbalka, halkan waxaad ku dari doontaa authentication iyo authorization
@@ -88,6 +91,8 @@ export async function GET(request: Request) {
       where: {
         createdAt: { gte: today, lt: tomorrow },
         // companyId: companyId
+
+
       }
     });
 

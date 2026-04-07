@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getSessionCompanyId } from '@/app/api/admin/auth';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const companyId = await getSessionCompanyId();
@@ -122,6 +125,8 @@ export async function POST(request: Request) {
     }
 
     // Simulate task creation (in a real app, this would save to the database)
+
+
     const newTask = {
       id: `task-${Date.now()}`,
       name,

@@ -5,6 +5,9 @@ import prisma from '@/lib/prisma';
 import { startOfDay, subDays, format } from 'date-fns';
 
 // GET /api/shop/accounting/chart
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
@@ -50,6 +53,8 @@ export async function GET(req: NextRequest) {
         });
 
         // Aggregate
+
+
         transactions.forEach(t => {
             const dateStr = format(t.transactionDate, 'yyyy-MM-dd');
             const day = chartData.find(d => d.date === dateStr);

@@ -5,6 +5,9 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
 
 // GET - Get a specific work order
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -179,6 +182,8 @@ export async function DELETE(
     }
 
     // Delete work order
+
+
     await prisma.workOrder.delete({
       where: {
         id: workOrderId,

@@ -5,6 +5,9 @@ import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 
 // GET /api/projects/accounting/transactions/[id] - Soo deji dhaqdhaqaaq gaar ah
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
@@ -291,6 +294,8 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 
     // Notify about transaction deletion
+
+
     const transactionEvent = {
       id: id,
       projectId: existingTransaction.projectId,

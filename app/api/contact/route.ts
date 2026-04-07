@@ -4,6 +4,9 @@ import { sendContactFormEmail } from '@/lib/email';
 
 const prisma = new PrismaClient();
 
+
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const { name, email, subject, message } = await request.json();
@@ -130,6 +133,8 @@ export async function PATCH(request: NextRequest) {
     // if (!session || session.user.role !== 'ADMIN') {
     //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     // }
+
+
 
     const { id, read } = await request.json();
 

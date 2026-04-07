@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import { startOfMonth, subMonths } from 'date-fns';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request) {
     try {
         const session = await getServerSession(authOptions);
@@ -67,6 +70,8 @@ export async function GET(req: Request) {
             ],
             history: [
                 // Mock history or fetch from a 'TaxFiling' model if it existed
+
+
                 { period: 'Last Month', status: 'Paid', amount: 0, date: new Date().toISOString() }
             ]
         });

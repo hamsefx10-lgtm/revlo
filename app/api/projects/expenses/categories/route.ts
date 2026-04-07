@@ -5,6 +5,9 @@ import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { getSessionCompanyId } from './auth';
 
 // GET /api/expenses/categories - Soo deji dhammaan noocyada kharashyada
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const companyId = await getSessionCompanyId();
@@ -25,6 +28,8 @@ export async function GET(request: Request) {
 }
 
 // POST /api/expenses/categories - Ku dar nooc kharash cusub
+
+
 export async function POST(request: Request) {
   try {
     const companyId = await getSessionCompanyId();

@@ -1,6 +1,8 @@
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getSessionCompanyId } from '@/app/api/admin/auth';
+
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {

@@ -9,6 +9,9 @@ import fs from 'fs/promises'; // For file system operations
 const execPromise = promisify(exec);
 
 // GET /api/settings/backup - Soo deji taariikhda backups-ka (ama liiska backups-ka)
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     // Mustaqbalka, halkan waxaad ku dari doontaa authentication iyo authorization
@@ -79,6 +82,8 @@ export async function POST(request: Request) {
     // Kadibna waxaad diiwaan gelin doontaa backup-kan database-kaaga.
 
     // Tirtir faylka ku meel gaarka ah ka dib markii la shubo daruurta
+
+
     await fs.unlink(backupFilePath);
 
     return NextResponse.json(

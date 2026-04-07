@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
@@ -13,6 +12,9 @@ function toNumber(val: any): number {
     const num = Number(val);
     return isNaN(num) ? 0 : num;
 }
+
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
     try {

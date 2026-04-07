@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
 
 export async function POST(req: Request) {
   try {
@@ -29,18 +29,13 @@ export async function POST(req: Request) {
 
     // Generate a secure, short-lived token
     const tokenStr = require('crypto').randomBytes(32).toString('hex');
-    const identifier = `impersonate:${targetUserId}:${adminId}`;
-
-    // Clear old tokens for this specific impersonation path just in case
-    await prisma.verificationToken.deleteMany({
-      where: { identifier }
-    });
-
-    await prisma.verificationToken.create({
+    // Save token in the target user's record using available fields
+    await prisma.user.update({
+      where: { id: targetUserId },
       data: {
-        identifier,
-        token: tokenStr,
-        expires: new Date(Date.now() + 5 * 60 * 1000) // 5 minutes expiration
+        resetToken: tokenStr,
+        resetTokenExpires: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes expiration
+        impersonatedBy: adminId
       }
     });
 

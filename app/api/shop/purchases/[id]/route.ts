@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // GET /api/shop/purchases/[id] - Get PO Details
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(
     req: NextRequest,
     { params }: { params: { id: string } }
@@ -270,6 +273,8 @@ export async function PATCH(
                 data: {
                     status,
                     // If received, perhaps set updated At
+
+
                 }
             });
         });

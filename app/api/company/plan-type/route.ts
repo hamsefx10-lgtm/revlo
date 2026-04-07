@@ -4,6 +4,9 @@ import prisma from '@/lib/db';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions) as any;
@@ -17,6 +20,8 @@ export async function GET() {
     });
 
     // COMBINED is removed — default to PROJECTS_ONLY
+
+
     const planType = company?.planType === 'PROJECTS_ONLY' || company?.planType === 'SHOPS_ONLY' || company?.planType === 'FACTORIES_ONLY'
       ? company.planType
       : 'PROJECTS_ONLY';

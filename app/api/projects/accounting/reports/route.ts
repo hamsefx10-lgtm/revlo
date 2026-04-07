@@ -4,6 +4,9 @@ import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 import { getSessionCompanyUser } from '@/lib/auth'; // Use central auth helper
 
 // GET /api/projects/accounting/reports - Soo deji xogta guud ee warbixinada accounting-ga
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const sessionData = await getSessionCompanyUser();
@@ -186,6 +189,8 @@ export async function GET(request: Request) {
     });
 
     // Chart Data calculations
+
+
     const allAccounts = await prisma.account.findMany({ where: { companyId } });
     const accountDistribution = allAccounts.map(acc => ({
       name: String(acc.name),

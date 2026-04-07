@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
 import { getSessionCompanyId } from '@/app/api/admin/auth';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const companyId = await getSessionCompanyId();
     
     // Simulate restore jobs (in a real app, these would come from a job queue system)
+
+
     const jobs = [
       {
         id: 'restore-1',

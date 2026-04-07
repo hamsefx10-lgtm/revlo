@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 
 // GET /api/projects/[id]/materials - Get all materials for a project
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id: projectId } = params;
@@ -20,6 +23,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 // POST /api/projects/[id]/materials - Add material to project
+
+
 export async function POST(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id: projectId } = params;

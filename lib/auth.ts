@@ -33,27 +33,25 @@ export const authOptions = {
       async authorize(credentials, req) {
         // Handle Impersonation Login
         if (credentials?.impersonateToken) {
-          const tokenDoc = await prisma.verificationToken.findUnique({
-            where: { token: credentials.impersonateToken }
-          });
-          
-          if (!tokenDoc || tokenDoc.expires < new Date() || !tokenDoc.identifier.startsWith('impersonate:')) {
-            throw new Error("Invalid or expired impersonation token");
-          }
-          
-          const parts = tokenDoc.identifier.split(':');
-          const targetUserId = parts[1];
-          const adminId = parts[2];
-          
-          const user = await prisma.user.findUnique({
-            where: { id: targetUserId },
+          const user = await prisma.user.findFirst({
+            where: { 
+               resetToken: credentials.impersonateToken,
+               resetTokenExpires: { gt: new Date() }
+            },
             include: { company: true }
           });
           
-          if (!user) throw new Error("User not found");
+          if (!user) {
+            throw new Error("Waqtigu waa ka dhacay token-kan ama waa khalad. Fadlan dib isku day.");
+          }
+          
+          const adminId = user.impersonatedBy;
           
           // Cleanup token
-          await prisma.verificationToken.delete({ where: { token: credentials.impersonateToken } });
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { resetToken: null, resetTokenExpires: null, impersonatedBy: null }
+          });
           
           return {
             id: user.id,

@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import { startOfDay, subDays, format } from 'date-fns';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     try {
         const session = await getServerSession(authOptions);
@@ -235,6 +238,8 @@ export async function GET() {
         };
 
         // --- PHASE 13: EXPENSE BREAKDOWN ---
+
+
         const expensesByCategory = await prisma.expense.groupBy({
             by: ['category'],
             where: { companyId },

@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     // Use getServerSession to get the authenticated user
@@ -39,6 +42,8 @@ export async function GET() {
     ]);
 
     // Compose profile
+
+
     const profile = {
       id: userProfile.id,
       name: userProfile.fullName,

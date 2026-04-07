@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { generateShopReceiptPDF } from '@/lib/whatsapp/send-shop-receipt';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
     try {
         const sale = await (prisma as any).sale.findUnique({
@@ -24,6 +27,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         }
 
         // Return the PDF buffer with appropriate headers
+
+
         return new NextResponse(new Uint8Array(pdfBuffer), {
             status: 200,
             headers: {

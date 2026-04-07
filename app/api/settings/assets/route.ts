@@ -5,6 +5,9 @@ import { Decimal } from '@prisma/client/runtime/library';
 import { recalculateAccountBalance } from '@/lib/accounting';
 
 // GET /api/settings/assets - Get all fixed assets
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const session = await getSessionCompanyUser();
@@ -132,6 +135,8 @@ export async function POST(request: Request) {
     });
 
     // 3) Recalculate account balance once at the end
+
+
     if (accountId) {
       await recalculateAccountBalance(accountId);
     }

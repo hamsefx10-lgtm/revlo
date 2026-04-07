@@ -3,6 +3,9 @@ import prisma from '@/lib/db';
 import bcrypt from 'bcryptjs';
 
 // GET /api/settings/users - Get all users (optionally filter by companyId)
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -61,6 +64,8 @@ export async function POST(request: Request) {
     }
 
     // Hubi in company uu jiro
+
+
     const company = await prisma.company.findUnique({ where: { id: companyId } });
     if (!company) {
       return NextResponse.json(

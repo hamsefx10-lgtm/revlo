@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // GET /api/shop/employees/[id]
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(
     req: NextRequest,
     { params }: { params: { id: string } }
@@ -112,6 +115,8 @@ export async function DELETE(
         console.error('Error deleting employee:', error);
         // Fallback to soft delete if hard delete fails due to constraints?
         // Or just return error.
+
+
         return NextResponse.json({ error: 'Failed to delete employee. They may have related records.' }, { status: 400 });
     }
 }

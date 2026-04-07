@@ -13,6 +13,9 @@ function toNumber(val: any): number {
     return isNaN(num) ? 0 : num;
 }
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
@@ -287,6 +290,8 @@ export async function GET(req: NextRequest) {
 
 
         // RESPONSE STRUCTURE
+
+
         const responseData = {
             performance: {
                 revenue: {

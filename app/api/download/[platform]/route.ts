@@ -4,6 +4,9 @@ import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: Request,
   { params }: { params: { platform: string } }
@@ -57,6 +60,8 @@ export async function GET(
     const uint8Array = new Uint8Array(fileBuffer);
 
     // Return file with appropriate headers
+
+
     return new NextResponse(uint8Array, {
       headers: {
         'Content-Type': platform === 'windows' 

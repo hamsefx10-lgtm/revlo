@@ -5,6 +5,9 @@ import prisma from '@/lib/db';
 import { getFiscalYearSummary } from '@/lib/fiscal-year-service';
 
 // GET - Get fiscal year reports and summary
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -97,6 +100,8 @@ export async function GET(
       },
 
       // Project Performance
+
+
       projectPerformance: await prisma.project.findMany({
         where: {
           fiscalYearId: fiscalYearId,

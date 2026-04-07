@@ -1,9 +1,11 @@
-export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { requireManufacturingAccess } from '@/app/api/manufacturing/auth';
 
 // GET /api/manufacturing/customers
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
     try {
         const { companyId, userId } = await requireManufacturingAccess();

@@ -12,6 +12,9 @@ const toSafeNumber = (value: any) => {
 };
 
 // GET /api/shop/recycle-bin - List deleted items
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
@@ -169,6 +172,8 @@ export async function POST(req: NextRequest) {
     } catch (error: any) {
         console.error('Error restoring item:', error);
         // Handle FK errors (e.g. Account not found)
+
+
         if (error.code === 'P2003') {
             return NextResponse.json({ error: 'Cannot restore: Related record (e.g. Account or Project) no longer exists.' }, { status: 400 });
         }

@@ -31,6 +31,9 @@ const isSameDay = (a?: Date | null, b?: Date | null) => {
 };
 
 // GET /api/expenses/[id] - Soo deji kharash gaar ah
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
@@ -786,6 +789,8 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
     // Run Labor cleanup separately (safe mode) - This logic remains outside transaction as it was before
     // Although ideally it should be inside, keeping it as is to minimize regression risk on labor helper logic
+
+
     if (
       existingExpense.category &&
       (existingExpense.category === 'Labor' || existingExpense.category.toLowerCase() === 'labor') &&

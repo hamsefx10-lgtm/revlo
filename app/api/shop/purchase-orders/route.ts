@@ -5,6 +5,9 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // GET /api/shop/purchase-orders - List Bills/POs
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
@@ -83,6 +86,8 @@ export async function POST(req: NextRequest) {
         }
 
         // Create PO
+
+
         const po = await prisma.purchaseOrder.create({
             data: {
                 userId: session.user.id,

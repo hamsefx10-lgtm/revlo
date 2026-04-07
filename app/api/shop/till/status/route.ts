@@ -5,6 +5,9 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // GET /api/shop/till/status
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
@@ -28,6 +31,8 @@ export async function GET(req: NextRequest) {
         }
 
         // Calculate current accumulated cash sales
+
+
         const cashSales = await prisma.sale.aggregate({
             where: {
                 userId: session.user.id,

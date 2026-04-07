@@ -5,6 +5,9 @@ import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 
 // GET /api/projects/accounting/reports/inventory - Soo deji xogta warbixinta inventory-ga
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     // Mustaqbalka, halkan waxaad ku dari doontaa authentication iyo authorization
@@ -56,6 +59,8 @@ export async function GET(request: Request) {
     }));
 
     // Chart Data: Top Used Materials
+
+
     const topUsedMaterialsData = filteredItems.sort((a: any, b: any) => b.usedInProjects - a.usedInProjects).slice(0, 5).map((item: any) => ({
       name: item.name,
       value: item.usedInProjects,

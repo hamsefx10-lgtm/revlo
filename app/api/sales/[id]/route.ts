@@ -5,6 +5,9 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
 // GET /api/sales/[id] - Get single sale details
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request, { params }: { params: { id: string } }) {
     try {
         const session = await getServerSession(authOptions) as any;
@@ -142,6 +145,8 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
             }
 
             // Delete transaction
+
+
             await tx.transaction.delete({
                 where: { id }
             });

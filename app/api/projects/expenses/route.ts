@@ -7,6 +7,9 @@ import { getSessionCompanyUser } from '@/lib/auth';
 import { sendReceiptViaWhatsApp } from '@/lib/whatsapp/send-receipt';
 
 // GET /api/expenses - Soo deji dhammaan kharashyada
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const session = await getSessionCompanyUser();
@@ -549,6 +552,8 @@ export async function POST(request: Request) {
           const expenseWithVendor = { ...newExpense, vendor };
           console.log(`[Expenses API] Triggering WhatsApp receipt for expense ${newExpense.id} to vendor ${vendor.name}`);
           // Send asynchronously without awaiting to not block the API response
+
+
           sendReceiptViaWhatsApp(company.id, company.name, vendor.phoneNumber, expenseWithVendor);
         }
       } catch (waErr) {

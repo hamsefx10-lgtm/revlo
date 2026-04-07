@@ -6,6 +6,9 @@ import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { getSessionCompanyId } from './auth';
 
 // GET /api/customers - Soo deji dhammaan macaamiisha
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const companyId = await getSessionCompanyId();
@@ -102,6 +105,8 @@ export async function POST(request: Request) {
     }
 
     // Abuur macmiil cusub
+
+
     const newCustomer = await prisma.customer.create({
       data: {
         name,

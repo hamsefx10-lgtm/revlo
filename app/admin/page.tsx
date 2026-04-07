@@ -14,8 +14,13 @@ import {
 
 
 import { useSession } from 'next-auth/react';
-import FaceScanner from '@/components/FaceScanner';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
+
+const FaceScanner = dynamic(() => import('@/components/FaceScanner'), {
+  ssr: false,
+});
+
 import useSWR from 'swr';
 import RevloLoader from '@/components/ui/RevloLoader';
 
@@ -401,11 +406,11 @@ export default function AdminToolsPage() {
                 <ArrowLeft size={16} className="text-mediumGray dark:text-gray-400 transform rotate-180" />
               </div>
             </Link>
-            <Link href="/settings/users" className="block p-3 rounded-lg bg-lightGray dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
+            <Link href="/admin/users" className="block p-3 rounded-lg bg-lightGray dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <Users size={18} className="mr-3 text-secondary" />
-                  <span className="text-darkGray dark:text-gray-100 font-medium">Manage Users</span>
+                  <span className="text-darkGray dark:text-gray-100 font-medium">Manage System Users</span>
                 </div>
                 <ArrowLeft size={16} className="text-mediumGray dark:text-gray-400 transform rotate-180" />
               </div>

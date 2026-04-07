@@ -1,10 +1,12 @@
 // app/api/manufacturing/production-orders/[id]/route.ts - Single Production Order API
-export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { getSessionCompanyId } from '@/app/api/manufacturing/auth';
 
 // GET /api/manufacturing/production-orders/[id] - Soo deji amarka warshadaha gaar ah
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;

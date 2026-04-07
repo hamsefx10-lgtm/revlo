@@ -6,6 +6,9 @@ function getMonthLabel(date: Date) {
   return date.toLocaleString('default', { month: 'short', year: '2-digit' });
 }
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     // Auth check skipped for now (add back if getServerSession is available)
@@ -42,6 +45,8 @@ export async function GET() {
       .map(([month, { started, completed }]) => ({ month, started, completed }))
       .sort((a, b) => {
         // Parse year and month for sorting
+
+
         const [aMonth, aYear] = a.month.split(' ');
         const [bMonth, bYear] = b.month.split(' ');
         const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];

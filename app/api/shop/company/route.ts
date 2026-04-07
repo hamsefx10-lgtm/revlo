@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // GET /api/shop/company - Get Company Info
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
@@ -28,6 +31,8 @@ export async function GET(req: NextRequest) {
 }
 
 // PATCH /api/shop/company - Update Company Info
+
+
 export async function PATCH(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);

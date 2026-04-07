@@ -5,6 +5,9 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
 // POST /api/projects - Add new project
+
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions) as any;
@@ -174,6 +177,8 @@ export async function GET(request: Request) {
       // Deduplication & Party Logic:
       // 1. advancePaid is the base amount (Advance).
       // 2. We ONLY add DEBT_REPAID transactions that are NOT vendor-linked (meaning they are customer repayments).
+
+
       const totalRepaidViaTransactions = project.transactions
         .filter((t: any) => t.type === 'DEBT_REPAID' && !t.vendorId)
         .reduce((sum: number, t: any) => sum + Math.abs(Number(t.amount || 0)), 0);

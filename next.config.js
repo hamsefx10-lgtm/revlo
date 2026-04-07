@@ -5,7 +5,9 @@ const nextConfig = {
   output: 'standalone',
 
   // Ensure server-only packages (native modules) are not bundled for the browser
-  serverExternalPackages: ['whatsapp-web.js', 'puppeteer', 'puppeteer-core', 'qrcode'],
+  experimental: {
+    serverComponentsExternalPackages: ['whatsapp-web.js', 'puppeteer', 'puppeteer-core', 'qrcode'],
+  },
 
   // Exclude directories with permission issues from file scanning
   webpack: (config, { isServer }) => {
@@ -63,11 +65,16 @@ const nextConfig = {
   },
 };
 
-const withPWA = require('next-pwa')({
+const withPWA = require('@ducanh2912/next-pwa').default({
   dest: 'public',
-  register: true,
-  skipWaiting: true,
+  cacheOnFrontEndNav: true,
+  aggressiveFrontEndNavCaching: true,
+  reloadOnOnline: true,
+  swcMinify: true,
   disable: process.env.NODE_ENV === 'development',
+  workboxOptions: {
+    disableDevLogs: true,
+  },
 });
 
 module.exports = withPWA(nextConfig);

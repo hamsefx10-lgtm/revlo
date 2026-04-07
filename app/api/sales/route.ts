@@ -6,6 +6,9 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
 // GET /api/sales - Get all sales (INCOME transactions with productId or sales category)
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions) as any;
@@ -135,6 +138,8 @@ export async function POST(request: Request) {
     });
 
     // Update account balance
+
+
     await prisma.account.update({
       where: { id: account.id },
       data: { balance: account.balance + Number(finalTotal) },

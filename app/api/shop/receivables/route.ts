@@ -5,6 +5,9 @@ import prisma from '@/lib/prisma';
 
 // GET /api/shop/receivables
 // Returns list of customers with outstanding debt
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
@@ -57,6 +60,8 @@ export async function GET(req: NextRequest) {
         }) as any[];
 
         // Calculate totals and format
+
+
         const receivables = clientsWithDebt.map(client => {
             const totalDebt = client.sales.reduce((sum: number, sale: any) => {
                 const pending = sale.total - (sale.paidAmount || 0);

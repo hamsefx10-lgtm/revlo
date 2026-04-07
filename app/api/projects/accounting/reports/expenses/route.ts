@@ -5,6 +5,9 @@ import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 
 // GET /api/projects/accounting/reports/expenses - Soo deji xogta warbixinta kharashyada
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     // Mustaqbalka, halkan waxaad ku dari doontaa authentication iyo authorization
@@ -65,6 +68,8 @@ export async function GET(request: Request) {
       expenseCategoryBreakdown[key] = (expenseCategoryBreakdown[key] || 0) + amount;
 
       // Monthly trend
+
+
       const monthYear = exp.expenseDate instanceof Date ? exp.expenseDate.toLocaleString('en-US', { month: 'short', year: 'numeric' }) : new Date(exp.expenseDate).toLocaleString('en-US', { month: 'short', year: 'numeric' });
       if (!monthlyExpensesTrend[monthYear]) {
         monthlyExpensesTrend[monthYear] = { month: monthYear, total: 0 };

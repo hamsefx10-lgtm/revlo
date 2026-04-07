@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request) {
     try {
         const session = await getServerSession(authOptions);
@@ -66,6 +69,8 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { customerId, items, date, status } = body;
         // items: { productId, productName, quantity, unitPrice }[]
+
+
 
         const total = items.reduce((sum: number, item: any) => sum + (item.quantity * item.unitPrice), 0);
         const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`;

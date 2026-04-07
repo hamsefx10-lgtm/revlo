@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request) {
     try {
         const session = await getServerSession(authOptions);
@@ -75,6 +78,8 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true, employee });
     } catch (error) {
         // Schema checks: Employee has 'fullName', 'companyId', 'role'. 'phone' is optional.
+
+
         console.error('Error creating employee:', error);
         return NextResponse.json({ error: 'Failed to create employee' }, { status: 500 });
     }

@@ -4,6 +4,9 @@ import prisma from '@/lib/db';
 import { getSessionCompanyUser } from '@/lib/auth';
 
 // GET /api/vehicles - Get all vehicles for the company
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const session = await getSessionCompanyUser();
@@ -40,6 +43,8 @@ export async function POST(request: Request) {
       );
     }
     // Check if vehicle already exists for this company
+
+
     const existingVehicle = await prisma.fixedAsset.findFirst({
       where: { name: name.trim(), companyId, type: 'Vehicle' },
     });

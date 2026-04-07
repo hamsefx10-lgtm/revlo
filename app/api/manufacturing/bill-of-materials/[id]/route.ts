@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
 
 // GET - Get a specific bill of material
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -156,6 +159,8 @@ export async function DELETE(
     }
 
     // Delete bill of material
+
+
     await prisma.billOfMaterial.delete({
       where: {
         id: billOfMaterialId,

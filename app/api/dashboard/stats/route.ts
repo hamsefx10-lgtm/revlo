@@ -4,6 +4,9 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { getSessionCompanyUser } from '@/lib/auth';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     // Get companyId from session (fallbacks can be added if needed)
@@ -351,6 +354,8 @@ export async function GET(request: Request) {
     });
 
     // Fixed assets summary (Current Value, ignore date filter usually, or filter by purchase date?)
+
+
     const fixedAssets = await prisma.fixedAsset.aggregate({
       _sum: { value: true },
       _count: { id: true },

@@ -5,6 +5,9 @@ import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 
 // GET /api/projects/accounting/accounts/[id] - Soo deji account gaar ah
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
@@ -191,6 +194,8 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     const companyId = (session as any).user.companyId;
 
     // Hubi in account-ku jiro oo uu shirkaddan leeyahay
+
+
     const existingAccount = await prisma.account.findFirst({ where: { id, companyId } });
     if (!existingAccount) {
       return NextResponse.json({ message: 'Account-ka lama helin.' }, { status: 404 });

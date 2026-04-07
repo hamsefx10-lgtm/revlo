@@ -5,6 +5,9 @@ import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { getSessionCompanyId } from './auth';
 
 // GET /api/inventory/store/[id] - Soo deji alaab gaar ah
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
@@ -92,6 +95,8 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
     await prisma.inventoryItem.delete({ where: { id, companyId } });
     // Notify about inventory item deletion for real-time updates
+
+
     const inventoryEvent = {
       id: id,
       action: 'deleted',

@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request) {
     try {
         const session = await getServerSession(authOptions);
@@ -26,6 +29,8 @@ export async function GET(req: Request) {
         });
 
         // Format for frontend
+
+
         const formattedExpenses = expenses.map(exp => ({
             id: exp.receiptUrl || exp.id.slice(0, 8), // Use receiptUrl as ID display if available, else standard ID
             description: exp.description,

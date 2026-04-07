@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // GET /api/shop/employees - List employees
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
@@ -86,6 +89,8 @@ export async function POST(req: NextRequest) {
                 // Schema has `isActive` (boolean).
                 // Schema doesn't have `shift`. I will check if I can add it or ignore.
                 // For now, I'll store what I can.
+
+
                 category: 'COMPANY', // Default
             }
         });

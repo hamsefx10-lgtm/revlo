@@ -5,6 +5,9 @@ import { isValidEmail } from '@/lib/utils'; // For email validation
 import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 
 // GET /api/settings/profile - Soo deji profile-ka user-ka hadda soo galay
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     // Mustaqbalka, halkan waxaad ku dari doontaa authentication si aad u hesho user-ka hadda soo galay
@@ -83,6 +86,8 @@ export async function PUT(request: Request) {
     }
 
     // Hubi in email-ka uusan horey u diiwaan gashanayn user kale
+
+
     if (email && email !== existingUser.email) {
       const emailExists = await prisma.user.findUnique({ where: { email } });
       if (emailExists) {

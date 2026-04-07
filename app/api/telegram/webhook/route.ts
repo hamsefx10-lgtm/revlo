@@ -12,6 +12,9 @@ import { telegramSender } from '@/lib/telegram-sender';
 // Verify webhook secret (optional but recommended)
 const WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET;
 
+
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     // Verify webhook secret if configured
@@ -167,6 +170,8 @@ export async function POST(request: NextRequest) {
 }
 
 // GET endpoint for webhook verification (Telegram uses this)
+
+
 export async function GET(request: NextRequest) {
   return NextResponse.json({ message: 'Telegram webhook endpoint' });
 }

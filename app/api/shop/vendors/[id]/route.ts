@@ -4,6 +4,9 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
 // GET /api/shop/vendors/[id]
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(
     req: NextRequest,
     context: { params: { id: string } }
@@ -165,6 +168,8 @@ export async function DELETE(
         const { id } = context.params;
 
         // Check dependencies (PO)
+
+
         const poCount = await prisma.purchaseOrder.count({
             where: { vendorId: id }
         });

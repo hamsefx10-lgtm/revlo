@@ -6,6 +6,9 @@ import { sendReceiptViaWhatsApp } from '@/lib/whatsapp/send-receipt';
 import { logToFile } from '@/lib/whatsapp/manager';
 
 // GET /api/expenses/project - List all project expenses
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
     try {
         const sessionUser = await getSessionCompanyUser() as { companyId: string; userId: string } | null;
@@ -465,6 +468,8 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
         });
 
         // 3. Delete the project labor record
+
+
         await prisma.projectLabor.delete({
             where: { id }
         });

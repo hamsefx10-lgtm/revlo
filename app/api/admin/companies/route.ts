@@ -3,6 +3,9 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { getSessionCompanyId } from '@/app/api/admin/auth';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
     try {
         // In a real Super Admin scenario, we might check for a specific "SUPER_ADMIN" role/token.
@@ -77,6 +80,8 @@ export async function POST(request: Request) {
                 planType: planType || 'COMBINED',
                 industry,
                 // Default settings could be added here
+
+
             }
         });
 

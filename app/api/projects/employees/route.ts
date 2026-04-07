@@ -7,6 +7,9 @@ import { Decimal } from '@prisma/client/runtime/library'; // MUHIIM: Import Deci
 import { getSessionCompanyId } from './auth';
 
 // GET /api/employees - Soo deji dhammaan shaqaalaha
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const companyId = await getSessionCompanyId();
@@ -193,6 +196,8 @@ export async function POST(request: Request) {
         );
       }
       // monthlySalary is now optional, only validate if provided
+
+
       let monthlySalaryValue = undefined;
       if (typeof monthlySalary === 'number' && monthlySalary > 0) {
         monthlySalaryValue = new Decimal(monthlySalary);

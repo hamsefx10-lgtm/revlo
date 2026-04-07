@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     try {
         // 1. Find all expenses that are currently UNPAID (or null status) but have a 'paidFrom' account set.
@@ -37,6 +40,8 @@ export async function GET() {
                 paymentStatus: 'PAID',
                 // Note: Prisma updateMany doesn't support setting a field to the value of another field (like paymentDate = expenseDate).
                 // However, we can set paymentDate to now or leave it null. For consistency, let's set it to now.
+
+
                 paymentDate: new Date(),
             }
         });

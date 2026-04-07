@@ -7,6 +7,9 @@ import { Decimal } from '@prisma/client/runtime/library'; // MUHIIM: Import Deci
 import { getSessionCompanyId } from '@/app/api/projects/employees/auth';
 
 // GET /api/employees/[id] - Soo deji shaqaale gaar ah
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
@@ -256,6 +259,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     });
 
     // 8. Delete the employee
+
+
     await prisma.employee.delete({
       where: { id }
     });

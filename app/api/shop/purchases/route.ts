@@ -5,6 +5,9 @@ import prisma from '@/lib/prisma';
 import { sendPurchaseNotification } from '@/lib/whatsapp/send-purchase-notification';
 
 // GET /api/shop/purchases - List POs
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
@@ -221,6 +224,8 @@ export async function POST(req: NextRequest) {
     } catch (error: any) {
         console.error('Error creating purchase order:', error);
         // Include original error message if available for debugging
+
+
         return NextResponse.json({
             error: 'Internal server error',
             details: error?.message || 'Unknown error'

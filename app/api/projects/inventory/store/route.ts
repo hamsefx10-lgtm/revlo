@@ -5,6 +5,9 @@ import { USER_ROLES } from '@/lib/constants'; // Import user roles constants
 import { getSessionCompanyId } from './auth';
 
 // GET /api/inventory/store - Soo deji dhammaan alaabta bakhaarka
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const companyId = await getSessionCompanyId();
@@ -84,6 +87,8 @@ export async function POST(request: Request) {
       },
     });
     // Notify about inventory item creation for real-time updates
+
+
     const inventoryEvent = {
       id: newItem.id,
       action: 'created',

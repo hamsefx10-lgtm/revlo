@@ -3,6 +3,9 @@ import { getSessionCompanyId } from '../admin/auth';
 import prisma from '@/lib/db';
 
 // GET /api/notifications - Get all notifications
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const companyId = await getSessionCompanyId();
@@ -65,6 +68,8 @@ export async function GET(request: Request) {
 }
 
 // POST /api/notifications - Create new notification
+
+
 export async function POST(request: Request) {
   try {
     const companyId = await getSessionCompanyId();

@@ -5,6 +5,9 @@ import { BACKUP_DIR } from '@/lib/backup';
 import fs from 'fs';
 import path from 'path';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
@@ -27,6 +30,8 @@ export async function GET(
     const fileBuffer = fs.readFileSync(filepath);
 
     // Create response with file stream
+
+
     return new NextResponse(fileBuffer, {
       headers: {
         'Content-Type': 'application/sql',

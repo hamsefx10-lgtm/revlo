@@ -5,6 +5,9 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
 
 // GET - Get cost tracking data for production orders
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const session = (await getServerSession(authOptions)) as Session | null;
@@ -270,6 +273,8 @@ async function getAllProductionCosts(companyId: string, startDate?: string | nul
   });
 
   // Calculate totals
+
+
   const totals = costSummary.reduce((acc: {
     totalEstimatedCost: number;
     totalActualCost: number;

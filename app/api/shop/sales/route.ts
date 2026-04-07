@@ -29,6 +29,9 @@ interface SaleRequestBody {
 }
 
 // POST /api/shop/sales - Create new sale (Checkout)
+
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
@@ -274,6 +277,8 @@ export async function GET(req: NextRequest) {
         }
 
         // Trigger automatic debt conversion for this company
+
+
         await autoConvertAgedDebts(currentUser.companyId);
 
         const { searchParams } = new URL(req.url);

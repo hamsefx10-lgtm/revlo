@@ -6,6 +6,9 @@ import { Decimal } from '@prisma/client/runtime/library'; // Import Decimal type
 import { getSessionCompanyUser } from '@/lib/auth';
 
 // GET /api/projects/accounting/reports/bank - Soo deji xogta warbixinta bangiga iyo dhaqdhaqaaqa lacagta
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     // Mustaqbalka, halkan waxaad ku dari doontaa authentication iyo authorization
@@ -77,6 +80,8 @@ export async function GET(request: Request) {
     const monthlyCashFlowData = Object.values(monthlyCashFlowMap).sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime());
 
     // Account distribution data for pie chart
+
+
     const accountDistributionData = accounts.map((acc: any) => ({ name: acc.name, value: acc.balance.toNumber() })).filter((item: any) => item.value > 0);
 
 

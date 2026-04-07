@@ -4,6 +4,9 @@ import { PROJECT_STATUSES } from '@/lib/constants';
 import { getSessionCompanyId } from './auth';
 
 // GET /api/projects/[id] - Get single project with all relations
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
@@ -378,6 +381,8 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     });
 
     // Notify about project deletion for real-time updates
+
+
     const projectEvent = {
       id: id,
       action: 'deleted',

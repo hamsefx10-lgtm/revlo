@@ -9,6 +9,9 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
 // GET /api/telegram-expenses - Get all pending expenses
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions) as any;
@@ -50,6 +53,8 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/telegram-expenses - Create pending expense (usually from webhook)
+
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions) as any;

@@ -1,0 +1,144 @@
+﻿
+> revlo-app@0.1.0 build
+> next build
+
+  Γû▓ Next.js 14.2.5
+  - Environments: .env
+
+   Creating an optimized production build ...
+ Γ£ô (pwa) Compiling for server...
+ Γ£ô (pwa) Compiling for server...
+ Γ£ô (pwa) Compiling for client (static)...
+ Γùï (pwa) Service worker: C:\Users\OMEN\projects\revlo-vr\public\sw.js
+ Γùï (pwa)   URL: /sw.js
+ Γùï (pwa)   Scope: /
+node.exe : Failed to compile.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Failed to 
+    compile.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+./app/api/admin/analytics/route.ts
+Error: 
+  [31mx[0m 'import', and 'export' cannot be used 
+outside of module code
+    ,-[[36;1;4mC:\Users\OMEN\projects\revlo-vr\app\api
+\admin\analytics\route.ts[0m:27:1]
+ [2m27[0m |     
+ [2m28[0m |     // Group Analytics Data
+ [2m29[0m | 
+ [2m30[0m | export const dynamic = 'force-dynamic';
+    : [31;1m^^^^^^[0m
+ [2m31[0m | 
+ [2m32[0m |     const deviceStats = 
+visitors.reduce((acc: Record<string, number>, v) => {
+ [2m33[0m |        const key = v.device || 'Unknown';
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/api/admin/analytics/route.ts
+
+./app/api/admin/backups/[id]/download/route.ts
+Error: 
+  [31mx[0m 'import', and 'export' cannot be used 
+outside of module code
+    ,-[[36;1;4mC:\Users\OMEN\projects\revlo-vr\app\api
+\admin\backups\[id]\download\route.ts[0m:28:1]
+ [2m28[0m | 
+ [2m29[0m |     // Create response with file stream
+ [2m30[0m | 
+ [2m31[0m | export const dynamic = 'force-dynamic';
+    : [31;1m^^^^^^[0m
+ [2m32[0m | 
+ [2m33[0m |     return new NextResponse(fileBuffer, {
+ [2m33[0m |       headers: {
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/api/admin/backups/[id]/download/route.ts
+
+./app/api/admin/companies/[id]/route.ts
+Error: 
+  [31mx[0m 'import', and 'export' cannot be used 
+outside of module code
+     ,-[[36;1;4mC:\Users\OMEN\projects\revlo-vr\app\ap
+i\admin\companies\[id]\route.ts[0m:97:1]
+ [2m 97[0m |         console.error('Error deleting 
+company:', error);
+ [2m 98[0m |         // Likely Foreign Key 
+Constraint violation
+ [2m 99[0m | 
+ [2m100[0m | export const dynamic = 'force-dynamic';
+     : [31;1m^^^^^^[0m
+ [2m101[0m | 
+ [2m102[0m |         return NextResponse.json(
+ [2m102[0m |             {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/api/admin/companies/[id]/route.ts
+
+./app/api/admin/companies/route.ts
+Error: 
+  [31mx[0m Unexpected token `const`. Expected ... , 
+*,  (, [, :, , ?, =, an identifier, public, protected, 
+private, readonly, <.
+    ,-[[36;1;4mC:\Users\OMEN\projects\revlo-vr\app\api
+\admin\companies\route.ts[0m:78:1]
+ [2m78[0m |                 industry,
+ [2m79[0m |                 // Default settings 
+could be added here
+ [2m80[0m | 
+ [2m81[0m | export const dynamic = 'force-dynamic';
+    : [31;1m       ^^^^^[0m
+ [2m82[0m | 
+ [2m83[0m |             }
+ [2m83[0m |         });
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/api/admin/companies/route.ts
+
+./app/api/admin/dashboard-stats/route.ts
+Error: 
+  [31mx[0m 'import', and 'export' cannot be used 
+outside of module code
+    ,-[[36;1;4mC:\Users\OMEN\projects\revlo-vr\app\api
+\admin\dashboard-stats\route.ts[0m:17:1]
+ [2m17[0m | 
+ [2m18[0m |         // API Calls Approx (using 
+transaction volume + logs as proxy for system activity)
+ [2m19[0m | 
+ [2m20[0m | export const dynamic = 'force-dynamic';
+    : [31;1m^^^^^^[0m
+ [2m21[0m | 
+ [2m22[0m |         const apiCallsProxy = 
+transactionCount + logsCount;
+ [2m22[0m | 
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/api/admin/dashboard-stats/route.ts
+
+
+> Build failed because of webpack errors

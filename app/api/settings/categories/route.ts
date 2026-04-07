@@ -3,6 +3,9 @@ import { getSessionCompanyUser } from '@/lib/auth';
 import prisma from '@/lib/db';
 
 // GET /api/settings/categories - Get all expense categories
+
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const session = await getSessionCompanyUser();
@@ -30,6 +33,8 @@ export async function GET() {
 }
 
 // POST /api/settings/categories - Create new expense category
+
+
 export async function POST(request: Request) {
   try {
     const session = await getSessionCompanyUser();

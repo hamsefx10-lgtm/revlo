@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { getSessionCompanyId } from '@/app/api/admin/auth';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const companyId = await getSessionCompanyId();
@@ -26,6 +29,8 @@ export async function GET() {
     });
     
     // Group Analytics Data
+
+
     const deviceStats = visitors.reduce((acc: Record<string, number>, v) => {
        const key = v.device || 'Unknown';
        acc[key] = (acc[key] || 0) + 1;

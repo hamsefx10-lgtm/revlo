@@ -2,6 +2,9 @@
 import { NextResponse } from 'next/server';
 
 // GET /api/debts - Redirects to main reports debts API
+
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
@@ -19,6 +22,8 @@ export async function GET(request: Request) {
 }
 
 // POST /api/debts - Redirects to main reports debts API
+
+
 export async function POST(request: Request) {
   try {
     const url = new URL(request.url);

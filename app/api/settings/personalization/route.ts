@@ -3,6 +3,9 @@ import { getSessionCompanyUser } from '@/lib/auth';
 import prisma from '@/lib/db';
 
 // GET /api/settings/personalization - Get personalization settings
+
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const session = await getSessionCompanyUser();
@@ -57,6 +60,8 @@ export async function GET() {
 }
 
 // PUT /api/settings/personalization - Update personalization settings
+
+
 export async function PUT(request: Request) {
   try {
     const session = await getSessionCompanyUser();
