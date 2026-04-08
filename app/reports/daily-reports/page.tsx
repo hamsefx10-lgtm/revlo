@@ -1131,7 +1131,7 @@ export default function DailyReportPage() {
               ) : (
                 <div className="divide-y divide-gray-100 dark:divide-gray-700">
                   {report.projectExpenses.map((ex, idx) => (
-                    <Link href={`/expenses/${ex.id}`} key={`p-${idx}`}>
+                    <Link href={`/projects/expenses/${ex.id}`} key={`p-${idx}`}>
                       <div className="p-4 flex justify-between items-start hover:bg-gray-50 dark:hover:bg-gray-700/50 transition group cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0">
                         <div>
                           <p className="font-semibold text-gray-900 dark:text-white group-hover:text-purple-700 transition-colors">
@@ -1184,7 +1184,7 @@ export default function DailyReportPage() {
               ) : (
                 <div className="divide-y divide-gray-100 dark:divide-gray-700">
                   {report.companyExpenses.map((ex, idx) => (
-                    <Link href={`/expenses/${ex.id}`} key={`c-${idx}`}>
+                    <Link href={`/projects/expenses/${ex.id}`} key={`c-${idx}`}>
                       <div className="p-4 flex justify-between items-start hover:bg-gray-50 dark:hover:bg-gray-700/50 transition group cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-0">
                         <div>
                           <p className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-700 transition-colors">

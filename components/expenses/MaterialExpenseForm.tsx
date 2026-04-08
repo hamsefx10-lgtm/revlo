@@ -308,7 +308,7 @@ export function MaterialExpenseForm({
             <div className="space-y-3">
                 <div className="flex items-center gap-2">
                     <ScanLine className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    <h4 className="text-sm font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Smart Receipt Upload</h4>
+                    <h4 className="text-sm font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Smart Receipt Upload <span className="text-xs text-gray-400 font-normal normal-case">(Ikhtiyaari ah / Optional)</span></h4>
                     <span className="text-[10px] bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 px-2 py-0.5 rounded-full font-bold">AI</span>
                 </div>
 
@@ -387,7 +387,7 @@ export function MaterialExpenseForm({
                                         <ImageIcon className="w-8 h-8 text-blue-500 dark:text-blue-400" />
                                     </div>
                                     <p className="text-base font-bold text-gray-700 dark:text-gray-200">
-                                        Rasiidka Halkan Ku Dhig
+                                        Rasiidka Halkan Ku Dhig (Ikhtiyaari ah)
                                     </p>
                                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                         Telegram-ka ka soo jiid ↓ ama guji

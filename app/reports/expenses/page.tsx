@@ -321,10 +321,10 @@ export default function ExpensesPage() {
       <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-6 gap-4">
         <h1 className="text-2xl lg:text-4xl font-bold text-darkGray dark:text-gray-100">Expenses</h1>
         <div className="flex flex-col sm:flex-row gap-3">
-          <Link href="/expenses/import" className="bg-primary text-white py-2 lg:py-2.5 px-4 lg:px-6 rounded-lg font-bold text-sm lg:text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center justify-center" title="Import Bulk Expenses">
+          <Link href="/projects/expenses/import" className="bg-primary text-white py-2 lg:py-2.5 px-4 lg:px-6 rounded-lg font-bold text-sm lg:text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center justify-center" title="Import Bulk Expenses">
             <Upload className="mr-2" size={18} /> Import Bulk
           </Link>
-          <Link href="/expenses/add" className="bg-secondary text-white py-2 lg:py-2.5 px-4 lg:px-6 rounded-lg font-bold text-sm lg:text-lg hover:bg-green-600 transition duration-200 shadow-md flex items-center justify-center" title="Add New Expense">
+          <Link href="/projects/expenses/add" className="bg-secondary text-white py-2 lg:py-2.5 px-4 lg:px-6 rounded-lg font-bold text-sm lg:text-lg hover:bg-green-600 transition duration-200 shadow-md flex items-center justify-center" title="Add New Expense">
             <Plus className="mr-2" size={18} /> Add New Expense
           </Link>
           <button

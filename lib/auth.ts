@@ -1,4 +1,3 @@
-// lib/auth.ts - Authentication Helpers (NextAuth.js Integration - FINAL FIX)
 import type { Session } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
@@ -6,6 +5,7 @@ import prisma from './db';
 import bcrypt from 'bcryptjs';
 import { USER_ROLES } from './constants';
 import { getServerSession } from "next-auth/next";
+import crypto from 'crypto';
 
 // Hubi in env variables-ka ay jiraan
 if (!process.env.NEXTAUTH_SECRET) {
@@ -62,7 +62,8 @@ export const authOptions = {
             companyId: user.company?.id,
             companyLogoUrl: user.company?.logoUrl || undefined,
             planType: user.company?.planType || 'COMBINED',
-            impersonatedBy: adminId
+            impersonatedBy: adminId,
+            sessionToken: crypto.randomUUID() // Added for session check
           };
         }
 
@@ -109,6 +110,15 @@ export const authOptions = {
           }
         }
 
+        // Generate a new unique session token for this login
+        const newSessionToken = crypto.randomUUID();
+
+        // Save the new session token to DB (this invalidates all previous sessions!)
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { sessionToken: newSessionToken }
+        });
+
         return {
           id: user.id,
           email: user.email,
@@ -118,6 +128,7 @@ export const authOptions = {
           companyId: user.company?.id,
           companyLogoUrl: user.company?.logoUrl || undefined,
           planType: user.company?.planType || 'COMBINED',
+          sessionToken: newSessionToken,
         };
       }
     })
@@ -146,6 +157,7 @@ export const authOptions = {
         if (customUser.companyLogoUrl) token.companyLogoUrl = customUser.companyLogoUrl;
         if (customUser.planType) token.planType = customUser.planType;
         if (customUser.impersonatedBy) token.impersonatedBy = customUser.impersonatedBy;
+        if (customUser.sessionToken) token.sessionToken = customUser.sessionToken;
       }
       return token;
     },
@@ -160,6 +172,7 @@ export const authOptions = {
         if (token.companyLogoUrl) session.user.companyLogoUrl = token.companyLogoUrl as string;
         if (token.planType) session.user.planType = token.planType as string;
         if (token.impersonatedBy) session.user.impersonatedBy = token.impersonatedBy as string;
+        if (token.sessionToken) session.user.sessionToken = token.sessionToken as string;
       }
       return session;
     },
@@ -212,6 +225,25 @@ export async function getSessionCompanyUser() {
   if (!session.user?.id) {
     return null; // Return null instead of throwing error
   }
+  
+  // EXTRA SECURITY LAYER: Verify Concurrent Session Constraint
+  // This blocks the user globally from all protected backend actions if someone else logged in.
+  let isSessionValid = true;
+  if (!session.user.impersonatedBy && session.user.sessionToken) { // Impersonators bypass session lock
+    const dbUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { sessionToken: true }
+    });
+    if (dbUser && dbUser.sessionToken && dbUser.sessionToken !== session.user.sessionToken) {
+      console.warn(`[Auth Violation] User ${session.user.email} attempted to use invalid session token.`);
+      isSessionValid = false;
+    }
+  }
+
+  if (!isSessionValid) {
+    return null; // Forces API calls to return 401 Unauthorized, prompting UI logout
+  }
+
   return {
     companyId: session.user.companyId,
     userId: session.user.id,

@@ -12,6 +12,8 @@ declare module 'next-auth' {
       avatar?: string;
       companyLogoUrl?: string;
       planType?: string;
+      impersonatedBy?: string;
+      sessionToken?: string;
     } & DefaultSession['user'];
   }
 }

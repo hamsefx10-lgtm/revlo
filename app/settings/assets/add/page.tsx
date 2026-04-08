@@ -107,7 +107,7 @@ export default function AddFixedAssetPage() {
           id: (Date.now() + Math.random()).toString(),
           name: item.name || '',
           type: 'Equipment', // Default to equipment, user can change
-          value: item.price || 0,
+          value: item.total || item.price || 0,
           depreciationRate: 0.1, // Default
           assignedTo: '',
           purchaseDate: purchaseDateGlobal
