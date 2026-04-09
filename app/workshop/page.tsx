@@ -1,174 +1,188 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Layout from '@/components/layouts/Layout';
-import {
-    Hammer, ClipboardCheck, PackageCheck, Plus, Search,
-    ArrowRight, Clock, DollarSign, Calendar, MoreVertical
-} from 'lucide-react';
+import { Hammer, PackageCheck, DollarSign, Plus, Clock, Search, Loader2 } from 'lucide-react';
+import type { WorkshopJob } from '@prisma/client';
 
-export default function WorkshopPage() {
-    const [activeTab, setActiveTab] = useState<'active' | 'stock'>('active');
-    const [isLoading, setIsLoading] = useState(true);
+export default function WorkshopDashboard() {
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('ACTIVE');
 
-    // Mock Data for UI Dev
-    const [jobs, setJobs] = useState<any[]>([
-        { id: '1', name: 'Ganjeelo 4x4m', customer: 'Ahmed Ali', status: 'IN_PROGRESS', startDate: '2024-01-14', totalCost: 15000, progress: 60 },
-        { id: '2', name: 'Daaqad Aluminium', customer: 'Hotel Subeer', status: 'PENDING', startDate: '2024-01-15', totalCost: 5000, progress: 10 },
-        { id: '3', name: 'Albaabka Guriga', customer: 'Walk-in', status: 'COMPLETED', startDate: '2024-01-10', totalCost: 8000, progress: 100 },
-    ]);
+  useEffect(() => {
+    fetchJobs();
+  }, []);
 
-    useEffect(() => {
-        // Simulate fetch
-        setTimeout(() => setIsLoading(false), 1000);
-    }, []);
+  const fetchJobs = async () => {
+    try {
+      const res = await fetch('/api/workshop/jobs');
+      const data = await res.json();
+      setJobs(data.jobs || []);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const activeJobs = jobs.filter(j => j.status !== 'COMPLETED' && j.status !== 'SOLD');
-    const stockJobs = jobs.filter(j => j.status === 'COMPLETED');
+  const activeJobs = jobs.filter(j => j.status === 'IN_PROGRESS' || j.status === 'PENDING');
+  const finishedJobs = jobs.filter(j => j.status === 'COMPLETED');
+  const totalValueInProduction = activeJobs.reduce((sum, j) => sum + (j.totalCost || 0), 0);
 
+  const renderJobCard = (job: any) => {
     return (
-        <Layout>
-            <div className="max-w-[1600px] mx-auto space-y-8 animate-in fade-in pb-20">
-
-                {/* HEADER */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-4 px-4 md:px-0">
-                    <div>
-                        <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
-                            <span className="p-2 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-lg">
-                                <Hammer size={24} />
-                            </span>
-                            Workshop
-                        </h1>
-                        <p className="text-gray-500 font-medium text-sm mt-1 ml-14">Manage production, track costs, & stock items.</p>
-                    </div>
-                    <Link href="/workshop/new" className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg hover:translate-y-[-2px] transition-all">
-                        <Plus size={20} strokeWidth={3} /> New Job
-                    </Link>
-                </div>
-
-                {/* STATS */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 md:px-0">
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-orange-50 dark:bg-orange-900/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                        <div className="relative">
-                            <div className="flex items-center gap-3 text-orange-600 mb-2">
-                                <Clock size={20} /> <span className="text-xs font-bold uppercase tracking-widest">In Progress</span>
-                            </div>
-                            <div className="text-4xl font-black text-gray-900 dark:text-white mb-1">{activeJobs.length}</div>
-                            <p className="text-sm text-gray-400">Active jobs in workshop</p>
-                        </div>
-                    </div>
-
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-green-50 dark:bg-green-900/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                        <div className="relative">
-                            <div className="flex items-center gap-3 text-green-600 mb-2">
-                                <PackageCheck size={20} /> <span className="text-xs font-bold uppercase tracking-widest">Ready / Stock</span>
-                            </div>
-                            <div className="text-4xl font-black text-gray-900 dark:text-white mb-1">{stockJobs.length}</div>
-                            <p className="text-sm text-gray-400">Completed items ready for sale</p>
-                        </div>
-                    </div>
-
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 dark:bg-blue-900/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
-                        <div className="relative">
-                            <div className="flex items-center gap-3 text-blue-600 mb-2">
-                                <DollarSign size={20} /> <span className="text-xs font-bold uppercase tracking-widest">Value in Production</span>
-                            </div>
-                            <div className="text-4xl font-black text-gray-900 dark:text-white mb-1">
-                                {(activeJobs.reduce((s, j) => s + j.totalCost, 0)).toLocaleString()}
-                            </div>
-                            <p className="text-sm text-gray-400">Total accumulated cost</p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* CONTENT TABS */}
-                <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-200 dark:border-gray-700 min-h-[500px] flex flex-col mx-4 md:mx-0">
-                    <div className="flex items-center border-b border-gray-100 dark:border-gray-700 px-6 pt-6 gap-8">
-                        <button
-                            onClick={() => setActiveTab('active')}
-                            className={`pb-4 text-sm font-bold uppercase tracking-wide border-b-2 transition-all ${activeTab === 'active' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
-                        >
-                            Active Jobs
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('stock')}
-                            className={`pb-4 text-sm font-bold uppercase tracking-wide border-b-2 transition-all ${activeTab === 'stock' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
-                        >
-                            In Stock (Ready)
-                        </button>
-                    </div>
-
-                    <div className="p-6">
-                        {isLoading ? (
-                            <div className="flex items-center justify-center p-20 text-gray-300">Loading...</div>
-                        ) : activeTab === 'active' ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {activeJobs.map(job => (
-                                    <Link href={`/workshop/${job.id}`} key={job.id} className="group bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 hover:border-orange-300 hover:shadow-md transition-all">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <div className="p-2.5 bg-white dark:bg-gray-800 rounded-xl text-orange-600 shadow-sm group-hover:bg-orange-600 group-hover:text-white transition-colors">
-                                                <Hammer size={20} />
-                                            </div>
-                                            <span className="text-[10px] font-bold uppercase bg-yellow-100 text-yellow-700 px-2 py-1 rounded-md">
-                                                {job.status}
-                                            </span>
-                                        </div>
-                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1 group-hover:text-orange-600 transition-colors">{job.name}</h3>
-                                        <p className="text-xs text-gray-500 mb-4 flex items-center gap-1"><Calendar size={12} /> Started: {job.startDate}</p>
-
-                                        <div className="space-y-3">
-                                            <div className="flex justify-between text-xs font-medium">
-                                                <span className="text-gray-400">Client</span>
-                                                <span className="text-gray-700 dark:text-gray-300">{job.customer}</span>
-                                            </div>
-                                            <div className="flex justify-between text-xs font-medium">
-                                                <span className="text-gray-400">Current Cost</span>
-                                                <span className="text-gray-900 dark:text-white font-mono">{job.totalCost.toLocaleString()}</span>
-                                            </div>
-
-                                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-2">
-                                                <div className="bg-orange-500 h-1.5 rounded-full" style={{ width: `${job.progress}%` }}></div>
-                                            </div>
-                                        </div>
-                                    </Link>
-                                ))}
-                                <Link href="/workshop/new" className="flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 p-5 text-gray-400 hover:text-orange-600 hover:border-orange-300 hover:bg-orange-50/50 transition-all cursor-pointer h-full min-h-[220px]">
-                                    <Plus size={32} />
-                                    <span className="font-bold text-sm uppercase">Create New Job</span>
-                                </Link>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {stockJobs.map(job => (
-                                    <div key={job.id} className="group bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all relative overflow-hidden">
-                                        <div className="absolute top-0 left-0 w-1 h-full bg-green-500"></div>
-                                        <div className="flex justify-between items-start mb-4 pl-3">
-                                            <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-green-600 transition-colors">{job.name}</h3>
-                                            <div className="p-2 bg-green-50 text-green-600 rounded-full">
-                                                <PackageCheck size={18} />
-                                            </div>
-                                        </div>
-                                        <div className="pl-3 mb-6">
-                                            <p className="text-xs text-gray-500 mb-1">Total Production Cost</p>
-                                            <p className="text-2xl font-black text-gray-900 dark:text-white">{job.totalCost.toLocaleString()}</p>
-                                        </div>
-                                        <div className="pl-3">
-                                            <button className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-bold uppercase tracking-wide flex items-center justify-center gap-2 transition-all">
-                                                <DollarSign size={16} /> Sell Item
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-
+      <Link href={`/workshop/${job.id}`} key={job.id} className="block group">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-5 shadow-sm hover:shadow-md transition-all relative overflow-hidden h-full flex flex-col justify-between">
+          <div>
+            <div className="flex justify-between items-start mb-4">
+              <div className="w-10 h-10 rounded-full bg-orange-50 dark:bg-orange-900/30 flex items-center justify-center">
+                <Hammer className="text-orange-500 w-5 h-5" />
+              </div>
+              <span className={`px-2.5 py-1 text-[10px] font-bold rounded-md uppercase tracking-wider ${
+                job.status === 'IN_PROGRESS' ? 'bg-yellow-100 text-yellow-800' : 
+                job.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+              }`}>
+                {job.status.replace('_', ' ')}
+              </span>
             </div>
-        </Layout>
+            <h3 className="font-bold text-gray-900 dark:text-white text-lg leading-tight mb-1">{job.name}</h3>
+            <p className="text-xs text-gray-500 font-medium font-mono flex items-center">
+              <Clock className="w-3 h-3 mr-1" /> Started: {new Date(job.startDate).toISOString().split('T')[0]}
+            </p>
+
+            <div className="mt-4 pt-4 border-t border-gray-50 dark:border-gray-700/50 flex justify-between items-center">
+              <span className="text-xs text-mediumGray">Client</span>
+              <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">
+                {job.customer?.name || job.project?.name || 'Internal Stock'}
+              </span>
+            </div>
+          </div>
+          
+          <div className="mt-2">
+            <div className="flex justify-between items-end mb-1.5">
+              <span className="text-xs font-medium text-mediumGray">Current Cost</span>
+              <span className="text-sm font-bold text-gray-900 dark:text-white">${(job.totalCost || 0).toLocaleString()}</span>
+            </div>
+            <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5">
+              <div className="bg-orange-500 h-1.5 rounded-full" style={{ width: '60%' }}></div>
+            </div>
+          </div>
+        </div>
+      </Link>
     );
+  };
+
+  return (
+    <Layout>
+      <div className="max-w-6xl mx-auto space-y-6">
+        
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-2">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <Hammer className="text-orange-500 w-8 h-8" />
+              <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Workshop</h1>
+            </div>
+            <p className="text-mediumGray dark:text-gray-400 font-medium">Manage production, track costs, & stock items.</p>
+          </div>
+          <Link href="/workshop/create" className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-6 py-2.5 rounded-xl font-bold flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all">
+            <Plus className="mr-2 w-5 h-5" /> New Job
+          </Link>
+        </div>
+
+        {/* Stats Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm relative overflow-hidden">
+            <div className="absolute -right-6 -top-6 w-32 h-32 bg-orange-50 dark:bg-orange-900/10 rounded-full blur-2xl"></div>
+            <div className="flex items-center gap-2 mb-3 text-orange-600 dark:text-orange-400">
+              <Clock className="w-4 h-4" />
+              <h3 className="text-xs font-bold uppercase tracking-wider">In Progress</h3>
+            </div>
+            <p className="text-4xl font-black text-gray-900 dark:text-white mb-1">{activeJobs.length}</p>
+            <p className="text-sm text-mediumGray font-medium">Active jobs in workshop</p>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm relative overflow-hidden">
+            <div className="absolute -right-6 -top-6 w-32 h-32 bg-green-50 dark:bg-green-900/10 rounded-full blur-2xl"></div>
+            <div className="flex items-center gap-2 mb-3 text-green-600 dark:text-green-400">
+              <PackageCheck className="w-4 h-4" />
+              <h3 className="text-xs font-bold uppercase tracking-wider">Ready / Stock</h3>
+            </div>
+            <p className="text-4xl font-black text-gray-900 dark:text-white mb-1">{finishedJobs.length}</p>
+            <p className="text-sm text-mediumGray font-medium">Completed items ready for sale</p>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm relative overflow-hidden">
+            <div className="absolute -right-6 -top-6 w-32 h-32 bg-blue-50 dark:bg-blue-900/10 rounded-full blur-2xl"></div>
+            <div className="flex items-center gap-2 mb-3 text-blue-600 dark:text-blue-400">
+              <DollarSign className="w-4 h-4" />
+              <h3 className="text-xs font-bold uppercase tracking-wider">Value in Production</h3>
+            </div>
+            <p className="text-4xl font-black text-gray-900 dark:text-white mb-1">${totalValueInProduction.toLocaleString()}</p>
+            <p className="text-sm text-mediumGray font-medium">Total accumulated cost</p>
+          </div>
+        </div>
+
+        {/* Tabs & Content */}
+        <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-lg overflow-hidden min-h-[500px]">
+          
+          <div className="flex items-center border-b border-gray-100 dark:border-gray-700 px-6 pt-2">
+            <button 
+              onClick={() => setActiveTab('ACTIVE')}
+              className={`px-4 py-4 text-sm font-bold uppercase tracking-wide border-b-2 transition-colors ${activeTab === 'ACTIVE' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+            >
+              Active Jobs
+            </button>
+            <button 
+              onClick={() => setActiveTab('STOCK')}
+              className={`px-4 py-4 text-sm font-bold uppercase tracking-wide border-b-2 transition-colors ${activeTab === 'STOCK' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+            >
+              In Stock (Ready)
+            </button>
+          </div>
+
+          <div className="p-6">
+            {loading ? (
+              <div className="flex justify-center items-center h-40">
+                <Loader2 className="w-8 h-8 animate-spin text-mediumGray" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                
+                {/* Always show "Create New Job" as the first card in Active tab */}
+                {activeTab === 'ACTIVE' && (
+                   <Link href="/workshop/create" className="block group">
+                    <div className="rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-orange-400 bg-gray-50/50 dark:bg-gray-800/10 transition-all h-full min-h-[220px] flex flex-col items-center justify-center p-6 cursor-pointer">
+                      <div className="w-12 h-12 rounded-full bg-white dark:bg-gray-800 shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                        <Plus className="text-gray-400 group-hover:text-orange-500 w-6 h-6" />
+                      </div>
+                      <span className="text-sm font-bold text-gray-500 uppercase tracking-wider group-hover:text-orange-600">Create New Job</span>
+                    </div>
+                  </Link>
+                )}
+
+                {/* Render the appropriate jobs */}
+                {activeTab === 'ACTIVE' 
+                  ? activeJobs.map(renderJobCard)
+                  : finishedJobs.map(renderJobCard)
+                }
+
+                {/* Empty State for Finished tab */}
+                {activeTab === 'STOCK' && finishedJobs.length === 0 && (
+                  <div className="col-span-full py-20 text-center text-mediumGray">
+                    <PackageCheck className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                    <h3 className="font-bold text-gray-400">No Items Ready Yet</h3>
+                    <p className="text-sm mt-1">Finish a job to move it to stock.</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+        </div>
+      </div>
+    </Layout>
+  );
 }

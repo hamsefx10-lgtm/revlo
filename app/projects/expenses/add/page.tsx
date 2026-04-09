@@ -1273,7 +1273,7 @@ function AddExpenseContent() {
 
       // Clear form
       setCategory(''); setAmount(''); setPaidFrom(''); setExpenseDate(new Date().toISOString().split('T')[0]); setNote(''); setSelectedProject('');
-      setMaterials([{ id: 1, name: '', qty: '', price: '', unit: '' }]);
+      setMaterials([{ id: 1, name: '', qty: '', price: '', unit: 'pcs' }]);
       setSelectedEmployeeForSalary(''); setWorkDescription(''); setWage(''); setLaborPaidAmount(''); setTransportType('');
       setCompanyExpenseType(''); setLenderName(''); setLoanDate(''); setReceiptImage(null);
       setSelectedEmployeeForSalary(''); setSalaryPaymentAmount('');

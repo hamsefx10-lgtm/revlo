@@ -505,10 +505,11 @@ export function MaterialExpenseForm({
                                 <select
                                     value={item.unit}
                                     onChange={(e) => updateMaterial(item.id, 'unit', e.target.value)}
-                                    className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-transparent text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800"
+                                    className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-transparent text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 ${errors[`materialUnit_${index}`] ? 'border-red-500' : 'border-gray-200 dark:border-gray-700'}`}
                                 >
                                     {materialUnits.map(u => <option key={u} value={u}>{u}</option>)}
                                 </select>
+                                {errors[`materialUnit_${index}`] && <p className="text-red-500 text-[10px] mt-1">{errors[`materialUnit_${index}`]}</p>}
                             </div>
 
                             {/* Price */}

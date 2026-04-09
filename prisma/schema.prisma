@@ -408,6 +408,8 @@ model Expense {
   paymentDate     DateTime?
   materialDate    DateTime?
   purchaseOrderId String?
+  workshopJobId   String?
+  workshopJob     WorkshopJob?     @relation(fields: [workshopJobId], references: [id])
   account         Account?         @relation(fields: [accountId], references: [id])
   expenseCategory ExpenseCategory? @relation(fields: [categoryId], references: [id])
   company         Company          @relation(fields: [companyId], references: [id])
@@ -1211,6 +1213,7 @@ model WorkshopJob {
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
   expenses           JobExpense[]
+  systemExpenses     Expense[]
   company            Company      @relation(fields: [companyId], references: [id])
   customer           Customer?    @relation(fields: [customerId], references: [id])
   project            Project?     @relation(fields: [projectId], references: [id])
