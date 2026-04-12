@@ -55,15 +55,19 @@ export async function GET(request: Request) {
     });
 
     const processedEmployees = employees.map((emp: any) => {
-      // monthlySalary can be null
+      // OPTIMIZED SALARY CALCULATION: Pro-rated by actual days worked
       const monthlySalaryNum = emp.monthlySalary ? Number(emp.monthlySalary) : null;
-
-      // Calculate total months worked
       const startDate = new Date(emp.startDate);
-      const yearDiff = today.getFullYear() - startDate.getFullYear();
-      const monthDiff = today.getMonth() - startDate.getMonth();
-      const totalMonthsWorked = Math.max(1, yearDiff * 12 + monthDiff + 1);
-      const totalSalaryOwed = monthlySalaryNum ? monthlySalaryNum * totalMonthsWorked : 0;
+      
+      // Calculate exact days worked
+      const timeDiff = today.getTime() - startDate.getTime();
+      const rawDaysWorked = Math.floor(timeDiff / (1000 * 3600 * 24));
+      // Ensure at least 0 days
+      const daysWorked = Math.max(0, rawDaysWorked);
+      
+      // Standardize a month as 30 days for payroll calculation
+      const totalMonthsWorked = Number((daysWorked / 30).toFixed(2));
+      const totalSalaryOwed = monthlySalaryNum ? Math.round(monthlySalaryNum * totalMonthsWorked) : 0;
 
       // Get ACTUAL total paid from pre-fetched expenses
       const salaryExpenses = expensesByEmployee[emp.id] || [];

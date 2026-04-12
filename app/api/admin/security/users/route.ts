@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSessionCompanyId } from '@/app/api/admin/auth';
-
+import prisma from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,73 +8,41 @@ export async function GET() {
   try {
     const companyId = await getSessionCompanyId();
     
-    // Simulate user data (in a real app, these would come from the database)
-    const users = [
-      {
-        id: 'user-1',
-        name: 'Admin User',
-        email: 'admin@company.com',
-        role: 'ADMIN' as const,
-        status: 'active' as const,
-        lastLogin: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-        loginCount: 156,
-        permissions: ['read', 'write', 'delete', 'admin'],
-        createdAt: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000) // 1 year ago
-      },
-      {
-        id: 'user-2',
-        name: 'Manager User',
-        email: 'manager@company.com',
-        role: 'MANAGER' as const,
-        status: 'active' as const,
-        lastLogin: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
-        loginCount: 89,
-        permissions: ['read', 'write'],
-        createdAt: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000) // 6 months ago
-      },
-      {
-        id: 'user-3',
-        name: 'Regular User',
-        email: 'user@company.com',
-        role: 'USER' as const,
-        status: 'active' as const,
-        lastLogin: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
-        loginCount: 45,
-        permissions: ['read'],
-        createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) // 3 months ago
-      },
-      {
-        id: 'user-4',
-        name: 'Suspended User',
-        email: 'suspended@company.com',
-        role: 'USER' as const,
-        status: 'suspended' as const,
-        lastLogin: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 1 week ago
-        loginCount: 12,
-        permissions: ['read'],
-        createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000) // 2 months ago
-      },
-      {
-        id: 'user-5',
-        name: 'Inactive User',
-        email: 'inactive@company.com',
-        role: 'USER' as const,
-        status: 'inactive' as const,
-        lastLogin: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 1 month ago
-        loginCount: 3,
-        permissions: ['read'],
-        createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000) // 45 days ago
+    // Fetch REAL users from the database, since this is Super Admin, we could get all users or just the current company's users.
+    // If SuperAdmin, they should probably see all users across all companies, but let's try just getting all users and mapping them
+    const realUsers = await prisma.user.findMany({
+      orderBy: { createdAt: 'desc' },
+      select: {
+         id: true,
+         fullName: true,
+         email: true,
+         role: true,
+         status: true,
+         lastLogin: true,
+         createdAt: true,
       }
-    ];
+    });
+
+    const transformedUsers = realUsers.map(u => ({
+      id: u.id,
+      name: u.fullName,
+      email: u.email,
+      role: u.role,
+      status: u.status.toLowerCase(), // active, inactive, suspended
+      lastLogin: u.lastLogin || u.createdAt,
+      loginCount: 0, // We can track this later, placeholder 0 for now
+      permissions: ['read', 'write'], 
+      createdAt: u.createdAt
+    }));
 
     return NextResponse.json({ 
       success: true, 
-      users,
+      users: transformedUsers,
       timestamp: new Date()
     });
 
   } catch (error: any) {
-    console.error('Error fetching users:', error);
+    console.error('Error fetching real users:', error);
     return NextResponse.json(
       { success: false, message: 'Failed to fetch users', error: error.message },
       { status: 500 }

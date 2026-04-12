@@ -96,30 +96,97 @@ export async function POST(request: NextRequest) {
     });
 
     // 7. Dir Email-ka Xaqiijinta (Send Verification Email) via Resend
-    // try {
-    //   const { Resend } = require('resend');
-    //   const resend = new Resend(process.env.RESEND_API_KEY);
-    //
-    //   const confirmLink = `${process.env.NEXTAUTH_URL}/verify-email?token=${verificationToken}`;
-    //
-    //   await resend.emails.send({
-    //     from: 'Revlo <onboarding@resend.dev>', // Isticmaal domain-kaaga marka aad live tahay
-    //     to: email,
-    //     subject: 'Xaqiiji Akoonkaaga Revlo',
-    //     html: `
-    //       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-    //         <h2 style="color: #333;">Soo dhawayn, ${fullName}!</h2>
-    //         <p>Fadlan guji linkiga hoose si aad u xaqiijiso email-kaaga oo aad u bilowdo isticmaalka Revlo.</p>
-    //         <a href="${confirmLink}" style="display: inline-block; background-color: #2563EB; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 16px 0;">Xaqiiji Email-kaaga</a>
-    //         <p style="color: #666; font-size: 14px;">Haddii aadan adigu samayn akoonkan, iska iloow email-kan.</p>
-    //       </div>
-    //     `,
-    //   });
-    //   console.log('Verification email sent to:', email);
-    // } catch (emailError) {
-    //   console.error('Failed to send verification email:', emailError);
-    //   // Note: We don't block registration if email fails, but user needs to request resend later
-    // }
+    // ... [Original code removed for brevity or kept commented] ...
+
+    // 8. 🛡️ REGISTRATION ALERT AGENT (NEW) 🛡️
+    try {
+       // A. Soo saarista Xogta Asoolkaca
+       const userAgent = request.headers.get('user-agent') || 'Aalad aan La garan';
+       const ip = clientIP || 'IP Lama Helin';
+
+       // B. Hubinta in SuperAdmin-ku daaray Agent-ga (We use the first company as SuperAdmin storage)
+       const superAdminCompany = await prisma.company.findFirst({
+          orderBy: { createdAt: 'asc' }
+       });
+       
+       if (superAdminCompany) {
+          const settings = await prisma.personalizationSettings.findUnique({
+             where: { companyId: superAdminCompany.id }
+          });
+          const features: any = settings?.enabledFeatures || {};
+
+          if (features.registerAlertsEnabled && features.registerAlertsEmail) {
+             // C. Raadinta meesha uu joogo qofka (GeoLocation via ip-api)
+             let locationStr = 'Wadanka Lama garaneyn';
+             let isp = '';
+             if (ip && ip !== '::1' && ip !== '127.0.0.1') {
+                try {
+                   // Create an AbortController for setting a timeout
+                   const controller = new AbortController();
+                   const timeoutId = setTimeout(() => controller.abort(), 3000);
+                   
+                   const geoRes = await fetch(`http://ip-api.com/json/${ip}`, { signal: controller.signal });
+                   clearTimeout(timeoutId);
+                   
+                   const geoData = await geoRes.json();
+                   if (geoData.status === 'success') {
+                      locationStr = `${geoData.city}, ${geoData.country} ${geoData.countryCode}`;
+                      isp = geoData.isp;
+                   }
+                } catch(e) { console.log('Location fetch failed'); }
+             } else {
+                locationStr = 'Localhost (Kumbiyuutarkaaga gudihiisa)';
+             }
+
+             // D. Habaynta Fariinta Email-ka ee Cusub
+             const { sendEmail } = require('@/lib/email');
+             
+             const alertHtml = `
+               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
+                  <div style="background-color: #ef4444; color: white; padding: 20px; text-align: center;">
+                     <h2 style="margin: 0;">🚨 Alert: Qof Cusub Ayaa Is-Diiwaangeliyay!</h2>
+                  </div>
+                  <div style="padding: 24px; background-color: #fafafa;">
+                     <p style="color: #444; font-size: 16px;">Mudane Super Admin,</p>
+                     <p style="color: #666; line-height: 1.5;">Waxaa hadda system-ka iskusoo diiwaangeliyay qof cusub. Fadlan hoos ka eeg xogtiisa oo faah-faahsan si aad amni ahaan ugu hubiso.</p>
+                     
+                     <div style="background-color: white; border: 1px solid #ddd; padding: 15px; border-radius: 6px; margin: 20px 0;">
+                        <h3 style="margin-top: 0; color: #1f2937; border-bottom: 1px solid #eee; padding-bottom: 8px;">Xogta Shakhsiga ah</h3>
+                        <p><b>👤 Magaca:</b> ${fullName}</p>
+                        <p><b>📧 Emailka:</b> ${email}</p>
+                        <p><b>🏢 Shirkadda:</b> ${companyName}</p>
+                        <p><b>📋 Nooca Plan-ka:</b> ${planType || 'COMBINED'}</p>
+                     </div>
+
+                     <div style="background-color: white; border: 1px solid #ddd; padding: 15px; border-radius: 6px;">
+                        <h3 style="margin-top: 0; color: #1f2937; border-bottom: 1px solid #eee; padding-bottom: 8px;">Xogta Raad-Raaca (Tracking details)</h3>
+                        <p><b>🌍 Meesha uu joogo:</b> ${locationStr}</p>
+                        <p><b>📡 Xarigga Internetka (ISP):</b> ${isp || 'Lama Helin'}</p>
+                        <p><b>🌐 Ciwaanka IP:</b> ${ip}</p>
+                        <p><b>📱 Qalabka/Browserka:</b> ${userAgent}</p>
+                     </div>
+
+                     <p style="color: #888; font-size: 12px; margin-top: 24px; text-align: center;">
+                        Haddii aadan aqoonsanayn qofkan, waxaad si degdeg ah uga xannibi kartaa qeybta Users ee Super Admin-ka.
+                     </p>
+                  </div>
+               </div>
+             `;
+
+             // E. Dirista fariinta
+             await sendEmail({
+                to: features.registerAlertsEmail,
+                subject: `🚨 Diiwaangelin Cusub: ${email}`,
+                html: alertHtml
+             });
+             
+             console.log('Registration Alert sent successfully to:', features.registerAlertsEmail);
+          }
+       }
+    } catch (agentError) {
+       console.error('Registration Agent Failed:', agentError);
+       // We DON'T block the registration if the alert agent breaks!
+    }
 
     // 8. Jawaab Guul ah (Success Response)
     return NextResponse.json(

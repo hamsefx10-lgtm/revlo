@@ -15,5 +15,11 @@
     "app/api/**/*.ts": {
       "maxDuration": 30
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/admin/auto-backup?token=revlo-cron-secret-123",
+      "schedule": "0 2 * * *"
+    }
+  ]
 }

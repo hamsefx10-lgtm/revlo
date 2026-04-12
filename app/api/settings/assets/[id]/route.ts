@@ -41,9 +41,41 @@ export async function PUT(
       },
     });
 
+    // SYNC: Update the corresponding Transaction if it exists!
+    const relatedTx = await prisma.transaction.findFirst({
+      where: {
+        companyId,
+        category: 'FIXED_ASSET_PURCHASE',
+        fixedAssetId: asset.id,
+      }
+    });
+
+    if (relatedTx) {
+      await prisma.transaction.update({
+        where: { id: relatedTx.id },
+        data: {
+          transactionDate: new Date(purchaseDate),
+          amount: parseFloat(value), // Sync the amount if it changed
+          description: `Hanti Iib: ${name}` // Sync the name if it changed
+        }
+      });
+      
+      // Recalculate if the amount or account changed
+      if (relatedTx.accountId) {
+         try {
+             // Let's import recalculateAccountBalance dynamically or just use it.
+             // Wait, I need to make sure I import it at the top!
+             const { recalculateAccountBalance } = require('@/lib/accounting');
+             await recalculateAccountBalance(relatedTx.accountId);
+         } catch(e) {
+             console.error("Failed to recalculate balance", e);
+         }
+      }
+    }
+
     return NextResponse.json({
       asset,
-      message: 'Asset updated successfully'
+      message: 'Asset and related transactions updated successfully'
     });
   } catch (error) {
     console.error('Error updating asset:', error);

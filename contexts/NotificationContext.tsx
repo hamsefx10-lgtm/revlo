@@ -42,14 +42,10 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
   const { t } = useLanguage();
   const { data: session } = useSession();
 
-  // Fetch notifications from API
+  // Fetch notifications from API (FAST READ ONLY)
   const fetchNotifications = useCallback(async () => {
     if (!session) return;
     try {
-      // First, trigger a check for system events (Low Stock, etc)
-      // In a real production app, this would be a separate worker, but here we trigger it on client refresh for immediate feedback
-      await fetch('/api/notifications/check', { method: 'POST' });
-
       const response = await fetch('/api/notifications?limit=20');
       if (response.ok) {
         const data = await response.json();
@@ -75,12 +71,16 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     }
   }, [session]);
 
-  // Initial fetch
+  // Run the HEAVY system check ONLY once per user session (not every minute!)
+  useEffect(() => {
+    if (session) {
+       fetch('/api/notifications/check', { method: 'POST' }).catch(() => {});
+    }
+  }, [session]);
+
+  // Initial fetch ONLY (No background polling as per architectural decision)
   useEffect(() => {
     fetchNotifications();
-    // Poll every 60 seconds for new notifications
-    const interval = setInterval(fetchNotifications, 60000);
-    return () => clearInterval(interval);
   }, [fetchNotifications]);
 
   // Calculate unread count

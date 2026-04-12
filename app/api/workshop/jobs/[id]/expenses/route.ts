@@ -10,7 +10,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
     const { companyId, userId } = session;
 
     const body = await request.json();
-    const { expenseType, description, amount, accountId, employeeId, items, stockItems } = body;
+    const { expenseType, description, amount, accountId, employeeId, vendorId, items, stockItems } = body;
     const jobId = params.id;
 
     // 1. Validate Job
@@ -33,7 +33,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
         });
       }
 
-      await prisma.expense.create({
+      const expense = await prisma.expense.create({
         data: {
           description,
           amount: new Decimal(finalAmount),
@@ -48,6 +48,23 @@ export async function POST(request: Request, { params }: { params: { id: string 
           projectId: job.projectId || null,
         }
       });
+
+      if (accountId && finalAmount > 0) {
+        await prisma.transaction.create({
+          data: {
+            description: description || 'Workshop Labor Cost',
+            amount: new Decimal(finalAmount),
+            type: 'EXPENSE',
+            accountId,
+            expenseId: expense.id,
+            employeeId: employeeId || null,
+            projectId: job.projectId || null,
+            companyId,
+            userId,
+            category: 'LABOR'
+          }
+        });
+      }
 
       // Update Job Labor Cost
       await prisma.workshopJob.update({
@@ -73,7 +90,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
         data: { balance: { decrement: finalAmount } }
       });
 
-      await prisma.expense.create({
+      const expense = await prisma.expense.create({
         data: {
           description: description || 'Workshop Material Purchase',
           amount: new Decimal(finalAmount),
@@ -81,11 +98,27 @@ export async function POST(request: Request, { params }: { params: { id: string 
           subCategory: 'Workshop Material',
           paidFrom: accountId,
           accountId,
+          vendorId: vendorId || null,
           companyId,
           userId,
           workshopJobId: jobId,
           projectId: job.projectId || null,
           materials: items || [] // The AI receipt array
+        }
+      });
+
+      await prisma.transaction.create({
+        data: {
+          description: description || 'Workshop Material Cost',
+          amount: new Decimal(finalAmount),
+          type: 'EXPENSE',
+          accountId,
+          expenseId: expense.id,
+          vendorId: vendorId || null,
+          projectId: job.projectId || null,
+          companyId,
+          userId,
+          category: 'MATERIAL'
         }
       });
 
@@ -130,7 +163,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
         });
       }
 
-      await prisma.expense.create({
+      const expense = await prisma.expense.create({
         data: {
           description: 'Materials picking from Stock',
           amount: new Decimal(calculatedTotalCost),
@@ -145,12 +178,78 @@ export async function POST(request: Request, { params }: { params: { id: string 
         }
       });
 
+      await prisma.transaction.create({
+        data: {
+          description: 'Internal Stock Transfer to Workshop',
+          amount: new Decimal(calculatedTotalCost),
+          type: 'EXPENSE',
+          expenseId: expense.id,
+          projectId: job.projectId || null,
+          companyId,
+          userId,
+          category: 'MATERIAL_STOCK'
+        }
+      });
+
       // Update Job Material Cost
       await prisma.workshopJob.update({
         where: { id: jobId },
         data: { 
           materialCost: { increment: calculatedTotalCost },
           totalCost: { increment: calculatedTotalCost }
+        }
+      });
+    }
+    
+    // 5. Handle 'TRANSPORT' Type
+    else if (expenseType === 'TRANSPORT' || expenseType === 'SERVICE') {
+      if (!accountId) return NextResponse.json({ message: 'Fadlan dooro Account (Payment Account required)' }, { status: 400 });
+      
+      const account = await prisma.account.findUnique({ where: { id: accountId } });
+      if (!account || Number(account.balance) < finalAmount) {
+         return NextResponse.json({ message: 'Lacag kuma filna Account-kan (Insufficient funds)' }, { status: 400 });
+      }
+
+      await prisma.account.update({
+        where: { id: accountId },
+        data: { balance: { decrement: finalAmount } }
+      });
+
+      const expense = await prisma.expense.create({
+        data: {
+          description: description || `Workshop ${expenseType}`,
+          amount: new Decimal(finalAmount),
+          category: expenseType,
+          subCategory: `Workshop ${expenseType}`,
+          paidFrom: accountId,
+          accountId,
+          companyId,
+          userId,
+          workshopJobId: jobId,
+          projectId: job.projectId || null,
+        }
+      });
+
+      await prisma.transaction.create({
+        data: {
+          description: description || `Workshop ${expenseType} Cost`,
+          amount: new Decimal(finalAmount),
+          type: 'EXPENSE',
+          accountId,
+          expenseId: expense.id,
+          projectId: job.projectId || null,
+          companyId,
+          userId,
+          category: expenseType
+        }
+      });
+
+      // Update Job Overhead Cost
+      await prisma.workshopJob.update({
+        where: { id: jobId },
+        data: { 
+          overheadCost: { increment: finalAmount },
+          totalCost: { increment: finalAmount }
         }
       });
     }

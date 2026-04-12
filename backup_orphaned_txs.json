@@ -1,0 +1,434 @@
+[
+  {
+    "projectId": "180abdf6-d71b-4c1b-9888-2ea5692d35e2",
+    "oldAdvancePaid": 39000,
+    "transactionsModified": [
+      {
+        "transactionId": "1e0cabb3-de3c-4d58-82b0-0e14ea7000c6",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "baf0b553-ae90-4989-9870-5ced75c89ca5",
+    "oldAdvancePaid": 400000,
+    "transactionsModified": [
+      {
+        "transactionId": "bc3fe6d0-2a8b-44b1-a217-192a6b600c1a",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "9c9d1486-1797-4116-a653-725df71b04a8",
+    "oldAdvancePaid": 500000,
+    "transactionsModified": [
+      {
+        "transactionId": "b94d1198-843f-43c7-8a40-114eaecb59c5",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "f7632eb1-3354-4b94-b3ad-d39ac35b33a6",
+    "oldAdvancePaid": 55000,
+    "transactionsModified": [
+      {
+        "transactionId": "60ad3e40-0c25-4d51-b2ee-3e9494d10873",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "52a2e095-f530-4bc1-896b-6102605603e3",
+    "oldAdvancePaid": 400000,
+    "transactionsModified": [
+      {
+        "transactionId": "aa1da897-9358-441d-9731-b62f4be78b9c",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "6cc118a3-a8cf-4d18-9ff4-ae0343eeb89a",
+    "oldAdvancePaid": 143000,
+    "transactionsModified": [
+      {
+        "transactionId": "b04d05db-8d03-4acf-8e1b-5c06c3cd8970",
+        "oldProjectId": null
+      },
+      {
+        "transactionId": "31369b80-f14f-4c93-875d-690b642d8074",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "65cd2dfb-18fd-41fb-8ebf-8a3608f632be",
+    "oldAdvancePaid": 63000,
+    "transactionsModified": [
+      {
+        "transactionId": "6d00c622-2366-46ad-a420-026f0e2b7f40",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "8e0943cc-d368-48a5-87ac-b49f07a584b1",
+    "oldAdvancePaid": 48000,
+    "transactionsModified": [
+      {
+        "transactionId": "948c8af3-d974-483a-ae63-0d1d5860705d",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "043cfd20-dee7-4823-8123-107bb2a00632",
+    "oldAdvancePaid": 200000,
+    "transactionsModified": [
+      {
+        "transactionId": "2770d747-457d-465f-b954-73e6e59495f5",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "ffb88599-27e1-4531-97d1-c5f1dceea30d",
+    "oldAdvancePaid": 18000,
+    "transactionsModified": [
+      {
+        "transactionId": "cd7af61f-6ef1-40c5-a191-f299843453a1",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "917348bb-d352-4251-9499-11851e277951",
+    "oldAdvancePaid": 45000,
+    "transactionsModified": [
+      {
+        "transactionId": "80a83cdb-9df9-43e7-842b-908888090464",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "10263e3b-4742-4915-9c66-154cf9d0d313",
+    "oldAdvancePaid": 50000,
+    "transactionsModified": [
+      {
+        "transactionId": "3d88ac2a-3b67-4362-af7a-f6a02618ae2c",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "1a506ff3-bac6-4de1-8cab-3388ae7f47f6",
+    "oldAdvancePaid": 233850,
+    "transactionsModified": [
+      {
+        "transactionId": "88dffaa3-d829-4cbb-af77-684e7631fbcf",
+        "oldProjectId": null
+      },
+      {
+        "transactionId": "7fa6a849-3869-4f93-b160-e4af4f534ff1",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "e72acce4-3287-4cfd-9b68-2fd2afac06b8",
+    "oldAdvancePaid": 90000,
+    "transactionsModified": [
+      {
+        "transactionId": "20dcf0dd-e2fb-40b5-b8f3-e3ac44be3b1d",
+        "oldProjectId": null
+      },
+      {
+        "transactionId": "f73edb50-c35d-4cc7-814b-7bb9a0ec7988",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "33ade254-453c-4b18-b8b0-dfe9700e8f28",
+    "oldAdvancePaid": 38000,
+    "transactionsModified": [
+      {
+        "transactionId": "3d4beafd-9736-4f61-b4e7-24b7a4bdfa81",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "4eeb2363-15e9-4dc5-ad06-58b8999f4044",
+    "oldAdvancePaid": 120000,
+    "transactionsModified": [
+      {
+        "transactionId": "622e2524-a0b8-4ec5-b4d1-9049ac6da73d",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "dda49cab-8785-402d-9423-13f5ec145512",
+    "oldAdvancePaid": 45000,
+    "transactionsModified": [
+      {
+        "transactionId": "618bb0b8-bd61-45fd-ac0b-933afe27c4ba",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "31a05942-4754-4670-984a-4d9dbe186cdf",
+    "oldAdvancePaid": 50000,
+    "transactionsModified": [
+      {
+        "transactionId": "f4ed23c1-6915-473f-ba67-e182d02cafd0",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "6401e786-1bb7-4da9-af8c-9abbf8c7cc83",
+    "oldAdvancePaid": 30000,
+    "transactionsModified": [
+      {
+        "transactionId": "e6b92776-9b3d-42fd-b7e9-179e12f948b4",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "6f9abc73-d875-447e-a35a-9e21dff9d081",
+    "oldAdvancePaid": 12000,
+    "transactionsModified": [
+      {
+        "transactionId": "7facffc4-79cb-470d-8405-3ce2a2f7b181",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "13901964-79f5-4d2f-b0c4-f2a6c03282a7",
+    "oldAdvancePaid": 150000,
+    "transactionsModified": [
+      {
+        "transactionId": "6fb91254-e965-430f-8d6d-318ed06883cb",
+        "oldProjectId": null
+      },
+      {
+        "transactionId": "a7f4075f-9b54-4125-94d0-d1ba0ae41d3a",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "da19cd1f-e0e5-4a9b-b1ac-0c1f2ee41d82",
+    "oldAdvancePaid": 100000,
+    "transactionsModified": [
+      {
+        "transactionId": "63c1182c-329d-45b0-b56e-74b8b9e949ce",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "f9dc647d-5a0d-47eb-b407-956108904ae8",
+    "oldAdvancePaid": 38000,
+    "transactionsModified": [
+      {
+        "transactionId": "84a9b718-8178-41c2-98e9-2318846f4501",
+        "oldProjectId": null
+      },
+      {
+        "transactionId": "0d59e21c-81e1-4f11-91dc-f029d28ec43c",
+        "oldProjectId": null
+      },
+      {
+        "transactionId": "85e06cb1-23a3-4528-96b7-639b1d7b722d",
+        "oldProjectId": null
+      },
+      {
+        "transactionId": "f30c2bf0-c831-41d4-838a-7e5ec5b9430a",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "38293965-7898-425a-8288-8a8f1801e98d",
+    "oldAdvancePaid": 72000,
+    "transactionsModified": [
+      {
+        "transactionId": "4327c6ad-66bb-45b0-b99d-64d347ae2054",
+        "oldProjectId": null
+      },
+      {
+        "transactionId": "9d30b355-658f-4319-a893-1b73cbe4ea3d",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "94fbe85c-c694-411e-bf6a-a558bcfa92e6",
+    "oldAdvancePaid": 1074000,
+    "transactionsModified": [
+      {
+        "transactionId": "b0e417e3-dffc-4bb9-a861-c55c821c8025",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "35a1ea4e-3e67-40b4-9edc-7411482ba453",
+    "oldAdvancePaid": 70000,
+    "transactionsModified": [
+      {
+        "transactionId": "1c08f33e-b926-43d3-846f-b5b302774ec7",
+        "oldProjectId": null
+      },
+      {
+        "transactionId": "1ae650c4-8b96-4f75-8cdf-5d3f45ce533c",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "042a7e03-5e99-4cd2-b4c9-9c20ebd6f888",
+    "oldAdvancePaid": 142500,
+    "transactionsModified": [
+      {
+        "transactionId": "c24e5992-ecf3-47a3-b492-6b406a73f04c",
+        "oldProjectId": null
+      },
+      {
+        "transactionId": "d1caf449-9441-4652-92bf-aeab5c209fc1",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "1e14537e-778d-412e-8e52-58f67a15108c",
+    "oldAdvancePaid": 600000,
+    "transactionsModified": [
+      {
+        "transactionId": "a22f3379-7e8c-4417-ae2a-6028f5bbad0d",
+        "oldProjectId": null
+      },
+      {
+        "transactionId": "ec7b503b-bc6d-4ef4-b46e-04b523e3a3fc",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "587cfedb-5343-4733-b878-7cbce042882b",
+    "oldAdvancePaid": 105000,
+    "transactionsModified": [
+      {
+        "transactionId": "d29f4468-6561-47c0-941e-c71762b3358d",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "9a10546f-c462-4fd1-9600-17408e63460b",
+    "oldAdvancePaid": 95000,
+    "transactionsModified": [
+      {
+        "transactionId": "7924a90b-e1ba-427b-b000-ae096cc3d2b7",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "9453f3cb-e93a-4396-becb-4de72bb9c31a",
+    "oldAdvancePaid": 250000,
+    "transactionsModified": [
+      {
+        "transactionId": "0a39b8fb-6657-48fe-84fe-e57e69ea869f",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "f72a2e9d-ddae-4dc6-ac74-1c2bc49c4ac4",
+    "oldAdvancePaid": 35000,
+    "transactionsModified": [
+      {
+        "transactionId": "9f3788d8-ee6e-48c4-ba98-3315ab700d62",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "57880638-2a74-4a25-889e-3c8302f0d2c7",
+    "oldAdvancePaid": 1322299,
+    "transactionsModified": [
+      {
+        "transactionId": "2c50271d-d46e-41d9-82a6-f223927f8a97",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "2970784b-8a6f-415e-a0cd-a6d3e1177801",
+    "oldAdvancePaid": 0,
+    "transactionsModified": [
+      {
+        "transactionId": "3e5e4073-5799-4d58-9137-c21870141025",
+        "oldProjectId": null
+      },
+      {
+        "transactionId": "19216a42-b382-415b-a6e0-e5755d03dba9",
+        "oldProjectId": null
+      },
+      {
+        "transactionId": "b0032beb-0dd6-4ce4-825c-51eb37f25c76",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "f18821c4-7916-42fb-9780-50a1de53db2c",
+    "oldAdvancePaid": 0,
+    "transactionsModified": [
+      {
+        "transactionId": "bebbb82c-960c-4938-b392-c7a1eafff78f",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "536f054c-501f-4d53-8d8a-35a79450c0d3",
+    "oldAdvancePaid": 300000,
+    "transactionsModified": [
+      {
+        "transactionId": "6766ade4-0eaf-4d0d-91f1-601a82f3d4ab",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "d6addfb6-fa88-4495-a767-c01040747dc2",
+    "oldAdvancePaid": 300000,
+    "transactionsModified": [
+      {
+        "transactionId": "60cf8a66-7894-4bfe-91f8-77c1b3d5ae24",
+        "oldProjectId": null
+      }
+    ]
+  },
+  {
+    "projectId": "88af158d-1a6f-401d-a36b-c2ae5b65b611",
+    "oldAdvancePaid": 10000,
+    "transactionsModified": [
+      {
+        "transactionId": "75a69852-60d0-4be3-bec1-28d809412e1f",
+        "oldProjectId": null
+      }
+    ]
+  }
+]

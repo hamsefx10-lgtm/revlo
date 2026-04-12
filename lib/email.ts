@@ -10,10 +10,11 @@ interface EmailOptions {
   subject: string;
   html: string;
   text?: string;
+  attachments?: { filename: string, content: Buffer | string }[];
 }
 
 export async function sendEmail(options: EmailOptions): Promise<boolean> {
-  const { to, subject, html, text } = options;
+  const { to, subject, html, text, attachments } = options;
 
   // Use Resend if API key is configured
   if (process.env.RESEND_API_KEY) {
@@ -28,6 +29,7 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
         subject,
         html,
         text: text || html.replace(/<[^>]*>/g, ''),
+        attachments: attachments,
       });
 
       if (result.data) {

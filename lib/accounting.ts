@@ -46,15 +46,17 @@ export async function recalculateAccountBalance(accountId: string, upToDate?: Da
         const isStandardIn = [
             'INCOME',
             'DEBT_RECEIVED',
-            'TRANSFER_IN'
-        ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && (!trx.vendorId || !trx.expenseId));
+            'TRANSFER_IN',
+            'SHAREHOLDER_DEPOSIT'
+        ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && (!trx.vendorId && !trx.expenseId && !(trx.description && trx.description.includes('Flipped to Outflow'))));
 
         const isStandardOut = [
             'EXPENSE',
             'DEBT_GIVEN',
             'DEBT_TAKEN',
-            'TRANSFER_OUT'
-        ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && !!trx.vendorId && !!trx.expenseId);
+            'TRANSFER_OUT',
+            'SALARY'
+        ].includes(trx.type) || (trx.type === 'DEBT_REPAID' && (!!trx.vendorId || !!trx.expenseId || (trx.description && trx.description.includes('Flipped to Outflow'))));
 
         if (isStandardIn) {
             currentBalance += amount;
@@ -115,14 +117,11 @@ export async function updateProjectAdvancePaid(projectId: string) {
     if (!projectId) return;
 
     // Sum all transactions linked to this project that are advance payments
-    // Based on the pattern found in project creation API
+    // We now count all INCOME records linked to the project, regardless of name, to prevent data loss.
     const advanceTransactions = await prisma.transaction.findMany({
         where: {
             projectId: projectId,
-            type: 'INCOME',
-            description: {
-                contains: 'Advance Payment for Project'
-            }
+            type: 'INCOME'
         }
     });
 

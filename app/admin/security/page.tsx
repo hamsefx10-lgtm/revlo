@@ -789,12 +789,114 @@ export default function SecurityPage() {
                 className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
               >
                 <Settings size={16} className="mr-2" />
-                Save Settings
+                Save Access Rules
               </button>
             </div>
+            
+            {/* SUPER ADMIN: REGISTRATION ALERT AGENT */}
+            <div className="mt-8 pt-6 border-t-4 border-double border-red-200 dark:border-red-900/40">
+              <div className="bg-red-50 dark:bg-red-900/10 p-6 rounded-xl border border-red-100 dark:border-red-800/30">
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <h4 className="text-xl font-bold text-red-900 dark:text-red-400 flex items-center">
+                      <Shield className="mr-2" size={24} />
+                      Super Admin Alerts (Registration Agent)
+                    </h4>
+                    <p className="text-sm text-red-700 dark:text-red-300 mt-1">
+                      Marka qof meel kasta jooga iskusoo diiwaangeliyo, Assistant-kan wuxuu baari doonaa IP-giisa, goobtiisa iyo qalabkiisa, wuxuuna toos iigusoo ridi doonaa Emailka aan hoos ku xusho.
+                    </p>
+                  </div>
+                </div>
+                
+                <SuperAdminRegistrationAlerts />
+              </div>
+            </div>
+
           </div>
         </div>
       )}
     </Layout>
+  );
+}
+
+// Custom internal component for SuperAdmin alerts UI
+function SuperAdminRegistrationAlerts() {
+  const [enabled, setEnabled] = useState(false);
+  const [email, setEmail] = useState('');
+  const [locked, setLocked] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // It fetches the first company ID (SuperAdmin) automatically internally in the generic endpoint if companyId=UNKNOWN
+    fetch('/api/settings/security?companyId=UNKNOWN')
+      .then(res => res.json())
+      .then(data => {
+        if (data.features) {
+          setEnabled(data.features.registerAlertsEnabled || false);
+          setEmail(data.features.registerAlertsEmail || '');
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const saveSuperAdminAlertSettings = async () => {
+     try {
+        setLocked(true);
+        const res = await fetch('/api/settings/security', {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({
+              companyId: 'UNKNOWN', // It will default to the master company
+              registerAlertsEnabled: enabled,
+              registerAlertsEmail: email
+           })
+        });
+        if (res.ok) {
+           alert('Si sax ah ayaa loo keydiyay Assistant-ka Diiwaangelinta!');
+        } else {
+           alert('Gadaal ayey kasoo laabatay Cilad');
+        }
+     } catch(e) {}
+  };
+
+  if (loading) return <div className="text-sm text-red-500 font-bold">Inyar sug...</div>;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center space-x-3">
+         <label className="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" className="sr-only peer" checked={enabled} onChange={e => {
+                if (!locked) setEnabled(e.target.checked);
+            }} disabled={locked} />
+            <div className="w-11 h-6 bg-red-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-red-600"></div>
+         </label>
+         <span className="text-red-900 font-bold dark:text-red-300">Daar Xog-Guruustaha (Enable Alert Agent)</span>
+      </div>
+
+      <div className="space-y-2 max-w-sm">
+         <label className="text-xs font-bold text-red-800 uppercase">Email-ka lagusoo dirayo farrimaha qarsidda</label>
+         <input 
+            type="email" 
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            disabled={locked}
+            placeholder="Tusaale: hamsemoalin@gmail.com"
+            className="w-full border border-red-300 dark:border-red-900 rounded-lg px-4 py-2 bg-white dark:bg-gray-900/50 text-sm disabled:opacity-60 focus:ring-red-500 focus:border-red-500"
+         />
+      </div>
+
+      <div className="pt-2">
+         {locked ? (
+            <button onClick={() => setLocked(false)} className="bg-red-100 hover:bg-red-200 text-red-800 px-4 py-2 rounded-lg text-sm transition-colors flex items-center font-bold">
+               <Unlock size={16} className="mr-2" /> Fur si aad u beddesho
+            </button>
+         ) : (
+            <button onClick={saveSuperAdminAlertSettings} className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-sm transition-colors flex items-center font-bold shadow-lg shadow-red-600/30">
+               <Lock size={16} className="mr-2" /> Keydi Dejinta Super Admin
+            </button>
+         )}
+      </div>
+    </div>
   );
 }

@@ -1,4 +1,4 @@
-// app/employees/page.tsx - Employees List Page (10000% Design - API Integration & Enhanced)
+// app/projects/employees/page.tsx - Employees List Page (Premium Enterprise Overhaul)
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -6,15 +6,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Layout from '@/components/layouts/Layout';
 import {
-  Plus, Search, Filter, Calendar, List, LayoutGrid, DollarSign, Tag, User, ChevronRight, Briefcase, Mail, Phone, MapPin, Truck,
+  Plus, Search, Filter, Calendar, List, LayoutGrid, DollarSign, Tag, User, ChevronRight, Briefcase, Mail, Phone, MapPin,
   Eye, Edit, Trash2, Loader2, Info as InfoIcon, CheckCircle, XCircle, RefreshCw,
-  Clock as ClockIcon, TrendingUp, TrendingDown, Coins // Added for salary/payment tracking
+  Clock as ClockIcon, TrendingUp, TrendingDown, Coins, Building, Activity, ShieldCheck, FileText, AlertCircle
 } from 'lucide-react';
-import Toast from '@/components/common/Toast'; // Import Toast component
-import { calculateEmployeeSalary } from '@/lib/utils';
+import Toast from '@/components/common/Toast';
 import { subscribeToExpenseChange } from '@/lib/client-events';
 
-// --- Employee Data Interface (Refined for API response) ---
+// --- Improved Interface syncing closely with API ---
 interface Employee {
   id: string;
   fullName: string;
@@ -23,16 +22,16 @@ interface Employee {
   role: string;
   category?: 'COMPANY' | 'PROJECT';
   monthlySalary?: number | null;
-  salaryPaidThisMonth?: number | null;
-  lastPaymentDate?: string;
   isActive: boolean;
   startDate: string;
-  overpaidAmount?: number | null;
-  createdAt?: string;
-  updatedAt?: string;
-  dailyRate?: number | null;
-  earnedThisMonth?: number | null;
-  daysWorkedThisMonth?: number | null;
+  
+  // Financials securely coming from API
+  totalPaid?: number;
+  totalSalaryOwed?: number;
+  totalRemaining?: number;
+  totalMonthsWorked?: number;
+  overpaidAmount?: number;
+
   laborRecords?: Array<{
     id: string;
     projectId: string;
@@ -45,290 +44,155 @@ interface Employee {
   }>;
 }
 
-// --- Employee Table Row Component ---
 const EmployeeRow: React.FC<{ employee: Employee; onEdit: (id: string) => void; onDelete: (id: string) => void; onRecordDailyWork: (id: string) => void; onRecordPayment: (id: string) => void }> = ({ employee, onEdit, onDelete, onRecordDailyWork, onRecordPayment }) => {
-  // Calculate total salary owed based on months worked
-  const salaryCalculation = employee.monthlySalary ?
-    calculateEmployeeSalary(
-      Number(employee.monthlySalary),
-      employee.startDate,
-      new Date().toISOString().split('T')[0],
-      Number(employee.salaryPaidThisMonth || 0)
-    ) : null;
+  const isCompany = employee.category === 'COMPANY';
+  
+  // Safely grab from Backend
+  const owed = isCompany ? (employee.totalSalaryOwed || 0) : (employee.laborRecords?.reduce((s, r) => s + (r.agreedWage || 0), 0) || 0);
+  const paid = isCompany ? (employee.totalPaid || 0) : (employee.laborRecords?.reduce((s, r) => s + (r.paidAmount || 0), 0) || 0);
+  const remaining = owed - paid;
+  const overpaid = remaining < 0 ? Math.abs(remaining) : 0;
 
-  const salaryRemaining = salaryCalculation ? salaryCalculation.remainingSalary : 0;
-  const isOverpaidBasedOnWork = (employee.overpaidAmount ?? 0) > 0;
-  const progress = employee.monthlySalary ? ((employee.salaryPaidThisMonth ?? 0) / employee.monthlySalary) * 100 : 0;
+  // Latest Project Context for Laborers
+  const latestProject = !isCompany && employee.laborRecords && employee.laborRecords.length > 0
+    ? employee.laborRecords[employee.laborRecords.length - 1].projectName
+    : null;
 
-  let statusClass = '';
-  let statusBgClass = '';
-  if (employee.isActive) {
-    statusClass = 'text-secondary';
-    statusBgClass = 'bg-secondary/10';
-  } else {
-    statusClass = 'text-mediumGray';
-    statusBgClass = 'bg-mediumGray/10';
-  }
+  // Vibrant Gradients for Initial Avatars
+  const avatarGradients = [
+    'from-blue-500 to-indigo-600', 'from-emerald-400 to-teal-500', 'from-orange-400 to-rose-500',
+    'from-purple-500 to-pink-500', 'from-cyan-400 to-blue-500'
+  ];
+  const colorIndex = employee.fullName.charCodeAt(0) % avatarGradients.length;
+  const initial = employee.fullName.charAt(0).toUpperCase();
 
   return (
-    <tr className="hover:bg-gradient-to-r hover:from-primary/5 hover:to-secondary/5 dark:hover:from-primary/10 dark:hover:to-secondary/10 transition-all duration-200 border-b border-lightGray dark:border-gray-700 last:border-b-0 group">
-      <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-medium">
-        <div className="flex items-center space-x-3">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${employee.category === 'COMPANY'
-            ? 'bg-gradient-to-br from-primary to-secondary'
-            : 'bg-gradient-to-br from-accent to-orange-500'
-            }`}>
-            <User size={16} className="text-white" />
+    <tr className="hover:bg-slate-50 dark:hover:bg-gray-800/50 transition-all duration-200 border-b border-lightGray dark:border-gray-700 last:border-b-0 group">
+      {/* 1. EMPLOYEE & ID */}
+      <td className="p-4 whitespace-nowrap">
+        <div className="flex items-center space-x-4">
+          <div className={`w-10 h-10 rounded-xl shadow-inner flex items-center justify-center bg-gradient-to-br ${avatarGradients[colorIndex]} transform group-hover:scale-105 transition-transform duration-200`}>
+            <span className="text-white font-bold text-lg">{initial}</span>
           </div>
           <div>
-            <span className="font-semibold">{employee.fullName}</span>
-            <div className="text-xs text-mediumGray dark:text-gray-400">
-              ID: {employee.id.slice(0, 8)}...
-            </div>
+            <span className="text-darkGray dark:text-gray-100 font-bold block leading-tight">{employee.fullName}</span>
+            <span className="text-[11px] text-gray-400 dark:text-gray-500 tracking-wider">ID: {employee.id.slice(0, 8).toUpperCase()}</span>
           </div>
         </div>
       </td>
-      <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">
-        <div className="flex items-center space-x-2">
-          <Tag size={16} className={employee.category === 'COMPANY' ? 'text-primary' : 'text-accent'} />
-          <span className="font-medium">{employee.role}</span>
-          <span className={`px-2 py-1 rounded-full text-xs font-bold ${employee.category === 'COMPANY'
-            ? 'bg-primary/10 text-primary border border-primary/30'
-            : 'bg-accent/10 text-accent border border-accent/30'
-            }`}>
-            {employee.category === 'COMPANY' ? '🏢 Company' : '🏗️ Project'}
-          </span>
+
+      {/* 2. ROLE & CATEGORY & PROJECT */}
+      <td className="p-4 whitespace-nowrap">
+        <div className="flex flex-col space-y-1.5">
+          <div className="flex items-center space-x-2">
+            {isCompany ? (
+              <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800 uppercase flex items-center">
+                <Briefcase size={12} className="mr-1" /> CORE TEAM
+              </span>
+            ) : (
+              <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800 uppercase flex items-center">
+                <Building size={12} className="mr-1" /> FIELD LABOR
+              </span>
+            )}
+            <span className="font-semibold text-gray-700 dark:text-gray-300 text-sm flex items-center gap-1.5">
+               {employee.role}
+            </span>
+          </div>
+          {latestProject && (
+            <div className="text-[11px] text-gray-500 font-medium flex items-center">
+              <MapPin size={10} className="mr-1 text-red-400" />
+              <span>{latestProject}</span>
+            </div>
+          )}
         </div>
       </td>
-      <td className="p-4 whitespace-nowrap text-mediumGray dark:text-gray-300">
-        <div className="flex items-center space-x-2">
-          {employee.email ? <Mail size={16} className="text-green-500" /> : <XCircle size={16} className="text-redError" />}
-          <span>{employee.email || 'N/A'}</span>
+
+      {/* 3. CONTACT */}
+      <td className="p-4 whitespace-nowrap hidden lg:table-cell">
+        <div className="flex flex-col space-y-1">
+          {employee.phone ? (
+             <div className="flex items-center text-sm font-medium text-gray-600 dark:text-gray-300">
+               <Phone size={13} className="mr-1.5 text-emerald-500" /> {employee.phone}
+             </div>
+          ) : <span className="text-sm font-medium text-gray-400 dark:text-gray-600">-</span>}
+          {employee.email && (
+            <div className="flex items-center text-[11px] text-gray-500">
+              <Mail size={11} className="mr-1.5" /> {employee.email}
+            </div>
+          )}
         </div>
       </td>
-      <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-semibold text-right">
-        {employee.phone ? (
-          <span className="text-green-600 dark:text-green-400 font-bold">{employee.phone}</span>
-        ) : (
-          <span className="text-mediumGray">N/A</span>
-        )}
+
+      {/* 4. TOTAL OWED (CALCULATED WAGE) */}
+      <td className="p-4 whitespace-nowrap text-right">
+        <div className="font-extrabold text-sm text-gray-800 dark:text-gray-200">
+          {owed.toLocaleString()} ETB
+        </div>
+        <div className="text-[11px] text-gray-400 font-medium uppercase tracking-wider">
+          {isCompany ? `Rate: ${employee.monthlySalary?.toLocaleString()||0}/mo` : 'Total Project Value'}
+        </div>
       </td>
-      <td className="p-4 whitespace-nowrap text-darkGray dark:text-gray-100 font-semibold text-right">
-        {employee.category === 'COMPANY' ? (
-          employee.monthlySalary != null ? (
-            <div className="text-right">
-              <div className="text-sm font-bold text-blue-600 dark:text-blue-400">{employee.monthlySalary.toLocaleString()} ETB/bil</div>
-              {salaryCalculation && (
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {salaryCalculation.totalMonths} bilood = {salaryCalculation.totalSalaryOwed.toLocaleString()} ETB
-                </div>
-              )}
-            </div>
-          ) : <span className="text-mediumGray">N/A</span>
+
+      {/* 5. TOTAL PAID */}
+      <td className="p-4 whitespace-nowrap text-right">
+        <div className="font-bold text-sm text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/10 px-2 py-0.5 rounded-md inline-block">
+          {paid.toLocaleString()} ETB
+        </div>
+      </td>
+
+      {/* 6. BALANCE / REMAINING */}
+      <td className="p-4 whitespace-nowrap text-right">
+        {overpaid > 0 ? (
+          <div className="font-bold text-sm text-rose-500 dark:text-rose-400 flex items-center justify-end">
+            <TrendingDown size={14} className="mr-1" />
+            {(overpaid).toLocaleString()} ETB
+          </div>
         ) : (
-          <div className="text-right">
-            <div className="text-sm font-bold text-accent dark:text-accent">
-              {employee.laborRecords?.reduce((sum, record) => sum + (record.agreedWage || 0), 0).toLocaleString()} ETB
-            </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">
-              Total Project Wage
-            </div>
+          <div className="font-bold text-sm text-blue-600 dark:text-blue-400">
+             {Math.abs(remaining).toLocaleString()} ETB
           </div>
         )}
+        <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">
+          {overpaid > 0 ? 'Overpaid / Advance' : 'Pending Balance'}
+        </div>
       </td>
-      <td className="p-4 whitespace-nowrap text-secondary font-semibold text-right">
-        {employee.category === 'COMPANY' ? (
-          employee.salaryPaidThisMonth != null ? (
-            <span className="text-green-600 dark:text-green-400 font-bold">{employee.salaryPaidThisMonth.toLocaleString()} ETB</span>
-          ) : (
-            <span className="text-mediumGray">N/A</span>
-          )
-        ) : (
-          <div className="text-right">
-            <div className="text-sm font-bold text-accent dark:text-accent">
-              {employee.laborRecords?.reduce((sum, record) => sum + (record.paidAmount || 0), 0).toLocaleString()} ETB
-            </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">
-              Total Paid
-            </div>
-          </div>
-        )}
-      </td>
-      <td className={`p-4 whitespace-nowrap font-semibold text-right ${salaryRemaining < 0 ? 'text-redError' : 'text-primary'}`}>
-        {employee.category === 'COMPANY' ? (
-          salaryCalculation ? (
-            <div className="text-right">
-              <div className={`text-sm font-bold ${salaryRemaining < 0 ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'}`}>
-                {Math.abs(salaryRemaining).toLocaleString()} ETB
-              </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">
-                {salaryRemaining < 0 ? 'Overpaid' : 'Remaining'}
-              </div>
-            </div>
-          ) : <span className="text-mediumGray">N/A</span>
-        ) : (
-          <div className="text-right">
-            <div className="text-sm font-bold text-accent dark:text-accent">
-              {(() => {
-                const totalAgreedWage = employee.laborRecords?.reduce((sum, record) => sum + (record.agreedWage || 0), 0) || 0;
-                const totalPaidAmount = employee.laborRecords?.reduce((sum, record) => sum + (record.paidAmount || 0), 0) || 0;
-                const totalRemaining = totalAgreedWage - totalPaidAmount;
-                return totalRemaining.toLocaleString();
-              })()} ETB
-            </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">
-              Remaining
-            </div>
-          </div>
-        )}
-      </td>
+
+      {/* 7. STATUS */}
       <td className="p-4 whitespace-nowrap text-center">
-        <span className={`px-3 py-1 rounded-full text-xs font-bold ${employee.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'}`}>
-          {employee.isActive ? 'Active' : 'Inactive'}
-        </span>
+        {employee.isActive ? (
+          <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-emerald-100/50 border border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></div>
+            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide">Active</span>
+          </div>
+        ) : (
+          <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-gray-100 border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+            <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-1.5"></div>
+            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Inactive</span>
+          </div>
+        )}
       </td>
-      <td className="p-4 whitespace-nowrap text-center">
-        <div className="flex items-center justify-center space-x-1">
-          <button onClick={() => onRecordDailyWork(employee.id)} className="p-2 rounded-full bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white transition-all duration-200 hover:scale-110 shadow-sm" title="Record Daily Work">
+
+      {/* 8. ACTIONS */}
+      <td className="p-4 whitespace-nowrap text-right">
+        <div className="flex items-center justify-end space-x-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
+          <button onClick={() => onRecordDailyWork(employee.id)} className="p-1.5 rounded-md hover:bg-amber-100 hover:text-amber-600 outline-none transition-colors border border-transparent hover:border-amber-200 text-gray-500" title="Log Attendance">
             <ClockIcon size={16} />
           </button>
-          <button onClick={() => onRecordPayment(employee.id)} className="p-2 rounded-full bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition-all duration-200 hover:scale-110 shadow-sm" title="Record Payment">
+          <button onClick={() => onRecordPayment(employee.id)} className="p-1.5 rounded-md hover:bg-emerald-100 hover:text-emerald-600 outline-none transition-colors border border-transparent hover:border-emerald-200 text-gray-500" title="Issue Salary">
             <Coins size={16} />
           </button>
-          <Link href={`/projects/employees/${employee.id}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all duration-200 hover:scale-110 shadow-sm" title="View Details">
+          <Link href={`/projects/employees/${employee.id}`} className="p-1.5 rounded-md hover:bg-blue-100 hover:text-blue-600 outline-none transition-colors border border-transparent hover:border-blue-200 text-gray-500" title="View Detail">
             <Eye size={16} />
           </Link>
-          <Link href={`/projects/employees/edit/${employee.id}`} className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-all duration-200 hover:scale-110 shadow-sm" title="Edit Employee">
+          <Link href={`/projects/employees/edit/${employee.id}`} className="p-1.5 rounded-md hover:bg-gray-100 hover:text-gray-800 dark:hover:bg-gray-700 dark:hover:text-white outline-none transition-colors border border-transparent hover:border-gray-200 text-gray-500" title="Edit">
             <Edit size={16} />
           </Link>
-          <button onClick={() => onDelete(employee.id)} className="p-2 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-all duration-200 hover:scale-110 shadow-sm" title="Delete Employee">
+          <button onClick={() => onDelete(employee.id)} className="p-1.5 rounded-md hover:bg-rose-100 hover:text-rose-600 outline-none transition-colors border border-transparent hover:border-rose-200 text-gray-500" title="Delete">
             <Trash2 size={16} />
           </button>
         </div>
-        {/* Show project assignments if present */}
       </td>
     </tr>
-  );
-};
-
-// --- Employee Card Component (for Mobile View) ---
-const EmployeeCard: React.FC<{ employee: Employee; onEdit: (id: string) => void; onDelete: (id: string) => void; onRecordDailyWork: (id: string) => void; onRecordPayment: (id: string) => void }> = ({ employee, onEdit, onDelete, onRecordDailyWork, onRecordPayment }) => {
-  const salaryRemaining = (employee.monthlySalary ?? 0) - (employee.salaryPaidThisMonth ?? 0);
-  const isOverpaidBasedOnWork = (employee.overpaidAmount ?? 0) > 0;
-  const progress = employee.monthlySalary ? ((employee.salaryPaidThisMonth ?? 0) / employee.monthlySalary) * 100 : 0;
-
-  let borderColor = 'border-lightGray dark:border-gray-700';
-  if (employee.isActive) borderColor = 'border-primary';
-  if (isOverpaidBasedOnWork) borderColor = 'border-redError';
-
-
-  return (
-    <div className={`bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in-up border-l-4 ${borderColor} relative group`}>
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex items-center space-x-3">
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center ${employee.category === 'COMPANY'
-            ? 'bg-gradient-to-br from-primary to-secondary'
-            : 'bg-gradient-to-br from-accent to-orange-500'
-            }`}>
-            <User size={20} className="text-white" />
-          </div>
-          <div>
-            <h4 className="font-bold text-darkGray dark:text-gray-100 text-lg">{employee.fullName}</h4>
-            <p className="text-sm text-mediumGray dark:text-gray-400 flex items-center space-x-1">
-              <Tag size={14} className={employee.category === 'COMPANY' ? 'text-primary' : 'text-accent'} />
-              <span>{employee.role}</span>
-              <span className={`px-2 py-1 rounded-full text-xs font-bold ${employee.category === 'COMPANY'
-                ? 'bg-primary/10 text-primary border border-primary/30'
-                : 'bg-accent/10 text-accent border border-accent/30'
-                }`}>
-                {employee.category === 'COMPANY' ? '🏢 Company' : '🏗️ Project'}
-              </span>
-            </p>
-            <p className="text-xs text-mediumGray dark:text-gray-400">
-              ID: {employee.id.slice(0, 8)}...
-            </p>
-          </div>
-        </div>
-        <div className="flex space-x-1 flex-shrink-0">
-          <button onClick={() => onEdit(employee.id)} className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-all duration-200 hover:scale-110 shadow-sm" title="Edit">
-            <Edit size={16} />
-          </button>
-          <button onClick={() => onDelete(employee.id)} className="p-2 rounded-full bg-redError/10 text-redError hover:bg-redError hover:text-white transition-all duration-200 hover:scale-110 shadow-sm" title="Delete">
-            <Trash2 size={16} />
-          </button>
-        </div>
-      </div>
-
-      <div className="space-y-2 mb-4">
-        <p className="text-sm text-mediumGray dark:text-gray-400 flex items-center space-x-2">
-          {employee.email ? <Mail size={14} className="text-green-500" /> : <XCircle size={14} className="text-redError" />}
-          <span>Email: {employee.email || 'N/A'}</span>
-        </p>
-        <p className="text-sm text-mediumGray dark:text-gray-400 flex items-center space-x-2">
-          {employee.phone ? <Phone size={14} className="text-green-500" /> : <XCircle size={14} className="text-redError" />}
-          <span>Taleefan: {employee.phone || 'N/A'}</span>
-        </p>
-        <p className="text-sm text-mediumGray dark:text-gray-400 flex items-center space-x-2">
-          <DollarSign size={14} className={employee.category === 'COMPANY' ? 'text-blue-500' : 'text-accent'} />
-          <span>
-            {employee.category === 'COMPANY'
-              ? `Mushahar Bil kasta: ${employee.monthlySalary != null ? `${employee.monthlySalary.toLocaleString()} ETB` : 'N/A'}`
-              : `Total Project Wage: ${employee.laborRecords?.reduce((sum, record) => sum + (record.agreedWage || 0), 0).toLocaleString()} ETB`
-            }
-          </span>
-        </p>
-        <p className="text-sm text-mediumGray dark:text-gray-400 flex items-center space-x-2">
-          <Coins size={14} className="text-green-500" />
-          <span>
-            {employee.category === 'COMPANY'
-              ? `La Bixiyay Bishaan: ${employee.salaryPaidThisMonth != null ? `${employee.salaryPaidThisMonth.toLocaleString()} ETB` : 'N/A'}`
-              : `Total Paid: ${employee.laborRecords?.reduce((sum, record) => sum + (record.paidAmount || 0), 0).toLocaleString()} ETB`
-            }
-          </span>
-        </p>
-        <p className={`text-sm flex items-center space-x-2 ${isOverpaidBasedOnWork ? 'text-redError' : 'text-primary'}`}>
-          <DollarSign size={14} className={isOverpaidBasedOnWork ? 'text-redError' : 'text-blue-500'} />
-          <span>
-            {employee.category === 'COMPANY'
-              ? `Hadhay Bishaan: ${employee.overpaidAmount != null ? (isOverpaidBasedOnWork ? `-${Math.abs(employee.overpaidAmount).toLocaleString()} ETB` : `${employee.overpaidAmount.toLocaleString()} ETB`) : 'N/A'}`
-              : `Total Project Remaining: ${(() => {
-                const totalAgreedWage = employee.laborRecords?.reduce((sum, record) => sum + (record.agreedWage || 0), 0) || 0;
-                const totalPaidAmount = employee.laborRecords?.reduce((sum, record) => sum + (record.paidAmount || 0), 0) || 0;
-                return (totalAgreedWage - totalPaidAmount).toLocaleString();
-              })()} ETB`
-            }
-          </span>
-        </p>
-      </div>
-
-      {/* Show project assignments if present */}
-
-      {/* Progress Bar */}
-      <div className="mt-4">
-        <div className="w-full bg-lightGray dark:bg-gray-700 rounded-full h-2">
-          <div className={`h-2 rounded-full transition-all duration-300 ${progress < 100 ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-gradient-to-r from-green-500 to-green-600'}`} style={{ width: `${progress}%` }}></div>
-        </div>
-        <div className="flex justify-between items-center mt-1">
-          <span className="text-xs text-mediumGray dark:text-gray-400">{progress.toFixed(0)}% Paid</span>
-          <span className={`px-2 py-1 rounded-full text-xs font-bold ${employee.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'}`}>
-            {employee.isActive ? 'Active' : 'Inactive'}
-          </span>
-        </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex justify-center space-x-2 mt-4">
-        <button onClick={() => onRecordDailyWork(employee.id)} className="p-2 rounded-full bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white transition-all duration-200 hover:scale-110 shadow-sm" title="Record Daily Work">
-          <ClockIcon size={16} />
-        </button>
-        <button onClick={() => onRecordPayment(employee.id)} className="p-2 rounded-full bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white transition-all duration-200 hover:scale-110 shadow-sm" title="Record Payment">
-          <Coins size={16} />
-        </button>
-        <Link href={`/projects/employees/${employee.id}`} className="p-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all duration-200 hover:scale-110 shadow-sm" title="View Details">
-          <Eye size={16} />
-        </Link>
-      </div>
-    </div>
   );
 };
 
@@ -338,28 +202,23 @@ export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('All');
-  const [filterStatus, setFilterStatus] = useState('All'); // Active/Inactive
-  const [filterEmployeeType, setFilterEmployeeType] = useState('All'); // Company/Project
-  const [filterDateRange, setFilterDateRange] = useState('All');
-  const [viewMode, setViewMode] = useState<'list' | 'cards'>('list'); // Default to list view
-  const [activeTab, setActiveTab] = useState<'All' | 'Company' | 'Project'>('All'); // Tab state
+  const [filterStatus, setFilterStatus] = useState('All');
+  const [filterEmployeeType, setFilterEmployeeType] = useState('All');
+  const [filterProject, setFilterProject] = useState('All'); // NEW: Project Filter
+  const [viewMode, setViewMode] = useState<'list' | 'cards'>('list');
+  const [activeTab, setActiveTab] = useState<'All' | 'Company' | 'Project'>('All');
   const [pageLoading, setPageLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
-
-  // --- API Functions ---
   const fetchEmployees = async () => {
     setPageLoading(true);
     try {
       const response = await fetch('/api/projects/employees');
       if (!response.ok) throw new Error('Failed to fetch employees');
       const data = await response.json();
-      // Use backend-calculated values directly for live, accurate display
       setEmployees(data.employees);
     } catch (error: any) {
-      console.error('Error fetching employees:', error);
       setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka shaqaalaha la soo gelinayay.', type: 'error' });
-      setEmployees([]);
     } finally {
       setPageLoading(false);
     }
@@ -368,510 +227,335 @@ export default function EmployeesPage() {
   const handleDeleteEmployee = async (id: string) => {
     if (window.confirm('Ma hubtaa inaad tirtirto shaqaalahan? Tan lama soo celin karo!')) {
       try {
-        const response = await fetch(`/api/projects/employees/${id}`, {
-          method: 'DELETE',
-        });
+        const response = await fetch(`/api/projects/employees/${id}`, { method: 'DELETE' });
         const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'Failed to delete employee');
-
-        setToastMessage({ message: data.message || 'Shaqaalaha si guul leh ayaa loo tirtiray!', type: 'success' });
-        fetchEmployees(); // Re-fetch employees after deleting
+        if (!response.ok) throw new Error(data.message || 'Failed to delete');
+        setToastMessage({ message: data.message || 'Shaqaalaha waa la tirtiray!', type: 'success' });
+        fetchEmployees();
       } catch (error: any) {
-        console.error('Error deleting employee:', error);
-        setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka shaqaalaha la tirtirayay.', type: 'error' });
+        setToastMessage({ message: error.message || 'Cilad tirtiridda.', type: 'error' });
       }
     }
   };
 
-  const handleEditEmployee = (id: string) => {
-    router.push(`/projects/employees/edit/${id}`); // Navigate to edit page
-  };
+  const handleEditEmployee = (id: string) => router.push(`/projects/employees/edit/${id}`);
+  const handleRecordDailyWork = (id: string) => router.push(`/projects/employees/${id}?tab=Attendance`);
+  const handleRecordPayment = (id: string) => router.push(`/projects/employees/${id}?tab=Attendance`);
+  const refreshData = async () => { await fetchEmployees(); setToastMessage({ message: 'Live data synced!', type: 'success' }); };
 
-  const handleRecordDailyWork = (id: string) => {
-    const employee = employees.find(emp => emp.id === id);
-    if (employee) {
-      setToastMessage({
-        message: `Recording daily work for ${employee.fullName}. This will open a form to record hours worked and tasks completed.`,
-        type: 'info'
-      });
-      // TODO: Open modal or navigate to daily work recording form
-      // For now, we'll show a success message
-      setTimeout(() => {
-        setToastMessage({
-          message: `Daily work recorded successfully for ${employee.fullName}!`,
-          type: 'success'
-        });
-      }, 2000);
-    }
-  };
-
-  const handleRecordPayment = (id: string) => {
-    // Navigate to employee detail page and open Attendance tab
-    router.push(`/projects/employees/${id}?tab=Attendance`);
-  };
-
-
+  useEffect(() => { fetchEmployees(); }, []);
   useEffect(() => {
-    fetchEmployees(); // Fetch employees on component mount
+    const handleVisibility = () => { if (!document.hidden) refreshData(); };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, []);
-
-  // Add refresh function to manually refresh data
-  const refreshData = async () => {
-    await fetchEmployees();
-    setToastMessage({ message: 'Data-ka si guul leh ayaa loo cusboonaysiiyay!', type: 'success' });
-  };
-
-  // Add event listener for page visibility to refresh when user comes back to page
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        // Refresh data when page becomes visible again
-        refreshData();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, []);
-
-  // Subscribe to expense changes (real-time updates)
-  useEffect(() => {
-    const unsubscribe = subscribeToExpenseChange((payload) => {
-      // Refresh employee list when expenses change
-      // This ensures employee salaries and totals update in real-time
-      fetchEmployees();
-    });
-
+    const unsubscribe = subscribeToExpenseChange(() => fetchEmployees());
     return () => unsubscribe();
   }, []);
 
+  // Compute unique projects for the filter dropdown
+  const uniqueProjects = Array.from(new Set(
+    employees.flatMap(e => e.laborRecords?.map(r => r.projectName) || [])
+  )).filter(Boolean).sort();
 
-  const filteredEmployees = employees.filter(employee => {
-    const matchesSearch = employee.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (employee.email && employee.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (employee.phone && employee.phone.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesRole = filterRole === 'All' || employee.role === filterRole;
-    const matchesStatus = filterStatus === 'All' || (filterStatus === 'Active' && employee.isActive) || (filterStatus === 'Inactive' && !employee.isActive);
-    const matchesEmployeeType = filterEmployeeType === 'All' ||
-      (filterEmployeeType === 'Company' && employee.category === 'COMPANY') ||
-      (filterEmployeeType === 'Project' && employee.category === 'PROJECT');
-    const matchesDate = filterDateRange === 'All' ? true : true;
+  const filteredEmployees = employees.filter(e => {
+    const term = searchTerm.toLowerCase();
+    const matchSearch = e.fullName.toLowerCase().includes(term) || (e.phone && e.phone.includes(term));
+    const matchRole = filterRole === 'All' || e.role === filterRole;
+    const matchStatus = filterStatus === 'All' || (filterStatus === 'Active' && e.isActive) || (filterStatus === 'Inactive' && !e.isActive);
+    const matchType = filterEmployeeType === 'All' || (filterEmployeeType === 'Company' && e.category === 'COMPANY') || (filterEmployeeType === 'Project' && e.category === 'PROJECT');
+    
+    // Project Matcher
+    const matchProject = filterProject === 'All' ? true : 
+      e.laborRecords?.some(r => r.projectName === filterProject);
 
-    return matchesSearch && matchesRole && matchesStatus && matchesEmployeeType && matchesDate;
+    return matchSearch && matchRole && matchStatus && matchType && matchProject;
   });
 
-  // Filter options
-  const employeeRoles = ['All', 'Labor', 'Manager', 'Admin', 'Other']; // Example roles
-  const employeeStatuses = ['All', 'Active', 'Inactive'];
-  const employeeTypes = ['All', 'Company', 'Project'];
-  const dateRanges = ['All', 'Last 30 Days', 'This Quarter', 'This Year'];
+  const tabFilteredEmployees = activeTab === 'All' ? filteredEmployees :
+    activeTab === 'Company' ? filteredEmployees.filter(e => e.category === 'COMPANY') :
+    filteredEmployees.filter(e => e.category === 'PROJECT');
 
-  // Filter employees based on active tab
-  const tabFilteredEmployees = activeTab === 'All'
-    ? filteredEmployees
-    : activeTab === 'Company'
-      ? filteredEmployees.filter(emp => emp.category === 'COMPANY')
-      : filteredEmployees.filter(emp => emp.category === 'PROJECT');
-
-  // Statistics with proper salary calculations (based on active tab)
+  // Strict Backend metrics usage (No local recalcs for finances)
   const totalEmployeesCount = tabFilteredEmployees.length;
   const activeEmployeesCount = tabFilteredEmployees.filter(e => e.isActive).length;
-  const laborEmployeesCount = tabFilteredEmployees.filter(e => e.role === 'Labor').length;
 
-  // Calculate total salary owed based on months worked for each employee
-  const totalSalaryOwed = tabFilteredEmployees.reduce((sum, employee) => {
-    if (employee.category === 'COMPANY' && employee.monthlySalary) {
-      const salaryCalc = calculateEmployeeSalary(
-        Number(employee.monthlySalary),
-        employee.startDate,
-        new Date().toISOString().split('T')[0],
-        Number(employee.salaryPaidThisMonth || 0)
-      );
-      return sum + salaryCalc.totalSalaryOwed;
-    } else if (employee.category === 'PROJECT') {
-      // For project employees, sum up all agreed wages
-      return sum + (employee.laborRecords?.reduce((sum, record) => sum + (record.agreedWage || 0), 0) || 0);
-    }
-    return sum;
+  const totalOwed = tabFilteredEmployees.reduce((sum, e) => {
+    return sum + (e.category==='COMPANY' ? (e.totalSalaryOwed||0) : (e.laborRecords?.reduce((s,r)=>s+(r.agreedWage||0),0)||0));
   }, 0);
 
-  const totalSalaryPaid = tabFilteredEmployees.reduce((sum, e) => {
-    if (e.category === 'COMPANY') {
-      return sum + (e.salaryPaidThisMonth ?? 0);
-    } else if (e.category === 'PROJECT') {
-      return sum + (e.laborRecords?.reduce((sum, record) => sum + (record.paidAmount || 0), 0) || 0);
-    }
-    return sum;
+  const totalPaid = tabFilteredEmployees.reduce((sum, e) => {
+    return sum + (e.category==='COMPANY' ? (e.totalPaid||0) : (e.laborRecords?.reduce((s,r)=>s+(r.paidAmount||0),0)||0));
   }, 0);
 
-  const totalSalaryRemaining = totalSalaryOwed - totalSalaryPaid;
-  // Calculate overpaid amount properly for each employee
-  const totalOverpaidAmount = tabFilteredEmployees.reduce((sum, e) => {
-    if (e.category === 'COMPANY') {
-      const salaryCalc = e.monthlySalary ? calculateEmployeeSalary(
-        Number(e.monthlySalary),
-        e.startDate,
-        new Date().toISOString().split('T')[0],
-        Number(e.salaryPaidThisMonth || 0)
-      ) : null;
+  const totalBalance = totalOwed - totalPaid;
+  const isNetOverpaid = totalBalance < 0;
 
-      if (salaryCalc) {
-        // If remainingSalary < 0, employee is overpaid
-        const overpaid = salaryCalc.remainingSalary < 0 ? Math.abs(salaryCalc.remainingSalary) : 0;
-        return sum + overpaid;
-      }
-    } else if (e.category === 'PROJECT') {
-      // For project employees, calculate overpaid amount from remaining wages
-      const totalAgreedWage = e.laborRecords?.reduce((sum, record) => sum + (record.agreedWage || 0), 0) || 0;
-      const totalPaidAmount = e.laborRecords?.reduce((sum, record) => sum + (record.paidAmount || 0), 0) || 0;
-      const totalRemaining = totalAgreedWage - totalPaidAmount;
-      return sum + (totalRemaining < 0 ? Math.abs(totalRemaining) : 0);
-    }
-    return sum;
-  }, 0);
-
-  // Monthly salary commitment (for reference) - includes PROJECT employees
-  const totalMonthlySalaryCommitment = tabFilteredEmployees.reduce((sum, e) => {
-    if (e.category === 'COMPANY') {
-      return sum + (e.monthlySalary ?? 0);
-    } else if (e.category === 'PROJECT') {
-      // For project employees, sum up all agreed wages
-      return sum + (e.laborRecords?.reduce((sum, record) => sum + (record.agreedWage || 0), 0) || 0);
-    }
-    return sum;
-  }, 0);
-
-
-  // Auto-switch to board view on mobile
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 768 && viewMode === 'list') {
-        setViewMode('cards');
-      }
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
+    const handleResize = () => { if (window.innerWidth < 768 && viewMode === 'list') setViewMode('cards'); };
+    handleResize(); window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [viewMode]);
 
   return (
     <Layout>
-      {/* Mobile Header */}
-      <div className="block md:hidden mb-6">
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border-l-4 border-primary mb-4">
-          <h1 className="text-2xl font-bold text-darkGray dark:text-gray-100 mb-4">Shaqaalaha</h1>
-          <div className="flex flex-col gap-2">
-            <Link href="/projects/employees/add" className="bg-primary text-white py-2 px-4 rounded-lg font-medium text-sm hover:bg-blue-700 transition duration-200 shadow-md flex items-center justify-center">
-              <Plus size={16} className="mr-2" /> Ku Dar Shaqaale
-            </Link>
-            <button onClick={refreshData} className="bg-secondary text-white py-2 px-4 rounded-lg font-medium text-sm hover:bg-green-600 transition duration-200 shadow-md flex items-center justify-center">
-              <RefreshCw size={16} className="mr-2" /> Cusboonaysii
-            </button>
-          </div>
+      {/* Header section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 py-4">
+        <div>
+           <h1 className="text-3xl md:text-4xl font-black tracking-tight text-gray-900 dark:text-white flex items-center">
+             <ShieldCheck className="mr-3 text-primary h-8 w-8" />
+             Employee Roster
+           </h1>
+           <p className="text-gray-500 dark:text-gray-400 text-sm mt-1 font-medium">Manage core staff, projects laborers, and process payroll securely.</p>
         </div>
-      </div>
-
-      {/* Desktop Header */}
-      <div className="hidden md:flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold text-darkGray dark:text-gray-100">Employees</h1>
-        <div className="flex space-x-3">
-          <Link href="/projects/employees/add" className="bg-primary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center">
-            <Plus size={20} className="mr-2" /> Ku Dar Shaqaale
-          </Link>
-          <button onClick={refreshData} className="bg-secondary text-white py-2.5 px-6 rounded-lg font-bold text-lg hover:bg-green-600 transition duration-200 shadow-md flex items-center">
-            <RefreshCw size={20} className="mr-2" /> Cusboonaysii
+        <div className="flex gap-3 mt-4 md:mt-0 w-full md:w-auto">
+          <button onClick={refreshData} className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-600 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-all flex items-center justify-center flex-1 md:flex-none">
+            <RefreshCw size={18} className="mr-2" /> Sync Data
           </button>
+          <Link href="/projects/employees/add" className="px-5 py-2 bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg font-bold shadow-md shadow-primary/30 transition-all flex items-center justify-center flex-1 md:flex-none transform hover:-translate-y-0.5">
+            <Plus size={18} className="mr-2" /> Add Employee
+          </Link>
         </div>
       </div>
 
-      {/* Employee Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md border-l-4 border-primary hover:shadow-xl transition-all duration-300 text-center">
-          <div className="flex items-center justify-center mb-3">
-            <div className="p-2 rounded-lg bg-primary/10 text-primary">
-              <User size={22} />
-            </div>
-          </div>
-          <h4 className="text-sm font-medium text-mediumGray dark:text-gray-400">Wadarta Shaqaalaha</h4>
-          <p className="text-2xl font-extrabold text-primary">{totalEmployeesCount}</p>
-          <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">{activeEmployeesCount} firfircoon</p>
+      {/* Enterprise Bento Box Stats - STRICTLY ON-BRAND */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+        
+        {/* Metric 1: Headcount Overview */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-lightGray dark:border-gray-700 relative overflow-hidden group hover:border-primary transition-colors">
+           <div className="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity">
+              <User size={100} className="text-primary" />
+           </div>
+           <div className="flex items-center space-x-3 mb-4">
+             <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+               <Briefcase size={20} className="stroke-[2.5]" />
+             </div>
+             <h3 className="font-bold text-mediumGray dark:text-gray-400 uppercase tracking-wide text-xs">Total Workforce</h3>
+           </div>
+           <div className="flex items-end gap-3 relative z-10">
+             <span className="text-5xl font-black text-darkGray dark:text-white tracking-tight">{totalEmployeesCount}</span>
+             <span className="text-sm font-semibold text-secondary bg-secondary/10 px-2.5 py-1 rounded-md mb-1.5 border border-secondary/20">
+                {activeEmployeesCount} Active
+             </span>
+           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md border-l-4 border-secondary hover:shadow-xl transition-all duration-300 text-center">
-          <div className="flex items-center justify-center mb-3">
-            <div className="p-2 rounded-lg bg-secondary/10 text-secondary">
-              <DollarSign size={22} />
-            </div>
-          </div>
-          <h4 className="text-sm font-medium text-mediumGray dark:text-gray-400">Wadarta Mushahaarka</h4>
-          <p className="text-2xl font-extrabold text-secondary">{totalSalaryOwed.toLocaleString()} ETB</p>
-          <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">Company + Project Wages</p>
+        {/* Metric 2: Total Labor Value (Owed) */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-lightGray dark:border-gray-700 relative overflow-hidden group hover:border-accent transition-colors">
+           <div className="flex items-center justify-between mb-2">
+             <div className="w-10 h-10 rounded-full bg-accent/10 text-accent flex items-center justify-center">
+               <FileText size={20} className="stroke-[2.5]" />
+             </div>
+           </div>
+           <h3 className="font-bold text-mediumGray dark:text-gray-400 uppercase tracking-wide text-xs mb-1">Gross Wage Liability</h3>
+           <div className="text-3xl lg:text-4xl font-black text-darkGray dark:text-white tracking-tight break-words">
+             ${totalOwed.toLocaleString()}
+           </div>
+           <p className="text-xs text-mediumGray dark:text-gray-500 mt-2 font-medium">Total earned historically by filtered group</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md border-l-4 border-accent hover:shadow-xl transition-all duration-300 text-center">
-          <div className="flex items-center justify-center mb-3">
-            <div className="p-2 rounded-lg bg-accent/10 text-accent">
-              <Coins size={22} />
-            </div>
-          </div>
-          <h4 className="text-sm font-medium text-mediumGray dark:text-gray-400">Lacagta La Bixiyay</h4>
-          <p className="text-2xl font-extrabold text-accent">{totalSalaryPaid.toLocaleString()} ETB</p>
-          <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">Company + Project Payments</p>
+        {/* Metric 3: Financial Balances */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border-l-4 border-l-primary border-t border-t-lightGray border-r border-r-lightGray border-b border-b-lightGray dark:border-gray-700 relative overflow-hidden group">
+           <div className="flex items-center space-x-3 mb-2 flex-wrap">
+             <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+               <Coins size={20} className="stroke-[2.5]" />
+             </div>
+             <div className="text-right flex-1">
+                <span className="text-xs font-bold text-mediumGray dark:text-gray-400 uppercase tracking-wider">Disbursed</span>
+                <div className="text-lg font-bold text-darkGray dark:text-white">${totalPaid.toLocaleString()}</div>
+             </div>
+           </div>
+           <div className="border-t border-lightGray dark:border-gray-700 my-3"></div>
+           <div>
+             <h3 className="font-bold text-mediumGray uppercase tracking-wide text-[10px] mb-0.5">
+               {isNetOverpaid ? 'Total Advance / Overpaid' : 'Pending Clearance Liability'}
+             </h3>
+             <div className={`text-2xl font-black tracking-tight ${isNetOverpaid ? 'text-redError' : 'text-primary'}`}>
+               ${Math.abs(totalBalance).toLocaleString()} <span className="text-sm font-semibold opacity-70 tracking-normal">{isNetOverpaid?'Overpaid':'Remaining'}</span>
+             </div>
+           </div>
         </div>
-
-        <div className={`bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md border-l-4 hover:shadow-xl transition-all duration-300 text-center ${totalSalaryRemaining >= 0 ? 'border-primary' : 'border-redError'
-          }`}>
-          <div className="flex items-center justify-center mb-3">
-            <div className={`p-2 rounded-lg ${totalSalaryRemaining >= 0 ? 'bg-primary/10 text-primary' : 'bg-redError/10 text-redError'}`}>
-              <TrendingUp size={22} />
-            </div>
-          </div>
-          <h4 className="text-sm font-medium text-mediumGray dark:text-gray-400">Mushahar Hadhay</h4>
-          <p className={`text-2xl font-extrabold ${totalSalaryRemaining >= 0 ? 'text-primary' : 'text-redError'}`}>
-            {Math.abs(totalSalaryRemaining).toLocaleString()} ETB
-          </p>
-          <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">
-            {totalSalaryRemaining >= 0 ? 'Company + Project' : 'Overpaid'}
-          </p>
-        </div>
-
-        {totalOverpaidAmount > 0 && (
-          <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-md border-l-4 border-redError hover:shadow-xl transition-all duration-300 text-center md:col-span-2">
-            <div className="flex items-center justify-center mb-3">
-              <div className="p-2 rounded-lg bg-redError/10 text-redError">
-                <TrendingDown size={22} />
-              </div>
-            </div>
-            <h4 className="text-sm font-medium text-mediumGray dark:text-gray-400">Lacagta La Siidaayay</h4>
-            <p className="text-2xl font-extrabold text-redError">{totalOverpaidAmount.toLocaleString()} ETB</p>
-            <p className="text-xs text-mediumGray dark:text-gray-400 mt-1">Waa la soo celin karaa</p>
-          </div>
-        )}
       </div>
 
-      {/* Search and Filter Bar */}
-      <div className="bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 mb-8 animate-fade-in-up">
-        <div className="flex flex-col lg:flex-row items-center space-y-4 lg:space-y-0 lg:space-x-4">
-          <div className="relative w-full lg:flex-1">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
+      {/* Advanced Unified Action Bar */}
+      <div className="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6 flex flex-col xl:flex-row gap-3 relative z-10 w-full overflow-visible">
+          {/* Global Search */}
+          <div className="relative flex-1 min-w-[250px]">
+            <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
             <input
               type="text"
-              placeholder="🔍 Search employees by name, email, or phone..."
-              className="w-full p-4 pl-12 border-2 border-lightGray dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 shadow-sm"
+              placeholder="Search by name, ID, phone..."
+              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-transparent focus:border-primary/50 focus:bg-white rounded-lg text-sm font-medium transition-all outline-none"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+          
+          <div className="h-full w-px bg-gray-200 dark:bg-gray-700 hidden xl:block mx-1"></div>
 
-          {/* Filter Controls */}
-          <div className="flex flex-wrap gap-3 w-full lg:w-auto">
-            {/* Filter by Role */}
-            <div className="relative w-full sm:w-48">
-              <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
-              <select
-                title="Filter by employee role"
-                className="w-full p-3 pl-10 border-2 border-lightGray dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 appearance-none shadow-sm"
-                value={filterRole}
-                onChange={(e) => setFilterRole(e.target.value)}
-              >
-                {employeeRoles.map(role => <option key={role} value={role}>{role}</option>)}
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400">
-                <ChevronRight className="transform rotate-90" size={18} />
-              </div>
+          {/* Filtering Engine */}
+          <div className="flex flex-wrap md:flex-nowrap gap-3 flex-1 xl:max-w-4xl z-50 overflow-visible">
+            {/* Category Toggle (Visual Pills) */}
+            <div className="flex p-1 bg-gray-100 dark:bg-gray-900 rounded-lg shrink-0">
+               <button onClick={() => setActiveTab('All')} className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${activeTab==='All' ? 'bg-white shadow dark:bg-gray-700 text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-700'} `}>All</button>
+               <button onClick={() => setActiveTab('Company')} className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${activeTab==='Company' ? 'bg-white shadow dark:bg-gray-700 text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700'} `}>Core HR</button>
+               <button onClick={() => setActiveTab('Project')} className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${activeTab==='Project' ? 'bg-white shadow dark:bg-gray-700 text-amber-600 dark:text-amber-400' : 'text-gray-500 hover:text-gray-700'} `}>Field Labor</button>
             </div>
 
-            {/* Filter by Status */}
-            <div className="relative w-full sm:w-48">
-              <CheckCircle className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
-              <select
-                title="Filter by employee status"
-                className="w-full p-3 pl-10 border-2 border-lightGray dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 appearance-none shadow-sm"
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-              >
-                {employeeStatuses.map(status => <option key={status} value={status}>{status}</option>)}
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400">
-                <ChevronRight className="transform rotate-90" size={18} />
+            {/* Project Filter */}
+            {activeTab !== 'Company' && (
+              <div className="relative min-w-[150px] shrink-0 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300">
+                <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                <select className="w-full pl-9 pr-8 py-2.5 bg-transparent text-sm font-semibold text-gray-700 dark:text-gray-200 appearance-none outline-none cursor-pointer" value={filterProject} onChange={(e) => setFilterProject(e.target.value)}>
+                  <option value="All">All Projects</option>
+                  {uniqueProjects.map(p => <option key={p} value={p}>{p}</option>)}
+                </select>
+                <ChevronRight className="absolute right-3 top-1/2 transform -translate-y-1/2 rotate-90 text-gray-400 pointer-events-none" size={16} />
               </div>
+            )}
+            
+            {/* Status Filter */}
+            <div className="relative w-32 shrink-0 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300">
+               <CheckCircle className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+               <select className="w-full pl-9 pr-6 py-2.5 bg-transparent text-sm font-semibold text-gray-700 dark:text-gray-200 appearance-none outline-none cursor-pointer" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+                  <option value="All">All Status</option>
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+               </select>
             </div>
-
-            {/* Filter by Employee Type */}
-            <div className="relative w-full sm:w-48">
-              <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={18} />
-              <select
-                title="Filter by employee type"
-                className="w-full p-3 pl-10 border-2 border-lightGray dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 appearance-none shadow-sm"
-                value={filterEmployeeType}
-                onChange={(e) => setFilterEmployeeType(e.target.value)}
-              >
-                {employeeTypes.map(type => <option key={type} value={type}>{type}</option>)}
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400">
-                <ChevronRight className="transform rotate-90" size={18} />
-              </div>
-            </div>
-
-            {/* Filter by Date Range */}
-            <div className="relative w-full sm:w-48">
-              <Calendar size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" />
-              <select
-                title="Filter by date range"
-                className="w-full p-3 pl-10 border-2 border-lightGray dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 appearance-none shadow-sm"
-                value={filterDateRange}
-                onChange={(e) => setFilterDateRange(e.target.value)}
-              >
-                {dateRanges.map(range => <option key={range} value={range}>{range}</option>)}
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-mediumGray dark:text-gray-400">
-                <ChevronRight className="transform rotate-90" size={18} />
-              </div>
+            
+            {/* View Mode */}
+            <div className="flex ml-auto bg-gray-100 dark:bg-gray-900 rounded-lg p-1 shrink-0 self-center">
+                <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-md transition-all ${viewMode === 'list'?'bg-white shadow text-gray-900 dark:bg-gray-700 dark:text-white':'text-gray-400 hover:text-gray-600'}`}><List size={18} /></button>
+                <button onClick={() => setViewMode('cards')} className={`p-1.5 rounded-md transition-all ${viewMode === 'cards'?'bg-white shadow text-gray-900 dark:bg-gray-700 dark:text-white':'text-gray-400 hover:text-gray-600'}`}><LayoutGrid size={18} /></button>
             </div>
           </div>
-
-          {/* View Mode Toggle */}
-          <div className="flex space-x-2 w-full sm:w-auto justify-center">
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-3 rounded-lg transition-all duration-200 shadow-sm ${viewMode === 'list'
-                ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-md'
-                : 'bg-white dark:bg-gray-800 text-mediumGray dark:text-gray-400 border-2 border-lightGray dark:border-gray-700 hover:border-primary'
-                }`}
-              title="List View"
-            >
-              <List size={20} />
-            </button>
-            <button
-              onClick={() => setViewMode('cards')}
-              className={`p-3 rounded-lg transition-all duration-200 shadow-sm ${viewMode === 'cards'
-                ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-md'
-                : 'bg-white dark:bg-gray-800 text-mediumGray dark:text-gray-400 border-2 border-lightGray dark:border-gray-700 hover:border-primary'
-                }`}
-              title="Card View"
-            >
-              <LayoutGrid size={20} />
-            </button>
-          </div>
-        </div>
       </div>
 
-      {/* Tabs for Employee Categories */}
-      <div className="mb-6 border-b border-lightGray dark:border-gray-700">
-        <nav className="flex flex-wrap gap-2" aria-label="Tabs">
-          <button
-            onClick={() => setActiveTab('All')}
-            className={`
-              flex items-center space-x-2 px-4 py-2 sm:px-6 sm:py-3 text-sm font-semibold rounded-t-lg transition-all duration-200 border-b-2
-              ${activeTab === 'All'
-                ? 'bg-primary/10 text-primary border-primary'
-                : 'text-mediumGray dark:text-gray-400 hover:text-darkGray dark:hover:text-gray-200 border-transparent hover:border-lightGray dark:hover:border-gray-600'
-              }
-            `}
-          >
-            <User size={18} />
-            <span className="hidden sm:inline">All Employees</span>
-            <span className="sm:hidden">All</span>
-            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${activeTab === 'All' ? 'bg-primary/20 text-primary' : 'bg-gray-200 dark:bg-gray-700 text-mediumGray'
-              }`}>
-              {employees.length}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('Company')}
-            className={`
-              flex items-center space-x-2 px-4 py-2 sm:px-6 sm:py-3 text-sm font-semibold rounded-t-lg transition-all duration-200 border-b-2
-              ${activeTab === 'Company'
-                ? 'bg-primary/10 text-primary border-primary'
-                : 'text-mediumGray dark:text-gray-400 hover:text-darkGray dark:hover:text-gray-200 border-transparent hover:border-lightGray dark:hover:border-gray-600'
-              }
-            `}
-          >
-            <Briefcase size={18} />
-            <span>Company</span>
-            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${activeTab === 'Company' ? 'bg-primary/20 text-primary' : 'bg-gray-200 dark:bg-gray-700 text-mediumGray'
-              }`}>
-              {employees.filter(e => e.category === 'COMPANY').length}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('Project')}
-            className={`
-              flex items-center space-x-2 px-4 py-2 sm:px-6 sm:py-3 text-sm font-semibold rounded-t-lg transition-all duration-200 border-b-2
-              ${activeTab === 'Project'
-                ? 'bg-accent/10 text-accent border-accent'
-                : 'text-mediumGray dark:text-gray-400 hover:text-darkGray dark:hover:text-gray-200 border-transparent hover:border-lightGray dark:hover:border-gray-600'
-              }
-            `}
-          >
-            <Truck size={18} />
-            <span>Project</span>
-            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${activeTab === 'Project' ? 'bg-accent/20 text-accent' : 'bg-gray-200 dark:bg-gray-700 text-mediumGray'
-              }`}>
-              {employees.filter(e => e.category === 'PROJECT').length}
-            </span>
-          </button>
-        </nav>
-      </div>
-
-      {/* Employees View */}
       {pageLoading ? (
-        <div className="min-h-[400px] flex items-center justify-center">
-          <Loader2 className="animate-spin mr-3 text-primary" size={32} /> Loading Employees...
+        <div className="flex flex-col items-center justify-center p-20 bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+           <Loader2 className="animate-spin text-primary mb-4" size={40} />
+           <p className="text-gray-500 font-medium">Syncing Master Rosters...</p>
         </div>
-      ) : filteredEmployees.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center text-mediumGray dark:text-gray-400 animate-fade-in">
-          Ma jiraan shaqaale la helay.
+      ) : tabFilteredEmployees.length === 0 ? (
+        <div className="flex flex-col items-center justify-center p-20 bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 border-dashed">
+           <div className="w-20 h-20 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center justify-center mb-4">
+             <Search size={32} className="text-gray-300" />
+           </div>
+           <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">No records found</h3>
+           <p className="text-gray-500 text-sm mt-1 max-w-sm text-center">Try adjusting your filters or search terms. If you haven't added an employee, click 'Add Employee' to start.</p>
+        </div>
+      ) : viewMode === 'list' ? (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden relative z-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700 uppercase text-[10px] tracking-wider text-gray-500">
+                  <th className="p-4 font-bold">Identity</th>
+                  <th className="p-4 font-bold">Role & Dept</th>
+                  <th className="p-4 font-bold hidden lg:table-cell">Contact</th>
+                  <th className="p-4 font-bold text-right">Value (Owed)</th>
+                  <th className="p-4 font-bold text-right">Settled</th>
+                  <th className="p-4 font-bold text-right">Balance</th>
+                  <th className="p-4 font-bold text-center">Status</th>
+                  <th className="p-4 font-bold text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tabFilteredEmployees.map(emp => (
+                  <EmployeeRow key={emp.id} employee={emp} onEdit={handleEditEmployee} onDelete={handleDeleteEmployee} onRecordDailyWork={handleRecordDailyWork} onRecordPayment={handleRecordPayment} />
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       ) : (
-        <div className="animate-fade-in">
-          {tabFilteredEmployees.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md text-center text-mediumGray dark:text-gray-400">
-              Ma jiraan shaqaale la helay {activeTab !== 'All' && activeTab.toLowerCase() + ' category'}.
-            </div>
-          ) : (
-            viewMode === 'list' ? (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-lightGray dark:divide-gray-700">
-                    <thead className={activeTab === 'Company'
-                      ? 'bg-gradient-to-r from-primary/10 to-secondary/10 dark:from-primary/20 dark:to-secondary/20'
-                      : activeTab === 'Project'
-                        ? 'bg-gradient-to-r from-accent/10 to-orange-500/10 dark:from-accent/20 dark:to-orange-500/20'
-                        : 'bg-gradient-to-r from-primary/10 to-secondary/10 dark:from-primary/20 dark:to-secondary/20'
-                    }>
-                      <tr>
-                        <th scope="col" className="px-4 py-4 text-left text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">MAGACA</th>
-                        <th scope="col" className="px-4 py-4 text-left text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">DOORKA</th>
-                        <th scope="col" className="px-4 py-4 text-left text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">EMAIL</th>
-                        <th scope="col" className="px-4 py-4 text-left text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">TALEEFAN</th>
-                        <th scope="col" className="px-4 py-4 text-right text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">MUSHAHAR BIL KASTA</th>
-                        <th scope="col" className="px-4 py-4 text-right text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">LA BIXIYAY BISHAAN</th>
-                        <th scope="col" className="px-4 py-4 text-right text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">HADHAY BISHAAN</th>
-                        <th scope="col" className="px-4 py-4 text-center text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">XAALADDA</th>
-                        <th scope="col" className="px-4 py-4 text-center text-sm font-bold text-darkGray dark:text-gray-100 uppercase tracking-wider">ACTIONS</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-lightGray dark:divide-gray-700">
-                      {tabFilteredEmployees.map(employee => (
-                        <EmployeeRow key={employee.id} employee={employee} onEdit={handleEditEmployee} onDelete={handleDeleteEmployee} onRecordDailyWork={handleRecordDailyWork} onRecordPayment={handleRecordPayment} />
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tabFilteredEmployees.map(employee => (
-                  <EmployeeCard key={employee.id} employee={employee} onEdit={handleEditEmployee} onDelete={handleDeleteEmployee} onRecordDailyWork={handleRecordDailyWork} onRecordPayment={handleRecordPayment} />
-                ))}
-              </div>
-            )
-          )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+           {tabFilteredEmployees.map(emp => {
+             const isCompany = emp.category === 'COMPANY';
+             const owed = isCompany ? (emp.totalSalaryOwed || 0) : (emp.laborRecords?.reduce((s, r) => s + (r.agreedWage || 0), 0) || 0);
+             const paid = isCompany ? (emp.totalPaid || 0) : (emp.laborRecords?.reduce((s, r) => s + (r.paidAmount || 0), 0) || 0);
+             const remaining = owed - paid;
+             const overpaid = remaining < 0 ? Math.abs(remaining) : 0;
+             const latestProject = !isCompany && emp.laborRecords && emp.laborRecords.length > 0
+                ? emp.laborRecords[emp.laborRecords.length - 1].projectName : null;
+             
+             // Same Avatar Gradient Logic
+             const avatarGradients = [
+               'from-blue-500 to-indigo-600', 'from-emerald-400 to-teal-500', 'from-orange-400 to-rose-500',
+               'from-purple-500 to-pink-500', 'from-cyan-400 to-blue-500'
+             ];
+             const colorIndex = emp.fullName.charCodeAt(0) % avatarGradients.length;
+             const initial = emp.fullName.charAt(0).toUpperCase();
+
+             return (
+               <div key={emp.id} className={`bg-white dark:bg-gray-800 border-l-4 ${emp.isActive ? 'border-primary' : 'border-gray-300 dark:border-gray-600'} border-t border-r border-b border-lightGray dark:border-gray-700 p-5 rounded-2xl shadow-sm hover:shadow-md transition-shadow relative`}>
+                  {/* Status Indicator */}
+                  <div className="absolute top-4 right-4 flex space-x-1">
+                     <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wide ${isCompany ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent'}`}>
+                       {isCompany ? 'Core' : 'Labor'}
+                     </span>
+                  </div>
+
+                  {/* Header: Avatar, Name, Role */}
+                  <div className="flex items-center space-x-3 mb-5 pr-12">
+                     <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${avatarGradients[colorIndex]} flex items-center justify-center text-white font-bold text-xl shadow-inner`}>
+                       {initial}
+                     </div>
+                     <div>
+                       <h4 className="font-bold text-darkGray dark:text-white leading-tight text-lg">{emp.fullName}</h4>
+                       <span className="text-xs font-semibold text-mediumGray dark:text-gray-400 flex items-center mt-0.5">
+                         {emp.role}
+                       </span>
+                     </div>
+                  </div>
+
+                  {/* Contact & Context */}
+                  <div className="flex flex-col space-y-2 mb-5">
+                     {emp.phone && (
+                       <div className="flex items-center text-sm font-medium text-darkGray dark:text-gray-300">
+                         <Phone size={14} className="mr-2 text-secondary" /> {emp.phone}
+                       </div>
+                     )}
+                     {latestProject && (
+                       <div className="flex items-center text-xs font-medium text-mediumGray dark:text-gray-400">
+                         <MapPin size={14} className="mr-2 text-redError" /> {latestProject}
+                       </div>
+                     )}
+                  </div>
+
+                  {/* Finances */}
+                  <div className="bg-lightGray/30 dark:bg-gray-900 p-3 rounded-xl text-sm border border-lightGray/50 dark:border-gray-800 mb-4 space-y-2">
+                     <div className="flex justify-between items-center text-xs font-semibold text-mediumGray dark:text-gray-400">
+                        <span>Earned:</span>
+                        <span className="text-darkGray dark:text-gray-200">${owed.toLocaleString()}</span>
+                     </div>
+                     <div className="flex justify-between items-center text-xs font-semibold text-mediumGray dark:text-gray-400">
+                        <span>Paid:</span>
+                        <span className="text-secondary">${paid.toLocaleString()}</span>
+                     </div>
+                     <div className="border-t border-lightGray dark:border-gray-700 pt-2 flex justify-between items-center">
+                        <span className="text-xs font-bold text-gray-800 dark:text-gray-300">Balance:</span>
+                        <span className={`font-black ${overpaid > 0 ? 'text-redError' : 'text-primary'}`}>
+                           ${overpaid > 0 ? overpaid.toLocaleString() : Math.abs(remaining).toLocaleString()}
+                           {overpaid > 0 ? <span className="text-[10px] ml-1">Overpaid</span> : ''}
+                        </span>
+                     </div>
+                  </div>
+
+                  {/* Actions Grid */}
+                  <div className="grid grid-cols-2 gap-2 w-full mt-auto">
+                    <button onClick={()=>handleRecordDailyWork(emp.id)} className="flex items-center justify-center py-2 bg-lightGray dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-darkGray dark:text-white text-xs font-bold rounded-lg transition-colors">
+                      <ClockIcon size={14} className="mr-1.5" /> Log Hours
+                    </button>
+                    <Link href={`/projects/employees/${emp.id}`} className="flex items-center justify-center py-2 bg-primary text-white text-xs font-bold rounded-lg hover:bg-blue-600 transition-colors shadow-sm">
+                      <Eye size={14} className="mr-1.5" /> View Profile
+                    </Link>
+                  </div>
+               </div>
+             );
+           })}
         </div>
       )}
 

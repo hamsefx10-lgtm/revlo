@@ -468,7 +468,7 @@ export default function AdminToolsPage() {
           </div>
           <p className="text-mediumGray dark:text-gray-400 mb-4">Manage data backups and system restore.</p>
           <div className="space-y-2">
-            <Link href="/admin/backup-restore" className="block p-3 rounded-lg bg-lightGray dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
+            <Link href="/settings/backup" className="block p-3 rounded-lg bg-lightGray dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <Download size={18} className="mr-3 text-secondary" />
@@ -477,7 +477,7 @@ export default function AdminToolsPage() {
                 <ArrowLeft size={16} className="text-mediumGray dark:text-gray-400 transform rotate-180" />
               </div>
             </Link>
-            <Link href="/admin/backup-restore" className="block p-3 rounded-lg bg-lightGray dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
+            <Link href="/settings/backup" className="block p-3 rounded-lg bg-lightGray dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <Upload size={18} className="mr-3 text-primary" />

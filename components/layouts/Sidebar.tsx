@@ -291,6 +291,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   }, []);
 
   // Fetch plan type
+  // Fetch plan type ONLY ONCE when the user ID is available
   useEffect(() => {
     const fetchPlanType = async () => {
       try {
@@ -301,10 +302,10 @@ const Sidebar: React.FC<SidebarProps> = ({
         setPlanType('COMBINED');
       }
     };
-    if (currentUser) {
+    if (currentUser?.id) {
       fetchPlanType();
     }
-  }, [currentUser]);
+  }, [currentUser?.id]);
 
   // Auto close sidebar on mobile nav click
   const handleNavClick = () => {
