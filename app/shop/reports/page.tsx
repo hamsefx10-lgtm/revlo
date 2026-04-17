@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import UltraIcon from '@/components/shop/ui/UltraIcon';
 import { subDays } from 'date-fns';
+import { useShopLang } from '@/contexts/ShopLanguageContext';
 
 interface ReportCardProps {
     title: string;
@@ -31,12 +32,12 @@ interface ReportCardProps {
 }
 
 const ReportCard = ({ title, desc, icon: Icon, color, href }: ReportCardProps) => {
-
+    const { t } = useShopLang();
     const variantMap: Record<string, 'primary' | 'secondary' | 'accent' | 'neutral' | 'danger'> = {
         blue: 'primary',
         green: 'secondary',
         orange: 'accent',
-        purple: 'neutral', // Fallback
+        purple: 'neutral',
         red: 'danger'
     };
 
@@ -52,10 +53,9 @@ const ReportCard = ({ title, desc, icon: Icon, color, href }: ReportCardProps) =
                 <p className="text-sm font-medium text-mediumGray dark:text-gray-400 leading-relaxed mb-8 flex-1">{desc}</p>
 
                 <div className="flex items-center text-xs font-black text-mediumGray group-hover:text-primary transition-colors mt-auto uppercase tracking-wider">
-                    View Report <ChevronRight size={16} className="ml-1 transition-transform group-hover:translate-x-1" />
+                    {t('view_all')} <ChevronRight size={16} className="ml-1 transition-transform group-hover:translate-x-1" />
                 </div>
 
-                {/* Hover Glow Effect */}
                 <div className="absolute top-0 right-0 p-24 bg-gradient-to-br from-white/0 to-gray-50/0 group-hover:from-white/0 group-hover:to-gray-100/50 dark:group-hover:to-white/5 transition-all duration-500 rounded-bl-[100px] pointer-events-none" />
             </div>
         </Link>
@@ -63,6 +63,7 @@ const ReportCard = ({ title, desc, icon: Icon, color, href }: ReportCardProps) =
 };
 
 export default function ReportsPage() {
+    const { t } = useShopLang();
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState<any>(null);
     const [dateRange, setDateRange] = useState('30days');
@@ -103,36 +104,19 @@ export default function ReportsPage() {
                         <div className="p-3 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-lightGray dark:border-gray-700 text-primary">
                             <BarChart3 size={32} />
                         </div>
-                        Business Reports
+                        {t('reports_title')}
                     </h1>
-                    <p className="text-mediumGray font-medium text-base ml-1">Gain insights into your business performance and growth.</p>
+                    <p className="text-mediumGray font-medium text-base ml-1">{t('reports_desc')}</p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
-                    {/* Date Filter */}
                     <div className="bg-white dark:bg-gray-900 p-1.5 rounded-xl border border-lightGray dark:border-gray-800 flex items-center">
-                        <button
-                            onClick={() => setDateRange('7days')}
-                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${dateRange === '7days' ? 'bg-gray-100 dark:bg-gray-800 text-darkGray dark:text-white' : 'text-mediumGray hover:text-darkGray'}`}
-                        >
-                            7 Days
-                        </button>
-                        <button
-                            onClick={() => setDateRange('30days')}
-                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${dateRange === '30days' ? 'bg-gray-100 dark:bg-gray-800 text-darkGray dark:text-white' : 'text-mediumGray hover:text-darkGray'}`}
-                        >
-                            30 Days
-                        </button>
-                        <button
-                            onClick={() => setDateRange('90days')}
-                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${dateRange === '90days' ? 'bg-gray-100 dark:bg-gray-800 text-darkGray dark:text-white' : 'text-mediumGray hover:text-darkGray'}`}
-                        >
-                            3 Months
-                        </button>
+                        <button onClick={() => setDateRange('7days')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${dateRange === '7days' ? 'bg-gray-100 dark:bg-gray-800 text-darkGray dark:text-white' : 'text-mediumGray hover:text-darkGray'}`}>7 {t('last_7_days')}</button>
+                        <button onClick={() => setDateRange('30days')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${dateRange === '30days' ? 'bg-gray-100 dark:bg-gray-800 text-darkGray dark:text-white' : 'text-mediumGray hover:text-darkGray'}`}>30 {t('date')}</button>
+                        <button onClick={() => setDateRange('90days')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${dateRange === '90days' ? 'bg-gray-100 dark:bg-gray-800 text-darkGray dark:text-white' : 'text-mediumGray hover:text-darkGray'}`}>3 {t('this_month')}</button>
                     </div>
-
                     <button className="px-6 py-3 bg-darkGray dark:bg-white hover:bg-black text-white dark:text-black font-bold rounded-xl shadow-lg shadow-black/10 transition-all flex items-center gap-2">
-                        <Download size={18} /> Export <span className="hidden sm:inline">Summary</span>
+                        <Download size={18} /> {t('export')}
                     </button>
                 </div>
             </div>
@@ -150,10 +134,10 @@ export default function ReportsPage() {
                         {/* Revenue Card */}
                         <div className="bg-gradient-to-br from-primary to-blue-600 rounded-[2rem] p-8 text-white relative overflow-hidden shadow-xl shadow-primary/20 group hover:-translate-y-1 transition-transform">
                             <div className="relative z-10">
-                                <p className="text-blue-100 text-xs font-black uppercase tracking-wider mb-2">Total Revenue</p>
+                                <p className="text-blue-100 text-xs font-black uppercase tracking-wider mb-2">{t('total_revenue_label')}</p>
                                 <h3 className="text-4xl font-black mb-4">ETB {stats?.revenue?.toLocaleString() || '0'}</h3>
                                 <div className="flex items-center gap-2 text-blue-100 text-sm font-bold bg-white/10 w-fit px-3 py-1 rounded-full backdrop-blur-md">
-                                    <TrendingUp size={16} /> +12.5% vs last period
+                                    <TrendingUp size={16} /> +12.5%
                                 </div>
                             </div>
                             <div className="absolute top-0 right-0 p-20 bg-white/10 rounded-bl-[150px] transition-transform group-hover:scale-110 duration-500"></div>
@@ -163,10 +147,10 @@ export default function ReportsPage() {
                         {/* Transactions Card */}
                         <div className="bg-white dark:bg-gray-900 border border-lightGray dark:border-gray-800 rounded-[2rem] p-8 relative overflow-hidden group hover:shadow-lg transition-all hover:-translate-y-1">
                             <div className="relative z-10">
-                                <p className="text-mediumGray text-xs font-black uppercase tracking-wider mb-2">Total Orders</p>
+                                <p className="text-mediumGray text-xs font-black uppercase tracking-wider mb-2">{t('orders')}</p>
                                 <h3 className="text-4xl font-black text-darkGray dark:text-white mb-4">{stats?.transactions?.toLocaleString() || '0'}</h3>
                                 <div className="flex items-center gap-2 text-green-500 text-sm font-bold bg-green-50 w-fit px-3 py-1 rounded-full dark:bg-green-900/20">
-                                    <TrendingUp size={16} /> +5.2% grow
+                                    <TrendingUp size={16} /> +5.2%
                                 </div>
                             </div>
                             <Package className="absolute bottom-6 right-6 text-lightGray dark:text-gray-800 transform rotate-12 group-hover:text-primary/10 transition-colors" size={64} />
@@ -175,7 +159,7 @@ export default function ReportsPage() {
                         {/* Avg Value Card */}
                         <div className="bg-white dark:bg-gray-900 border border-lightGray dark:border-gray-800 rounded-[2rem] p-8 relative overflow-hidden group hover:shadow-lg transition-all hover:-translate-y-1">
                             <div className="relative z-10">
-                                <p className="text-mediumGray text-xs font-black uppercase tracking-wider mb-2">Avg. Order Value</p>
+                                <p className="text-mediumGray text-xs font-black uppercase tracking-wider mb-2">Avg. {t('amount')}</p>
                                 <h3 className="text-4xl font-black text-darkGray dark:text-white mb-4">ETB {Math.round(stats?.avgValue || 0).toLocaleString()}</h3>
                                 <div className="flex items-center gap-2 text-orange-500 text-sm font-bold bg-orange-50 w-fit px-3 py-1 rounded-full dark:bg-orange-900/20">
                                     <Users size={16} /> stable
@@ -193,40 +177,16 @@ export default function ReportsPage() {
                     <div className="flex items-center justify-between mb-8">
                         <h2 className="text-xl font-black text-darkGray dark:text-white flex items-center gap-3">
                             <div className="w-1.5 h-6 bg-primary rounded-full"></div>
-                            Sales & Revenue
+                            {t('sales_title')} & {t('revenue')}
                         </h2>
                         <div className="h-px bg-lightGray dark:bg-gray-800 flex-1 ml-6"></div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <ReportCard
-                            title="Daily Sales Report"
-                            desc="Detailed breakdown of sales by day. View transaction history."
-                            icon={Calendar}
-                            color="blue"
-                            href="/shop/reports/sales"
-                        />
-                        <ReportCard
-                            title="Top Selling Products"
-                            desc="Identify your best performers."
-                            icon={TrendingUp}
-                            color="green"
-                            href="/shop/reports/top-products"
-                        />
-                        <ReportCard
-                            title="Sales by Category"
-                            desc="Understand revenue by category."
-                            icon={PieChart}
-                            color="purple"
-                            href="/shop/reports/categories"
-                        />
-                        <ReportCard
-                            title="Customer Insights"
-                            desc="Analyze customer spending habits."
-                            icon={Users}
-                            color="orange"
-                            href="/shop/customers"
-                        />
+                        <ReportCard title={t('sales_report')} desc={t('sales_desc')} icon={Calendar} color="blue" href="/shop/reports/sales" />
+                        <ReportCard title={t('top_products_report')} desc={t('top_products_desc')} icon={TrendingUp} color="green" href="/shop/reports/top-products" />
+                        <ReportCard title={t('categories_report')} desc={t('categories_desc')} icon={PieChart} color="purple" href="/shop/reports/categories" />
+                        <ReportCard title={t('customers_title')} desc={t('customers_desc')} icon={Users} color="orange" href="/shop/customers" />
                     </div>
                 </div>
 
@@ -235,40 +195,16 @@ export default function ReportsPage() {
                     <div className="flex items-center justify-between mb-8">
                         <h2 className="text-xl font-black text-darkGray dark:text-white flex items-center gap-3">
                             <div className="w-1.5 h-6 bg-accent rounded-full"></div>
-                            Inventory & Finance
+                            {t('inventory_title')} & {t('finance_report')}
                         </h2>
                         <div className="h-px bg-lightGray dark:bg-gray-800 flex-1 ml-6"></div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <ReportCard
-                            title="Inventory Valuation"
-                            desc="Current value of stock on hand."
-                            icon={Package}
-                            color="orange"
-                            href="/shop/inventory"
-                        />
-                        <ReportCard
-                            title="Low Stock Report"
-                            desc="Items below minimum threshold."
-                            icon={FileText}
-                            color="blue"
-                            href="/shop/reports/low-stock"
-                        />
-                        <ReportCard
-                            title="Profit & Loss"
-                            desc="Income vs expenses statement."
-                            icon={LineChart}
-                            color="green"
-                            href="/shop/reports/finance"
-                        />
-                        <ReportCard
-                            title="Balance Sheet"
-                            desc="Assets, Liabilities, and Equity overview."
-                            icon={Scale}
-                            color="purple"
-                            href="/shop/reports/balance-sheet"
-                        />
+                        <ReportCard title={t('inventory_report')} desc={t('inventory_desc')} icon={Package} color="orange" href="/shop/inventory" />
+                        <ReportCard title={t('low_stock_report')} desc={t('low_stock_desc')} icon={FileText} color="blue" href="/shop/reports/low-stock" />
+                        <ReportCard title={t('profit_loss')} desc={t('reports_desc')} icon={LineChart} color="green" href="/shop/reports/finance" />
+                        <ReportCard title={t('balance_sheet')} desc={t('balance_sheet_desc')} icon={Scale} color="purple" href="/shop/reports/balance-sheet" />
                     </div>
                 </div>
 
@@ -276,10 +212,10 @@ export default function ReportsPage() {
                 <div className="animate-fade-in-up delay-300">
                     <div className="bg-gradient-to-br from-primary/10 to-blue-600/5 border border-primary/10 rounded-[2.5rem] p-12 text-center relative overflow-hidden group hover:border-primary/20 transition-all duration-500">
                         <div className="relative z-10 flex flex-col items-center">
-                            <h3 className="text-3xl font-black text-primary mb-4">Need a Custom Report?</h3>
-                            <p className="text-mediumGray font-medium mb-10 max-w-lg text-lg">We can generate specific reports tailored to your business needs using our advanced data engine.</p>
+                            <h3 className="text-3xl font-black text-primary mb-4">{t('revlo_expert')}</h3>
+                            <p className="text-mediumGray font-medium mb-10 max-w-lg text-lg">{t('talk_to_data')}</p>
                             <button className="px-10 py-4 bg-primary hover:bg-blue-600 text-white font-bold rounded-2xl shadow-xl shadow-primary/20 transition-all flex items-center gap-2 transform hover:-translate-y-1">
-                                Open Report Builder <ArrowUpRight size={20} />
+                                {t('export')} <ArrowUpRight size={20} />
                             </button>
                         </div>
 

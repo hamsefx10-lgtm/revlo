@@ -7,7 +7,6 @@ import {
     ShoppingBag,
     CreditCard,
     Box,
-    ChevronRight,
     Wallet,
     Coins,
     ArrowUpRight,
@@ -22,10 +21,11 @@ import {
 import Link from 'next/link';
 import { format } from 'date-fns';
 
-// Shared UI Components
 import MetricCard from '@/components/shop/ui/MetricCard';
+import { useShopLang } from '@/contexts/ShopLanguageContext';
 
 export default function ShopDashboard() {
+    const { t } = useShopLang();
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
     const [query, setQuery] = useState('');
@@ -110,32 +110,32 @@ export default function ShopDashboard() {
         <div className="min-h-screen space-y-8 animate-fade-in pb-12 font-sans">
 
             {/* HEADER */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6">
                 <div>
                     <div className="flex items-center gap-2 mb-2">
                         <span className="flex h-2 w-2 relative">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2ECC71] opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2ECC71]"></span>
                         </span>
-                        <span className="text-xs font-bold text-[#2ECC71] uppercase tracking-widest">System Online</span>
+                        <span className="text-xs font-bold text-[#2ECC71] uppercase tracking-widest">{t('system_online')}</span>
                     </div>
-                    <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter">
-                        Dashboard
+                    <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white tracking-tighter">
+                        {t('dashboard_title')}
                     </h1>
                     {lastUpdated && (
                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
-                            Live Sync: {format(lastUpdated, 'HH:mm:ss')}
+                            {t('live_sync')}: {format(lastUpdated, 'HH:mm:ss')}
                         </p>
                     )}
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <Link href="/shop/pos" className="relative group">
-                        <div className="absolute inset-0 bg-[#3498DB] rounded-2xl blur opacity-40 group-hover:opacity-60 transition-opacity"></div>
-                        <div className="relative px-8 py-4 bg-[#0f172a] rounded-2xl border border-[#3498DB]/30 flex items-center gap-3 hover:bg-[#1e293b] transition-colors">
-                            <Sparkles className="text-[#3498DB] animate-pulse" size={20} />
-                            <span className="font-bold text-white">Start New Sale</span>
-                            <ArrowUpRight className="text-gray-500 group-hover:text-white transition-colors" size={18} />
+                <div className="flex items-center w-full md:w-auto">
+                    <Link href="/shop/pos" className="relative group w-full md:w-auto">
+                        <div className="absolute inset-0 bg-[#3498DB] rounded-xl sm:rounded-2xl blur opacity-40 group-hover:opacity-60 transition-opacity"></div>
+                        <div className="relative px-6 py-3 sm:px-8 sm:py-4 bg-[#0f172a] rounded-xl sm:rounded-2xl border border-[#3498DB]/30 flex justify-center items-center gap-2 sm:gap-3 hover:bg-[#1e293b] transition-colors w-full md:w-auto">
+                            <Sparkles className="text-[#3498DB] animate-pulse sm:w-5 sm:h-5 w-4 h-4" />
+                            <span className="text-sm sm:text-base font-bold text-white">{t('start_new_sale')}</span>
+                            <ArrowUpRight className="text-gray-500 group-hover:text-white transition-colors sm:w-[18px] sm:h-[18px] w-4 h-4" />
                         </div>
                     </Link>
                 </div>
@@ -148,44 +148,44 @@ export default function ShopDashboard() {
             ) : (
                 <>
                     {/* METRICS ROW */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 md:gap-4">
                         <MetricCard
-                            label="Total Revenue"
+                            label={t('total_revenue')}
                             value={`ETB ${Math.round(stats.metrics.revenue).toLocaleString()}`}
                             trend={`${stats.metrics.trends.revenue}%`}
                             isPositive={Number(stats.metrics.trends.revenue) >= 0}
                             icon={Wallet}
                             variant="primary"
-                            subtext="vs last week"
+                            subtext={t('vs_last_week')}
                         />
                         <MetricCard
-                            label="Net Profit"
+                            label={t('net_profit')}
                             value={`ETB ${Math.round(stats.metrics.netProfit).toLocaleString()}`}
-                            trend="Real Faaiido"
+                            trend={t('real_profit')}
                             isPositive={stats.metrics.netProfit > 0}
                             icon={Coins}
                             variant="accent"
                         />
                         <MetricCard
-                            label="Orders"
+                            label={t('orders')}
                             value={stats.metrics.orders.toString()}
-                            trend="Total Sales"
+                            trend={t('total_sales')}
                             isPositive={true}
                             icon={ShoppingBag}
                             variant="neutral"
                         />
                         <MetricCard
-                            label="Products"
+                            label={t('products')}
                             value={stats.metrics.products.toString()}
-                            trend="Live items"
+                            trend={t('live_items')}
                             isPositive={true}
                             icon={Package}
                             variant="accent"
                         />
                         <MetricCard
-                            label="Low Stock"
+                            label={t('low_stock')}
                             value={stats.metrics.lowStock.toString()}
-                            trend={stats.metrics.lowStock > 0 ? "Action needed" : "Solid"}
+                            trend={stats.metrics.lowStock > 0 ? t('action_needed') : t('stock_solid')}
                             isPositive={stats.metrics.lowStock === 0}
                             icon={Box}
                             variant="danger"
@@ -193,24 +193,24 @@ export default function ShopDashboard() {
                     </div>
 
                     {/* MAIN CONTENT AREA */}
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-8">
 
-                        {/* LEFT COLUMN: CHARTS & FINANCIAL LISTS */}
-                        <div className="lg:col-span-8 space-y-8">
+                        {/* LEFT COLUMN */}
+                        <div className="lg:col-span-8 space-y-4 md:space-y-8">
 
                             {/* REVENUE CHART */}
-                            <div className="bg-white/50 dark:bg-[#1f2937]/30 backdrop-blur-md rounded-[24px] p-1 border border-gray-100 dark:border-white/5 shadow-sm">
-                                <div className="bg-white dark:bg-[#0f172a] rounded-[20px] p-8 h-[400px] flex flex-col">
+                            <div className="bg-white/50 dark:bg-[#1f2937]/30 backdrop-blur-md rounded-2xl sm:rounded-[24px] p-1 border border-gray-100 dark:border-white/5 shadow-sm">
+                                <div className="bg-white dark:bg-[#0f172a] rounded-[20px] p-4 sm:p-8 h-[300px] md:h-[400px] flex flex-col">
                                     <div className="flex items-center justify-between mb-8">
                                         <div>
                                             <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                                 <BarChart3 className="text-[#3498DB]" size={22} />
-                                                Sales Performance
+                                                {t('sales_performance')}
                                             </h3>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">Week-over-Week Trend Analysis</p>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">{t('week_trend')}</p>
                                         </div>
                                         <div className="px-4 py-2 bg-[#2ECC71]/10 rounded-xl border border-[#2ECC71]/20">
-                                            <span className="text-[#2ECC71] text-xs font-black">+{stats.metrics.trends.revenue}% MOMENTUM</span>
+                                            <span className="text-[#2ECC71] text-xs font-black">+{stats.metrics.trends.revenue}% {t('momentum')}</span>
                                         </div>
                                     </div>
 
@@ -229,7 +229,7 @@ export default function ShopDashboard() {
                                                 <Tooltip
                                                     contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#fff', borderRadius: '12px' }}
                                                     itemStyle={{ color: '#fff' }}
-                                                    formatter={(val: any) => [`ETB ${val.toLocaleString()}`, 'Revenue']}
+                                                    formatter={(val: any) => [`ETB ${val.toLocaleString()}`, t('revenue')]}
                                                     labelStyle={{ color: '#94a3b8' }}
                                                 />
                                                 <Area type="monotone" dataKey="sales" stroke="#3498DB" strokeWidth={4} fill="url(#chartGlowBrand)" />
@@ -239,20 +239,21 @@ export default function ShopDashboard() {
                                 </div>
                             </div>
 
-                            {/* FINANCIAL ACTIONABLE LISTS (AR/AP) */}
+                            {/* FINANCIAL LISTS (AR/AP) */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {/* Receivables */}
                                 <div className="bg-white/50 dark:bg-[#1f2937]/30 backdrop-blur-md rounded-[24px] p-1 border border-gray-100 dark:border-white/5 shadow-sm">
                                     <div className="bg-white dark:bg-[#0f172a] rounded-[20px] p-8">
                                         <div className="flex items-center justify-between mb-2">
                                             <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                                 <ArrowUpRight className="text-red-500" size={20} />
-                                                Receivables
+                                                {t('receivables')}
                                             </h3>
-                                            <Link href="/shop/reports?tab=receivables" className="text-[10px] font-black text-[#3498DB] uppercase hover:underline">View All</Link>
+                                            <Link href="/shop/reports?tab=receivables" className="text-[10px] font-black text-[#3498DB] uppercase hover:underline">{t('view_all')}</Link>
                                         </div>
                                         <div className="mb-6">
                                             <span className="text-[10px] font-black text-red-500 bg-red-500/10 px-2 py-1 rounded-md uppercase tracking-tighter">
-                                                Total: ETB {Math.round(stats.metrics.accountsReceivable).toLocaleString()}
+                                                {t('total')}: ETB {Math.round(stats.metrics.accountsReceivable).toLocaleString()}
                                             </span>
                                         </div>
                                         <div className="space-y-3">
@@ -263,28 +264,29 @@ export default function ShopDashboard() {
                                                         <p className="text-[10px] text-red-500 font-bold uppercase">ETB {Math.round(debtor.balance).toLocaleString()}</p>
                                                     </div>
                                                     <Link href={`/shop/customers/${debtor.id}`} className="ml-4 px-3 py-1 bg-red-500/10 text-red-500 rounded-lg text-[10px] font-black hover:bg-red-500 hover:text-white transition-all">
-                                                        PAY
+                                                        {t('pay')}
                                                     </Link>
                                                 </div>
                                             )) : (
-                                                <p className="text-center py-4 text-xs text-gray-400">No debtors found.</p>
+                                                <p className="text-center py-4 text-xs text-gray-400">{t('no_debtors')}</p>
                                             )}
                                         </div>
                                     </div>
                                 </div>
 
+                                {/* Payables */}
                                 <div className="bg-white/50 dark:bg-[#1f2937]/30 backdrop-blur-md rounded-[24px] p-1 border border-gray-100 dark:border-white/5 shadow-sm">
                                     <div className="bg-white dark:bg-[#0f172a] rounded-[20px] p-8">
                                         <div className="flex items-center justify-between mb-2">
                                             <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                                 <CreditCard className="text-[#3498DB]" size={20} />
-                                                Payables
+                                                {t('payables')}
                                             </h3>
-                                            <Link href="/shop/reports?tab=payables" className="text-[10px] font-black text-[#3498DB] uppercase hover:underline">View All</Link>
+                                            <Link href="/shop/reports?tab=payables" className="text-[10px] font-black text-[#3498DB] uppercase hover:underline">{t('view_all')}</Link>
                                         </div>
                                         <div className="mb-6">
                                             <span className="text-[10px] font-black text-[#3498DB] bg-[#3498DB]/10 px-2 py-1 rounded-md uppercase tracking-tighter">
-                                                Total: ETB {Math.round(stats.metrics.accountsPayable).toLocaleString()}
+                                                {t('total')}: ETB {Math.round(stats.metrics.accountsPayable).toLocaleString()}
                                             </span>
                                         </div>
                                         <div className="space-y-3">
@@ -295,25 +297,25 @@ export default function ShopDashboard() {
                                                         <p className="text-[10px] text-[#3498DB] font-bold uppercase">ETB {Math.round(creditor.balance).toLocaleString()}</p>
                                                     </div>
                                                     <Link href={`/shop/vendors/${creditor.id}`} className="ml-4 px-3 py-1 bg-[#3498DB]/10 text-[#3498DB] rounded-lg text-[10px] font-black hover:bg-[#3498DB] hover:text-white transition-all">
-                                                        PAY
+                                                        {t('pay')}
                                                     </Link>
                                                 </div>
                                             )) : (
-                                                <p className="text-center py-4 text-xs text-gray-400">No payables found.</p>
+                                                <p className="text-center py-4 text-xs text-gray-400">{t('no_payables')}</p>
                                             )}
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* TOP SELLING PRODUCTS & EXPENSE BREAKDOWN */}
+                            {/* TOP PRODUCTS & EXPENSE BREAKDOWN */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {/* Profitability Leaders */}
+                                {/* Profit Leaders */}
                                 <div className="bg-white/50 dark:bg-[#1f2937]/30 backdrop-blur-md rounded-[24px] p-1 border border-gray-100 dark:border-white/5 shadow-sm">
                                     <div className="bg-white dark:bg-[#0f172a] rounded-[20px] p-8 h-full">
                                         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
                                             <Sparkles className="text-[#F39C12]" size={22} />
-                                            Profit Leaders
+                                            {t('profit_leaders')}
                                         </h3>
                                         <div className="space-y-4">
                                             {stats.topProducts.map((product: any, idx: number) => (
@@ -324,7 +326,7 @@ export default function ShopDashboard() {
                                                         </div>
                                                         <div className="min-w-0">
                                                             <p className="font-bold text-gray-900 dark:text-white text-[11px] truncate">{product.name}</p>
-                                                            <p className="text-[10px] text-gray-500">{product.volume} sold</p>
+                                                            <p className="text-[10px] text-gray-500">{product.volume} {t('sold')}</p>
                                                         </div>
                                                     </div>
                                                     <div className="text-right">
@@ -341,7 +343,7 @@ export default function ShopDashboard() {
                                     <div className="bg-white dark:bg-[#0f172a] rounded-[20px] p-8 h-full">
                                         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
                                             <Wallet className="text-[#9B59B6]" size={22} />
-                                            Expense Mix
+                                            {t('expense_mix')}
                                         </h3>
                                         <div className="h-[250px] w-full">
                                             <ResponsiveContainer width="100%" height="100%">
@@ -376,21 +378,20 @@ export default function ShopDashboard() {
                                     </div>
                                 </div>
                             </div>
-
                         </div>
 
-                        {/* RIGHT COLUMN: ACTIVITY FEED & LOW STOCK & AGING */}
+                        {/* RIGHT COLUMN */}
                         <div className="lg:col-span-4 space-y-8">
 
                             {/* DEBT AGING WIDGET */}
                             <div className="bg-white/50 dark:bg-[#1f2937]/30 backdrop-blur-md rounded-[24px] p-1 border border-gray-100 dark:border-white/5 shadow-sm">
                                 <div className="bg-white dark:bg-[#0f172a] rounded-[20px] p-6">
-                                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Debt Aging (AR)</h4>
+                                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">{t('debt_aging')}</h4>
                                     <div className="space-y-4">
                                         {[
-                                            { label: 'Current (0-7d)', val: stats.metrics.aging.current, color: '#3498DB' },
-                                            { label: 'Late (8-30d)', val: stats.metrics.aging.late, color: '#F39C12' },
-                                            { label: 'Overdue (30d+)', val: stats.metrics.aging.overdue, color: '#E74C3C' }
+                                            { label: t('current_debt'), val: stats.metrics.aging.current, color: '#3498DB' },
+                                            { label: t('late_debt'), val: stats.metrics.aging.late, color: '#F39C12' },
+                                            { label: t('overdue_debt'), val: stats.metrics.aging.overdue, color: '#E74C3C' }
                                         ].map((bucket, i) => (
                                             <div key={i}>
                                                 <div className="flex justify-between text-[11px] mb-1 font-bold">
@@ -412,7 +413,7 @@ export default function ShopDashboard() {
                             {/* ACTIVITY FEED */}
                             <div className="bg-white/50 dark:bg-[#1f2937]/30 backdrop-blur-md rounded-[24px] p-1 border border-gray-100 dark:border-white/5 shadow-sm">
                                 <div className="bg-white dark:bg-[#0f172a] rounded-[20px] p-6 h-[460px] flex flex-col">
-                                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Live Activity Audit</h4>
+                                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">{t('live_activity')}</h4>
                                     <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
                                         <div className="space-y-6 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-px before:bg-gray-100 dark:before:bg-gray-800">
                                             {stats.activities.map((activity: any, idx: number) => (
@@ -447,13 +448,13 @@ export default function ShopDashboard() {
                             <div className="bg-white/50 dark:bg-[#1f2937]/30 backdrop-blur-md rounded-[24px] p-1 border border-gray-100 dark:border-white/5 shadow-sm">
                                 <div className="bg-white dark:bg-[#0f172a] rounded-[20px] p-6">
                                     <div className="flex items-center justify-between mb-6">
-                                        <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest">Predictive Stockouts</h4>
-                                        <Link href="/shop/inventory?status=Low%20Stock" className="text-[10px] font-black text-[#3498DB] uppercase tracking-tighter hover:underline">Refill Now</Link>
+                                        <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest">{t('predictive_stockouts')}</h4>
+                                        <Link href="/shop/inventory?status=Low%20Stock" className="text-[10px] font-black text-[#3498DB] uppercase tracking-tighter hover:underline">{t('refill_now')}</Link>
                                     </div>
                                     <div className="space-y-4">
                                         {stats.lowStockItems.length === 0 ? (
                                             <div className="text-center py-6">
-                                                <p className="text-xs font-bold text-gray-400 tracking-widest">Inventory Optimized</p>
+                                                <p className="text-xs font-bold text-gray-400 tracking-widest">{t('inventory_optimized')}</p>
                                             </div>
                                         ) : (
                                             stats.lowStockItems.slice(0, 3).map((item: any) => (
@@ -461,7 +462,7 @@ export default function ShopDashboard() {
                                                     <div className="flex justify-between items-start mb-2">
                                                         <p className="text-xs font-bold text-gray-900 dark:text-white truncate max-w-[120px]">{item.name}</p>
                                                         <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md ${item.daysLeft < 3 ? 'bg-red-500 text-white' : 'bg-orange-400 text-white'}`}>
-                                                            {item.daysLeft}d left
+                                                            {item.daysLeft}{t('days_left')}
                                                         </span>
                                                     </div>
                                                     <div className="h-1 w-full bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
@@ -473,24 +474,23 @@ export default function ShopDashboard() {
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
 
-                    {/* SEPARATED AI INTELLIGENCE SECTION */}
+                    {/* AI INTELLIGENCE SECTION */}
                     <div className="pt-8 border-t border-gray-100 dark:border-white/5">
                         <div className="flex items-center gap-2 mb-6">
                             <Sparkles className="text-[#3498DB]" size={20} />
-                            <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tighter">AI Business Intelligence</h3>
+                            <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tighter">{t('ai_intelligence')}</h3>
                         </div>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            {/* Proactive Actionable Insights */}
+                            {/* Smart Insights */}
                             <div className="bg-gradient-to-br from-[#3498DB]/5 to-[#8E44AD]/5 dark:from-[#3498DB]/10 dark:to-[#8E44AD]/10 backdrop-blur-md rounded-[32px] p-8 border border-[#3498DB]/20 relative overflow-hidden group">
                                 <div className="relative z-10 h-full flex flex-col">
                                     <div className="flex items-center justify-between mb-8">
                                         <div>
-                                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">AI Proactive Guard</p>
-                                            <h4 className="text-2xl font-black text-gray-900 dark:text-white">Smart Insights</h4>
+                                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">{t('ai_proactive_guard')}</p>
+                                            <h4 className="text-2xl font-black text-gray-900 dark:text-white">{t('smart_insights')}</h4>
                                         </div>
                                         <AlertCircle className="text-[#3498DB] animate-pulse" size={24} />
                                     </div>
@@ -500,8 +500,8 @@ export default function ShopDashboard() {
                                             <div className="p-4 rounded-2xl bg-white/40 dark:bg-[#0f172a]/40 border border-[#3498DB]/20 backdrop-blur-sm flex items-start gap-3">
                                                 <AlertCircle className="text-orange-500 mt-1" size={16} />
                                                 <div>
-                                                    <p className="text-xs font-bold text-gray-900 dark:text-white">Inventory Risk</p>
-                                                    <p className="text-[11px] text-gray-500 mt-0.5">{stats.metrics.lowStock} items are critically low. Replenish soon to avoid lost sales.</p>
+                                                    <p className="text-xs font-bold text-gray-900 dark:text-white">{t('inventory_risk')}</p>
+                                                    <p className="text-[11px] text-gray-500 mt-0.5">{stats.metrics.lowStock} {t('inventory_risk_msg')}</p>
                                                 </div>
                                             </div>
                                         )}
@@ -509,8 +509,8 @@ export default function ShopDashboard() {
                                             <div className="p-4 rounded-2xl bg-white/40 dark:bg-[#0f172a]/40 border border-[#3498DB]/20 backdrop-blur-sm flex items-start gap-3">
                                                 <Wallet className="text-red-500 mt-1" size={16} />
                                                 <div>
-                                                    <p className="text-xs font-bold text-gray-900 dark:text-white">Cash Flow Alert</p>
-                                                    <p className="text-[11px] text-gray-500 mt-0.5">ETB {Math.round(stats.metrics.accountsReceivable).toLocaleString()} is tied up in receivables. Follow up with debtors.</p>
+                                                    <p className="text-xs font-bold text-gray-900 dark:text-white">{t('cash_flow_alert')}</p>
+                                                    <p className="text-[11px] text-gray-500 mt-0.5">ETB {Math.round(stats.metrics.accountsReceivable).toLocaleString()} {t('cash_flow_msg')}</p>
                                                 </div>
                                             </div>
                                         )}
@@ -518,28 +518,28 @@ export default function ShopDashboard() {
                                             <div className="p-4 rounded-2xl bg-white/40 dark:bg-[#0f172a]/40 border border-[#3498DB]/20 backdrop-blur-sm flex items-start gap-3">
                                                 <BarChart3 className="text-blue-500 mt-1" size={16} />
                                                 <div>
-                                                    <p className="text-xs font-bold text-gray-900 dark:text-white">Sales Dip Detected</p>
-                                                    <p className="text-[11px] text-gray-500 mt-0.5">Revenue dropped {stats.metrics.trends.revenue}% vs last week. Analyze top products.</p>
+                                                    <p className="text-xs font-bold text-gray-900 dark:text-white">{t('sales_dip')}</p>
+                                                    <p className="text-[11px] text-gray-500 mt-0.5">{t('sales_dip_msg')}</p>
                                                 </div>
                                             </div>
                                         )}
                                         <div className="p-4 rounded-2xl bg-[#2ECC71]/10 border border-[#2ECC71]/20 flex items-start gap-3">
                                             <CheckCircle2 className="text-[#2ECC71] mt-1" size={16} />
-                                            <p className="text-[11px] text-[#2ECC71] font-bold uppercase tracking-tight">System Optimized: Gemini Guarding Your Profit</p>
+                                            <p className="text-[11px] text-[#2ECC71] font-bold uppercase tracking-tight">{t('system_optimized')}</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Gemini Interactive Chat Assistant */}
+                            {/* AI Chat */}
                             <div className="bg-white/50 dark:bg-[#1f2937]/30 backdrop-blur-md rounded-[32px] p-8 border border-gray-100 dark:border-white/5 flex flex-col h-[500px]">
                                 <div className="flex items-center justify-between mb-6">
                                     <div>
                                         <h4 className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-2">
                                             <MessageSquare className="text-[#3498DB]" size={20} />
-                                            Revlo Expert
+                                            {t('revlo_expert')}
                                         </h4>
-                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Talk to your business data</p>
+                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">{t('talk_to_data')}</p>
                                     </div>
                                     <div className="flex items-center gap-1">
                                         <span className="h-2 w-2 rounded-full bg-[#2ECC71] animate-pulse"></span>
@@ -547,13 +547,13 @@ export default function ShopDashboard() {
                                     </div>
                                 </div>
 
-                                {/* Chat Messages Window */}
+                                {/* Chat Messages */}
                                 <div className="flex-1 overflow-y-auto mb-6 space-y-4 pr-2 custom-scrollbar">
                                     {messages.length === 0 ? (
                                         <div className="h-full flex flex-col items-center justify-center opacity-40 text-center">
                                             <Sparkles size={48} className="text-[#3498DB] mb-4" />
-                                            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest leading-loose">
-                                                Ask me anything about <br /> Sales, Inventory or Profit
+                                            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest leading-loose whitespace-pre-line">
+                                                {t('ask_anything')}
                                             </p>
                                         </div>
                                     ) : (
@@ -582,7 +582,7 @@ export default function ShopDashboard() {
                                         type="text"
                                         value={query}
                                         onChange={(e) => setQuery(e.target.value)}
-                                        placeholder="Type your question..."
+                                        placeholder={t('ask_placeholder')}
                                         className="w-full bg-gray-50 dark:bg-[#0f172a] border-2 border-gray-100 dark:border-gray-800 rounded-2xl pl-6 pr-14 py-4 text-sm font-medium focus:outline-none focus:border-[#3498DB] transition-all"
                                     />
                                     <button disabled={isTyping} type="submit" className="absolute right-2 top-2 bottom-2 px-4 bg-[#3498DB] text-white rounded-xl font-bold hover:bg-[#2980B9] transition-all shadow-lg shadow-[#3498DB]/30 flex items-center justify-center disabled:opacity-50">
