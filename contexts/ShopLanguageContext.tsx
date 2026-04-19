@@ -74,7 +74,7 @@ const translations: Record<Language, Record<string, string>> = {
 
         // === DASHBOARD ===
         system_online: "Nidaamka Shaqaynaya",
-        dashboard_title: "Guriga Ganacsi",
+        dashboard_title: "Murayada Ganacsiga",
         live_sync: "Cusboonaysiinta Tooska ah",
         start_new_sale: "Iib Cusub Bilow",
         total_revenue: "Dakhliga Guud",
@@ -321,6 +321,23 @@ const translations: Record<Language, Record<string, string>> = {
         connect_whatsapp: "WhatsApp Xidh",
         disconnect: "Ka Xidh",
 
+        // === PAYROLL ===
+        payroll_title: "Mushaharka",
+        payroll_desc: "Bixinta mushaharka shaqaalaha",
+        total_payroll: "Mushaharka Guud",
+        paid_this_month: "Bishaan La Bixiyay",
+        remaining_salary: "Mushaharka Hadhay",
+        fully_paid: "Si Buuxda La Bixiyay",
+        pay_salary: "Mushaharka Bixi",
+        pay_extra: "Dheeri Bixi",
+        sal_balance: "Mushaharka Hadhay",
+        last_payment: "Bixintii Ugu Dambeysay",
+        never_paid: "Wali lama bixin",
+        confirm_payment: "Bixinta Xaqiiji",
+        history: "Taariikhda",
+        optional: "Ikhtiyaari",
+        "e.g_advance": "Tusaale: Saldhig, Advance...",
+
         // === RECONCILIATION ===
         reconciliation_desc: "Lamaaneysi xisaabaadka nidaamka iyo bangiga",
         upload_statement: "Xaaladda Bangiga Soo Geli",
@@ -421,6 +438,10 @@ const translations: Record<Language, Record<string, string>> = {
         shortage: "Buuxa",
         reorder: "Dib u Dalabo",
         no_low_stock: "Dhammaan alaabtu kaydka waa fiican tahay.",
+
+        // === PURCHASES extra (new keys only) ===
+        payment_recorded: "Lacag La Diiwangeliyay",
+        settlement_for: "Xisaab-gudi waxaa loogu gol lahaa",
     },
 
     en: {
@@ -728,6 +749,23 @@ const translations: Record<Language, Record<string, string>> = {
         connect_whatsapp: "Connect WhatsApp",
         disconnect: "Disconnect",
 
+        // === PAYROLL ===
+        payroll_title: "Payroll",
+        payroll_desc: "Manage employee salary payments",
+        total_payroll: "Total Payroll",
+        paid_this_month: "Paid This Month",
+        remaining_salary: "Remaining Salary",
+        fully_paid: "Fully Paid",
+        pay_salary: "Pay Salary",
+        pay_extra: "Pay Extra",
+        sal_balance: "Salary Balance",
+        last_payment: "Last Payment",
+        never_paid: "Never paid",
+        confirm_payment: "Confirm Payment",
+        history: "History",
+        optional: "Optional",
+        "e.g_advance": "e.g. Advance, Bonus...",
+
         // === RECONCILIATION ===
         reconciliation_desc: "Match system records with bank statements.",
         upload_statement: "Upload Statement",
@@ -828,6 +866,10 @@ const translations: Record<Language, Record<string, string>> = {
         shortage: "Shortage",
         reorder: "Reorder",
         no_low_stock: "All products are well stocked.",
+
+        // === PURCHASES extra (new keys only) ===
+        payment_recorded: "Payment Recorded",
+        settlement_for: "Settlement for",
     }
 };
 

@@ -37,8 +37,16 @@ interface Employee {
     lastPaymentDate: string;
     startDate: string;
     isActive: boolean;
-    expenses: any[]; // Payment history
+    expenses: any[];
     attendance: any[];
+}
+
+interface SalaryTx {
+    id: string;
+    description: string;
+    amount: number;
+    transactionDate: string;
+    note: string | null;
 }
 
 interface Account {
@@ -54,6 +62,7 @@ export default function EmployeeDetailsPage({ params }: { params: { id: string }
     const [employee, setEmployee] = useState<Employee | null>(null);
     const [loading, setLoading] = useState(true);
     const [editing, setEditing] = useState(false);
+    const [salaryTransactions, setSalaryTransactions] = useState<SalaryTx[]>([]);
 
     // Edit Form State
     const [formData, setFormData] = useState<Partial<Employee>>({});
@@ -79,7 +88,7 @@ export default function EmployeeDetailsPage({ params }: { params: { id: string }
             const data = await res.json();
             setEmployee(data.employee);
             setFormData(data.employee);
-            // Default pay amount to monthly salary
+            setSalaryTransactions(data.salaryTransactions || []);
             if (data.employee.monthlySalary) setPayAmount(data.employee.monthlySalary.toString());
         } catch (error) {
             console.error(error);
@@ -141,29 +150,29 @@ export default function EmployeeDetailsPage({ params }: { params: { id: string }
         e.preventDefault();
         setProcessingPay(true);
         try {
-            // We'll create an expense of type Salary
-            const res = await fetch('/api/shop/expenses', {
+            // ✅ Use the unified payroll API so payments appear in Payroll page
+            const res = await fetch('/api/shop/employees/payroll', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    description: `Salary Payment - ${employee?.fullName}`,
-                    amount: parseFloat(payAmount),
-                    category: 'Salary', // Ensure this category exists or backend handles it
-                    paidFrom: accounts.find(a => a.id === selectedAccountId)?.name || 'Cash',
-                    accountId: selectedAccountId,
                     employeeId: employee?.id,
-                    expenseDate: payDate,
-                    note: payNote
+                    amount: parseFloat(payAmount),
+                    accountId: selectedAccountId,
+                    note: payNote,
+                    month: new Date(payDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
                 })
             });
 
-            if (!res.ok) throw new Error('Payment failed');
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Payment failed');
+            }
 
-            toast({ title: 'Success', description: 'Salary recorded successfully' });
+            toast({ title: '✅ Success', description: 'Mushaharka si guul ah ayaa loo diiwaan geliyay' });
             setPayModalOpen(false);
             fetchEmployee(); // Refresh to see updated paid stats
-        } catch (error) {
-            toast({ title: 'Error', description: 'Could not record payment', variant: 'destructive' });
+        } catch (error: any) {
+            toast({ title: 'Error', description: error.message || 'Could not record payment', variant: 'destructive' });
         } finally {
             setProcessingPay(false);
         }
@@ -356,36 +365,58 @@ export default function EmployeeDetailsPage({ params }: { params: { id: string }
                                 <Clock size={16} /> Payment History
                             </h3>
 
-                            <div className="overflow-hidden">
+                        <div className="overflow-hidden">
                                 <table className="w-full text-left">
                                     <thead>
                                         <tr className="border-b border-gray-100 dark:border-gray-800 text-[10px] font-bold text-mediumGray uppercase tracking-wider">
-                                            <th className="pb-4 pl-4">Date</th>
-                                            <th className="pb-4">Description</th>
-                                            <th className="pb-4 text-right">Amount</th>
-                                            <th className="pb-4 text-right pr-4">Status</th>
+                                            <th className="pb-4 pl-4">Taariikhda</th>
+                                            <th className="pb-4">Sharaxaad</th>
+                                            <th className="pb-4 text-right">Lacagta</th>
+                                            <th className="pb-4 text-right pr-4">Xaalad</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                                        {employee.expenses?.length === 0 ? (
-                                            <tr><td colSpan={4} className="py-12 text-center text-mediumGray text-sm font-medium italic">No payment history found.</td></tr>
+                                        {salaryTransactions.length === 0 && (employee.expenses?.length === 0) ? (
+                                            <tr><td colSpan={4} className="py-12 text-center text-mediumGray text-sm font-medium italic">Taariikhda bixinta ma jirto.</td></tr>
                                         ) : (
-                                            employee.expenses?.map((exp: any) => (
-                                                <tr key={exp.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors group">
-                                                    <td className="py-5 pl-4 text-sm font-bold text-darkGray dark:text-gray-300">
-                                                        {format(new Date(exp.expenseDate), 'MMM dd, yyyy')}
-                                                    </td>
-                                                    <td className="py-5 text-sm font-medium text-gray-600 dark:text-gray-400">
-                                                        {exp.description} <br /> <span className="text-[10px] text-mediumGray group-hover:text-primary transition-colors">{exp.note}</span>
-                                                    </td>
-                                                    <td className="py-5 text-sm font-black text-darkGray dark:text-white text-right">
-                                                        ETB {parseFloat(exp.amount).toLocaleString()}
-                                                    </td>
-                                                    <td className="py-5 text-right pr-4">
-                                                        <span className="px-2.5 py-1 bg-secondary/10 text-secondary border border-secondary/20 rounded-lg text-[10px] font-black uppercase tracking-wide">PAID</span>
-                                                    </td>
-                                                </tr>
-                                            ))
+                                            <>
+                                                {/* ✅ New payroll transactions (unified) */}
+                                                {salaryTransactions.map((tx) => (
+                                                    <tr key={tx.id} className="hover:bg-blue-50/30 dark:hover:bg-gray-800/20 transition-colors group">
+                                                        <td className="py-5 pl-4 text-sm font-bold text-darkGray dark:text-gray-300">
+                                                            {format(new Date(tx.transactionDate), 'MMM dd, yyyy')}
+                                                        </td>
+                                                        <td className="py-5 text-sm font-medium text-gray-600 dark:text-gray-400">
+                                                            {tx.description}<br />
+                                                            <span className="text-[10px] text-mediumGray">{tx.note}</span>
+                                                        </td>
+                                                        <td className="py-5 text-sm font-black text-darkGray dark:text-white text-right">
+                                                            ETB {Number(tx.amount).toLocaleString()}
+                                                        </td>
+                                                        <td className="py-5 text-right pr-4">
+                                                            <span className="px-2.5 py-1 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg text-[10px] font-black uppercase">✅ BIXIYAY</span>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                                {/* Old expense-based payments (legacy) */}
+                                                {employee.expenses?.filter(e => !salaryTransactions.some(t => Math.abs(Number(t.amount) - parseFloat(e.amount)) < 1 && Math.abs(new Date(t.transactionDate).getTime() - new Date(e.expenseDate).getTime()) < 86400000)).map((exp: any) => (
+                                                    <tr key={exp.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors group opacity-70">
+                                                        <td className="py-5 pl-4 text-sm font-bold text-darkGray dark:text-gray-300">
+                                                            {format(new Date(exp.expenseDate), 'MMM dd, yyyy')}
+                                                        </td>
+                                                        <td className="py-5 text-sm font-medium text-gray-600 dark:text-gray-400">
+                                                            {exp.description}<br />
+                                                            <span className="text-[10px] text-mediumGray">{exp.note}</span>
+                                                        </td>
+                                                        <td className="py-5 text-sm font-black text-darkGray dark:text-white text-right">
+                                                            ETB {parseFloat(exp.amount).toLocaleString()}
+                                                        </td>
+                                                        <td className="py-5 text-right pr-4">
+                                                            <span className="px-2.5 py-1 bg-secondary/10 text-secondary border border-secondary/20 rounded-lg text-[10px] font-black uppercase">PAID</span>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </>
                                         )}
                                     </tbody>
                                 </table>

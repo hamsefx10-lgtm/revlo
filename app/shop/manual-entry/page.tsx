@@ -169,9 +169,9 @@ export default function ManualEntryPage() {
         setIsSubmitting(true);
         const payload = {
             customerId: customerId === 'walk-in' ? null : customerId,
-            items: vItems, paymentMethod, notes, paidAmount: totalDisp - balanceDisp,
+            items: vItems.map(i => ({ productId: i.productId, productName: i.description, quantity: i.qty, unitPrice: i.price })), paymentMethod, notes, paidAmount: totalDisp - balanceDisp,
             taxAmount: tax / rateVal, discountAmount: globalDisc / rateVal, invoiceNumber, supplierReceiptNumber,
-            date, currency, exchangeRate: rateVal, autoConvertDebt, convertDebtAfterDays, employeeId,
+            date, currency, exchangeRate: rateVal, autoConvertDebt, convertDebtAfterDays, employeeId, sendWhatsApp,
             payments: paymentRows.filter(p => p.accountId && p.amount).map(p => ({ ...p, amount: parseFloat(p.amount) }))
         };
         try {

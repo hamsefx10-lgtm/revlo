@@ -26,6 +26,7 @@ import StatusBadge from '@/components/shop/ui/StatusBadge';
 import { format } from 'date-fns';
 import { useToast } from '@/components/ui/use-toast';
 import * as XLSX from 'xlsx';
+import { useShopLang } from '@/contexts/ShopLanguageContext';
 
 // --- TYPES ---
 interface PurchaseOrder {
@@ -51,6 +52,7 @@ interface Account {
 }
 
 export default function PurchasesPage() {
+    const { t } = useShopLang();
     const { toast } = useToast();
     const router = useRouter();
     const [filter, setFilter] = useState('All');
@@ -135,7 +137,7 @@ export default function PurchasesPage() {
 
             if (!response.ok) throw new Error('Failed to update');
 
-            toast({ title: 'Success', description: `Order marked as ${newStatus}` });
+            toast({ title: t('success'), description: `${t('received')} — ${newStatus}` });
             fetchPurchases();
         } catch (error) {
             toast({ title: 'Error', description: 'Failed to update order', variant: 'destructive' });
@@ -158,7 +160,7 @@ export default function PurchasesPage() {
                 throw new Error(err.error || 'Failed to delete');
             }
 
-            toast({ title: 'Success', description: 'Order deleted' });
+            toast({ title: t('success'), description: t('delete') });
             fetchPurchases();
         } catch (error: any) {
             toast({ title: 'Error', description: error.message, variant: 'destructive' });
@@ -202,7 +204,7 @@ export default function PurchasesPage() {
 
             if (!response.ok) throw new Error("Payment failed");
 
-            toast({ title: 'Payment Recorded', description: `Payment of ETB ${payAmount} saved.` });
+            toast({ title: t('pay'), description: `ETB ${payAmount} — ${t('success')}` });
             setPayModalOpen(false);
             fetchPurchases();
         } catch (error) {
@@ -262,8 +264,8 @@ export default function PurchasesPage() {
                             <Truck size={32} />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-none mb-2">Purchase <span className="text-[#3498DB]">Logistics</span></h1>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium tracking-wide uppercase text-[10px]">Supply Chain & Vendor Management</p>
+                            <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-none mb-2">{t('purchases_title')} <span className="text-[#3498DB]">Logistics</span></h1>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium tracking-wide uppercase text-[10px]">{t('purchases_desc')}</p>
                         </div>
                     </div>
                     <div className="flex flex-wrap gap-3">
@@ -271,10 +273,10 @@ export default function PurchasesPage() {
                             onClick={handleExport}
                             className="px-6 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 font-black text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2 text-sm group"
                         >
-                            <Download size={18} className="group-hover:translate-y-0.5 transition-transform" /> Export Data
+                            <Download size={18} className="group-hover:translate-y-0.5 transition-transform" /> {t('export')}
                         </button>
                         <Link href="/shop/purchases/add" className="px-6 py-3 rounded-2xl bg-gradient-to-r from-[#3498DB] to-[#2980B9] hover:from-[#2980B9] hover:to-[#3498DB] text-white font-black shadow-xl shadow-blue-500/20 hover:shadow-blue-500/30 transition-all flex items-center gap-2 text-sm transform active:scale-95">
-                            <Plus size={20} strokeWidth={3} /> New Requisition
+                            <Plus size={20} strokeWidth={3} /> {t('create_purchase')}
                         </Link>
                     </div>
                 </div>
@@ -355,7 +357,7 @@ export default function PurchasesPage() {
                             <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                             <input
                                 type="text"
-                                placeholder="Search Supplier or PO#..."
+                                placeholder={t('search_placeholder')}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 className="w-full pl-11 pr-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-medium text-sm outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
@@ -365,18 +367,21 @@ export default function PurchasesPage() {
 
                     {/* Status Tabs */}
                     <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl overflow-x-auto max-w-full">
-                        {['All', 'Received', 'Ordered', 'Pending'].map((tab) => (
+                        {[t('all_status'), t('received'), t('pending'), t('pending')].map((label, idx) => {
+                            const tabKeys = ['All', 'Received', 'Ordered', 'Pending'];
+                            return (
                             <button
-                                key={tab}
-                                onClick={() => setFilter(tab)}
-                                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${filter === tab
+                                key={tabKeys[idx]}
+                                onClick={() => setFilter(tabKeys[idx])}
+                                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${filter === tabKeys[idx]
                                     ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
                                     : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                                     }`}
                             >
-                                {tab}
+                                {label}
                             </button>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -391,18 +396,18 @@ export default function PurchasesPage() {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-gray-50/50 dark:bg-gray-800/20 border-b border-gray-100 dark:border-gray-800">
-                                    <th className="px-6 py-5 text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Procurement ID</th>
-                                    <th className="px-6 py-5 text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Supplier Entity</th>
-                                    <th className="px-6 py-5 text-center text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Qty</th>
-                                    <th className="px-6 py-5 text-right text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Transaction Value</th>
-                                    <th className="px-6 py-5 text-center text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Financial State</th>
-                                    <th className="px-6 py-5 text-center text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Ops Status</th>
-                                    <th className="px-6 py-5 text-right text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Operations</th>
+                                    <th className="px-6 py-5 text-xs font-black text-gray-400 uppercase tracking-[0.2em]">{t('po_number')}</th>
+                                    <th className="px-6 py-5 text-xs font-black text-gray-400 uppercase tracking-[0.2em]">{t('vendor')}</th>
+                                    <th className="px-6 py-5 text-center text-xs font-black text-gray-400 uppercase tracking-[0.2em]">{t('quantity')}</th>
+                                    <th className="px-6 py-5 text-right text-xs font-black text-gray-400 uppercase tracking-[0.2em]">{t('total')}</th>
+                                    <th className="px-6 py-5 text-center text-xs font-black text-gray-400 uppercase tracking-[0.2em]">{t('payment_status')}</th>
+                                    <th className="px-6 py-5 text-center text-xs font-black text-gray-400 uppercase tracking-[0.2em]">{t('status')}</th>
+                                    <th className="px-6 py-5 text-right text-xs font-black text-gray-400 uppercase tracking-[0.2em]">{t('actions')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                                 {filteredPurchases.length === 0 && !loading ? (
-                                    <tr><td colSpan={7} className="px-6 py-12 text-center text-gray-400">No purchase orders found.</td></tr>
+                                    <tr><td colSpan={7} className="px-6 py-12 text-center text-gray-400">{t('no_purchases')}</td></tr>
                                 ) : (
                                     filteredPurchases.map((po) => (
                                         <tr
@@ -510,7 +515,7 @@ export default function PurchasesPage() {
                     {loading ? (
                         <div className="p-10 text-center text-gray-400">Loading...</div>
                     ) : filteredPurchases.length === 0 ? (
-                        <div className="p-10 text-center text-gray-400">No orders found.</div>
+                        <div className="p-10 text-center text-gray-400">{t('no_purchases')}</div>
                     ) : (
                         filteredPurchases.map(po => (
                             <div
@@ -579,7 +584,7 @@ export default function PurchasesPage() {
                     <div className="bg-white dark:bg-[#1f2937] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
                         <div className="p-6 bg-gradient-to-r from-blue-600 to-blue-500 text-white flex justify-between items-start">
                             <div>
-                                <h3 className="text-lg font-bold">Record Payment</h3>
+                                <h3 className="text-lg font-bold">{t('pay')}</h3>
                                 <p className="text-sm opacity-90">{selectedPo.poNumber} — {selectedPo.vendor?.name}</p>
                             </div>
                             <button onClick={() => setPayModalOpen(false)} className="text-white/80 hover:text-white"><X size={20} /></button>
@@ -588,7 +593,7 @@ export default function PurchasesPage() {
                         <form onSubmit={handlePaymentSubmit} className="p-6 space-y-4">
                             <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 flex flex-col gap-2">
                                 <div className="flex justify-between items-center">
-                                    <span className="text-xs font-bold text-gray-400 uppercase">Remaining Balance</span>
+                                    <span className="text-xs font-bold text-gray-400 uppercase">{t('balance')}</span>
                                     <span className="text-lg font-black text-gray-900 dark:text-white">
                                         ETB {(selectedPo.total - selectedPo.paidAmount).toLocaleString()}
                                     </span>
@@ -679,14 +684,14 @@ export default function PurchasesPage() {
                                     onClick={() => setPayModalOpen(false)}
                                     className="flex-1 py-3 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                                 >
-                                    Cancel
+                                    {t('cancel')}
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={!!processing}
                                     className="flex-1 py-3 rounded-xl bg-[#2ECC71] hover:bg-[#27AE60] text-white font-bold shadow-lg shadow-green-500/20"
                                 >
-                                    {processing ? 'Processing...' : 'Confirm Payment'}
+                                    {processing ? t('loading') : t('confirm')}
                                 </button>
                             </div>
                         </form>

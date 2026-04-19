@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import StatusBadge from '@/components/shop/ui/StatusBadge';
 import { format } from 'date-fns';
+import { useShopLang } from '@/contexts/ShopLanguageContext';
 
 // --- TYPES ---
 interface Employee {
@@ -46,6 +47,7 @@ const RoleBadge = ({ role }: { role: string }) => {
 };
 
 export default function EmployeesPage() {
+    const { t } = useShopLang();
     const [search, setSearch] = useState('');
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [loading, setLoading] = useState(true);
@@ -89,14 +91,14 @@ export default function EmployeesPage() {
                         <div className="p-3 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 text-[#3498DB]">
                             <Users size={28} />
                         </div>
-                        Employees
+                        {t('employees_title')}
                     </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-2 ml-1 text-sm">Manage shop staff, roles and shifts.</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-2 ml-1 text-sm">{t('employees_desc')}</p>
                 </div>
 
                 <div className="flex gap-3">
                     <Link href="/shop/employees/add" className="px-5 py-2.5 rounded-xl bg-[#3498DB] hover:bg-[#2980B9] text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all flex items-center gap-2">
-                        <UserPlus size={18} /> Add Employee
+                        <UserPlus size={18} /> {t('add_employee')}
                     </Link>
                 </div>
             </div>
@@ -109,7 +111,7 @@ export default function EmployeesPage() {
                     </div>
                     <input
                         type="text"
-                        placeholder="Search by name or role..."
+                        placeholder={t('search_placeholder')}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="block w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB] transition-all font-medium text-sm shadow-sm"
@@ -130,19 +132,19 @@ export default function EmployeesPage() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="border-b border-lightGray dark:border-gray-800">
-                                <th className="pl-8 py-5 text-left text-[10px] font-black text-mediumGray uppercase tracking-wider">Employee</th>
-                                <th className="px-6 py-5 text-left text-[10px] font-black text-mediumGray uppercase tracking-wider">Role</th>
-                                <th className="px-6 py-5 text-left text-[10px] font-black text-mediumGray uppercase tracking-wider">Contact</th>
-                                <th className="px-6 py-5 text-center text-[10px] font-black text-mediumGray uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-5 text-left text-[10px] font-black text-mediumGray uppercase tracking-wider">Joined Date</th>
-                                <th className="px-6 py-5 text-right text-[10px] font-black text-mediumGray uppercase tracking-wider pr-8">Actions</th>
+                                <th className="pl-8 py-5 text-left text-[10px] font-black text-mediumGray uppercase tracking-wider">{t('employee_name')}</th>
+                                <th className="px-6 py-5 text-left text-[10px] font-black text-mediumGray uppercase tracking-wider">{t('role')}</th>
+                                <th className="px-6 py-5 text-left text-[10px] font-black text-mediumGray uppercase tracking-wider">{t('contact')}</th>
+                                <th className="px-6 py-5 text-center text-[10px] font-black text-mediumGray uppercase tracking-wider">{t('status')}</th>
+                                <th className="px-6 py-5 text-left text-[10px] font-black text-mediumGray uppercase tracking-wider">{t('start_date')}</th>
+                                <th className="px-6 py-5 text-right text-[10px] font-black text-mediumGray uppercase tracking-wider pr-8">{t('actions')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-lightGray dark:divide-gray-800">
                             {filteredData.length === 0 && !loading ? (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-12 text-center text-mediumGray font-medium">
-                                        No employees found. <Link href="/shop/employees/add" className="text-primary hover:underline font-bold">Add one?</Link>
+                                        {t('no_employees')} <Link href="/shop/employees/add" className="text-primary hover:underline font-bold">{t('add_employee')}</Link>
                                     </td>
                                 </tr>
                             ) : (

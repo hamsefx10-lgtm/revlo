@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { Bell, Search, User, Menu, ChevronDown, Globe } from 'lucide-react';
+import { Search, User, Menu, ChevronDown, Globe } from 'lucide-react';
 import { useShopLang } from '@/contexts/ShopLanguageContext';
+import ShopNotificationBell from '@/components/shop/ShopNotificationBell';
 
 export default function ShopHeader({ onMenuClick }: { onMenuClick?: () => void }) {
     const { lang, toggle, t } = useShopLang();
@@ -80,11 +81,8 @@ export default function ShopHeader({ onMenuClick }: { onMenuClick?: () => void }
                 </div>
                 {/* =============================== */}
 
-                {/* Notifications */}
-                <button className="relative p-3 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all hover:scale-105 active:scale-95 group">
-                    <Bell size={22} className="group-hover:text-[#F39C12] transition-colors" />
-                    <span className="absolute top-2.5 right-2.5 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-[#111827] animate-pulse" />
-                </button>
+                {/* Smart Notifications Bell */}
+                <ShopNotificationBell />
 
                 {/* User Profile */}
                 <div className="flex items-center gap-3 pl-2 sm:pl-4 border-l border-gray-200 dark:border-gray-800">

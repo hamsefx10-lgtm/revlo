@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db';
+import { sendShopReceiptViaWhatsApp } from '@/lib/whatsapp/send-shop-receipt';
 
 export async function POST(
     req: NextRequest,
@@ -23,7 +24,7 @@ export async function POST(
 
         const currentUser = await prisma.user.findUnique({
             where: { id: session.user.id },
-            select: { companyId: true }
+            include: { company: true }
         });
 
         if (!currentUser?.companyId) {
@@ -96,6 +97,27 @@ export async function POST(
             console.log('SETTLE API - Transaction created');
             return updatedSale;
         });
+
+        // --- WhatsApp Receipt Trigger ---
+        try {
+            const finalSaleForAPI = await prisma.sale.findUnique({
+                where: { id: params.id },
+                include: { customer: true, items: true }
+            });
+            if (finalSaleForAPI && finalSaleForAPI.customer?.phone && currentUser.company?.name) {
+                // Pass 'PAYMENT' and the amount paid
+                sendShopReceiptViaWhatsApp(
+                    currentUser.companyId,
+                    currentUser.company.name,
+                    finalSaleForAPI.customer.phone,
+                    finalSaleForAPI,
+                    'PAYMENT',
+                    Number(amount)
+                ).catch(e => console.error('Failed to send WhatsApp payment receipt:', e));
+            }
+        } catch (waErr) {
+            console.error('WhatsApp hook failed silently:', waErr);
+        }
 
         console.log('SETTLE API - Success');
         return NextResponse.json({ success: true, sale: result });

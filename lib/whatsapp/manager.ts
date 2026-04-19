@@ -135,7 +135,8 @@ class WhatsAppManager {
         if (this.sessions.has(companyId)) {
             const existingSession = this.sessions.get(companyId)!;
             // If the session is stuck or disconnected, let's clear it to allow a retry
-            const isStuck = existingSession.status === 'CONNECTING' && (Date.now() - existingSession.lastUpdated > 30000);
+            // 120s timeout — must be long enough for post-scan authentication (can take 30-60s)
+            const isStuck = existingSession.status === 'CONNECTING' && (Date.now() - existingSession.lastUpdated > 120000);
 
             if (existingSession.status === 'DISCONNECTED' || isStuck) {
                 logToFile(`[WhatsApp] Removing existing ${isStuck ? 'STUCK ' : ''}${existingSession.status} session for company ${companyId} to allow retry.`);
@@ -215,6 +216,8 @@ class WhatsAppManager {
 
         client.on('authenticated', () => {
             logToFile(`[WhatsApp] Authenticated for company ${companyId}`);
+            // Reset lastUpdated so isStuck timer doesn't kill session during auth
+            session.lastUpdated = Date.now();
         });
 
         client.on('auth_failure', async (msg) => {
@@ -271,19 +274,50 @@ class WhatsAppManager {
     public async logoutSession(companyId: string) {
         if (this.sessions.has(companyId)) {
             const session = this.sessions.get(companyId)!;
+
+            const isDeadBrowserError = (e: any) =>
+                e?.message?.includes('Execution context was destroyed') ||
+                e?.message?.includes('Target closed') ||
+                e?.message?.includes('Session closed') ||
+                e?.message?.includes('Protocol error') ||
+                e?.message?.includes('detached');
+
             try {
                 await session.client.logout();
-            } catch (e) {
-                console.error(`[WhatsApp] Error logging out company ${companyId}`, e);
-                // Force destruction if logout fails
-                try {
-                    await session.client.destroy();
-                } catch (e2) { }
+                logToFile(`[WhatsApp] Logged out company ${companyId} cleanly.`);
+            } catch (e: any) {
+                if (isDeadBrowserError(e)) {
+                    // Browser already dead — this is expected, not a real error
+                    logToFile(`[WhatsApp] Browser was already dead for company ${companyId}, skipping logout (expected).`);
+                } else {
+                    logToFile(`[WhatsApp] Logout error for company ${companyId}: ${e?.message}`);
+                }
+                // Force destroy regardless
+                try { await session.client.destroy(); } catch (_) {}
             }
+
+            // Always clean up memory + DB
             this.sessions.delete(companyId);
             await updateCompanyWhatsAppStatus(companyId, 'DISCONNECTED', null);
+            logToFile(`[WhatsApp] Session for company ${companyId} removed from memory.`);
         }
     }
+
+    /**
+     * Softly restarts a session (used when Chrome dies from hot reload).
+     * Destroys client and clears memory, but leaves DB CONNECTED and LocalAuth intact.
+     */
+    public async softRestartSession(companyId: string) {
+        if (this.sessions.has(companyId)) {
+            const session = this.sessions.get(companyId)!;
+            logToFile(`[WhatsApp] Soft restarting session for ${companyId} due to dead browser (Hot-Reload).`);
+            try { await session.client.destroy(); } catch (_) {}
+            this.sessions.delete(companyId);
+            // Note: We deliberately DO NOT update the DB to DISCONNECTED
+            // This ensures the next API call will quietly boot up Chrome and auto-login.
+        }
+    }
+
 
     /**
      * Cleans up all active sessions (used during module reloads).
@@ -324,12 +358,12 @@ logToFile('[WhatsApp Manager] Module Loaded (Force Fresh v4)');
 
 // Ensure non-blocking singleton in dev (hot reloads) and prod
 declare global {
-    var prismaWhatsAppManager_v4: WhatsAppManager | undefined;
+    var prismaWhatsAppManager_v5: WhatsAppManager | undefined;
 }
 
 export const whatsappManager =
-    global.prismaWhatsAppManager_v4 || new WhatsAppManager();
+    global.prismaWhatsAppManager_v5 || new WhatsAppManager();
 
 if (process.env.NODE_ENV !== 'production') {
-    global.prismaWhatsAppManager_v4 = whatsappManager;
+    global.prismaWhatsAppManager_v5 = whatsappManager;
 }

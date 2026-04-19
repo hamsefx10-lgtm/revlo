@@ -13,6 +13,8 @@ export default function ShopWhatsAppSettingsPage() {
     const [isSendingTest, setIsSendingTest] = useState(false);
     const [testResult, setTestResult] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
+    const [qrSecondsLeft, setQrSecondsLeft] = useState<number>(20);
+
     const fetchSessionStatus = async () => {
         try {
             const response = await fetch('/api/settings/whatsapp');
@@ -21,26 +23,63 @@ export default function ShopWhatsAppSettingsPage() {
                 setStatus(data.status);
                 setQrCodeDataUrl(data.qrCodeDataUrl);
                 setPhoneNumber(data.phoneNumber);
+                return data;
             }
         } catch (error) {
             console.error('Error fetching WhatsApp status:', error);
         } finally {
             setIsLoading(false);
         }
+        return null;
     };
 
     useEffect(() => {
-        fetchSessionStatus();
+        let pollInterval: NodeJS.Timeout | null = null;
+        let countdownInterval: NodeJS.Timeout | null = null;
 
-        // Poll for status automatically if not connected
-        const interval = setInterval(() => {
-            if (status !== 'CONNECTED') {
-                fetchSessionStatus();
-            }
-        }, 5000);
+        const stopAll = () => {
+            if (pollInterval) clearInterval(pollInterval);
+            if (countdownInterval) clearInterval(countdownInterval);
+        };
 
-        return () => clearInterval(interval);
-    }, [status]);
+        const startCountdown = () => {
+            setQrSecondsLeft(20);
+            if (countdownInterval) clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                setQrSecondsLeft(prev => Math.max(0, prev - 1));
+            }, 1000);
+        };
+
+        const run = async () => {
+            // Phase 1: initial fetch
+            const data = await fetchSessionStatus();
+            if (!data) return;
+            if (data.status === 'CONNECTED') return; // already done ✅
+
+            if (data.qrCodeDataUrl) startCountdown();
+
+            // Poll every 5s — always update QR image + detect CONNECTED
+            // WhatsApp server rotates QR every ~20s, we fetch latest every 5s
+            pollInterval = setInterval(async () => {
+                const result = await fetchSessionStatus();
+                if (!result) return;
+
+                if (result.status === 'CONNECTED') {
+                    stopAll();
+                    return;
+                }
+
+                // If QR changed (new rotation from server) → reset countdown
+                if (result.qrCodeDataUrl) {
+                    startCountdown();
+                }
+            }, 5000);
+        };
+
+        run();
+        return () => stopAll();
+    }, []);
+
 
     const handleSendTest = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -57,8 +96,16 @@ export default function ShopWhatsAppSettingsPage() {
             });
 
             const data = await response.json();
+
             if (response.ok) {
                 setTestResult({ type: 'success', message: data.message });
+            } else if (response.status === 503 && data.reconnecting) {
+                // Browser died — update status and trigger a re-fetch so QR shows
+                setTestResult({ type: 'error', message: '⚠️ ' + data.message });
+                setStatus('DISCONNECTED');
+                setQrCodeDataUrl(null);
+                // Re-fetch after 2s to start fresh session
+                setTimeout(() => fetchSessionStatus(), 2000);
             } else {
                 setTestResult({ type: 'error', message: data.message });
             }
@@ -68,6 +115,7 @@ export default function ShopWhatsAppSettingsPage() {
             setIsSendingTest(false);
         }
     };
+
 
     const handleLogout = async () => {
         setIsLoading(true);
@@ -208,12 +256,26 @@ export default function ShopWhatsAppSettingsPage() {
                         </div>
                     ) : (status === 'CONNECTING' && qrCodeDataUrl) ? (
                         <div className="flex flex-col md:flex-row items-center justify-center gap-10 py-6">
-                            <div className="bg-white p-6 rounded-xl border-2 border-dashed border-gray-200 shadow-sm relative group">
-                                <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center">
-                                    <Search className="w-10 h-10 text-gray-700" />
+                            {/* QR Code + Countdown Ring */}
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="bg-white p-5 rounded-2xl border-2 border-dashed border-gray-200 shadow-sm relative">
+                                    <img src={qrCodeDataUrl} alt="WhatsApp QR Code" className="w-56 h-56 sm:w-64 sm:h-64 object-contain" />
                                 </div>
-                                <img src={qrCodeDataUrl} alt="WhatsApp QR Code" className="w-64 h-64 object-contain" />
+
+                                {/* Countdown Timer */}
+                                <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                                    qrSecondsLeft <= 5
+                                        ? 'bg-red-50 text-red-600 border border-red-200 animate-pulse'
+                                        : 'bg-gray-50 text-gray-600 border border-gray-200'
+                                }`}>
+                                    <RefreshCw className={`w-3.5 h-3.5 ${qrSecondsLeft <= 5 ? 'text-red-500' : 'text-gray-400'}`} />
+                                    {qrSecondsLeft <= 5
+                                        ? <span>⚡ {qrSecondsLeft}s — Deg deg scan gareey!</span>
+                                        : <span>QR {qrSecondsLeft}s gudahood ayuu is cusboonaysiinayaa</span>
+                                    }
+                                </div>
                             </div>
+
                             <div className="space-y-6 max-w-sm text-left">
                                 <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-lg border border-blue-100 dark:border-blue-900/30">
                                     <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-400 mb-3 flex items-center gap-2">
@@ -227,26 +289,40 @@ export default function ShopWhatsAppSettingsPage() {
                                         <li>Ku qabo kaamerada QR code-ka halkan ku yaalla!</li>
                                     </ol>
                                 </div>
-                                <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 dark:bg-gray-800 p-3 rounded-md">
-                                    <RefreshCw className="w-4 h-4 animate-spin text-gray-400" />
-                                    <p>Waxaan sugeynaa inta aad ka iskaan garaynayso... si toos ah ayuu isku beddelayaa.</p>
+                                <div className="flex items-start gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 p-3 rounded-md">
+                                    <span className="text-base leading-none">⏱️</span>
+                                    <p><span className="font-bold">Fiiro:</span> QR code-ku wuxuu is cusboonaysiinayaa <span className="font-bold">~20 second</span> kasta — hadduu expire yahay, cusub ayuu si toos ah u soo baxi doonaa. Aadan baahnayn inaad "Dib u bilow" gujiso.</p>
                                 </div>
                             </div>
                         </div>
                     ) : status === 'CONNECTING' ? (
                         <div className="flex flex-col items-center justify-center py-12 space-y-6">
-                            <RefreshCw className="w-12 h-12 text-blue-400 animate-spin" />
+                            {/* Animated dots while Chrome starts */}
+                            <div className="relative">
+                                <div className="w-20 h-20 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                                    <Smartphone className="w-9 h-9 text-blue-400" />
+                                </div>
+                                <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-4 w-4 bg-yellow-400"></span>
+                                </span>
+                            </div>
                             <div className="text-center space-y-2">
-                                <h3 className="text-xl font-medium text-gray-900 dark:text-white">QR Code-ka ayaa la diyaarinayaa...</h3>
-                                <p className="text-gray-500 max-w-sm">
-                                    Fadlan sug dhowr ilbiriqsi, WhatsApp-ka ayaa bilaabanaya. Haddii ay tani muddo dheer kugu qaadato, isku day inaad dib u dejiso xidhiidhka.
+                                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">WhatsApp ayaa bilaabanaya...</h3>
+                                <p className="text-gray-500 dark:text-gray-400 max-w-sm text-sm leading-relaxed">
+                                    Fadlan sug <span className="font-bold text-blue-600">10–30 ilbiriqsi</span> inta QR code-ka la diyaarinayo.<br/>
+                                    Boggan wuxuu si toos ah isu cusboonaysiinayaa.
                                 </p>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                <span>Si toos ah ayuu u sugi doonaa...</span>
                             </div>
                             <button
                                 onClick={handleReset}
-                                className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition"
+                                className="px-4 py-2 text-sm font-medium text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 rounded-lg transition flex items-center gap-2"
                             >
-                                Dib u deji (Reset Connection)
+                                <RefreshCw className="w-4 h-4" /> Dib u bilow (Reset)
                             </button>
                         </div>
                     ) : (

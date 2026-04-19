@@ -3,10 +3,9 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
-// GET /api/shop/employees/[id]
-
 export const dynamic = 'force-dynamic';
 
+// GET /api/shop/employees/[id]
 export async function GET(
     req: NextRequest,
     { params }: { params: { id: string } }
@@ -22,19 +21,9 @@ export async function GET(
         const employee = await prisma.employee.findUnique({
             where: { id },
             include: {
-                expenses: {
-                    orderBy: { expenseDate: 'desc' },
-                    take: 10, // Latest 10 payments/expenses
-                },
-                attendance: {
-                    orderBy: { date: 'desc' },
-                    take: 30, // Last 30 days attendance
-                },
-                // You might want to include labor records if relevant
-                companyLaborRecords: {
-                    orderBy: { dateWorked: 'desc' },
-                    take: 5
-                }
+                expenses: { orderBy: { expenseDate: 'desc' }, take: 10 },
+                attendance: { orderBy: { date: 'desc' }, take: 30 },
+                companyLaborRecords: { orderBy: { dateWorked: 'desc' }, take: 5 }
             }
         });
 
@@ -42,14 +31,28 @@ export async function GET(
             return NextResponse.json({ error: 'Employee not found' }, { status: 404 });
         }
 
-        return NextResponse.json({ employee });
+        // ✅ Also fetch salary transactions from the unified Payroll system
+        const salaryTransactions = await prisma.transaction.findMany({
+            where: { employeeId: id, category: 'SALARY' },
+            orderBy: { transactionDate: 'desc' },
+            take: 20,
+            select: {
+                id: true,
+                description: true,
+                amount: true,
+                transactionDate: true,
+                note: true,
+            }
+        });
+
+        return NextResponse.json({ employee, salaryTransactions });
     } catch (error) {
         console.error('Error fetching employee:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
 
-// PATCH /api/shop/employees/[id] - Update Details
+// PATCH /api/shop/employees/[id]
 export async function PATCH(
     req: NextRequest,
     { params }: { params: { id: string } }
@@ -62,9 +65,6 @@ export async function PATCH(
 
         const { id } = params;
         const body = await req.json();
-
-        // Validate body if necessary (e.g. ensure salary is number)
-        // For simplicity, we assume frontend sends correct types or Prisma will error.
 
         const updatedEmployee = await prisma.employee.update({
             where: { id },
@@ -100,23 +100,11 @@ export async function DELETE(
 
         const { id } = params;
 
-        // Check if employee has related records that prevent deletion?
-        // Prisma might throw error if relations exist and onDelete is not cascade.
-        // Usually safer to soft delete (set isActive = false). 
-        // User asked to delete, we'll try to delete.
-
-        await prisma.employee.delete({
-            where: { id }
-        });
+        await prisma.employee.delete({ where: { id } });
 
         return NextResponse.json({ success: true });
-
     } catch (error) {
         console.error('Error deleting employee:', error);
-        // Fallback to soft delete if hard delete fails due to constraints?
-        // Or just return error.
-
-
         return NextResponse.json({ error: 'Failed to delete employee. They may have related records.' }, { status: 400 });
     }
 }

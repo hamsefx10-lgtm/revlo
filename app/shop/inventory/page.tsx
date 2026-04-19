@@ -19,6 +19,7 @@ import {
 import Link from 'next/link';
 import StatusBadge from '@/components/shop/ui/StatusBadge';
 import { useToast } from '@/components/ui/use-toast';
+import { useShopLang } from '@/contexts/ShopLanguageContext';
 
 // --- TYPES ---
 interface InventoryItem {
@@ -35,6 +36,7 @@ interface InventoryItem {
 }
 
 export default function InventoryPage() {
+    const { t } = useShopLang();
     const [filter, setFilter] = useState<'All' | 'Low Stock' | 'Out of Stock'>('All');
     const [search, setSearch] = useState('');
     const [products, setProducts] = useState<InventoryItem[]>([]);
@@ -83,7 +85,7 @@ export default function InventoryPage() {
     };
 
     const handleDelete = async (id: string, name: string) => {
-        if (!confirm(`Are you sure you want to delete "${name}"?`)) return;
+        if (!confirm(`${t('delete')} "${name}"?`)) return;
 
         try {
             const response = await fetch(`/api/shop/inventory/${id}`, {
@@ -95,8 +97,8 @@ export default function InventoryPage() {
             }
 
             toast({
-                title: 'Success',
-                description: `${name} has been deleted successfully.`,
+                title: t('success'),
+                description: `${name} — ${t('delete')}`,
             });
 
             fetchProducts(); // Refresh list
@@ -130,21 +132,21 @@ export default function InventoryPage() {
                         </div>
                         Inventory <span className="text-[#3498DB]">Hub</span>
                     </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-2 ml-1 text-base font-medium">Precision tracking and valuation of your business assets.</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-2 ml-1 text-base font-medium">{t('inventory_desc')}</p>
                 </div>
 
                 <div className="flex flex-wrap gap-3">
                     <button className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2 group">
-                        <Download size={18} className="group-hover:translate-y-0.5 transition-transform" /> Export
+                        <Download size={18} className="group-hover:translate-y-0.5 transition-transform" /> {t('export')}
                     </button>
                     <Link href="/shop/inventory/bulk-import" className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2 group">
-                        <Upload size={18} className="group-hover:-translate-y-0.5 transition-transform" /> Import
+                        <Upload size={18} className="group-hover:-translate-y-0.5 transition-transform" /> {t('bulk_import')}
                     </Link>
                     <Link href="/shop/inventory/adjust" className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2 group">
-                        <Edit size={18} className="group-hover:rotate-12 transition-transform" /> Adjust Stock
+                        <Edit size={18} className="group-hover:rotate-12 transition-transform" /> {t('adjust_stock')}
                     </Link>
                     <Link href="/shop/inventory/add" className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#3498DB] to-[#2980B9] hover:from-[#2980B9] hover:to-[#3498DB] text-white font-bold shadow-xl shadow-blue-500/20 hover:shadow-blue-500/30 transition-all flex items-center gap-2 transform active:scale-95">
-                        <Plus size={20} strokeWidth={3} /> Add Product
+                        <Plus size={20} strokeWidth={3} /> {t('add_product')}
                     </Link>
                 </div>
             </div>
@@ -160,7 +162,7 @@ export default function InventoryPage() {
                         <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Total SKU</span>
                     </div>
                     <h3 className="text-3xl font-black text-gray-900 dark:text-white">{products.length}</h3>
-                    <p className="text-sm text-gray-500 mt-1">Active inventory items</p>
+                    <p className="text-sm text-gray-500 mt-1">{t('in_stock')}</p>
                 </div>
 
                 {/* Stock Value */}
@@ -181,7 +183,7 @@ export default function InventoryPage() {
                         }, 0)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                         {viewCurrency === 'ETB' ? ' ETB' : ''}
                     </h3>
-                    <p className="text-sm text-gray-500 mt-1">Total asset valuation</p>
+                    <p className="text-sm text-gray-500 mt-1">{t('inventory_value')}</p>
                 </div>
 
                 {/* Low Stock */}
@@ -195,7 +197,7 @@ export default function InventoryPage() {
                     <h3 className="text-3xl font-black text-gray-900 dark:text-white">
                         {products.filter(p => p.status === 'Low Stock').length}
                     </h3>
-                    <p className="text-sm text-gray-500 mt-1">Items needing reorder</p>
+                    <p className="text-sm text-gray-500 mt-1">{t('reorder')}</p>
                 </div>
 
                 {/* Out of Stock */}
@@ -209,7 +211,7 @@ export default function InventoryPage() {
                     <h3 className="text-3xl font-black text-gray-900 dark:text-white text-red-500">
                         {products.filter(p => p.status === 'Out of Stock').length}
                     </h3>
-                    <p className="text-sm text-gray-500 mt-1">Immediate action required</p>
+                    <p className="text-sm text-gray-500 mt-1">{t('action_needed')}</p>
                 </div>
             </div>
 
@@ -219,18 +221,21 @@ export default function InventoryPage() {
                 {/* Tabs & Currency Toggle */}
                 <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
                     <div className="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl w-fit">
-                        {['All', 'Low Stock', 'Out of Stock'].map((tab) => (
+                        {[t('all_status'), t('low_stock_label'), t('out_of_stock')].map((tab, idx) => {
+                            const filterKeys = ['All', 'Low Stock', 'Out of Stock'] as const;
+                            return (
                             <button
-                                key={tab}
-                                onClick={() => setFilter(tab as any)}
-                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filter === tab
+                                key={filterKeys[idx]}
+                                onClick={() => setFilter(filterKeys[idx])}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filter === filterKeys[idx]
                                     ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
                                     : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                                     }`}
                             >
                                 {tab}
                             </button>
-                        ))}
+                            );
+                        })}
                     </div>
 
                     {/* Currency Toggle */}
@@ -263,7 +268,7 @@ export default function InventoryPage() {
                     </div>
                     <input
                         type="text"
-                        placeholder="Search by name or SKU..."
+                        placeholder={t('search_placeholder')}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="block w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB] transition-all font-medium text-sm"
@@ -280,9 +285,9 @@ export default function InventoryPage() {
                 ) : filteredData.length === 0 ? (
                     <div className="text-center py-20">
                         <Package size={48} className="mx-auto text-gray-300 mb-4" />
-                        <p className="text-gray-500 font-medium">No products found</p>
+                        <p className="text-gray-500 font-medium">{t('no_data')}</p>
                         <Link href="/shop/inventory/add" className="inline-block mt-4 text-[#3498DB] font-bold hover:underline">
-                            Add your first product
+                            {t('add_product')}
                         </Link>
                     </div>
                 ) : (
@@ -290,13 +295,13 @@ export default function InventoryPage() {
                         <table className="w-full">
                             <thead>
                                 <tr className="bg-gray-50/50 dark:bg-gray-800/20 border-b border-gray-100 dark:border-gray-800">
-                                    <th className="px-6 py-5 text-left text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Product Reference</th>
-                                    <th className="px-6 py-5 text-left text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Category</th>
-                                    <th className="px-6 py-5 text-right text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Acquisition Cost</th>
-                                    <th className="px-6 py-5 text-right text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Retail Price</th>
-                                    <th className="px-6 py-5 text-center text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Stock Count</th>
-                                    <th className="px-6 py-5 text-center text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Status</th>
-                                    <th className="px-6 py-5 text-right text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Operations</th>
+                                    <th className="px-6 py-5 text-left text-xs font-black text-gray-400 uppercase tracking-[0.2em]">{t('product_name')}</th>
+                                    <th className="px-6 py-5 text-left text-xs font-black text-gray-400 uppercase tracking-[0.2em]">{t('category')}</th>
+                                    <th className="px-6 py-5 text-right text-xs font-black text-gray-400 uppercase tracking-[0.2em]">{t('buying_price')}</th>
+                                    <th className="px-6 py-5 text-right text-xs font-black text-gray-400 uppercase tracking-[0.2em]">{t('selling_price')}</th>
+                                    <th className="px-6 py-5 text-center text-xs font-black text-gray-400 uppercase tracking-[0.2em]">{t('in_stock')}</th>
+                                    <th className="px-6 py-5 text-center text-xs font-black text-gray-400 uppercase tracking-[0.2em]">{t('status')}</th>
+                                    <th className="px-6 py-5 text-right text-xs font-black text-gray-400 uppercase tracking-[0.2em]">{t('actions')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">

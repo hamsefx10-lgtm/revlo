@@ -27,6 +27,7 @@ import {
 import Link from 'next/link';
 import { format, isToday, parseISO } from 'date-fns';
 import { useToast } from '@/components/ui/use-toast';
+import { useShopLang } from '@/contexts/ShopLanguageContext';
 
 // --- TYPES ---
 interface SaleItem {
@@ -55,6 +56,7 @@ interface Sale {
 }
 
 export default function SalesHistoryPage() {
+    const { t } = useShopLang();
     const { toast } = useToast();
     const [dateRange, setDateRange] = useState('Today');
     const [search, setSearch] = useState('');
@@ -170,21 +172,20 @@ export default function SalesHistoryPage() {
                     amount: parseFloat(payAmount),
                     accountId: selectedAccount,
                     exchangeRate: currentExchangeRate,
-                    description: `Settlement for Invoice #${selectedSale.invoiceNumber}`
+                    description: `${t('settlement_for')} #${selectedSale.invoiceNumber}`
                 })
             });
 
             if (res.ok) {
                 toast({
-                    title: 'Payment Recorded',
-                    description: `Successfully collected ETB ${parseFloat(payAmount).toLocaleString()} for Invoice #${selectedSale.invoiceNumber}`,
-                    variant: 'default' // ClassName removal due to lint
+                    title: t('payment_recorded'),
+                    description: `${t('invoice_number')} #${selectedSale.invoiceNumber} — ETB ${parseFloat(payAmount).toLocaleString()}`,
+                    variant: 'default'
                 });
                 setIsPaySidebarOpen(false);
                 fetchSales();
             } else {
                 const error = await res.json();
-                throw new Error(error.error || 'Failed to settle');
             }
         } catch (error: any) {
             toast({ title: 'Error', description: error.message, variant: 'destructive' });
@@ -236,7 +237,7 @@ export default function SalesHistoryPage() {
                 throw new Error(err.error || 'Refund failed');
             }
 
-            toast({ title: 'Refund Processed', variant: 'default' });
+            toast({ title: t('success'), variant: 'default' });
             setIsRefundModalOpen(false);
             setRefundReason('');
             fetchSales();
@@ -274,16 +275,16 @@ export default function SalesHistoryPage() {
                         </Link>
                         <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter flex items-center gap-3">
                             <History size={24} strokeWidth={3} className="text-blue-600 dark:text-blue-400 hover:scale-110 active:rotate-12 transition-transform cursor-pointer" />
-                            Sales Intelligence
+                            {t('sales_title')}
                         </h1>
                         <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium text-xs max-w-md">
-                            Analyze performance, manage transactions, and process returns with precision.
+                            {t('sales_desc')}
                         </p>
                     </div>
 
                     <div className="flex items-center gap-3">
                         <button onClick={handleExport} className="flex items-center gap-2 px-5 py-3 bg-white dark:bg-[#161B2E] border border-slate-200 dark:border-slate-800 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all shadow-sm">
-                            <Download size={12} strokeWidth={3} /> Export CSV
+                            <Download size={12} strokeWidth={3} /> {t('export')}
                         </button>
                     </div>
                 </div>
@@ -344,25 +345,28 @@ export default function SalesHistoryPage() {
             <div className="w-full px-4 lg:px-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                     <div className="flex items-center gap-2 bg-white dark:bg-[#161B2E] p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                        {['Today', 'Yesterday', 'This Week', 'This Month'].map((range) => (
+                        {[t('today'), t('this_week'), t('this_month'), t('all_time')].map((label, idx) => {
+                            const rangeKeys = ['Today', 'Yesterday', 'This Week', 'This Month'];
+                            return (
                             <button
-                                key={range}
-                                onClick={() => setDateRange(range)}
-                                className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${dateRange === range
+                                key={rangeKeys[idx]}
+                                onClick={() => setDateRange(rangeKeys[idx])}
+                                className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${dateRange === rangeKeys[idx]
                                     ? 'bg-[#3498DB] text-white shadow-lg shadow-blue-500/20'
                                     : 'text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'
                                     }`}
                             >
-                                {range}
+                                {label}
                             </button>
-                        ))}
+                            );
+                        })}
                     </div>
 
                     <div className="relative group">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#3498DB] transition-colors" size={18} />
                         <input
                             type="text"
-                            placeholder="Find receipt or customer..."
+                            placeholder={t('search_placeholder')}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="pl-12 pr-6 py-4 bg-white dark:bg-[#161B2E] border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-[#3498DB] transition-all w-80 shadow-sm"
@@ -374,26 +378,26 @@ export default function SalesHistoryPage() {
                     <div className="p-8 border-b border-slate-50 dark:border-slate-800/50 flex items-center justify-between">
                         <h2 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] flex items-center gap-3">
                             <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                            Transaction Registry
+                            {t('transactions_title')}
                         </h2>
                     </div>
 
                     {loading ? (
                         <div className="flex flex-col items-center justify-center h-96 gap-4">
                             <Loader2 className="animate-spin text-[#3498DB]" size={40} strokeWidth={3} />
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fetching Orders...</p>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('loading')}</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-slate-50/50 dark:bg-slate-900/50 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] border-b border-slate-100 dark:border-slate-800">
-                                        <th className="py-6 px-10">Invoice Details</th>
-                                        <th className="py-6 px-4">Customer</th>
-                                        <th className="py-6 px-4 text-center">Payment Method</th>
-                                        <th className="py-6 px-4 text-center">Status</th>
-                                        <th className="py-6 px-4 text-right">Order Value</th>
-                                        <th className="py-6 px-10 text-right">Intelligence</th>
+                                        <th className="py-6 px-10">{t('invoice_number')}</th>
+                                        <th className="py-6 px-4">{t('customer')}</th>
+                                        <th className="py-6 px-4 text-center">{t('payment_method')}</th>
+                                        <th className="py-6 px-4 text-center">{t('status')}</th>
+                                        <th className="py-6 px-4 text-right">{t('total')}</th>
+                                        <th className="py-6 px-10 text-right">{t('actions')}</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-left">
@@ -476,7 +480,7 @@ export default function SalesHistoryPage() {
                                                                 onClick={() => openPaySidebar(sale)}
                                                                 className="flex items-center gap-2 px-4 py-2 bg-[#3498DB] hover:bg-[#2980B9] text-white font-black text-[9px] uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-blue-500/20"
                                                             >
-                                                                <CreditCard size={14} strokeWidth={3} /> Pay
+                                                                <CreditCard size={14} strokeWidth={3} /> {t('pay')}
                                                             </button>
                                                         )}
                                                         <button
@@ -520,7 +524,7 @@ export default function SalesHistoryPage() {
                                 onClick={() => fetchSales(true)}
                                 className="px-10 py-4 bg-white dark:bg-[#161B2E] border-2 border-slate-100 dark:border-slate-800 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 hover:border-[#3498DB] hover:text-[#3498DB] transition-all shadow-sm hover:shadow-xl hover:shadow-blue-500/10 active:scale-95"
                             >
-                                Load More Transactions
+                                {t('view_all')}
                             </button>
                         </div>
                     )}
@@ -538,7 +542,7 @@ export default function SalesHistoryPage() {
                                 <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-500 text-left">
                                     <CreditCard size={20} strokeWidth={3} />
                                 </div>
-                                Settle Balance
+                                {t('balance')}
                             </h3>
                             <button onClick={() => setIsPaySidebarOpen(false)} className="p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-400 transition-all">
                                 <X size={20} />
@@ -631,7 +635,7 @@ export default function SalesHistoryPage() {
                                 className="w-full py-5 bg-[#3498DB] hover:bg-[#2980B9] text-white font-black text-sm uppercase tracking-[0.2em] rounded-2xl transition-all shadow-xl shadow-blue-500/20 disabled:opacity-50 flex items-center justify-center gap-3 group"
                             >
                                 {payLoading ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle2 size={20} className="group-hover:scale-110 transition-transform" />}
-                                Process Payment
+                                {t('pay_now')}
                             </button>
                         </div>
                     </div>
@@ -647,7 +651,7 @@ export default function SalesHistoryPage() {
                                 <div className="p-3 bg-orange-500/10 rounded-2xl text-orange-500">
                                     <RotateCcw size={20} strokeWidth={3} />
                                 </div>
-                                Issue Refund
+                                {t('receive')}
                             </h3>
                             <button type="button" onClick={() => setIsRefundModalOpen(false)} className="p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-400 transition-all">
                                 <X size={20} />
@@ -656,7 +660,7 @@ export default function SalesHistoryPage() {
 
                         <div className="p-8 space-y-6">
                             <div className="space-y-4">
-                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Select Items for Refund</label>
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{t('items_sold')}</label>
                                 <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
                                     {selectedSale.items.map(item => (
                                         <button
@@ -681,7 +685,7 @@ export default function SalesHistoryPage() {
                             </div>
 
                             <div className="p-6 bg-orange-50 dark:bg-orange-500/5 rounded-[1.5rem] border border-orange-100 dark:border-orange-800/50 flex justify-between items-center text-left">
-                                <span className="text-[10px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest leading-none">Total Refund</span>
+                                <span className="text-[10px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest leading-none">{t('total')}</span>
                                 <span className="text-2xl font-black text-orange-600">ETB {calculateRefundTotal().toLocaleString()}</span>
                             </div>
 
@@ -698,11 +702,11 @@ export default function SalesHistoryPage() {
                             </div>
 
                             <div>
-                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Reason for Refund</label>
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">{t('notes')}</label>
                                 <textarea
                                     required
                                     className="w-full p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 outline-none resize-none font-medium min-h-[100px]"
-                                    placeholder="Briefly explain why..."
+                                    placeholder={t('notes')}
                                     value={refundReason}
                                     onChange={e => setRefundReason(e.target.value)}
                                 ></textarea>
@@ -714,7 +718,7 @@ export default function SalesHistoryPage() {
                                 className="w-full py-5 bg-orange-500 hover:bg-orange-600 text-white font-black text-sm uppercase tracking-[0.2em] rounded-2xl transition-all shadow-xl shadow-orange-500/20 disabled:opacity-50 flex items-center justify-center gap-3"
                             >
                                 {processing ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}
-                                Confirm Refund
+                                {t('confirm')}
                             </button>
                         </div>
                     </form>

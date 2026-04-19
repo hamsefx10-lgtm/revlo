@@ -19,8 +19,8 @@ import {
     AlertCircle,
     Globe
 } from 'lucide-react';
-
 import { toast } from 'sonner';
+import { useShopLang } from '@/contexts/ShopLanguageContext';
 
 // --- DATA TYPES ---
 interface Product {
@@ -125,7 +125,7 @@ const ProductCard = ({ product, onClick }: { product: Product, onClick: () => vo
 );
 
 export default function POSPage() {
-    // ... (existing states)
+    const { t } = useShopLang();
     const [activeCategory, setActiveCategory] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
     const [cart, setCart] = useState<CartItem[]>([]);
@@ -182,19 +182,19 @@ export default function POSPage() {
         setHeldCarts(prev => [newHeldCart, ...prev]);
         setCart([]);
         setSelectedCustomerId('');
-        toast.success("Order put on hold");
+        toast.success(t('pending'));
     };
 
     const handleRestoreCart = (heldCart: HeldCart) => {
         if (cart.length > 0) {
-            if (!confirm("Current cart will be cleared. Continue?")) return;
+            if (!confirm(t('cart_empty') + '?')) return;
         }
 
         setCart(heldCart.items);
         setSelectedCustomerId(heldCart.customerId || '');
         setHeldCarts(prev => prev.filter(c => c.id !== heldCart.id));
         setIsHeldCartsModalOpen(false);
-        toast.success("Order restored");
+        toast.success(t('received'));
     };
 
     const handleDeleteHeldCart = (id: string) => {
@@ -481,7 +481,7 @@ export default function POSPage() {
     // Cart Logic
     const addToCart = (product: Product) => {
         if (product.stock === 0) {
-            toast.error('Product out of stock');
+            toast.error(t('out_of_stock'));
             return;
         }
 
@@ -489,14 +489,14 @@ export default function POSPage() {
             const existing = prev.find(item => item.productId === product.id);
             if (existing) {
                 if (existing.qty >= product.stock) {
-                    toast.error('Not enough stock');
+                    toast.error(t('low_stock_label'));
                     return prev;
                 }
                 return prev.map(item => item.productId === product.id ? { ...item, qty: item.qty + 1 } : item);
             }
             return [...prev, { productId: product.id, name: product.name, price: product.sellingPrice, qty: 1, stock: product.stock }];
         });
-        toast.success(`${product.name} added to cart`);
+        toast.success(`${product.name} — ${t('add_to_cart')}`);
     };
 
     const updateQty = (productId: string, delta: number) => {
@@ -504,7 +504,7 @@ export default function POSPage() {
             if (item.productId === productId) {
                 const newQty = Math.max(1, Math.min(item.stock, item.qty + delta));
                 if (newQty === item.stock && delta > 0) {
-                    toast.error('Not enough stock');
+                    toast.error(t('low_stock_label'));
                 }
                 return { ...item, qty: newQty };
             }
@@ -521,7 +521,7 @@ export default function POSPage() {
     // Checkout
     const handleCheckout = async () => {
         if (cart.length === 0) {
-            toast.error('Cart is empty');
+            toast.error(t('cart_empty'));
             return;
         }
 
@@ -554,7 +554,7 @@ export default function POSPage() {
                 throw new Error(data.error || 'Checkout failed');
             }
 
-            toast.success(`Sale completed! Invoice: ${data.sale.invoiceNumber}`);
+            toast.success(`${t('complete_sale')}! ${data.sale.invoiceNumber}`);
 
             // PRINT RECEIPT
             const customerName = customers.find(c => c.id === selectedCustomerId)?.name || 'Walk-in Customer';
@@ -590,7 +590,7 @@ export default function POSPage() {
                     <div className="flex justify-between items-center mb-6">
                         <div>
                             <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Revlo<span className="text-[#3498DB]">POS</span></h1>
-                            <p className="text-sm text-gray-500">Choose items to add to cart</p>
+                            <p className="text-sm text-gray-500">{t('pos_desc')}</p>
                         </div>
                         <div className="relative group w-64">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -601,7 +601,7 @@ export default function POSPage() {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB] transition duration-200 sm:text-sm shadow-sm"
-                                placeholder="Search products..."
+                                placeholder={t('search_products')}
                             />
                         </div>
                     </div>
@@ -628,8 +628,8 @@ export default function POSPage() {
                     ) : products.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-center opacity-50">
                             <PackageX size={64} className="text-gray-300 mb-4" />
-                            <p className="text-gray-500 font-medium">No products found</p>
-                            <p className="text-xs text-gray-400 mt-1">Try adjusting your filters or add products to inventory</p>
+                            <p className="text-gray-500 font-medium">{t('no_data')}</p>
+                            <p className="text-xs text-gray-400 mt-1">{t('add_product')}</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -647,7 +647,7 @@ export default function POSPage() {
                 <div className="p-6 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
-                            <ShoppingCart className="text-[#3498DB]" size={20} /> Current Order
+                            <ShoppingCart className="text-[#3498DB]" size={20} /> {t('cart')}
                         </h2>
                         <div className="flex items-center gap-2">
                             <button
@@ -679,12 +679,12 @@ export default function POSPage() {
                     {/* Customer Selector */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700 flex flex-col gap-2 mb-4">
                         <label className="text-xs font-bold text-gray-500 uppercase flex justify-between items-center">
-                            Customer
+                            {t('customer')}
                             <button
                                 onClick={() => setIsCustomerModalOpen(true)}
                                 className="text-[#3498DB] hover:text-[#2980B9] text-[10px] flex items-center gap-1"
                             >
-                                <Plus size={10} /> New
+                                <Plus size={10} /> {t('add_new')}
                             </button>
                         </label>
                         <div className="relative">
@@ -693,7 +693,7 @@ export default function POSPage() {
                                 onChange={(e) => setSelectedCustomerId(e.target.value)}
                                 className="w-full p-2 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 font-bold text-sm outline-none appearance-none cursor-pointer"
                             >
-                                <option value="">Walk-in Customer</option>
+                                <option value="">{t('customer_optional')}</option>
                                 {customers.map(c => (
                                     <option key={c.id} value={c.id}>{c.name} ({c.phone})</option>
                                 ))}
@@ -708,8 +708,8 @@ export default function POSPage() {
                     {cart.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-center p-8 opacity-50">
                             <ShoppingCart size={48} className="text-gray-300 mb-4" />
-                            <p className="text-gray-500 font-medium">Cart is empty</p>
-                            <p className="text-xs text-gray-400 mt-1">Select items from the left to start selling</p>
+                            <p className="text-gray-500 font-medium">{t('cart_empty')}</p>
+                            <p className="text-xs text-gray-400 mt-1">{t('pos_desc')}</p>
                         </div>
                     ) : (
                         cart.map(item => (
@@ -728,15 +728,15 @@ export default function POSPage() {
                 <div className="p-6 bg-gray-50 dark:bg-[#111827] border-t border-gray-100 dark:border-gray-800">
                     <div className="space-y-2 mb-6">
                         <div className="flex justify-between text-sm text-gray-500">
-                            <span>Subtotal</span>
+                            <span>{t('subtotal')}</span>
                             <span className="font-medium text-gray-900 dark:text-white">ETB {subtotal.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-sm text-gray-500">
-                            <span>Tax (15%)</span>
+                            <span>{t('tax')} (15%)</span>
                             <span className="font-medium text-gray-900 dark:text-white">ETB {tax.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-base font-bold text-gray-900 dark:text-white pt-2 border-t border-gray-200 dark:border-gray-700 mt-2">
-                            <span>Total Payable</span>
+                            <span>{t('grand_total')}</span>
                             <div className="text-right">
                                 <span className="text-[#3498DB] text-xl block leading-none">ETB {total.toFixed(2)}</span>
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1 block">
@@ -748,7 +748,7 @@ export default function POSPage() {
 
                     {/* PAYMENT METHOD TABS */}
                     <div className="mb-4">
-                        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Payment Method</label>
+                        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">{t('payment_method')}</label>
                         <div className="grid grid-cols-3 gap-2">
                             {['Cash', 'Card', 'Credit'].map((method) => {
                                 const isSelected = paymentTab === method;
@@ -761,7 +761,7 @@ export default function POSPage() {
                                             : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300'
                                             }`}
                                     >
-                                        {method === 'Credit' ? 'Credit/Debt' : method}
+                                        {method === 'Cash' ? t('cash') : method === 'Card' ? t('card') : t('partial')}
                                     </button>
                                 )
                             })}
@@ -772,8 +772,8 @@ export default function POSPage() {
                     {paymentTab === 'Credit' ? (
                         <div className="p-3 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-100 dark:border-red-900/20 mb-4 animate-in fade-in zoom-in-95 duration-200">
                             <div className="flex justify-between items-center mb-2">
-                                <label className="text-xs font-bold text-red-800 dark:text-red-400 uppercase">Paid Now (Optional)</label>
-                                <span className="text-[10px] text-red-500 font-bold">Remaining balance will be Debt</span>
+                                <label className="text-xs font-bold text-red-800 dark:text-red-400 uppercase">{t('pay_now')} ({t('no')} {t('required')})</label>
+                                <span className="text-[10px] text-red-500 font-bold">{t('outstanding_balance')}</span>
                             </div>
                             <div className="relative">
                                 <span className="absolute left-3 top-2.5 text-xs font-bold text-gray-400">ETB</span>
@@ -821,13 +821,13 @@ export default function POSPage() {
                             </div>
                             {!selectedCustomerId && (
                                 <p className="text-[10px] text-red-600 mt-2 font-bold flex items-center gap-1 animate-pulse">
-                                    <AlertCircle size={12} /> Specific Customer is required for credit sales
+                                    <AlertCircle size={12} /> {t('add_customer')} — {t('customer_optional')}
                                 </p>
                             )}
                         </div>
                     ) : (
                         <div className="space-y-3 mb-4">
-                            <label className="text-xs font-bold text-gray-500 uppercase">Deposit To (Revenue Account)</label>
+                            <label className="text-xs font-bold text-gray-500 uppercase">{t('deposit')} ({t('bank')})</label>
                             <div className="grid grid-cols-2 gap-3 max-h-32 overflow-y-auto custom-scrollbar">
                                 {accounts.map(acc => (
                                     <button
@@ -844,11 +844,11 @@ export default function POSPage() {
                     )}
 
                     <div className="mb-4">
-                        <label className="text-xs font-bold text-gray-500 uppercase">Notes</label>
+                        <label className="text-xs font-bold text-gray-500 uppercase">{t('notes')}</label>
                         <textarea
                             value={notes}
                             onChange={e => setNotes(e.target.value)}
-                            placeholder="Optional notes..."
+                            placeholder={t('notes')}
                             className="w-full mt-1 p-2 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 text-sm outline-none resize-none"
                             rows={1}
                         />
@@ -862,10 +862,10 @@ export default function POSPage() {
                         {checkoutLoading ? (
                             <>
                                 <Loader2 className="w-5 h-5 animate-spin" />
-                                <span className="text-sm">Processing...</span>
+                                <span className="text-sm">{t('loading')}</span>
                             </>
                         ) : (
-                            `Checkout (ETB ${total.toFixed(2)})`
+                            `${t('checkout')} (ETB ${total.toFixed(2)})`
                         )}
                     </button>
                 </div>
@@ -877,11 +877,11 @@ export default function POSPage() {
                     <div className="bg-white dark:bg-[#151C2C] rounded-[32px] shadow-2xl w-full max-w-2xl overflow-hidden border border-gray-100 dark:border-gray-700">
                         <div className="p-6 border-b border-gray-50 dark:border-gray-800 bg-gray-50/30 dark:bg-[#1a2333]/30 flex justify-between items-center">
                             <div>
-                                <h3 className="text-xl font-black text-gray-900 dark:text-white">Held Orders</h3>
-                                <p className="text-sm text-gray-500 font-medium mt-1">Orders put on hold to be completed later</p>
+                                <h3 className="text-xl font-black text-gray-900 dark:text-white">{t('pending')} {t('orders')}</h3>
+                                <p className="text-sm text-gray-500 font-medium mt-1">{t('pos_desc')}</p>
                             </div>
                             <button onClick={() => setIsHeldCartsModalOpen(false)} className="px-4 py-2 rounded-xl text-gray-500 hover:bg-white dark:hover:bg-gray-800 font-bold text-sm transition-all">
-                                Close
+                                {t('close')}
                             </button>
                         </div>
 
@@ -889,7 +889,7 @@ export default function POSPage() {
                             {heldCarts.length === 0 ? (
                                 <div className="text-center py-12 text-gray-400">
                                     <Clock size={48} className="mx-auto mb-4 opacity-50" />
-                                    <p className="font-bold">No held orders</p>
+                                    <p className="font-bold">{t('no_data')}</p>
                                 </div>
                             ) : (
                                 <div className="space-y-4">
@@ -912,7 +912,7 @@ export default function POSPage() {
                                                     onClick={() => handleRestoreCart(cart)}
                                                     className="px-4 py-2 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 hover:bg-blue-200 dark:hover:bg-blue-900/50 font-bold text-xs flex items-center gap-1 transition-colors"
                                                 >
-                                                    <PlayCircle size={14} /> Resume
+                                                    <PlayCircle size={14} /> {t('received')}
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteHeldCart(cart.id)}
@@ -936,8 +936,8 @@ export default function POSPage() {
                     <div className="bg-white dark:bg-[#151C2C] rounded-[32px] shadow-2xl w-full max-w-lg overflow-hidden border border-gray-100 dark:border-gray-700">
                         <div className="p-8 border-b border-gray-50 dark:border-gray-800 bg-gray-50/30 dark:bg-[#1a2333]/30 flex justify-between items-center">
                             <div>
-                                <h3 className="text-xl font-black text-gray-900 dark:text-white">New Customer</h3>
-                                <p className="text-sm text-gray-500 font-medium mt-1">Register a new customer</p>
+                                <h3 className="text-xl font-black text-gray-900 dark:text-white">{t('add_customer')}</h3>
+                                <p className="text-sm text-gray-500 font-medium mt-1">{t('customers_desc')}</p>
                             </div>
                             <button onClick={() => setIsCustomerModalOpen(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors text-gray-400">
                                 <Plus size={20} className="rotate-45" />
@@ -946,25 +946,25 @@ export default function POSPage() {
 
                         <div className="p-8 space-y-6">
                             <div>
-                                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Full Name</label>
+                                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">{t('customer_name')}</label>
                                 <input
                                     type="text"
                                     value={newCustomerData.name}
                                     onChange={e => setNewCustomerData(prev => ({ ...prev, name: e.target.value }))}
                                     className="w-full px-5 py-4 rounded-xl bg-gray-50 dark:bg-[#0F1623] border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-2 focus:ring-blue-500/10 outline-none font-bold text-gray-900 dark:text-white transition-all"
-                                    placeholder="Customer Name"
+                                    placeholder={t('customer_name')}
                                     autoFocus
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Phone Number</label>
+                                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">{t('phone')}</label>
                                 <input
                                     type="tel"
                                     value={newCustomerData.phone}
                                     onChange={e => setNewCustomerData(prev => ({ ...prev, phone: e.target.value }))}
                                     className="w-full px-5 py-4 rounded-xl bg-gray-50 dark:bg-[#0F1623] border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-2 focus:ring-blue-500/10 outline-none font-medium text-gray-900 dark:text-white transition-all"
-                                    placeholder="+251..."
+                                    placeholder={t('phone')}
                                 />
                             </div>
                         </div>
@@ -974,7 +974,7 @@ export default function POSPage() {
                                 onClick={() => setIsCustomerModalOpen(false)}
                                 className="px-6 py-3 rounded-xl font-bold text-gray-500 hover:bg-white dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-all"
                             >
-                                Cancel
+                                {t('cancel')}
                             </button>
                             <button
                                 onClick={handleCreateCustomer}
@@ -982,7 +982,7 @@ export default function POSPage() {
                                 className="px-8 py-3 rounded-xl bg-[#3498DB] text-white font-bold hover:bg-[#2980B9] shadow-lg shadow-blue-500/20 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50 disabled:scale-100"
                             >
                                 {isCreatingCustomer ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}
-                                Add Customer
+                                {t('add_customer')}
                             </button>
                         </div>
                     </div>

@@ -28,6 +28,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import MetricCard from '@/components/shop/ui/MetricCard';
 import { format, subDays, startOfMonth, startOfYear } from 'date-fns';
 import { useToast } from '@/components/ui/use-toast';
+import { useShopLang } from '@/contexts/ShopLanguageContext';
 
 // --- TYPES ---
 interface Transaction {
@@ -41,6 +42,7 @@ interface Transaction {
 }
 
 export default function AccountingPage() {
+    const { t } = useShopLang();
     const { toast } = useToast();
     const [filter, setFilter] = useState<'All' | 'Income' | 'Expense'>('All');
     const [dateRange, setDateRange] = useState('This Month');
@@ -167,7 +169,7 @@ export default function AccountingPage() {
 
             if (!response.ok) throw new Error("Failed to create expense");
 
-            toast({ title: 'Success', description: 'Expense recorded successfully.' });
+            toast({ title: t('success'), description: t('description') + '.' });
             setIsModalOpen(false);
             setFormData({
                 description: '',
@@ -201,7 +203,7 @@ export default function AccountingPage() {
 
             if (!res.ok) throw new Error('Transfer failed');
 
-            toast({ title: 'Success', description: 'Funds transferred successfully' });
+            toast({ title: t('success'), description: t('transfer') });
             setIsTransferModalOpen(false);
             setTransferData({
                 fromAccountId: '',
@@ -230,79 +232,82 @@ export default function AccountingPage() {
                         <div className="p-3 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 text-[#3498DB]">
                             <Wallet size={28} />
                         </div>
-                        Accounting & Finance
+                        {t('accounting_title')}
                     </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-2 ml-1 text-sm">Track income, expenses, and financial health.</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-2 ml-1 text-sm">{t('accounting_desc')}</p>
                 </div>
 
                 <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl border border-gray-200 dark:border-gray-700">
-                    {['Today', 'This Month', 'This Year'].map((range) => (
+                    {[t('today'), t('this_month'), t('this_year')].map((label, idx) => {
+                        const rangeKeys = ['Today', 'This Month', 'This Year'];
+                        return (
                         <button
-                            key={range}
-                            onClick={() => handleRangeChange(range)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${dateRange === range
+                            key={rangeKeys[idx]}
+                            onClick={() => handleRangeChange(rangeKeys[idx])}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${dateRange === rangeKeys[idx]
                                 ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white'
                                 : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
                                 }`}
                         >
-                            {range}
+                            {label}
                         </button>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
 
             <div className="flex gap-3 mb-8 overflow-x-auto pb-2">
                 <Link href="/shop/accounting/accounts" className="whitespace-nowrap px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2">
-                    <Wallet size={18} /> Accounts
+                    <Wallet size={18} /> {t('accounts')}
                 </Link>
                 <Link href="/shop/accounting/ledger" className="whitespace-nowrap px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2">
-                    <History size={18} /> General Ledger
+                    <History size={18} /> {t('ledger_title')}
                 </Link>
                 <Link href="/shop/accounting/journal" className="whitespace-nowrap px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2">
-                    <FileText size={18} /> Journal Entry
+                    <FileText size={18} /> {t('journal_title')}
                 </Link>
                 <Link href="/shop/accounting/payables" className="whitespace-nowrap px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2">
-                    <ArrowDownLeft size={18} /> Payables
+                    <ArrowDownLeft size={18} /> {t('payables_title')}
                 </Link>
                 <Link href="/shop/accounting/receivables" className="whitespace-nowrap px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2">
-                    <ArrowUpRight size={18} /> Receivables
+                    <ArrowUpRight size={18} /> {t('receivables_title')}
                 </Link>
                 <Link href="/shop/accounting/till" className="whitespace-nowrap px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2">
-                    <Lock size={18} /> Till
+                    <Lock size={18} /> {t('till_title')}
                 </Link>
                 <div className="w-px h-8 bg-gray-200 dark:bg-gray-700 mx-2"></div>
 
                 <Link href="/shop/accounting/tax" className="whitespace-nowrap px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2">
-                    Tax Center
+                    {t('tax_title')}
                 </Link>
                 <Link href="/shop/accounting/assets" className="whitespace-nowrap px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2">
-                    Fixed Assets
+                    {t('assets_title')}
                 </Link>
                 <Link href="/shop/accounting/reconciliation" className="whitespace-nowrap px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2">
-                    Reconcile
+                    {t('reconciliation_title')}
                 </Link>
                 <Link href="/shop/reports/finance" className="whitespace-nowrap px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2">
-                    <Download size={18} /> Reports
+                    <Download size={18} /> {t('reports_title')}
                 </Link>
                 <div className="w-px h-8 bg-gray-200 dark:bg-gray-700 mx-2"></div>
                 <Link href="/shop/reports/aging/customer" className="whitespace-nowrap px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2">
-                    <Users size={18} /> Customer Aging
+                    <Users size={18} /> {t('customer_aging')}
                 </Link>
                 <Link href="/shop/reports/aging/vendor" className="whitespace-nowrap px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2">
-                    <Truck size={18} /> Vendor Aging
+                    <Truck size={18} /> {t('vendor_aging')}
                 </Link>
 
                 <button
                     onClick={() => setIsTransferModalOpen(true)}
                     className="whitespace-nowrap px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-2"
                 >
-                    <ArrowRightLeft size={18} /> Transfer
+                    <ArrowRightLeft size={18} /> {t('transfer')}
                 </button>
                 <button
                     onClick={() => setIsModalOpen(true)}
                     className="whitespace-nowrap px-6 py-2.5 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold shadow-lg hover:opacity-90 transition-all flex items-center gap-2"
                 >
-                    <Plus size={18} /> Expense
+                    <Plus size={18} /> {t('total_expenses')}
                 </button>
             </div>
 
@@ -316,7 +321,7 @@ export default function AccountingPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                         {/* Income */}
                         <MetricCard
-                            label="Total Income"
+                            label={t('total_revenue_label')}
                             value={`ETB ${stats.totalIncome.toLocaleString()}`}
                             trend={dateRange}
                             isPositive={true}
@@ -326,7 +331,7 @@ export default function AccountingPage() {
 
                         {/* Expense */}
                         <MetricCard
-                            label="Total Expenses"
+                            label={t('total_expenses')}
                             value={`ETB ${stats.totalExpense.toLocaleString()}`}
                             trend={dateRange}
                             isPositive={false}
@@ -339,7 +344,7 @@ export default function AccountingPage() {
                             <div className="absolute -right-10 -top-10 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
                             <div className="absolute -left-10 -bottom-10 w-48 h-48 bg-black/10 rounded-full blur-3xl"></div>
 
-                            <p className="text-green-100 text-xs font-bold uppercase tracking-wider mb-2 relative z-10">Net Profit</p>
+                            <p className="text-green-100 text-xs font-bold uppercase tracking-wider mb-2 relative z-10">{t('net_profit')}</p>
                             <h2 className="text-4xl font-black text-white mb-2 relative z-10">ETB {stats.netProfit.toLocaleString()}</h2>
                             <p className="text-green-100 text-sm font-medium relative z-10 opacity-80">
                                 {stats.netProfit >= 0 ? 'Healthy profit margin.' : 'Operating at a loss.'}
@@ -387,23 +392,26 @@ export default function AccountingPage() {
                         {/* LEDGER / TRANSACTIONS LIST */}
                         <div className="bg-white dark:bg-[#1f2937] border border-gray-100 dark:border-gray-800 rounded-[2rem] shadow-sm overflow-hidden flex flex-col">
                             <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Recent Ledger</h3>
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t('ledger_title')}</h3>
                                 <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
-                                    {['All', 'Income', 'Expense'].map(tab => (
+                                    {[t('all_status'), t('total_revenue_label'), t('total_expenses')].map((label, idx) => {
+                                        const tabKeys = ['All', 'Income', 'Expense'];
+                                        return (
                                         <button
-                                            key={tab}
-                                            onClick={() => setFilter(tab as any)}
-                                            className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${filter === tab ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                                            key={tabKeys[idx]}
+                                            onClick={() => setFilter(tabKeys[idx] as any)}
+                                            className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${filter === tabKeys[idx] ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
                                         >
-                                            {tab}
+                                            {label}
                                         </button>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
 
                             <div className="flex-1 overflow-y-auto p-4 custom-scrollbar max-h-[400px]">
                                 {filteredData.length === 0 ? (
-                                    <div className="text-center py-10 text-gray-400 text-sm">No transactions found</div>
+                                    <div className="text-center py-10 text-gray-400 text-sm">{t('no_data')}</div>
                                 ) : (
                                     filteredData.map(t => (
                                         <div key={t.id} className="flex items-center justify-between p-3 mb-2 rounded-xl border border-gray-50 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
@@ -425,7 +433,7 @@ export default function AccountingPage() {
                             </div>
 
                             <div className="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20 text-center">
-                                <button className="text-sm font-bold text-[#3498DB] hover:underline">View All Transactions</button>
+                                <button className="text-sm font-bold text-[#3498DB] hover:underline">{t('view_all')}</button>
                             </div>
                         </div>
                     </div>
@@ -437,7 +445,7 @@ export default function AccountingPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
                     <div className="bg-white dark:bg-[#1f2937] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
                         <div className="p-6 bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                            <h3 className="text-lg font-black text-gray-900 dark:text-white">Record Expense</h3>
+                            <h3 className="text-lg font-black text-gray-900 dark:text-white">{t('description')}</h3>
                             <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
                         </div>
 
@@ -531,14 +539,14 @@ export default function AccountingPage() {
                                     onClick={() => setIsModalOpen(false)}
                                     className="flex-1 py-3 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                                 >
-                                    Cancel
+                                    {t('cancel')}
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={processing}
                                     className="flex-1 py-3 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold shadow-lg hover:opacity-90"
                                 >
-                                    {processing ? 'Saving...' : 'Save Expense'}
+                                    {processing ? t('loading') : t('save')}
                                 </button>
                             </div>
                         </form>
@@ -551,7 +559,7 @@ export default function AccountingPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
                     <div className="bg-white dark:bg-[#1f2937] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
                         <div className="p-6 bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                            <h3 className="text-lg font-black text-gray-900 dark:text-white">Transfer Funds</h3>
+                            <h3 className="text-lg font-black text-gray-900 dark:text-white">{t('transfer')}</h3>
                             <button onClick={() => setIsTransferModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
                         </div>
 
@@ -640,14 +648,14 @@ export default function AccountingPage() {
                                     onClick={() => setIsTransferModalOpen(false)}
                                     className="flex-1 py-3 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                                 >
-                                    Cancel
+                                    {t('cancel')}
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={processing}
                                     className="flex-1 py-3 rounded-xl bg-[#3498DB] text-white font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-600 hover:shadow-blue-600/30 transition-all flex justify-center items-center gap-2"
                                 >
-                                    {processing ? <Loader2 className="animate-spin" /> : <>Transfer Fund <ArrowRightLeft size={18} /></>}
+                                    {processing ? <Loader2 className="animate-spin" /> : <>{t('transfer')} <ArrowRightLeft size={18} /></>}
                                 </button>
                             </div>
                         </form>
@@ -674,7 +682,7 @@ export default function AccountingPage() {
                                 onClick={() => setIsNewCategoryModalOpen(false)}
                                 className="px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 font-bold text-sm"
                             >
-                                Cancel
+                                {t('cancel')}
                             </button>
                             <button
                                 type="button"
@@ -682,7 +690,7 @@ export default function AccountingPage() {
                                 disabled={!newCategoryName}
                                 className="px-6 py-2 rounded-lg bg-[#3498DB] text-white font-bold text-sm hover:bg-blue-600 disabled:opacity-50"
                             >
-                                Add Category
+                                {t('add_new')}
                             </button>
                         </div>
                     </div>

@@ -18,7 +18,8 @@ import {
     X,
     Briefcase,
     FileText,
-    Landmark
+    Landmark,
+    Banknote
 } from 'lucide-react';
 
 interface SidebarItemProps {
@@ -130,8 +131,9 @@ export default function ShopSidebar({ mobileOpen = false, setMobileOpen }: ShopS
         { icon: Truck, label: 'Purchases', href: '/shop/purchases' },
         { icon: Landmark, label: 'Accounting', href: '/shop/accounting' },
         { icon: Users, label: 'Customers', href: '/shop/customers' },
-        { icon: Truck, label: 'Vendors', href: '/shop/vendors' }, // Reused Truck icon, distinct label
+        { icon: Truck, label: 'Vendors', href: '/shop/vendors' },
         { icon: Briefcase, label: 'Employees', href: '/shop/employees' },
+        { icon: Banknote, label: 'Payroll', href: '/shop/payroll' },
         { icon: FileBarChart, label: 'Reports', href: '/shop/reports' },
         { icon: Settings, label: 'Settings', href: '/shop/settings' },
     ];

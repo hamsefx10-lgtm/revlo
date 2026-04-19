@@ -30,6 +30,7 @@ import {
 import UltraIcon from '@/components/shop/ui/UltraIcon';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { useShopLang } from '@/contexts/ShopLanguageContext';
 
 const inputCls = "w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-2 focus:ring-[#3498DB]/10 outline-none font-medium text-gray-900 dark:text-white transition-all";
 const labelCls = "block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2";
@@ -69,6 +70,7 @@ function SettingRow({ label, description, value, onChange, badge }: {
 }
 
 export default function SettingsPage() {
+    const { t } = useShopLang();
     const [activeTab, setActiveTab] = useState('General');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -149,12 +151,12 @@ export default function SettingsPage() {
     const ch = (field: string, value: any) => setCompany(prev => ({ ...prev, [field]: value }));
 
     const MENU_ITEMS = [
-        { id: 'General', icon: Store, label: 'General' },
-        { id: 'Payment', icon: CreditCard, label: 'Payment & Tax' },
-        { id: 'Currency', icon: Globe, label: 'Currency & Rates' },
-        { id: 'Receipt', icon: Printer, label: 'Receipt Settings' },
-        { id: 'WhatsApp', icon: MessageCircle, label: 'WhatsApp' },
-        { id: 'Users', icon: Users, label: 'Users & Roles' },
+        { id: 'General', icon: Store, label: t('company_info') },
+        { id: 'Payment', icon: CreditCard, label: t('payment_method') },
+        { id: 'Currency', icon: Globe, label: t('currency') },
+        { id: 'Receipt', icon: Printer, label: t('receipt_header') },
+        { id: 'WhatsApp', icon: MessageCircle, label: t('whatsapp') },
+        { id: 'Users', icon: Users, label: t('employees_title') },
         { id: 'Security', icon: Lock, label: 'Security' },
     ];
 
@@ -172,8 +174,8 @@ export default function SettingsPage() {
             {/* HEADER */}
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Settings</h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Manage your shop preferences and configuration.</p>
+                    <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">{t('settings_title')}</h1>
+                    <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">{t('settings_desc')}</p>
                 </div>
                 <button
                     onClick={handleSave}
@@ -181,7 +183,7 @@ export default function SettingsPage() {
                     className="px-6 py-3 rounded-xl bg-[#3498DB] hover:bg-[#2980B9] text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all flex items-center gap-2 disabled:opacity-70"
                 >
                     {saving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-                    Save Changes
+                    {t('save_settings')}
                 </button>
             </div>
 
@@ -215,14 +217,14 @@ export default function SettingsPage() {
                             <div className="flex items-center gap-4 mb-8">
                                 <UltraIcon icon={Store} variant="primary" />
                                 <div>
-                                    <h2 className="text-xl font-black text-gray-900 dark:text-white">Store Profile</h2>
+                                    <h2 className="text-xl font-black text-gray-900 dark:text-white">{t('company_name')}</h2>
                                     <p className="text-sm text-gray-500">Basic information about your business.</p>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className={labelCls}>Shop Name</label>
+                                    <label className={labelCls}>{t('company_name')}</label>
                                     <div className="relative">
                                         <Store size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                                         <input type="text" value={company.name} onChange={e => ch('name', e.target.value)}
@@ -230,7 +232,7 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className={labelCls}>Phone Number</label>
+                                    <label className={labelCls}>{t('phone')}</label>
                                     <div className="relative">
                                         <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                                         <input type="tel" value={company.phone} onChange={e => ch('phone', e.target.value)}
@@ -238,7 +240,7 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className={labelCls}>Email Address</label>
+                                    <label className={labelCls}>{t('email')}</label>
                                     <div className="relative">
                                         <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                                         <input type="email" value={company.email} onChange={e => ch('email', e.target.value)}
@@ -254,7 +256,7 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                                 <div className="md:col-span-2">
-                                    <label className={labelCls}>Address</label>
+                                    <label className={labelCls}>{t('address')}</label>
                                     <div className="relative">
                                         <MapPin size={16} className="absolute left-4 top-4 text-gray-400 pointer-events-none" />
                                         <input type="text" value={company.address} onChange={e => ch('address', e.target.value)}
@@ -278,7 +280,7 @@ export default function SettingsPage() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-gray-100 dark:border-gray-800">
                                 <div>
-                                    <label className={labelCls}>VAT Rate (%)</label>
+                                    <label className={labelCls}>{t('tax_rate')} (%)</label>
                                     <div className="relative">
                                         <Hash size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                                         <input type="number" min="0" max="100" value={company.taxRate}
@@ -288,7 +290,7 @@ export default function SettingsPage() {
                                     <p className="text-xs text-gray-400 mt-1">Applied when VAT toggle is ON in Manual Entry / POS</p>
                                 </div>
                                 <div>
-                                    <label className={labelCls}>Tax ID / TIN</label>
+                                    <label className={labelCls}>{t('tax_title')}</label>
                                     <div className="relative">
                                         <Hash size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                                         <input type="text" value={company.taxId} onChange={e => ch('taxId', e.target.value)}
@@ -324,13 +326,13 @@ export default function SettingsPage() {
 
                             <div className="space-y-6">
                                 <div>
-                                    <label className={labelCls}>Receipt Header</label>
+                                    <label className={labelCls}>{t('receipt_header')}</label>
                                     <input type="text" value={company.receiptHeader} onChange={e => ch('receiptHeader', e.target.value)}
                                         className={inputCls} placeholder="e.g. Thank you for shopping at Revlo!" />
                                     <p className="text-xs text-gray-400 mt-1">Shown at the top of every receipt printout</p>
                                 </div>
                                 <div>
-                                    <label className={labelCls}>Receipt Footer</label>
+                                    <label className={labelCls}>{t('receipt_footer')}</label>
                                     <textarea rows={4} value={company.receiptFooter} onChange={e => ch('receiptFooter', e.target.value)}
                                         className={inputCls + ' resize-none'} placeholder="e.g. No returns after 7 days. Contact us: +251900000000" />
                                     <p className="text-xs text-gray-400 mt-1">Shown at the bottom — return policies, contact info, etc.</p>
@@ -372,7 +374,7 @@ export default function SettingsPage() {
                                     href="/shop/settings/whatsapp"
                                     className="inline-flex items-center gap-2 px-6 py-3 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-xl font-bold transition-all shadow-lg shadow-green-500/30"
                                 >
-                                    <Smartphone size={18} /> Connect WhatsApp Device
+                                    <Smartphone size={18} /> {t('connect_whatsapp')}
                                 </Link>
                             </div>
                         </div>
@@ -405,7 +407,7 @@ export default function SettingsPage() {
                                 href="/shop/employees"
                                 className="inline-flex items-center gap-2 px-6 py-3 bg-[#3498DB] hover:bg-[#2980B9] text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all"
                             >
-                                <Users size={18} /> Manage Employees
+                                <Users size={18} /> {t('employees_title')}
                             </Link>
                         </div>
                     )}

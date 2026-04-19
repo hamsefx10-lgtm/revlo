@@ -1,0 +1,46 @@
+name: Deploy to Contabo VPS
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Create Deployment Archive
+        run: tar --exclude="node_modules" --exclude=".next" --exclude=".git" -czf revlo_deploy.tar.gz .
+
+      - name: Copy Archive to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: 22
+          source: "revlo_deploy.tar.gz"
+          target: "/root"
+
+      - name: Connect and Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: 22
+          script: |
+            cd /root
+            tar -xzf /root/revlo_deploy.tar.gz -C /root/revlo
+            cd /root/revlo
+            npm install --production=false
+            npx prisma generate
+            npm run build
+            pm2 stop revlo || true
+            pm2 delete revlo || true
+            pm2 start npm --name "revlo" -- start
+            pm2 save

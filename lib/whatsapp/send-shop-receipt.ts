@@ -30,244 +30,371 @@ export async function generateShopReceiptPDF(sale: any, company: any): Promise<B
     const statusBg = isFullyPaid ? '#ecfdf5' : (paid > 0 ? '#fffbeb' : '#fef2f2');
 
     const htmlContent = `
-      <html>
-        <head>
-          <link rel="preconnect" href="https://fonts.googleapis.com">
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-          <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
-          <style>
-            :root {
-              --brand-primary: #0f172a;
-              --brand-accent: #10b981;
-              --text-main: #1e293b;
-              --text-muted: #64748b;
-              --border-color: #f1f5f9;
-              --bg-light: #f8fafc;
-            }
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { 
-              font-family: 'Outfit', sans-serif; 
-              color: var(--text-main); 
-              background: #f1f5f9;
-              padding: 40px;
-            }
-            .page {
-              background: white;
-              padding: 60px;
-              border-radius: 40px;
-              box-shadow: 0 40px 100px rgba(0,0,0,0.06);
-              position: relative;
-              overflow: hidden;
-              min-height: 1000px;
-            }
-            
-            /* Header */
-            .header {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-start;
-              margin-bottom: 20px;
-              position: relative;
-              z-index: 1;
-            }
-            .brand {
-              display: flex;
-              align-items: center;
-              gap: 15px;
-            }
-            .logo-box {
-              width: 45px; height: 45px;
-              background: var(--brand-primary);
-              border-radius: 12px;
-              display: flex; align-items: center; justify-content: center;
-              color: white; font-weight: 800; font-size: 22px;
-            }
-            .logo-img {
-              width: 45px; height: 45px;
-              object-fit: cover; border-radius: 12px;
-            }
-            .company-name {
-              font-family: 'Playfair Display', serif;
-              font-size: 28px; font-weight: 700; color: var(--brand-primary);
-            }
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+        <style>
+          :root {
+            --brand-primary: #3498DB;
+            --brand-dark: #0f172a;
+            --bg-light: #f8fafc;
+            --border-soft: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+          }
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { 
+            font-family: 'Inter', sans-serif; 
+            color: var(--text-main); 
+            background: #ffffff;
+            -webkit-font-smoothing: antialiased;
+          }
+          .page {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 60px 70px;
+            background: white;
+            position: relative;
+            min-height: 1000px;
+          }
 
-            .status-tag {
-              background: #fffbeb;
-              color: #b45309;
-              padding: 4px 12px;
-              border-radius: 20px;
-              font-size: 10px;
-              font-weight: 800;
-              text-transform: uppercase;
-              letter-spacing: 1px;
-            }
+          /* Header Section */
+          .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 55px;
+            border-bottom: 1px solid var(--border-soft);
+            padding-bottom: 35px;
+          }
+          .brand-info {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+          }
+          .logo-box {
+            width: 65px; height: 65px;
+            background: var(--brand-dark);
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 30px;
+          }
+          .logo-img {
+            width: 65px; height: 65px;
+            object-fit: cover;
+            border-radius: 16px;
+            border: 1px solid var(--border-soft);
+          }
+          .company-details h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 32px; font-weight: 800; color: var(--brand-dark);
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+          }
+          .company-details p {
+            font-size: 11px; color: var(--text-muted); font-weight: 600;
+            letter-spacing: 1px; text-transform: uppercase;
+          }
+          
+          .receipt-title {
+            text-align: right;
+          }
+          .title-text {
+            font-family: 'Outfit', sans-serif;
+            font-size: 42px; font-weight: 900; color: var(--brand-primary);
+            letter-spacing: -1.5px; text-transform: uppercase;
+            margin-bottom: 10px; line-height: 1;
+          }
+          .inv-number {
+            font-size: 15px; color: var(--text-muted); font-weight: 600;
+            background: var(--bg-light); padding: 8px 16px; border-radius: 8px;
+            display: inline-block;
+          }
 
-            .main-invoice-header {
-              text-align: right;
-              margin-bottom: 40px;
-            }
-            .inv-large-label {
-              font-size: 52px;
-              font-weight: 900;
-              color: var(--brand-primary);
-              letter-spacing: -2px;
-            }
+          /* Meta Grid */
+          .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 50px;
+          }
+          .meta-box {
+            background: #ffffff;
+            padding: 24px 0;
+          }
+          .meta-title {
+            font-size: 10px; font-weight: 700; color: var(--brand-primary);
+            text-transform: uppercase; letter-spacing: 1.5px;
+            margin-bottom: 14px; display: block;
+          }
+          .meta-value {
+            font-size: 20px; font-weight: 700; color: var(--brand-dark);
+            margin-bottom: 6px; font-family: 'Outfit', sans-serif;
+          }
+          .meta-sub {
+            font-size: 14px; color: var(--text-muted); font-weight: 500;
+          }
 
-            /* Info Card */
-            .info-card {
-              display: grid;
-              grid-template-columns: 1fr 1fr;
-              gap: 20px;
-              margin-bottom: 40px;
-              padding: 30px;
-              background: #f8fafc;
-              border-radius: 25px;
-            }
-            .info-col-label {
-              font-size: 10px;
-              font-weight: 700;
-              text-transform: uppercase;
-              color: var(--text-muted);
-              letter-spacing: 1px;
-              margin-bottom: 5px;
-              display: block;
-            }
-            .info-col-value {
-              font-size: 16px;
-              font-weight: 800;
-              color: var(--brand-primary);
-            }
-            .info-col-sub {
-              font-size: 12px;
-              color: var(--text-muted);
-              margin-top: 2px;
-            }
+          /* Table */
+          .table-wrapper {
+            margin-bottom: 50px;
+          }
+          table { width: 100%; border-collapse: collapse; }
+          th { 
+            background: var(--brand-dark);
+            text-align: left; padding: 18px 24px; 
+            font-size: 10px; color: #ffffff; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1.5px; 
+          }
+          td { 
+            padding: 24px; 
+            border-bottom: 1px solid var(--border-soft); 
+            font-size: 15px;
+          }
+          tr:last-child td { border-bottom: 2px solid var(--brand-dark); }
+          
+          .item-desc { font-weight: 700; color: var(--brand-dark); font-family: 'Outfit', sans-serif; font-size: 16px; }
+          .qty-cell { text-align: center; font-weight: 600; color: var(--text-muted); }
+          .price-cell { text-align: right; font-weight: 600; color: var(--text-muted); }
+          .total-cell { text-align: right; font-weight: 800; color: var(--brand-dark); }
+          .sup-currency { font-size: 10px; vertical-align: super; margin-left: 3px; color: var(--text-muted); }
 
-            /* Table */
-            .table-container { margin-bottom: 40px; }
-            table { width: 100%; border-collapse: collapse; }
-            th { 
-              text-align: left; padding: 12px 10px; 
-              font-size: 10px; color: var(--text-muted); 
-              text-transform: uppercase; letter-spacing: 1px; 
-              border-bottom: 1px dashed #e2e8f0;
-            }
-            td { padding: 20px 10px; border-bottom: 1px dashed #f1f5f9; }
-            .item-desc { font-size: 14px; font-weight: 800; color: var(--brand-primary); }
-            .qty-cell { text-align: center; font-weight: 600; font-size: 13px; }
-            .price-cell { text-align: right; font-weight: 600; font-size: 13px; }
-            .total-cell { text-align: right; font-weight: 800; font-size: 14px; color: var(--brand-primary); }
-            .sup-currency { font-size: 8px; vertical-align: super; margin-left: 2px; color: var(--text-muted); opacity: 0.7; }
+          /* Summary Section */
+          .summary-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 70px;
+          }
+          .summary-box {
+            width: 380px;
+          }
+          .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            font-size: 15px;
+            color: var(--text-muted);
+            font-weight: 500;
+          }
+          .summary-row.total {
+            border-top: 2px solid var(--brand-dark);
+            border-bottom: 2px solid var(--border-soft);
+            margin-top: 10px;
+            padding: 24px 0;
+            color: var(--brand-dark);
+          }
+          .total-label { font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 900; color: var(--brand-dark); }
+          .total-value { font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 900; color: var(--brand-primary); }
+          
+          .summary-row.paid {
+            padding-top: 24px;
+            color: #10b981;
+            align-items: flex-start;
+          }
+          .payment-details {
+            display: flex; flex-direction: column; gap: 4px;
+          }
+          .payment-label { font-weight: 700; font-size: 15px; }
+          .payment-meta { font-size: 11px; color: #059669; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; }
+          .paid-value { font-weight: 800; font-size: 16px; }
 
-            /* Summary */
-            .summary-card {
-              position: absolute;
-              bottom: 80px;
-              right: 80px;
-              background: #0f172a;
-              width: 380px;
-              padding: 35px;
-              border-radius: 30px;
-              color: white;
-              box-shadow: 0 40px 80px rgba(15, 23, 42, 0.3);
-            }
-            .summary-line { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-            .summary-line.small { font-size: 12px; color: rgba(255,255,255,0.5); }
-            .summary-line.divider { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; margin-top: 15px; }
-            .grand-total-label { font-size: 26px; font-weight: 800; }
-            .grand-total-value { font-size: 26px; font-weight: 800; }
-            .summary-paid { color: #10b981; font-weight: 700; margin-top: 15px; font-size: 12px; }
+          .summary-row.balance {
+            color: #ef4444;
+            font-weight: 800;
+            font-size: 16px;
+          }
 
-            /* Footer */
-            .footer {
-              position: absolute;
-              bottom: 40px; left: 60px; right: 60px;
-              display: flex; justify-content: space-between; align-items: flex-end;
-              padding-top: 20px;
-            }
-            .footer-info { font-size: 10px; color: var(--text-muted); line-height: 1.5; }
-            .footer-msg { font-size: 12px; font-weight: 700; color: var(--brand-primary); margin-top: 10px; }
-          </style>
-        </head>
-        <body>
-          <div class="page">
-            <header class="header">
-              <div class="brand">
-                <div class="logo-box">R</div>
-                <span class="company-name">${companyName}</span>
+          /* Status Badge */
+          .status-badge {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: 15px;
+          }
+
+          /* Footer */
+          .footer {
+            margin-top: 100px;
+            padding-top: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+          }
+          .footer-message h4 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 20px; color: var(--brand-dark); font-weight: 800;
+            margin-bottom: 8px;
+          }
+          .footer-message p {
+            font-size: 12px; color: var(--text-muted); line-height: 1.6;
+          }
+          .signature-area {
+            text-align: right;
+          }
+          .sig-line {
+            width: 180px;
+            height: 2px;
+            background: var(--brand-dark);
+            margin-bottom: 12px;
+            margin-left: auto;
+          }
+          .sig-text {
+            font-size: 10px; color: var(--text-muted); font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1.5px;
+          }
+          
+          /* Watermark */
+          .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 140px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            color: rgba(241, 245, 249, 0.5);
+            z-index: 0;
+            pointer-events: none;
+            white-space: nowrap;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="page">
+          
+          ${isFullyPaid ? '<div class="watermark">PAID IN FULL</div>' : ''}
+
+          <header class="header">
+            <div class="brand-info">
+              ${logoUrl 
+                ? `<img src="${logoUrl}" class="logo-img" alt="Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                   <div class="logo-box" style="display: none;">${companyName.charAt(0).toUpperCase()}</div>`
+                : `<div class="logo-box">${companyName.charAt(0).toUpperCase()}</div>`
+              }
+              <div class="company-details">
+                <h1>${companyName}</h1>
+                <p>Official Receipt Document</p>
               </div>
-              <div class="status-tag">${statusText}</div>
-            </header>
-
-            <div class="main-invoice-header">
-              <div class="inv-large-label">#${sale.invoiceNumber}</div>
             </div>
-
-            <div class="info-card">
-              <div>
-                <span class="info-col-label">Client Information</span>
-                <div class="info-col-value">${sale.customer?.name || 'Walk-in Customer'}</div>
-                <div class="info-col-sub">${sale.customer?.phone || '+251929475332'}</div>
-              </div>
-              <div style="text-align: right;">
-                <span class="info-col-label">Transaction Details</span>
-                <div class="info-col-value">${format(new Date(sale.createdAt || Date.now()), 'MMMM d, yyyy')}</div>
-                <div class="info-col-sub">Payment: ${sale.paymentMethod || 'Credit'}</div>
+            <div class="receipt-title">
+              <div class="title-text">RECEIPT</div>
+              <div class="inv-number">#${sale.invoiceNumber}</div>
+              <div style="text-align: right">
+                 <div class="status-badge" style="background: ${statusBg}; color: ${statusColor};">
+                   ${statusText}
+                 </div>
               </div>
             </div>
+          </header>
 
-            <div class="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Item Description</th>
-                    <th style="text-align: center;">Qty</th>
-                    <th style="text-align: right;">Unit Price</th>
-                    <th style="text-align: right;">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${sale.items && sale.items.length > 0 ? sale.items.map((item: any) => `
-                    <tr>
-                      <td class="item-desc">${item.productName || 'General Item'}</td>
-                      <td class="qty-cell">${item.quantity || 1}</td>
-                      <td class="price-cell">${Number(item.unitPrice || 0).toLocaleString()}<span class="sup-currency">ETB</span></td>
-                      <td class="total-cell">${(Number(item.quantity || 1) * Number(item.unitPrice || 0)).toLocaleString()}<span class="sup-currency">ETB</span></td>
-                    </tr>
-                  `).join('') : `<tr><td colspan="4" style="text-align: center; padding: 40px;">No items listed</td></tr>`}
-                </tbody>
-              </table>
+          <div class="meta-grid">
+            <div class="meta-box">
+              <span class="meta-title">Billed To</span>
+              <div class="meta-value">${sale.customer?.name || 'Walk-in Customer'}</div>
+              <div class="meta-sub">${sale.customer?.phone || 'No phone provided'}</div>
             </div>
-
-            <div class="summary-card">
-              <div class="summary-line small">
-                <span>Subtotal Amount</span>
-                <span>${Number(sale.subtotal || sale.total).toLocaleString()} ETB</span>
-              </div>
-              <div class="summary-line divider">
-                <span class="grand-total-label">Grand Total</span>
-                <span class="grand-total-value">${total.toLocaleString()} ETB</span>
-              </div>
-              <div class="summary-line summary-paid">
-                <span>Amount Received</span>
-                <span>${paid.toLocaleString()} ETB</span>
-              </div>
+            <div class="meta-box">
+              <span class="meta-title">Payment Information</span>
+              <div class="meta-value">${format(new Date(sale.createdAt || Date.now()), 'MMMM d, yyyy')}</div>
+              <div class="meta-sub">Recorded Payment: <strong style="color: var(--brand-dark)">${sale.paymentMethod || 'Various / Credit'}</strong></div>
             </div>
-
-            <footer class="footer">
-              <div class="footer-left">
-                <div class="footer-info">
-                  Generated via Revlo Premium<br>
-                  System Ref: ${sale.id.substring(sale.id.length - 12).toUpperCase()}
-                </div>
-                <div class="footer-msg">Thank you for your business!</div>
-              </div>
-              <div class="footer-right">
-                <div style="font-size: 8px; text-transform: uppercase; color: #94a3b8; font-weight: 800; letter-spacing: 1px;">Authorized Signature</div>
-              </div>
-            </footer>
           </div>
-        </body>
+
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th style="text-align: center;">Qty</th>
+                  <th style="text-align: right;">Unit Price</th>
+                  <th style="text-align: right;">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${sale.items && sale.items.length > 0 ? sale.items.map((item: any) => `
+                  <tr>
+                    <td class="item-desc">${item.productName || 'General Item'}</td>
+                    <td class="qty-cell">${item.quantity || 1}</td>
+                    <td class="price-cell">${Number(item.unitPrice || 0).toLocaleString()}<span class="sup-currency">ETB</span></td>
+                    <td class="total-cell">${Math.round(Number(item.quantity || 1) * Number(item.unitPrice || 0)).toLocaleString()}<span class="sup-currency">ETB</span></td>
+                  </tr>
+                `).join('') : `<tr><td colspan="4" style="text-align: center; padding: 40px; color: #94a3b8; font-weight: 500;">No items listed in this transaction.</td></tr>`}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="summary-wrapper">
+            <div class="summary-box">
+              <div class="summary-row">
+                <span>Subtotal</span>
+                <span style="color: var(--brand-dark); font-weight: 700">${Number(sale.subtotal || sale.total).toLocaleString()} ETB</span>
+              </div>
+              ${(sale.tax || 0) > 0 ? `
+              <div class="summary-row">
+                <span>Tax (VAT)</span>
+                <span style="color: var(--brand-dark); font-weight: 700">${Number(sale.tax).toLocaleString()} ETB</span>
+              </div>
+              ` : ''}
+              ${(sale.discountAmount || 0) > 0 ? `
+              <div class="summary-row" style="color: #10b981;">
+                <span>Discount</span>
+                <span style="font-weight: 700">-${Number(sale.discountAmount).toLocaleString()} ETB</span>
+              </div>
+              ` : ''}
+              
+              <div class="summary-row total">
+                <span class="total-label">Grand Total</span>
+                <span class="total-value">${total.toLocaleString()} <span style="font-size: 16px;">ETB</span></span>
+              </div>
+              
+              <div class="summary-row paid">
+                <div class="payment-details">
+                   <span class="payment-label">Amount Paid</span>
+                   <span class="payment-meta">
+                     ${sale.payments && sale.payments.length > 0 
+                        ? sale.payments.map((p: any) => `Via ${p.method}`).join(' & ')
+                        : `Via ${sale.paymentMethod || 'Recorded Payment'}`
+                     }
+                   </span>
+                </div>
+                <span class="paid-value">${paid.toLocaleString()} ETB</span>
+              </div>
+
+              ${balance > 0 ? `
+              <div class="summary-row balance">
+                <span>Balance Due</span>
+                <span>${balance.toLocaleString()} ETB</span>
+              </div>
+              ` : ''}
+            </div>
+          </div>
+
+          <footer class="footer">
+            <div class="footer-message">
+              <h4>Thank you for your business!</h4>
+              <p>If you have any questions relating to this invoice, please contact us.<br>
+              <span style="color: #cbd5e1; font-size: 10px; margin-top: 12px; display: inline-block; font-weight: 600;">
+                Generated securely by Revlo Premium System<br>
+                REF: ${sale.id.substring(sale.id.length - 12).toUpperCase()}
+              </span></p>
+            </div>
+            <div class="signature-area">
+              <div class="sig-line"></div>
+              <span class="sig-text">Authorized Signature</span>
+            </div>
+          </footer>
+        </div>
+      </body>
       </html>
     `;
 

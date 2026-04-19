@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import StatusBadge from '@/components/shop/ui/StatusBadge';
 import { useToast } from '@/components/ui/use-toast';
+import { useShopLang } from '@/contexts/ShopLanguageContext';
 
 // --- TYPES ---
 interface Vendor {
@@ -28,6 +29,7 @@ interface Vendor {
 }
 
 export default function VendorsPage() {
+    const { t } = useShopLang();
     const [search, setSearch] = useState('');
     const [vendors, setVendors] = useState<Vendor[]>([]);
     const [loading, setLoading] = useState(true);
@@ -66,14 +68,14 @@ export default function VendorsPage() {
                         <div className="p-3 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 text-[#F39C12]">
                             <Building2 size={28} />
                         </div>
-                        Vendors & Suppliers
+                        {t('vendors_title')}
                     </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-2 ml-1 text-sm">Manage supplier relationships and procurement.</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-2 ml-1 text-sm">{t('vendors_desc')}</p>
                 </div>
 
                 <div className="flex gap-3">
                     <Link href="/shop/vendors/add" className="px-5 py-2.5 rounded-xl bg-[#3498DB] hover:bg-[#2980B9] text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all flex items-center gap-2">
-                        <Plus size={18} /> Add Vendor
+                        <Plus size={18} /> {t('add_vendor')}
                     </Link>
                 </div>
             </div>
@@ -86,7 +88,7 @@ export default function VendorsPage() {
                     </div>
                     <input
                         type="text"
-                        placeholder="Search company, contact person..."
+                        placeholder={t('search_placeholder')}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="block w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB] transition-all font-medium text-sm shadow-sm"
@@ -107,20 +109,20 @@ export default function VendorsPage() {
                     <table className="w-full">
                         <thead>
                             <tr className="bg-gray-50/50 dark:bg-gray-800/20 border-b border-gray-100 dark:border-gray-800">
-                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Company</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Contact Person</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Contact Info</th>
-                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Category</th>
-                                <th className="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Open Orders</th>
-                                <th className="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Actions</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">{t('vendor_name')}</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">{t('contact_person')}</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">{t('contact')}</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">{t('category')}</th>
+                                <th className="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">{t('pending')}</th>
+                                <th className="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">{t('status')}</th>
+                                <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">{t('actions')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                             {vendors.length === 0 && !loading ? (
                                 <tr>
                                     <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                                        No vendors found. Add one to get started.
+                                        {t('no_vendors')}
                                     </td>
                                 </tr>
                             ) : (
