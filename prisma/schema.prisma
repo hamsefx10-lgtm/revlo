@@ -173,6 +173,9 @@ model Company {
   visitors                Visitor[]
   pageVisits              PageVisit[]
 
+  shopShareholders        ShopShareholder[]
+  shopDividends           ShopDividend[]
+
   @@map("companies")
 }
 
@@ -544,6 +547,7 @@ model Account {
   transactions     Transaction[]
   fromTransactions Transaction[] @relation("FromAccount")
   toTransactions   Transaction[] @relation("ToAccount")
+  shopDividends    ShopDividend[]
 
   @@unique([name, companyId])
   @@map("accounts")
@@ -1348,4 +1352,45 @@ model PageVisit {
   user        User?    @relation(fields: [userId], references: [id])
 
   @@map("page_visits")
+}
+
+model ShopShareholder {
+  id                String         @id @default(uuid())
+  name              String
+  email             String
+  phone             String?
+  sharePercentage   Float
+  initialInvestment Decimal        @default(0.0) @db.Decimal(14, 2)
+  totalReceived     Decimal        @default(0.0) @db.Decimal(14, 2)
+  joinedDate        DateTime
+  status            String         @default("Active")
+  notes             String?
+  companyId         String
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  company           Company        @relation(fields: [companyId], references: [id])
+  dividends         ShopDividend[]
+
+  @@map("shop_shareholders")
+}
+
+model ShopDividend {
+  id            String          @id @default(uuid())
+  shareholderId String
+  amount        Decimal         @db.Decimal(14, 2)
+  profitAmount  Decimal         @db.Decimal(14, 2)
+  periodStart   DateTime
+  periodEnd     DateTime
+  paidDate      DateTime?
+  status        String          @default("Pending")
+  note          String?
+  accountId     String?
+  companyId     String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  shareholder   ShopShareholder @relation(fields: [shareholderId], references: [id], onDelete: Cascade)
+  account       Account?        @relation(fields: [accountId], references: [id])
+  company       Company         @relation(fields: [companyId], references: [id])
+
+  @@map("shop_dividends")
 }

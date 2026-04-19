@@ -25,7 +25,8 @@ import {
     Smartphone,
     RefreshCcw,
     History,
-    Info
+    Info,
+    PieChart
 } from 'lucide-react';
 import UltraIcon from '@/components/shop/ui/UltraIcon';
 import { toast } from 'sonner';
@@ -151,13 +152,14 @@ export default function SettingsPage() {
     const ch = (field: string, value: any) => setCompany(prev => ({ ...prev, [field]: value }));
 
     const MENU_ITEMS = [
-        { id: 'General', icon: Store, label: t('company_info') },
-        { id: 'Payment', icon: CreditCard, label: t('payment_method') },
-        { id: 'Currency', icon: Globe, label: t('currency') },
-        { id: 'Receipt', icon: Printer, label: t('receipt_header') },
-        { id: 'WhatsApp', icon: MessageCircle, label: t('whatsapp') },
-        { id: 'Users', icon: Users, label: t('employees_title') },
-        { id: 'Security', icon: Lock, label: 'Security' },
+        { id: 'General', icon: Store, label: t('company_info'), href: null },
+        { id: 'Payment', icon: CreditCard, label: t('payment_method'), href: null },
+        { id: 'Currency', icon: Globe, label: t('currency'), href: null },
+        { id: 'Receipt', icon: Printer, label: t('receipt_header'), href: null },
+        { id: 'WhatsApp', icon: MessageCircle, label: t('whatsapp'), href: null },
+        { id: 'Users', icon: Users, label: t('employees_title'), href: null },
+        { id: 'Security', icon: Lock, label: 'Security', href: null },
+        { id: 'Shareholders', icon: PieChart, label: 'Saamileyda', href: '/shop/settings/shareholders' },
     ];
 
     if (loading) {
@@ -193,17 +195,28 @@ export default function SettingsPage() {
                 <div className="w-full lg:w-64 flex-shrink-0">
                     <div className="bg-white dark:bg-[#1f2937] border border-gray-100 dark:border-gray-800 rounded-[2rem] p-4 sticky top-6 shadow-sm">
                         {MENU_ITEMS.map((item) => (
-                            <button
-                                key={item.id}
-                                onClick={() => setActiveTab(item.id)}
-                                className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-sm transition-all mb-1.5 ${activeTab === item.id
-                                    ? 'bg-[#3498DB] text-white shadow-lg shadow-blue-500/25'
-                                    : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
-                                    }`}
-                            >
-                                <item.icon size={18} className={activeTab === item.id ? 'opacity-100' : 'opacity-60'} />
-                                {item.label}
-                            </button>
+                            item.href ? (
+                                <Link
+                                    key={item.id}
+                                    href={item.href}
+                                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-sm transition-all mb-1.5 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+                                >
+                                    <item.icon size={18} className="opacity-60" />
+                                    {item.label}
+                                </Link>
+                            ) : (
+                                <button
+                                    key={item.id}
+                                    onClick={() => setActiveTab(item.id)}
+                                    className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-sm transition-all mb-1.5 ${activeTab === item.id
+                                        ? 'bg-[#3498DB] text-white shadow-lg shadow-blue-500/25'
+                                        : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                                        }`}
+                                >
+                                    <item.icon size={18} className={activeTab === item.id ? 'opacity-100' : 'opacity-60'} />
+                                    {item.label}
+                                </button>
+                            )
                         ))}
                     </div>
                 </div>

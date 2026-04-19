@@ -3,265 +3,256 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
-// Helper to safe cast to Number
-function toNumber(val: any): number {
+export const dynamic = 'force-dynamic';
+
+function n(val: any): number {
     if (val === null || val === undefined) return 0;
-    if (typeof val === 'object' && val !== null && 'toNumber' in val) {
-        return Number(val.toNumber());
-    }
+    if (typeof val === 'object' && 'toNumber' in val) return Number(val.toNumber());
     const num = Number(val);
     return isNaN(num) ? 0 : num;
 }
 
-
-export const dynamic = 'force-dynamic';
-
 export async function GET(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+        if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        const userId = session.user.id;
-        const companyId = session.user.companyId;
+        // Always resolve companyId from DB (shop pattern)
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { companyId: true }
+        });
+        const companyId = user?.companyId;
+        if (!companyId) return NextResponse.json({ error: 'No company' }, { status: 404 });
+
         const url = new URL(req.url);
-
-        // PARAMS
-        const projectId = url.searchParams.get('projectId');
         const dateParam = url.searchParams.get('date');
-        const filterDate = dateParam ? new Date(dateParam) : new Date();
-        filterDate.setHours(23, 59, 59, 999);
+        const asOf = dateParam ? new Date(dateParam) : new Date();
+        asOf.setHours(23, 59, 59, 999);
 
-        // FILTERS
-        const commonFilter = {
-            companyId,
-            ...(projectId ? { projectId } : {}),
-            createdAt: { lte: filterDate }
-        };
+        // ═══════════════════════════════════════════════
+        // 1. ASSETS
+        // ═══════════════════════════════════════════════
 
-        const transactionFilter = {
-            companyId,
-            ...(projectId ? { projectId } : {}),
-            transactionDate: { lte: filterDate }
-        };
+        // 1A. Cash & Bank — sum of all Account balances
+        const accounts = await prisma.account.findMany({
+            where: { companyId, isActive: true },
+            select: { id: true, name: true, balance: true, type: true }
+        });
+        const cashAndBank = accounts.reduce((s, a) => s + n(a.balance), 0);
+        const accountBreakdown = accounts.map(a => ({ name: a.name, value: n(a.balance), type: a.type }));
 
-        // --- 1. ASSETS ---
-        let totalCashAndBank = 0;
-        let inventoryValue = 0;
-        let fixedAssetsValue = 0;
-        let ar = 0;
-        let wipValue = 0;
+        // 1B. Shop Accounts Receivable — unpaid sales
+        const unpaidSales = await prisma.sale.findMany({
+            where: {
+                companyId,
+                paymentStatus: { not: 'Paid' },
+                createdAt: { lte: asOf }
+            },
+            select: { id: true, invoiceNumber: true, total: true, paidAmount: true }
+        });
+        const shopAR = unpaidSales.reduce((s, sale) => s + Math.max(0, n(sale.total) - n(sale.paidAmount)), 0);
 
-        // A. CASH & BANK (Financial Accounts)
-        if (!projectId) {
-            const accounts = await prisma.account.findMany({ where: { companyId } });
-            totalCashAndBank = accounts.reduce((sum, acc) => sum + toNumber(acc.balance), 0);
-        }
+        // 1C. Shop Inventory — Product stock × cost price (FIXED: was using inventoryItem)
+        const products = await prisma.product.findMany({
+            where: { companyId, stock: { gt: 0 } },
+            select: { name: true, stock: true, costPrice: true }
+        });
+        const inventoryValue = products.reduce((s, p) => s + (n(p.stock) * n(p.costPrice)), 0);
+        const inventoryBreakdown = products.map(p => ({
+            name: p.name,
+            value: n(p.stock) * n(p.costPrice),
+            qty: n(p.stock)
+        }));
 
-        // C. INVENTORY
-        if (!projectId) {
-            const inventoryItems = await prisma.inventoryItem.findMany({
-                where: { companyId }
-            });
-            if (inventoryItems.length > 0) {
-                inventoryValue = inventoryItems.reduce((sum, item) => sum + (toNumber(item.inStock) * toNumber(item.purchasePrice)), 0);
-            }
+        // 1D. Fixed Assets (book value)
+        const fixedAssets = await prisma.fixedAsset.findMany({
+            where: { companyId, purchaseDate: { lte: asOf } },
+            select: { name: true, currentBookValue: true, type: true }
+        });
+        const fixedAssetsValue = fixedAssets.reduce((s, fa) => s + n(fa.currentBookValue), 0);
 
-            const activeProjectsExpenses = await prisma.expense.aggregate({
-                where: {
-                    companyId,
-                    project: { status: 'Active' },
-                    createdAt: { lte: filterDate }
-                },
-                _sum: { amount: true }
-            });
-            wipValue = toNumber(activeProjectsExpenses._sum.amount);
-        }
+        // ═══════════════════════════════════════════════
+        // 2. LIABILITIES
+        // ═══════════════════════════════════════════════
 
-        // C. FIXED ASSETS
-        if (!projectId) {
-            const assets = await prisma.fixedAsset.findMany({
-                where: {
-                    companyId,
-                    purchaseDate: { lte: filterDate }
-                }
-            });
-            fixedAssetsValue = assets.reduce((sum, fa) => sum + toNumber(fa.currentBookValue), 0);
-        }
-
-        // D. ACCOUNTS RECEIVABLE
-        if (!projectId) {
-            const unpaidSales = await prisma.sale.findMany({
-                where: { userId, createdAt: { lte: filterDate }, paymentStatus: { not: 'Paid' } }
-            });
-            const shopAr = unpaidSales.reduce((sum, sale) => sum + (toNumber(sale.total) - toNumber(sale.paidAmount)), 0);
-
-            const completedProjects = await prisma.project.findMany({
-                where: { companyId, status: 'Completed' },
-                include: { payments: true }
-            });
-
-            let projectsAr = 0;
-            completedProjects.forEach(p => {
-                const totalPaid = p.payments.reduce((s, pay) => s + toNumber(pay.amount), 0) + toNumber(p.advancePaid);
-                const due = Math.max(0, toNumber(p.agreementAmount) - totalPaid);
-                projectsAr += due;
-            });
-
-            ar = shopAr + projectsAr;
-        }
-
-        // --- 2. LIABILITIES ---
-        let accountsPayable = 0;
-        let taxPayable = 0;
-        let longTermLoans = 0;
-        let unearnedRevenue = 0;
-
+        // 2A. Accounts Payable — unpaid expenses
         const unpaidExpenses = await prisma.expense.findMany({
-            where: {
-                ...commonFilter,
-                paymentStatus: 'UNPAID'
-            }
+            where: { companyId, paymentStatus: 'UNPAID', createdAt: { lte: asOf } },
+            select: { description: true, amount: true, category: true }
         });
-        accountsPayable = unpaidExpenses.reduce((sum, e) => sum + toNumber(e.amount), 0);
+        const accountsPayable = unpaidExpenses.reduce((s, e) => s + n(e.amount), 0);
 
-        if (!projectId) {
-            const allSales = await prisma.sale.findMany({
-                where: { userId, createdAt: { lte: filterDate } },
-                select: { tax: true }
-            });
-            taxPayable = allSales.reduce((sum, s) => sum + toNumber(s.tax), 0);
-
-            const activeProjects = await prisma.project.findMany({
-                where: { companyId, status: 'Active' },
-                include: { payments: true }
-            });
-
-            activeProjects.forEach(p => {
-                const advances = toNumber(p.advancePaid);
-                const payments = p.payments.reduce((s, pay) => s + toNumber(pay.amount), 0);
-                unearnedRevenue += (advances + payments);
-            });
-
-            const debts = await prisma.transaction.findMany({
-                where: {
-                    ...transactionFilter,
-                    type: { in: ['DEBT_TAKEN', 'DEBT_REPAID'] }
-                }
-            });
-            debts.forEach(t => {
-                const amt = toNumber(t.amount);
-                if (t.type === 'DEBT_TAKEN') longTermLoans += amt;
-                if (t.type === 'DEBT_REPAID') longTermLoans -= amt;
-            });
-        }
-
-        // --- 3. EQUITY ---
-        let totalCapital = 0;
-        let retainedEarnings = 0;
-
-        if (!projectId) {
-            const capitalTx = await prisma.transaction.findMany({
-                where: {
-                    ...transactionFilter,
-                    OR: [
-                        { shareholderId: { not: null } },
-                        { category: { equals: 'Capital', mode: 'insensitive' } }
-                    ]
-                }
-            });
-            totalCapital = capitalTx.reduce((sum, t) => {
-                if (['INCOME', 'OTHER'].includes(t.type)) return sum + toNumber(t.amount);
-                return sum;
-            }, 0);
-        }
-
-        let revenue = 0;
-        if (projectId) {
-            const project = await prisma.project.findUnique({ where: { id: projectId } });
-            if (project && project.status === 'Completed') {
-                revenue = toNumber(project.agreementAmount);
-            }
-        } else {
-            const saleData = await prisma.sale.findMany({
-                where: { userId, createdAt: { lte: filterDate } },
-                select: { subtotal: true }
-            });
-            const shopRevenue = saleData.reduce((sum, s) => sum + toNumber(s.subtotal), 0);
-
-            const completedProjects = await prisma.project.findMany({
-                where: { companyId, status: 'Completed' }
-            });
-            const projectsRevenue = completedProjects.reduce((sum, p) => sum + toNumber(p.agreementAmount), 0);
-
-            revenue = shopRevenue + projectsRevenue;
-        }
-
-        const allExpenses = await prisma.expense.findMany({
-            where: {
-                ...commonFilter,
-                OR: [
-                    { projectId: null },
-                    { project: { status: { not: 'Active' } } }
-                ]
-            }
+        // 2B. Tax Payable — cumulative tax collected on all sales
+        const taxAgg = await prisma.sale.aggregate({
+            where: { companyId, createdAt: { lte: asOf } },
+            _sum: { tax: true }
         });
-        const totalExps = allExpenses.reduce((sum, e) => sum + toNumber(e.amount), 0);
+        const taxPayable = n(taxAgg._sum.tax);
 
-        let cogs = 0;
-        if (!projectId) {
-            const completedSales = await prisma.sale.findMany({
-                where: { userId, status: 'Completed', createdAt: { lte: filterDate } },
-                include: { items: { include: { product: true } } }
-            });
-            completedSales.forEach(s => {
-                if (s.items && Array.isArray(s.items)) {
-                    s.items.forEach(item => {
-                        if (item.product) {
-                            cogs += (toNumber(item.quantity) * toNumber(item.product.costPrice));
-                        }
-                    });
-                }
-            });
-        }
+        // 2C. Pending Dividends (new — from ShopDividend)
+        const pendingDivAgg = await (prisma as any).shopDividend.aggregate({
+            where: { companyId, status: 'Pending' },
+            _sum: { amount: true }
+        });
+        const pendingDividends = n(pendingDivAgg._sum.amount);
 
-        retainedEarnings = revenue - totalExps - cogs;
+        // 2D. Long-term loans (DEBT_TAKEN - DEBT_REPAID transactions)
+        const loanTxs = await prisma.transaction.findMany({
+            where: {
+                companyId,
+                type: { in: ['DEBT_TAKEN', 'DEBT_REPAID'] },
+                transactionDate: { lte: asOf }
+            },
+            select: { type: true, amount: true }
+        });
+        const longTermLoans = loanTxs.reduce((s, t) => {
+            if (t.type === 'DEBT_TAKEN') return s + n(t.amount);
+            if (t.type === 'DEBT_REPAID') return s - n(t.amount);
+            return s;
+        }, 0);
 
-        const responseData = {
+        // ═══════════════════════════════════════════════
+        // 3. EQUITY
+        // ═══════════════════════════════════════════════
+
+        // 3A. Shareholders Capital — from ShopShareholder (FIXED: was using transactions)
+        const shareholders = await (prisma as any).shopShareholder.findMany({
+            where: { companyId, status: 'Active' },
+            select: { name: true, sharePercentage: true, initialInvestment: true }
+        });
+        const shareholdersCapital = shareholders.reduce((s: number, sh: any) => s + n(sh.initialInvestment), 0);
+
+        // 3B. Dividends Paid (reduces equity)
+        const paidDivAgg = await (prisma as any).shopDividend.aggregate({
+            where: { companyId, status: 'Paid' },
+            _sum: { amount: true }
+        });
+        const dividendsPaid = n(paidDivAgg._sum.amount);
+
+        // 3C. Retained Earnings = Shop Revenue − COGS − All Expenses
+        const salesData = await prisma.sale.findMany({
+            where: { companyId, status: 'Completed', createdAt: { lte: asOf } },
+            select: { subtotal: true, tax: true, items: { select: { quantity: true, costPrice: true, totalCost: true } } }
+        });
+        const shopRevenue = salesData.reduce((s, sale) => s + n(sale.subtotal), 0);
+        const cogs = salesData.reduce((s, sale) =>
+            s + sale.items.reduce((is, item) => is + n(item.totalCost || (n(item.quantity) * n(item.costPrice))), 0), 0);
+
+        const allExpenses = await prisma.expense.aggregate({
+            where: { companyId, createdAt: { lte: asOf } },
+            _sum: { amount: true }
+        });
+        const totalExpenses = n(allExpenses._sum.amount);
+        const grossProfit = shopRevenue - cogs;
+        const retainedEarnings = grossProfit - totalExpenses;
+
+        // ═══════════════════════════════════════════════
+        // TOTALS
+        // ═══════════════════════════════════════════════
+        const totalCurrentAssets = cashAndBank + shopAR + inventoryValue;
+        const totalFixedAssets = fixedAssetsValue;
+        const totalAssets = totalCurrentAssets + totalFixedAssets;
+
+        const totalCurrentLiabilities = accountsPayable + taxPayable + pendingDividends;
+        const totalLongTermLiabilities = Math.max(0, longTermLoans);
+        const totalLiabilities = totalCurrentLiabilities + totalLongTermLiabilities;
+
+        const totalEquity = shareholdersCapital - dividendsPaid + retainedEarnings;
+        const totalLiabilitiesAndEquity = totalLiabilities + totalEquity;
+
+        const isBalanced = Math.abs(totalAssets - totalLiabilitiesAndEquity) < 5;
+
+        return NextResponse.json({
+            asOf: asOf.toISOString(),
+            isBalanced,
+            difference: totalAssets - totalLiabilitiesAndEquity,
+            // ── ASSETS ──────────────────────────────────────
             assets: {
                 current: {
-                    cashAndBank: { value: totalCashAndBank, drillType: 'ACCOUNT', drillId: 'all' },
-                    accountsReceivable: { value: ar, drillType: 'CUSTOMER', drillId: 'all' },
-                    inventory: { value: inventoryValue, drillType: 'INVENTORY', drillId: 'all' },
-                    workInProgress: { value: wipValue, drillType: 'PROJECT', drillId: 'active' }
+                    cashAndBank: {
+                        value: cashAndBank,
+                        breakdown: accountBreakdown,
+                        drillType: 'ACCOUNT'
+                    },
+                    accountsReceivable: {
+                        value: shopAR,
+                        count: unpaidSales.length,
+                        drillType: 'CUSTOMER'
+                    },
+                    inventory: {
+                        value: inventoryValue,
+                        skuCount: products.length,
+                        breakdown: inventoryBreakdown.slice(0, 5),
+                        drillType: 'INVENTORY'
+                    },
                 },
-                fixed: { value: fixedAssetsValue, drillType: 'ASSET', drillId: 'all' },
-                total: totalCashAndBank + ar + inventoryValue + fixedAssetsValue + wipValue
+                fixed: {
+                    value: fixedAssetsValue,
+                    count: fixedAssets.length,
+                    drillType: 'ASSET'
+                },
+                totalCurrent: totalCurrentAssets,
+                totalFixed: totalFixedAssets,
+                total: totalAssets,
             },
+            // ── LIABILITIES ──────────────────────────────────
             liabilities: {
                 current: {
-                    accountsPayable: { value: accountsPayable, drillType: 'CATEGORY', drillId: 'Payables' },
-                    taxPayable: { value: taxPayable, drillType: 'TAX', drillId: 'all' },
-                    unearnedRevenue: { value: unearnedRevenue, drillType: 'PROJECT', drillId: 'active' }
+                    accountsPayable: {
+                        value: accountsPayable,
+                        count: unpaidExpenses.length,
+                        drillType: 'CATEGORY'
+                    },
+                    taxPayable: {
+                        value: taxPayable,
+                        drillType: 'TAX'
+                    },
+                    pendingDividends: {
+                        value: pendingDividends,
+                        drillType: 'DIVIDEND'
+                    },
                 },
-                longTerm: { value: longTermLoans, drillType: 'ACCOUNT', drillId: 'Loans' },
-                total: accountsPayable + taxPayable + longTermLoans + unearnedRevenue
+                longTerm: {
+                    value: Math.max(0, longTermLoans),
+                    drillType: 'ACCOUNT'
+                },
+                totalCurrent: totalCurrentLiabilities,
+                totalLongTerm: totalLongTermLiabilities,
+                total: totalLiabilities,
             },
+            // ── EQUITY ───────────────────────────────────────
             equity: {
-                capital: { value: totalCapital, drillType: 'SHAREHOLDER', drillId: 'all' },
-                retainedEarnings: { value: retainedEarnings, drillType: 'PROFIT_LOSS', drillId: 'all' },
-                total: totalCapital + retainedEarnings
+                shareholdersCapital: {
+                    value: shareholdersCapital,
+                    shareholders: shareholders.map((s: any) => ({ name: s.name, pct: s.sharePercentage, investment: n(s.initialInvestment) })),
+                },
+                dividendsPaid: {
+                    value: -dividendsPaid, // negative (reduces equity)
+                },
+                retainedEarnings: {
+                    value: retainedEarnings,
+                    breakdown: {
+                        revenue: shopRevenue,
+                        cogs,
+                        grossProfit,
+                        expenses: totalExpenses,
+                    },
+                },
+                total: totalEquity,
+            },
+            // ── SUMMARY ──────────────────────────────────────
+            summary: {
+                totalAssets,
+                totalLiabilitiesAndEquity,
+                grossProfit,
+                netProfit: retainedEarnings,
+                debtRatio: totalAssets > 0 ? (totalLiabilities / totalAssets) : 0,
             }
-        };
-
-        return NextResponse.json(responseData);
+        });
 
     } catch (error: any) {
-        console.error("BS_Critical_Fail:", error);
-        return NextResponse.json({
-            error: 'Failed to generate balance sheet',
-            details: error.message
-        }, { status: 500 });
+        console.error('BalanceSheet_Error:', error);
+        return NextResponse.json({ error: 'Failed', details: error.message }, { status: 500 });
     }
 }

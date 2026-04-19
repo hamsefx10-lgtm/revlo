@@ -1,252 +1,456 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-    Scale,
-    ArrowLeft,
-    Download,
-    RefreshCw,
-    Building2,
-    Wallet,
-    Package,
-    Landmark,
-    TrendingUp,
-    AlertCircle,
-    ChevronRight
+    Scale, ArrowLeft, Download, RefreshCw, Wallet, Package,
+    TrendingUp, TrendingDown, AlertCircle, CheckCircle2,
+    ChevronRight, Loader2, Building2, Users, BarChart3,
+    CircleDollarSign, Landmark, PieChart, ArrowUpRight, ArrowDownRight
 } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface BalanceData {
+    asOf: string;
+    isBalanced: boolean;
+    difference: number;
+    assets: {
+        current: {
+            cashAndBank: { value: number; breakdown: any[] };
+            accountsReceivable: { value: number; count: number };
+            inventory: { value: number; skuCount: number; breakdown: any[] };
+        };
+        fixed: { value: number; count: number };
+        totalCurrent: number;
+        totalFixed: number;
+        total: number;
+    };
+    liabilities: {
+        current: {
+            accountsPayable: { value: number; count: number };
+            taxPayable: { value: number };
+            pendingDividends: { value: number };
+        };
+        longTerm: { value: number };
+        totalCurrent: number;
+        totalLongTerm: number;
+        total: number;
+    };
+    equity: {
+        shareholdersCapital: { value: number; shareholders: any[] };
+        dividendsPaid: { value: number };
+        retainedEarnings: { value: number; breakdown: any };
+        total: number;
+    };
+    summary: {
+        totalAssets: number;
+        totalLiabilitiesAndEquity: number;
+        grossProfit: number;
+        netProfit: number;
+        debtRatio: number;
+    };
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const fmt = (v: number) => {
+    const abs = Math.abs(v);
+    const str = abs.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    return v < 0 ? `(${str})` : str;
+};
+const fmtK = (v: number) => {
+    if (Math.abs(v) >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+    if (Math.abs(v) >= 1_000) return `${(Math.abs(v) / 1_000).toFixed(0)}K`;
+    return fmt(v);
+};
+
+// ─── Sub-Components ───────────────────────────────────────────────────────────
+function SectionHeader({ num, label, color }: { num: string; label: string; color: string }) {
+    return (
+        <div className={`flex items-center gap-3 mb-6`}>
+            <div className={`w-8 h-8 rounded-xl ${color} flex items-center justify-center text-white text-xs font-black flex-shrink-0`}>
+                {num}
+            </div>
+            <h2 className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-[0.25em]">{label}</h2>
+        </div>
+    );
+}
+
+function LineItem({
+    label, value, bold = false, indent = false, negative = false, link, badge
+}: {
+    label: string; value: number; bold?: boolean; indent?: boolean; negative?: boolean; link?: string; badge?: string;
+}) {
+    const displayValue = fmt(negative ? -Math.abs(value) : value);
+    const valueColor = negative ? 'text-rose-500' : bold ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-300';
+
+    return (
+        <div className={`flex items-center justify-between py-2 group ${indent ? 'pl-4' : ''} ${bold ? 'border-t border-slate-100 dark:border-slate-800 mt-1 pt-3' : ''}`}>
+            <div className="flex items-center gap-2">
+                {indent && <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 flex-shrink-0" />}
+                <span className={`text-xs ${bold ? 'font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider' : 'font-medium text-slate-600 dark:text-slate-400'}`}>
+                    {label}
+                </span>
+                {badge && (
+                    <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500">
+                        {badge}
+                    </span>
+                )}
+            </div>
+            {link ? (
+                <Link href={link} className={`text-sm tabular-nums font-black ${bold ? '' : 'text-[#3498DB] hover:underline'} flex items-center gap-1 group-hover:text-[#3498DB] transition-colors`}>
+                    {displayValue}
+                    <ChevronRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                </Link>
+            ) : (
+                <span className={`text-sm tabular-nums font-black ${valueColor}`}>{displayValue}</span>
+            )}
+        </div>
+    );
+}
+
+function TotalBar({ label, value, color }: { label: string; value: number; color: string }) {
+    return (
+        <div className={`flex items-center justify-between p-4 px-5 rounded-2xl ${color} mt-4`}>
+            <span className="text-xs font-black uppercase tracking-widest opacity-80">{label}</span>
+            <span className="text-xl font-black tabular-nums">{fmt(value)}</span>
+        </div>
+    );
+}
+
+function SummaryCard({ label, value, icon: Icon, trend, color }: {
+    label: string; value: number; icon: any; trend?: 'up' | 'down'; color: string;
+}) {
+    return (
+        <div className="bg-white/70 dark:bg-[#161B2E]/70 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 rounded-[1.5rem] p-4 shadow-sm hover:shadow-md transition-all">
+            <div className={`w-8 h-8 ${color} rounded-xl flex items-center justify-center mb-3`}>
+                <Icon size={16} className="text-white" />
+            </div>
+            <p className="text-lg font-black text-slate-900 dark:text-white tabular-nums">{fmtK(value)}</p>
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{label}</p>
+        </div>
+    );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
 export default function BalanceSheetPage() {
-    const [data, setData] = useState<any>(null);
+    const [data, setData] = useState<BalanceData | null>(null);
     const [loading, setLoading] = useState(true);
-    const router = useRouter();
+    const [dateFilter, setDateFilter] = useState(format(new Date(), 'yyyy-MM-dd'));
+    const [expandedSections, setExpandedSections] = useState<string[]>([]);
 
-    useEffect(() => {
-        fetchBalanceSheet();
-    }, []);
-
-    const fetchBalanceSheet = async () => {
+    const fetch = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await fetch('/api/shop/reports/balance-sheet');
-            if (res.ok) {
-                const result = await res.json();
-                setData(result);
-            } else {
-                console.error("Failed to fetch balance sheet");
-            }
-        } catch (error) {
-            console.error("Fetch error:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+            const res = await window.fetch(`/api/shop/reports/balance-sheet?date=${dateFilter}`);
+            const json = await res.json();
+            if (!res.ok) { toast.error(json.error || 'API error'); return; }
+            setData(json);
+        } catch { toast.error('Failed to load balance sheet'); }
+        finally { setLoading(false); }
+    }, [dateFilter]);
 
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+    useEffect(() => { fetch(); }, [fetch]);
+
+    const toggleSection = (key: string) =>
+        setExpandedSections(p => p.includes(key) ? p.filter(x => x !== key) : [...p, key]);
+
+    const handlePrint = () => window.print();
+
+    if (loading) return (
+        <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+            <div className="relative">
+                <div className="w-16 h-16 rounded-full border-4 border-[#3498DB]/20 border-t-[#3498DB] animate-spin" />
+                <Scale size={24} className="text-[#3498DB] absolute inset-0 m-auto" />
             </div>
-        );
-    }
-
-    if (!data) return (
-        <div className="p-8 text-center">
-            <h3 className="text-xl font-bold text-red-500 mb-2">Failed to load report</h3>
-            <button onClick={fetchBalanceSheet} className="px-4 py-2 bg-primary text-white rounded-xl font-bold mt-4">Try Again</button>
+            <p className="text-sm font-black text-slate-400 uppercase tracking-widest">Generating Balance Sheet…</p>
         </div>
     );
 
-    const isBalanced = Math.abs(data.assets.total - (data.liabilities.total + data.equity.total)) < 1;
+    if (!data) return (
+        <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">
+                <AlertCircle size={40} className="text-rose-400 mx-auto mb-3" />
+                <p className="font-bold text-slate-600">Failed to load. Check API logs.</p>
+                <button onClick={fetch} className="mt-4 px-5 py-2.5 rounded-xl bg-[#3498DB] text-white font-bold text-sm">Retry</button>
+            </div>
+        </div>
+    );
+
+    const summaryCards = [
+        { label: 'Total Assets', value: data.assets.total, icon: Wallet, color: 'bg-emerald-500' },
+        { label: 'Total Liabilities', value: data.liabilities.total, icon: Landmark, color: 'bg-rose-500' },
+        { label: 'Net Worth (Equity)', value: data.equity.total, icon: BarChart3, color: 'bg-[#3498DB]' },
+        { label: 'Net Profit', value: data.summary.netProfit, icon: TrendingUp, color: data.summary.netProfit >= 0 ? 'bg-emerald-500' : 'bg-amber-500' },
+    ];
 
     return (
-        <div className="min-h-screen animate-fade-in pb-20 font-sans w-full max-w-4xl mx-auto md:p-8">
+        <div className="min-h-screen font-sans pb-24 animate-fade-in print:bg-white print:text-black">
 
-            {/* HEADER */}
-            <div className="mb-8 px-4 md:px-0 print:mb-4 text-center">
-                <Link href="/shop/reports" className="inline-flex items-center gap-2 text-mediumGray hover:text-primary transition-colors text-xs font-bold uppercase tracking-wider mb-4 print:hidden absolute left-4 md:left-8">
-                    <ArrowLeft size={16} /> Back
-                </Link>
-
-                <div className="flex flex-col items-center justify-center gap-2">
-                    <h1 className="text-3xl font-black text-darkGray dark:text-white uppercase tracking-wider">
-                        Balance Sheet
-                    </h1>
-                    <p className="text-mediumGray font-medium">As of {format(new Date(), 'MMMM dd, yyyy')}</p>
+            {/* ── TOP HEADER ───────────────────────────────── */}
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-8 print:hidden">
+                <div className="flex items-center gap-4">
+                    <Link href="/shop/reports" className="p-2.5 rounded-xl bg-white dark:bg-[#161B2E] border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-[#3498DB] hover:border-[#3498DB]/30 transition-all shadow-sm">
+                        <ArrowLeft size={18} />
+                    </Link>
+                    <div>
+                        <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Balance Sheet</h1>
+                        <p className="text-xs text-slate-500 mt-0.5">As of {format(new Date(data.asOf), 'MMMM d, yyyy')}</p>
+                    </div>
                 </div>
-
-                <div className="absolute right-4 md:right-8 top-8 print:hidden">
-                    <button className="px-4 py-2 bg-darkGray dark:bg-white text-white dark:text-black font-bold rounded-lg shadow-sm flex items-center gap-2 hover:opacity-90 transition-opacity">
-                        <Download size={16} /> PDF
+                <div className="flex items-center gap-2">
+                    <input
+                        type="date"
+                        value={dateFilter}
+                        onChange={e => setDateFilter(e.target.value)}
+                        className="px-4 py-2.5 text-xs rounded-xl bg-white dark:bg-[#161B2E] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-medium outline-none focus:border-[#3498DB]/40 transition-all shadow-sm"
+                    />
+                    <button onClick={fetch} className="p-2.5 rounded-xl bg-white dark:bg-[#161B2E] border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-[#3498DB] transition-all shadow-sm">
+                        <RefreshCw size={16} />
+                    </button>
+                    <button onClick={handlePrint} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black text-xs shadow-md hover:opacity-90 transition-all">
+                        <Download size={14} /> PDF
                     </button>
                 </div>
             </div>
 
-            {/* BALANCE INDICATOR */}
-            {!isBalanced && (
-                <div className="mb-6 mx-4 md:mx-0 p-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg flex items-center justify-center gap-2 text-red-600 dark:text-red-400 text-sm font-bold">
-                    <AlertCircle size={18} />
-                    <span>Unbalanced: {(data.assets.total - (data.liabilities.total + data.equity.total)).toLocaleString()}</span>
+            {/* ── BALANCE STATUS ───────────────────────────── */}
+            <div className={`mb-6 p-4 rounded-2xl flex items-center justify-between border ${data.isBalanced
+                ? 'bg-emerald-50/70 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800/30'
+                : 'bg-rose-50/70 dark:bg-rose-900/10 border-rose-200 dark:border-rose-800/30'}`}>
+                <div className="flex items-center gap-3">
+                    {data.isBalanced
+                        ? <CheckCircle2 size={20} className="text-emerald-500 flex-shrink-0" />
+                        : <AlertCircle size={20} className="text-rose-500 flex-shrink-0" />}
+                    <div>
+                        <p className={`text-sm font-black ${data.isBalanced ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'}`}>
+                            {data.isBalanced ? '✓ Sheet is Balanced — Assets = Liabilities + Equity' : '⚠ Sheet Imbalanced — Investigating...'}
+                        </p>
+                        {!data.isBalanced && (
+                            <p className="text-[10px] text-rose-500 mt-0.5">Difference: {fmt(Math.abs(data.difference))} ETB</p>
+                        )}
+                    </div>
                 </div>
-            )}
+                <div className="text-right">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Debt Ratio</p>
+                    <p className="text-sm font-black text-slate-700 dark:text-slate-300">{(data.summary.debtRatio * 100).toFixed(1)}%</p>
+                </div>
+            </div>
 
-            {/* MAIN REPORT CONTAINER */}
-            <div className="bg-white dark:bg-gray-900 shadow-xl rounded-none md:rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800">
+            {/* ── KPI SUMMARY CARDS ────────────────────────── */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                {summaryCards.map(c => <SummaryCard key={c.label} {...c} />)}
+            </div>
 
-                {/* 1. ASSETS SECTION */}
-                <div className="p-8 border-b border-gray-100 dark:border-gray-800">
-                    <h2 className="text-xl font-black text-emerald-700 dark:text-emerald-500 uppercase tracking-widest mb-6 border-b-2 border-emerald-500/20 pb-2">
-                        1. Assets (Hantida)
-                    </h2>
+            {/* ── MAIN GRID ────────────────────────────────── */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                {/* ─────────── ASSETS ─────────── */}
+                <div className="bg-white/80 dark:bg-[#161B2E]/80 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 rounded-[2rem] p-6 shadow-sm">
+                    <SectionHeader num="1" label="Assets — Hantida" color="bg-emerald-500" />
 
                     {/* Current Assets */}
-                    <div className="mb-6 pl-4 border-l-2 border-gray-100 dark:border-gray-800">
-                        <h3 className="font-bold text-gray-500 dark:text-gray-400 uppercase text-xs tracking-wider mb-3">Current Assets</h3>
-                        <div className="space-y-3">
-                            <ClickableRow label="Cash & Bank Accounts" data={data.assets.current.cashAndBank} />
-                            <ClickableRow label="Accounts Receivable (Projects Due)" data={data.assets.current.accountsReceivable} />
-                            <ClickableRow label="Inventory (Store Value)" data={data.assets.current.inventory} />
-                            <ClickableRow label="WIP - Active Projects (Hantida Mashruuca Socda)" data={data.assets.current.workInProgress} />
-                        </div>
-                        <div className="mt-3 pt-2 border-t border-dashed border-gray-200 dark:border-gray-700 ml-auto w-1/2">
-                            <Row label="Total Current Assets" value={data.assets.current.cashAndBank.value + data.assets.current.accountsReceivable.value + data.assets.current.inventory.value + data.assets.current.workInProgress.value} bold />
-                        </div>
+                    <div className="mb-5">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+                            <span className="h-px flex-1 bg-slate-100 dark:bg-slate-800" /> Current Assets <span className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
+                        </p>
+
+                        <LineItem
+                            label="Cash & Bank Accounts"
+                            value={data.assets.current.cashAndBank.value}
+                            indent
+                            badge={`${data.assets.current.cashAndBank.breakdown.length} accounts`}
+                        />
+                        {/* Account breakdown */}
+                        {data.assets.current.cashAndBank.breakdown.map((a: any, i: number) => (
+                            <div key={i} className="flex justify-between items-center pl-8 py-1">
+                                <span className="text-[10px] text-slate-400 font-medium flex items-center gap-1">
+                                    <span className="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700" />
+                                    {a.name}
+                                </span>
+                                <span className="text-[10px] font-bold text-slate-500 tabular-nums">{fmt(a.value)}</span>
+                            </div>
+                        ))}
+
+                        <LineItem
+                            label="Accounts Receivable (Dayn Macaamiisha)"
+                            value={data.assets.current.accountsReceivable.value}
+                            indent
+                            badge={data.assets.current.accountsReceivable.count > 0 ? `${data.assets.current.accountsReceivable.count} invoices` : undefined}
+                        />
+                        <LineItem
+                            label="Shop Inventory"
+                            value={data.assets.current.inventory.value}
+                            indent
+                            badge={data.assets.current.inventory.skuCount > 0 ? `${data.assets.current.inventory.skuCount} SKUs` : undefined}
+                        />
+
+                        <LineItem label="Total Current Assets" value={data.assets.totalCurrent} bold />
                     </div>
 
                     {/* Fixed Assets */}
-                    <div className="mb-6 pl-4 border-l-2 border-gray-100 dark:border-gray-800">
-                        <h3 className="font-bold text-gray-500 dark:text-gray-400 uppercase text-xs tracking-wider mb-3">Fixed Assets</h3>
-                        <div className="space-y-3">
-                            <ClickableRow label="Property, Plant & Equipment" data={data.assets.fixed} />
-                        </div>
-                        <div className="mt-3 pt-2 border-t border-dashed border-gray-200 dark:border-gray-700 ml-auto w-1/2">
-                            <Row label="Total Fixed Assets" value={data.assets.fixed.value} bold />
-                        </div>
+                    <div className="mb-2">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+                            <span className="h-px flex-1 bg-slate-100 dark:bg-slate-800" /> Fixed Assets <span className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
+                        </p>
+                        <LineItem
+                            label="Property, Plant & Equipment"
+                            value={data.assets.fixed.value}
+                            indent
+                            badge={data.assets.fixed.count > 0 ? `${data.assets.fixed.count} assets` : undefined}
+                        />
+                        <LineItem label="Total Fixed Assets" value={data.assets.totalFixed} bold />
                     </div>
 
-                    {/* TOTAL ASSETS */}
-                    <div className="bg-emerald-50 dark:bg-emerald-900/10 p-4 rounded-lg mt-8 flex justify-between items-center border border-emerald-100 dark:border-emerald-800/30">
-                        <span className="text-lg font-black text-emerald-900 dark:text-emerald-400 uppercase tracking-widest">Total Assets</span>
-                        <span className="text-2xl font-black text-emerald-700 dark:text-emerald-400">
-                            {data.assets.total.toLocaleString()}
-                        </span>
-                    </div>
+                    <TotalBar label="TOTAL ASSETS" value={data.assets.total} color="bg-emerald-500 text-white" />
                 </div>
 
-                {/* 2. LIABILITIES SECTION */}
-                <div className="p-8 border-b border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/20">
-                    <h2 className="text-xl font-black text-rose-700 dark:text-rose-500 uppercase tracking-widest mb-6 border-b-2 border-rose-500/20 pb-2">
-                        2. Liabilities (Deymaha)
-                    </h2>
+                {/* ─────────── RIGHT COLUMN ─────────── */}
+                <div className="flex flex-col gap-6">
 
-                    {/* Current Liabilities */}
-                    <div className="mb-6 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
-                        <h3 className="font-bold text-gray-500 dark:text-gray-400 uppercase text-xs tracking-wider mb-3">Current Liabilities</h3>
-                        <div className="space-y-3">
-                            <ClickableRow label="Accounts Payable" data={data.liabilities.current.accountsPayable} />
-                            <ClickableRow label="Unearned Revenue (Customer Advances)" data={data.liabilities.current.unearnedRevenue} />
-                            <ClickableRow label="Tax Payable" data={data.liabilities.current.taxPayable} />
+                    {/* LIABILITIES */}
+                    <div className="bg-white/80 dark:bg-[#161B2E]/80 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 rounded-[2rem] p-6 shadow-sm">
+                        <SectionHeader num="2" label="Liabilities — Deymaha" color="bg-rose-500" />
+
+                        {/* Current */}
+                        <div className="mb-5">
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+                                <span className="h-px flex-1 bg-slate-100 dark:bg-slate-800" /> Current Liabilities <span className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
+                            </p>
+                            <LineItem
+                                label="Accounts Payable (Unpaid Expenses)"
+                                value={data.liabilities.current.accountsPayable.value}
+                                indent
+                                badge={data.liabilities.current.accountsPayable.count > 0 ? `${data.liabilities.current.accountsPayable.count} items` : undefined}
+                            />
+                            <LineItem
+                                label="Tax Payable (VAT Collected)"
+                                value={data.liabilities.current.taxPayable.value}
+                                indent
+                            />
+                            <LineItem
+                                label="Pending Dividends (Saamileyda)"
+                                value={data.liabilities.current.pendingDividends.value}
+                                indent
+                            />
+                            <LineItem label="Total Current Liabilities" value={data.liabilities.totalCurrent} bold />
                         </div>
-                        <div className="mt-3 pt-2 border-t border-dashed border-gray-200 dark:border-gray-700 ml-auto w-1/2">
-                            <Row label="Total Current Liabilities" value={data.liabilities.current.accountsPayable.value + data.liabilities.current.unearnedRevenue.value + data.liabilities.current.taxPayable.value} bold />
+
+                        {/* Long term */}
+                        <div className="mb-2">
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+                                <span className="h-px flex-1 bg-slate-100 dark:bg-slate-800" /> Long-term Liabilities <span className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
+                            </p>
+                            <LineItem label="Long-term Loans" value={data.liabilities.longTerm.value} indent />
+                            <LineItem label="Total Long-term Liabilities" value={data.liabilities.totalLongTerm} bold />
                         </div>
+
+                        <TotalBar label="TOTAL LIABILITIES" value={data.liabilities.total} color="bg-rose-500 text-white" />
                     </div>
 
-                    {/* Long Term Liabilities */}
-                    <div className="mb-6 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
-                        <h3 className="font-bold text-gray-500 dark:text-gray-400 uppercase text-xs tracking-wider mb-3">Long Term Liabilities</h3>
-                        <div className="space-y-3">
-                            <ClickableRow label="Long Term Loans" data={data.liabilities.longTerm} />
-                        </div>
-                        <div className="mt-3 pt-2 border-t border-dashed border-gray-200 dark:border-gray-700 ml-auto w-1/2">
-                            <Row label="Total Long Term Liabilities" value={data.liabilities.longTerm.value} bold />
-                        </div>
+                    {/* EQUITY */}
+                    <div className="bg-white/80 dark:bg-[#161B2E]/80 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 rounded-[2rem] p-6 shadow-sm">
+                        <SectionHeader num="3" label="Equity — Raasamaalka" color="bg-[#3498DB]" />
+
+                        <LineItem
+                            label="Shareholders Capital"
+                            value={data.equity.shareholdersCapital.value}
+                            indent
+                            badge={data.equity.shareholdersCapital.shareholders.length > 0
+                                ? `${data.equity.shareholdersCapital.shareholders.length} shareholders` : undefined}
+                        />
+                        {/* Shareholder breakdown */}
+                        {data.equity.shareholdersCapital.shareholders.map((sh: any, i: number) => (
+                            <div key={i} className="flex justify-between items-center pl-8 py-1">
+                                <span className="text-[10px] text-slate-400 font-medium flex items-center gap-1">
+                                    <span className="w-1 h-1 rounded-full bg-[#3498DB]/30" />
+                                    {sh.name} ({sh.pct}%)
+                                </span>
+                                <span className="text-[10px] font-bold text-slate-500 tabular-nums">{fmt(sh.investment)}</span>
+                            </div>
+                        ))}
+
+                        <LineItem
+                            label="Dividends Paid (Lacag Bixinta)"
+                            value={data.equity.dividendsPaid.value}
+                            indent
+                            negative
+                        />
+
+                        {/* Retained Earnings with breakdown */}
+                        <LineItem label="Retained Earnings (Net Profit/Loss)" value={data.equity.retainedEarnings.value} indent />
+                        {data.equity.retainedEarnings.breakdown && (
+                            <div className="ml-8 mt-1 p-3 rounded-xl bg-slate-50/70 dark:bg-slate-800/20 border border-slate-100 dark:border-slate-800/30 space-y-1 mb-2">
+                                {[
+                                    { label: 'Revenue', value: data.equity.retainedEarnings.breakdown.revenue, green: true },
+                                    { label: 'Cost of Goods Sold', value: -data.equity.retainedEarnings.breakdown.cogs, red: true },
+                                    { label: 'Gross Profit', value: data.equity.retainedEarnings.breakdown.grossProfit },
+                                    { label: 'Operating Expenses', value: -data.equity.retainedEarnings.breakdown.expenses, red: true },
+                                ].map(row => (
+                                    <div key={row.label} className="flex justify-between items-center">
+                                        <span className="text-[9px] text-slate-400">{row.label}</span>
+                                        <span className={`text-[10px] font-black tabular-nums ${row.green ? 'text-emerald-500' : row.red ? 'text-rose-500' : 'text-slate-600 dark:text-slate-300'}`}>
+                                            {fmt(row.value)}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <LineItem label="TOTAL EQUITY" value={data.equity.total} bold />
+                        <TotalBar label="TOTAL EQUITY" value={data.equity.total} color="bg-[#3498DB] text-white" />
                     </div>
-
-                    {/* TOTAL LIABILITIES */}
-                    <div className="flex justify-between items-center py-4 border-t-2 border-gray-200 dark:border-gray-700 mt-4">
-                        <span className="text-lg font-bold text-gray-700 dark:text-gray-300 uppercase">Total Liabilities</span>
-                        <span className="text-xl font-bold text-rose-700 dark:text-rose-400">
-                            {data.liabilities.total.toLocaleString()}
-                        </span>
-                    </div>
-                </div>
-
-                {/* 3. EQUITY SECTION */}
-                <div className="p-8">
-                    <h2 className="text-xl font-black text-blue-700 dark:text-blue-500 uppercase tracking-widest mb-6 border-b-2 border-blue-500/20 pb-2">
-                        3. Equity (Raasamaalka)
-                    </h2>
-
-                    <div className="mb-6 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
-                        <div className="space-y-3">
-                            <ClickableRow label="Owner's Capital (Raasamaalka Bilowga)" data={data.equity.capital} />
-                            <ClickableRow label="Retained Earnings (Net Profit/Loss)" data={data.equity.retainedEarnings} />
-                        </div>
-                    </div>
-
-                    {/* TOTAL EQUITY */}
-                    <div className="flex justify-between items-center py-4 border-t-2 border-gray-200 dark:border-gray-700 mt-4">
-                        <span className="text-lg font-bold text-gray-700 dark:text-gray-300 uppercase">Total Equity</span>
-                        <span className="text-xl font-bold text-blue-700 dark:text-blue-400">
-                            {data.equity.total.toLocaleString()}
-                        </span>
-                    </div>
-                </div>
-
-                {/* GRAND TOTAL */}
-                <div className="bg-gray-900 text-white p-8 mt-0 flex justify-between items-center">
-                    <span className="text-xl font-black uppercase tracking-widest">Total Liabilities & Equity</span>
-                    <span className="text-3xl font-black text-emerald-400 underline decoration-4 decoration-emerald-500">
-                        {(data.liabilities.total + data.equity.total).toLocaleString()}
-                    </span>
                 </div>
             </div>
 
-            <div className="mt-8 text-center text-gray-400 text-xs print:hidden">
-                <p>Standard Accrual Basis Report generated by Revlo System</p>
+            {/* ── GRAND TOTAL ───────────────────────────────── */}
+            <div className="mt-6 relative overflow-hidden rounded-[2rem] bg-gradient-to-r from-slate-900 to-[#1a2a4a] dark:from-slate-950 dark:to-[#0d1929] p-6 shadow-2xl">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-[#3498DB]/10 blur-[80px] rounded-full pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/5 blur-[60px] rounded-full pointer-events-none" />
+
+                <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <div className="flex items-center gap-2 mb-1">
+                            <Scale size={18} className="text-[#3498DB]" />
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">The Accounting Equation</span>
+                        </div>
+                        <p className="text-slate-500 text-xs font-medium">Assets = Liabilities + Equity</p>
+                        <p className="text-slate-400 text-xs mt-0.5 italic">Standard Accrual Basis — Revlo Shop System</p>
+                    </div>
+
+                    <div className="flex items-center gap-8">
+                        <div className="text-right">
+                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Liabilities + Equity</p>
+                            <p className="text-2xl font-black text-white tabular-nums">
+                                {fmt(data.summary.totalLiabilitiesAndEquity)}
+                                <span className="text-[10px] font-bold text-[#3498DB] ml-1.5">ETB</span>
+                            </p>
+                        </div>
+                        <div className={`w-px h-12 ${data.isBalanced ? 'bg-emerald-500/30' : 'bg-rose-500/30'}`} />
+                        <div className="text-right">
+                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Total Assets</p>
+                            <p className="text-2xl font-black text-emerald-400 tabular-nums">
+                                {fmt(data.summary.totalAssets)}
+                                <span className="text-[10px] font-bold text-emerald-600 ml-1.5">ETB</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    );
-}
 
-function Row({ label, value, bold = false }: { label: string, value: number, bold?: boolean }) {
-    return (
-        <div className={`flex justify-between items-center ${bold ? 'text-lg' : 'text-sm'}`}>
-            <span className={`${bold ? 'font-black text-darkGray dark:text-white' : 'text-mediumGray dark:text-gray-400 font-medium'}`}>
-                {label}
-            </span>
-            <span className={`${bold ? 'font-black text-darkGray dark:text-white' : 'font-bold text-darkGray dark:text-gray-200'}`}>
-                {value < 0 ? `(${Math.abs(value).toLocaleString()})` : value.toLocaleString()}
-            </span>
-        </div>
-    );
-}
+            <p className="text-center text-[10px] text-slate-400 mt-6 print:block">
+                Generated by Revlo Shop · {format(new Date(), 'MMM d, yyyy HH:mm')}
+            </p>
 
-function ClickableRow({ label, data }: { label: string, data: { value: number, drillType?: string, drillId?: string } }) {
-    const hasDrill = data.drillType && data.value !== 0;
-
-    return (
-        <div className="flex justify-between items-center text-sm group">
-            <span className="text-mediumGray dark:text-gray-400 font-medium flex items-center gap-2">
-                {label}
-                {hasDrill && <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 text-primary transition-opacity" />}
-            </span>
-
-            {hasDrill ? (
-                <Link
-                    href={`/shop/reports/ledger?type=${data.drillType}&id=${data.drillId}`}
-                    className="font-bold text-primary hover:underline hover:text-blue-700 transition-colors"
-                >
-                    {data.value < 0 ? `(${Math.abs(data.value).toLocaleString()})` : data.value.toLocaleString()}
-                </Link>
-            ) : (
-                <span className="font-bold text-darkGray dark:text-gray-200">
-                    {data.value < 0 ? `(${Math.abs(data.value).toLocaleString()})` : data.value.toLocaleString()}
-                </span>
-            )}
+            <style jsx global>{`
+                @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+                .animate-fade-in { animation: fadeIn 0.35s ease-out; }
+                @media print {
+                    body { background: white !important; }
+                    .print\\:hidden { display: none !important; }
+                }
+            `}</style>
         </div>
     );
 }

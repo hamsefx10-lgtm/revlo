@@ -57,128 +57,210 @@ export async function generateShopReceiptPDF(sale: any, company: any): Promise<B
             width: 100%;
             max-width: 800px;
             margin: 0 auto;
-            padding: 60px 70px;
-            background: white;
+            padding: 30px 40px;
+            background: #f8fafc;
             position: relative;
-            min-height: 1000px;
+            min-height: auto;
           }
 
           /* Header Section */
-          .header {
+          .top-section {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 55px;
-            border-bottom: 1px solid var(--border-soft);
-            padding-bottom: 35px;
+            gap: 30px;
+            margin-bottom: 25px;
           }
-          .brand-info {
-            display: flex;
-            align-items: center;
-            gap: 18px;
+          .left-col {
+            width: 32%;
+            position: relative;
           }
-          .logo-box {
-            width: 65px; height: 65px;
-            background: var(--brand-dark);
-            border-radius: 16px;
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-family: 'Outfit', sans-serif; font-weight: 900; font-size: 30px;
+          .qr-box {
+            width: 75px;
+            height: 75px;
+            background: white;
+            padding: 6px;
+            margin-left: 15px;
+            margin-bottom: -35px;
+            position: relative;
+            z-index: 10;
           }
-          .logo-img {
-            width: 65px; height: 65px;
-            object-fit: cover;
-            border-radius: 16px;
-            border: 1px solid var(--border-soft);
+          .dark-box {
+            background: #2a2a2a;
+            color: #ffffff;
+            padding: 45px 20px 20px 20px;
+            min-height: 240px;
           }
-          .company-details h1 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 32px; font-weight: 800; color: var(--brand-dark);
-            letter-spacing: -0.5px;
-            margin-bottom: 6px;
+          .dark-box .title {
+            font-size: 10px;
+            font-weight: 700;
+            margin-bottom: 4px;
           }
-          .company-details p {
-            font-size: 11px; color: var(--text-muted); font-weight: 600;
-            letter-spacing: 1px; text-transform: uppercase;
+          .dark-box .value {
+            font-size: 11px;
+            color: #e2e8f0;
+            margin-bottom: 15px;
           }
-          
-          .receipt-title {
-            text-align: right;
+          .dark-box .divider {
+            width: 25px;
+            height: 1px;
+            background: #ffffff;
+            margin-bottom: 15px;
           }
-          .title-text {
-            font-family: 'Outfit', sans-serif;
-            font-size: 42px; font-weight: 900; color: var(--brand-primary);
-            letter-spacing: -1.5px; text-transform: uppercase;
-            margin-bottom: 10px; line-height: 1;
+          .dark-box .to-value {
+            font-size: 12px;
+            color: #ffffff;
           }
-          .inv-number {
-            font-size: 15px; color: var(--text-muted); font-weight: 600;
-            background: var(--bg-light); padding: 8px 16px; border-radius: 8px;
-            display: inline-block;
+          .dark-box .to-contact {
+            font-size: 10px;
+            color: #94a3b8;
+            margin-top: 4px;
+            line-height: 1.4;
           }
 
-          /* Meta Grid */
-          .meta-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            margin-bottom: 50px;
+          .right-col {
+            width: 68%;
+            padding-top: 15px;
           }
-          .meta-box {
+          .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+          }
+          .brand-icon {
+            width: 24px;
+            height: 24px;
+            border: 4px solid #2a2a2a;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+          .brand-icon::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #2a2a2a;
+            border-radius: 50%;
+          }
+          .brand-text-wrapper {
+            display: flex;
+            flex-direction: column;
+          }
+          .brand-name {
+            font-size: 14px;
+            font-weight: 800;
+            color: #1a1a1a;
+          }
+          .brand-tagline {
+            font-size: 10px;
+            color: #64748b;
+          }
+          .invoice-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 42px;
+            font-weight: 900;
+            color: #1a1a1a;
+            letter-spacing: -1.5px;
+            line-height: 1;
+            margin-bottom: 5px;
+          }
+          .invoice-subtitle {
+            font-size: 11px;
+            color: #64748b;
+            margin-bottom: 20px;
+          }
+          .card-box {
             background: #ffffff;
-            padding: 24px 0;
+            padding: 15px 25px;
+            display: flex;
+            gap: 30px;
+            margin-bottom: 25px;
           }
-          .meta-title {
-            font-size: 10px; font-weight: 700; color: var(--brand-primary);
-            text-transform: uppercase; letter-spacing: 1.5px;
-            margin-bottom: 14px; display: block;
+          .card-col {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
           }
-          .meta-value {
-            font-size: 20px; font-weight: 700; color: var(--brand-dark);
-            margin-bottom: 6px; font-family: 'Outfit', sans-serif;
+          .card-col .label {
+            font-size: 10px;
+            color: #94a3b8;
+            font-weight: 600;
           }
-          .meta-sub {
-            font-size: 14px; color: var(--text-muted); font-weight: 500;
+          .card-col .val {
+            font-size: 13px;
+            color: #475569;
+            font-weight: 500;
+          }
+          .card-box .divider {
+            width: 1px;
+            background: #e2e8f0;
+          }
+          .payment-method-row {
+            display: flex;
+            gap: 30px;
+          }
+          .method-label {
+            display: flex;
+            flex-direction: column;
+          }
+          .method-label span {
+            font-weight: 800;
+            font-size: 12px;
+            color: #1a1a1a;
+          }
+          .method-label .line {
+            width: 20px;
+            height: 2px;
+            background: #1a1a1a;
+            margin-top: 8px;
+          }
+          .method-details {
+            font-size: 11px;
+            color: #64748b;
+            line-height: 1.4;
           }
 
           /* Table */
           .table-wrapper {
-            margin-bottom: 50px;
+            margin-bottom: 30px;
+            background: #ffffff;
+            padding: 15px;
           }
           table { width: 100%; border-collapse: collapse; }
           th { 
             background: var(--brand-dark);
-            text-align: left; padding: 18px 24px; 
-            font-size: 10px; color: #ffffff; font-weight: 700;
-            text-transform: uppercase; letter-spacing: 1.5px; 
+            text-align: left; padding: 10px 14px; 
+            font-size: 9px; color: #ffffff; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px; 
           }
           td { 
-            padding: 24px; 
+            padding: 10px 14px; 
             border-bottom: 1px solid var(--border-soft); 
-            font-size: 15px;
+            font-size: 11px;
           }
           tr:last-child td { border-bottom: 2px solid var(--brand-dark); }
           
-          .item-desc { font-weight: 700; color: var(--brand-dark); font-family: 'Outfit', sans-serif; font-size: 16px; }
+          .item-desc { font-weight: 700; color: var(--brand-dark); font-family: 'Outfit', sans-serif; font-size: 13px; }
           .qty-cell { text-align: center; font-weight: 600; color: var(--text-muted); }
           .price-cell { text-align: right; font-weight: 600; color: var(--text-muted); }
           .total-cell { text-align: right; font-weight: 800; color: var(--brand-dark); }
-          .sup-currency { font-size: 10px; vertical-align: super; margin-left: 3px; color: var(--text-muted); }
+          .sup-currency { font-size: 8px; vertical-align: super; margin-left: 2px; color: var(--text-muted); }
 
           /* Summary Section */
           .summary-wrapper {
             display: flex;
             justify-content: flex-end;
-            margin-bottom: 70px;
+            margin-bottom: 40px;
           }
           .summary-box {
-            width: 380px;
+            width: 300px;
           }
           .summary-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 14px 0;
-            font-size: 15px;
+            padding: 8px 0;
+            font-size: 12px;
             color: var(--text-muted);
             font-weight: 500;
           }
@@ -186,71 +268,71 @@ export async function generateShopReceiptPDF(sale: any, company: any): Promise<B
             border-top: 2px solid var(--brand-dark);
             border-bottom: 2px solid var(--border-soft);
             margin-top: 10px;
-            padding: 24px 0;
+            padding: 14px 0;
             color: var(--brand-dark);
           }
-          .total-label { font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 900; color: var(--brand-dark); }
-          .total-value { font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 900; color: var(--brand-primary); }
+          .total-label { font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 900; color: var(--brand-dark); }
+          .total-value { font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 900; color: var(--brand-primary); }
           
           .summary-row.paid {
-            padding-top: 24px;
+            padding-top: 14px;
             color: #10b981;
             align-items: flex-start;
           }
           .payment-details {
-            display: flex; flex-direction: column; gap: 4px;
+            display: flex; flex-direction: column; gap: 3px;
           }
-          .payment-label { font-weight: 700; font-size: 15px; }
-          .payment-meta { font-size: 11px; color: #059669; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; }
-          .paid-value { font-weight: 800; font-size: 16px; }
+          .payment-label { font-weight: 700; font-size: 12px; }
+          .payment-meta { font-size: 9px; color: #059669; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; }
+          .paid-value { font-weight: 800; font-size: 13px; }
 
           .summary-row.balance {
             color: #ef4444;
             font-weight: 800;
-            font-size: 16px;
+            font-size: 13px;
           }
 
           /* Status Badge */
           .status-badge {
             display: inline-block;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 10px;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-top: 15px;
+            letter-spacing: 1px;
+            margin-top: 10px;
           }
 
           /* Footer */
           .footer {
-            margin-top: 100px;
-            padding-top: 40px;
+            margin-top: 50px;
+            padding-top: 25px;
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
           }
           .footer-message h4 {
             font-family: 'Outfit', sans-serif;
-            font-size: 20px; color: var(--brand-dark); font-weight: 800;
-            margin-bottom: 8px;
+            font-size: 14px; color: var(--brand-dark); font-weight: 800;
+            margin-bottom: 6px;
           }
           .footer-message p {
-            font-size: 12px; color: var(--text-muted); line-height: 1.6;
+            font-size: 10px; color: var(--text-muted); line-height: 1.5;
           }
           .signature-area {
             text-align: right;
           }
           .sig-line {
-            width: 180px;
+            width: 120px;
             height: 2px;
             background: var(--brand-dark);
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             margin-left: auto;
           }
           .sig-text {
-            font-size: 10px; color: var(--text-muted); font-weight: 700;
-            text-transform: uppercase; letter-spacing: 1.5px;
+            font-size: 9px; color: var(--text-muted); font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px;
           }
           
           /* Watermark */
@@ -274,39 +356,69 @@ export async function generateShopReceiptPDF(sale: any, company: any): Promise<B
           
           ${isFullyPaid ? '<div class="watermark">PAID IN FULL</div>' : ''}
 
-          <header class="header">
-            <div class="brand-info">
-              ${logoUrl 
-                ? `<img src="${logoUrl}" class="logo-img" alt="Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-                   <div class="logo-box" style="display: none;">${companyName.charAt(0).toUpperCase()}</div>`
-                : `<div class="logo-box">${companyName.charAt(0).toUpperCase()}</div>`
-              }
-              <div class="company-details">
-                <h1>${companyName}</h1>
-                <p>Official Receipt Document</p>
+          <div class="top-section">
+            <div class="left-col">
+              <div class="qr-box">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=2a2a2a&data=${encodeURIComponent('INV-' + sale.invoiceNumber)}" style="width: 100%; height: 100%; object-fit: contain" alt="QR Code" />
+              </div>
+              <div class="dark-box">
+                <div class="title">Date :</div>
+                <div class="value">${format(new Date(sale.createdAt || Date.now()), 'dd MMMM yyyy')}</div>
+                
+                <div class="title">Due Date :</div>
+                <div class="value">${sale.dueDate ? format(new Date(sale.dueDate), 'dd MMMM yyyy') : 'On Receipt / Cleared'}</div>
+                
+                <div class="divider"></div>
+                
+                <div class="title">To</div>
+                <div class="to-value">${sale.customer?.name || 'Walk-in Customer'}</div>
+                <div class="to-contact">
+                  ${sale.customer?.phone || 'No phone provided'}<br>
+                  ${sale.customer?.email ? sale.customer.email : ''}
+                </div>
               </div>
             </div>
-            <div class="receipt-title">
-              <div class="title-text">RECEIPT</div>
-              <div class="inv-number">#${sale.invoiceNumber}</div>
-              <div style="text-align: right">
-                 <div class="status-badge" style="background: ${statusBg}; color: ${statusColor};">
-                   ${statusText}
-                 </div>
+            
+            <div class="right-col">
+              <div class="brand">
+                ${logoUrl 
+                  ? `<img src="${logoUrl}" style="height: 38px; object-fit: contain;" alt="Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                     <div class="brand-icon" style="display: none;"></div>`
+                  : `<div class="brand-icon"></div>`
+                }
+                <div class="brand-text-wrapper">
+                  <span class="brand-name">${companyName}</span>
+                  <span class="brand-tagline">Official Receipt Document</span>
+                </div>
               </div>
-            </div>
-          </header>
-
-          <div class="meta-grid">
-            <div class="meta-box">
-              <span class="meta-title">Billed To</span>
-              <div class="meta-value">${sale.customer?.name || 'Walk-in Customer'}</div>
-              <div class="meta-sub">${sale.customer?.phone || 'No phone provided'}</div>
-            </div>
-            <div class="meta-box">
-              <span class="meta-title">Payment Information</span>
-              <div class="meta-value">${format(new Date(sale.createdAt || Date.now()), 'MMMM d, yyyy')}</div>
-              <div class="meta-sub">Recorded Payment: <strong style="color: var(--brand-dark)">${sale.paymentMethod || 'Various / Credit'}</strong></div>
+              
+              <h1 class="invoice-title">RECEIPT</h1>
+              <p class="invoice-subtitle">Document Payment Information</p>
+              
+              <div class="card-box">
+                <div class="card-col">
+                  <span class="label">Billed Amount:</span>
+                  <span class="val">${total.toLocaleString()} ETB</span>
+                </div>
+                <div class="divider"></div>
+                <div class="card-col">
+                  <span class="label">Invoice No:</span>
+                  <span class="val">#${sale.invoiceNumber}</span>
+                </div>
+              </div>
+              
+              <div class="payment-method-row">
+                <div class="method-label">
+                  <span>Payment</span>
+                  <span>Method</span>
+                  <div class="line"></div>
+                </div>
+                <div class="method-details">
+                  <span style="color:#94a3b8">Details / Account</span><br>
+                  ${sale.payments && sale.payments.length > 0 ? sale.payments.map((p: any) => p.method).join(', ') : (sale.paymentMethod || 'Walk-in / Cash')}<br>
+                  Payment Status: <strong>${statusText}</strong>
+                </div>
+              </div>
             </div>
           </div>
 

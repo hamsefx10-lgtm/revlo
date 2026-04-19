@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { generateShopReceiptPDF } from '@/lib/whatsapp/send-shop-receipt';
 
-
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
     try {
+        const url = new URL(request.url);
+        const action = url.searchParams.get('action');
+
         const sale = await (prisma as any).sale.findUnique({
             where: { id: params.id },
             include: {
@@ -27,13 +29,13 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         }
 
         // Return the PDF buffer with appropriate headers
-
+        const disposition = action === 'view' ? 'inline' : 'attachment';
 
         return new NextResponse(new Uint8Array(pdfBuffer), {
             status: 200,
             headers: {
                 'Content-Type': 'application/pdf',
-                'Content-Disposition': `attachment; filename="Invoice_${sale.invoiceNumber}.pdf"`,
+                'Content-Disposition': `${disposition}; filename="Invoice_${sale.invoiceNumber}.pdf"`,
             },
         });
     } catch (error) {
