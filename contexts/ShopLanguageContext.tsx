@@ -32,11 +32,11 @@ const translations: Record<Language, Record<string, string>> = {
         back: "Noqo",
         search: "Raadi",
         filter: "Shaandhee",
-        export: "Soo Saari",
+        export: "Soo Saarid",
         print: "Daabac",
         close: "Xidh",
         confirm: "Xaqiiji",
-        loading: "Waa la rarayo...",
+        loading: "Waa la rarayaa.",
         no_data: "Xog lama helin.",
         success: "Guul",
         error: "Khalad",
@@ -318,7 +318,7 @@ const translations: Record<Language, Record<string, string>> = {
         language: "Luuqadda",
         theme: "Muuqaalka",
         whatsapp: "WhatsApp",
-        connect_whatsapp: "WhatsApp Xidh",
+        connect_whatsapp: "WhatsApp-ka Xir",
         disconnect: "Ka Xidh",
 
         // === PAYROLL ===

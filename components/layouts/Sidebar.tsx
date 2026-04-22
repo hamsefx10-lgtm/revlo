@@ -7,7 +7,7 @@ import {
   Settings, X, UserCircle, LogOut,
   Landmark, UserCogIcon, Shield, Calendar, Menu, Wrench, Factory,
   Package, BarChart3, Scissors, MessageCircle, ShoppingCart, Tag, Mail,
-  ClipboardList, LayoutGrid, Hammer, Warehouse, HardDrive
+  ClipboardList, LayoutGrid, Hammer, Warehouse, HardDrive, Lock, CheckCircle
 } from 'lucide-react';
 
 import { usePathname } from 'next/navigation';
@@ -112,6 +112,8 @@ const menuConfig = {
       { name: 'Users', href: '/settings/users', icon: <Shield />, group: 'Administration' },
       { name: 'Fiscal Years', href: '/admin/fiscal-years', icon: <Calendar />, group: 'Administration' },
       { name: 'Contact Messages', href: '/admin/contact-messages', icon: <Mail />, group: 'Administration' },
+      { name: 'Period Locking', href: '/projects/accounting/periods', icon: <Lock />, group: 'Administration' },
+      { name: 'Approvals', href: '/projects/accounting/approvals', icon: <CheckCircle />, group: 'Administration' },
       { name: 'Platform Admin', href: '/admin', icon: <Wrench />, group: 'Administration' },
       { name: 'Download App', href: '/download', icon: <HardDrive />, group: 'Administration' },
     ]
@@ -147,6 +149,8 @@ const menuConfig = {
     ],
     admin: [
       { name: 'Users', href: '/settings/users', icon: <Shield />, group: 'Administration' },
+      { name: 'Period Locking', href: '/projects/accounting/periods', icon: <Lock />, group: 'Administration' },
+      { name: 'Approvals', href: '/projects/accounting/approvals', icon: <CheckCircle />, group: 'Administration' },
       { name: 'Download App', href: '/download', icon: <HardDrive />, group: 'Administration' },
     ]
   },
@@ -223,6 +227,8 @@ const menuConfig = {
     ],
     admin: [
       { name: 'Settings', href: '/settings', icon: <Wrench />, group: 'Administration' },
+      { name: 'Period Locking', href: '/projects/accounting/periods', icon: <Lock />, group: 'Administration' },
+      { name: 'Approvals', href: '/projects/accounting/approvals', icon: <CheckCircle />, group: 'Administration' },
       { name: 'Download App', href: '/download', icon: <HardDrive />, group: 'Administration' },
     ]
   },
@@ -395,6 +401,17 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   menuStructure = filterMenuByPlan(menuStructure);
+
+  // SECURE EXCLUSIVE ACCESS: Only the specific SUPER_ADMIN for company 6789dbe7-1d48-4775-a722-2f7fa8cbae38
+  // is allowed to see Period Locking and Approvals
+  const isExclusiveAdmin = role === 'SUPER_ADMIN' && currentUser?.companyId === '6789dbe7-1d48-4775-a722-2f7fa8cbae38';
+  
+  if (!isExclusiveAdmin && menuStructure.admin) {
+     menuStructure.admin = menuStructure.admin.filter(
+        (item: any) => item.name !== 'Period Locking' && item.name !== 'Approvals'
+     );
+  }
+
 
 
   const bottomItems = [

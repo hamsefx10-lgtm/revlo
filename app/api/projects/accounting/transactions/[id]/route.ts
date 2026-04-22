@@ -144,6 +144,34 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
     // Capture OLD accounts BEFORE update
     const oldTrx = await prisma.transaction.findUnique({ where: { id } });
+    if (!oldTrx) return NextResponse.json({ message: 'Dhaqdhaqaaqa lama helin.' }, { status: 404 });
+
+    // Enterprise Check: Is the old transaction or new transaction in a closed period?
+    const { checkFinancialPeriod } = await import('@/lib/accounting');
+    
+    // We assume you have companyId in the transaction. Since we don't have session companyId yet, use oldTrx.companyId
+    const isOldPeriodOpen = await checkFinancialPeriod(oldTrx.companyId, oldTrx.transactionDate);
+    const isNewPeriodOpen = await checkFinancialPeriod(oldTrx.companyId, new Date(transactionDate));
+
+    if (!isOldPeriodOpen || !isNewPeriodOpen) {
+      // Mustaqbalka, halkan waxaad ku abuuri kartaa ApprovalRequest
+      await prisma.approvalRequest.create({
+         data: {
+             type: 'EDIT_TRANSACTION',
+             entityType: 'Transaction',
+             entityId: id,
+             requestData: { description, amount, type, transactionDate, note, accountId, fromAccountId, toAccountId, projectId, expenseId, customerId, employeeId },
+             reason: 'Isku day in la beddelo xisaab ku jirta bil xiran.',
+             requestedById: oldTrx.userId || '', // Needs actual user ID from session
+             companyId: oldTrx.companyId,
+         }
+      }).catch(e => console.error("Failed to create approval request", e));
+
+      return NextResponse.json(
+        { message: 'Beddelidda waa la diiday: Xisaabta bishan waa la xiray. Fadlan u gudbi codsi Maamulaha (Admin).' },
+        { status: 403 }
+      );
+    }
 
     // Cusboonaysii dhaqdhaqaaq cusub
     const updatedTransaction = await prisma.transaction.update({
@@ -236,6 +264,30 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       return NextResponse.json({ message: 'Dhaqdhaqaaqa lama helin.' }, { status: 404 });
     }
 
+    // Enterprise Check: Is the period closed?
+    const { checkFinancialPeriod } = await import('@/lib/accounting');
+    const isPeriodOpen = await checkFinancialPeriod(existingTransaction.companyId, existingTransaction.transactionDate);
+    
+    if (!isPeriodOpen) {
+      // Mustaqbalka, halkan waxaad ku abuuri kartaa ApprovalRequest
+      await prisma.approvalRequest.create({
+         data: {
+             type: 'DELETE_TRANSACTION',
+             entityType: 'Transaction',
+             entityId: id,
+             requestData: existingTransaction as any,
+             reason: 'Isku day in la tirtiro xisaab ku jirta bil xiran.',
+             requestedById: existingTransaction.userId || '', // Needs actual user ID from session
+             companyId: existingTransaction.companyId,
+         }
+      }).catch(e => console.error("Failed to create approval request", e));
+
+      return NextResponse.json(
+        { message: 'Tirtiridda waa la diiday: Xisaabta bishan waa la xiray. Fadlan u gudbi codsi Maamulaha (Admin).' },
+        { status: 403 }
+      );
+    }
+
     // Tirtir dhaqdhaqaaqa
     let affectedAccountIds = new Set<string>();
     if (existingTransaction.accountId) affectedAccountIds.add(existingTransaction.accountId);
@@ -261,10 +313,32 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       });
 
       if (twinTransaction) {
+        // Log to Recycle Bin first
+        await prisma.deletedItem.create({
+          data: {
+            modelName: 'Transaction',
+            originalId: twinTransaction.id,
+            data: JSON.parse(JSON.stringify(twinTransaction)),
+            companyId: twinTransaction.companyId,
+            deletedBy: twinTransaction.userId || null, // Best to use session user ID
+          }
+        });
+
         await prisma.transaction.delete({ where: { id: twinTransaction.id } });
         if (twinTransaction.accountId) affectedAccountIds.add(twinTransaction.accountId);
       }
     }
+
+    // Log the main transaction to Recycle Bin before deleting
+    await prisma.deletedItem.create({
+      data: {
+        modelName: 'Transaction',
+        originalId: existingTransaction.id,
+        data: JSON.parse(JSON.stringify(existingTransaction)),
+        companyId: existingTransaction.companyId,
+        deletedBy: existingTransaction.userId || null, // Best to use session user ID
+      }
+    });
 
     // Tirtir kan hadda la doortay
     await prisma.transaction.delete({

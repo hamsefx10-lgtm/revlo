@@ -30,7 +30,15 @@ const getSystemChromePath = () => {
     } else if (process.platform === 'darwin') {
         return '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
     } else {
-        return '/usr/bin/google-chrome';
+        const paths = [
+            '/usr/bin/google-chrome',
+            '/usr/bin/chromium-browser',
+            '/usr/bin/chromium',
+            '/snap/bin/chromium'
+        ];
+        for (const p of paths) {
+            if (fs.existsSync(p)) return p;
+        }
     }
     return undefined;
 };

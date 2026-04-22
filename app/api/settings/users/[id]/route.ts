@@ -66,6 +66,18 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       );
     }
 
+    // SECURE: Prevent upgrading existing users to SUPER_ADMIN
+    if (role === 'SUPER_ADMIN') {
+       // Check if they were already SUPER_ADMIN. If they weren't, block it.
+       const currentUser = await prisma.user.findUnique({ where: { id: params.id }, select: { role: true } });
+       if (currentUser?.role !== 'SUPER_ADMIN') {
+           return NextResponse.json(
+             { message: 'Lama ogola in loo dallacsiiyo user cusub maamule guud (SUPER_ADMIN).' },
+             { status: 403 }
+           );
+       }
+    }
+
     // Check if email is being changed to one that already exists
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing && existing.id !== params.id) {

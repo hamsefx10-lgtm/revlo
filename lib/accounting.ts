@@ -179,3 +179,21 @@ export async function updateEmployeeSalaryStats(employeeId: string) {
     });
 }
 
+export async function checkFinancialPeriod(companyId: string, date: Date) {
+    if (!companyId || !date) return true; // allow if no context
+
+    const period = await prisma.financialPeriod.findFirst({
+        where: {
+            companyId: companyId,
+            startDate: { lte: date },
+            endDate: { gte: date },
+            isClosed: true
+        }
+    });
+
+    if (period) {
+        return false; // Period is closed, modification NOT allowed
+    }
+    return true; // Modification allowed
+}
+

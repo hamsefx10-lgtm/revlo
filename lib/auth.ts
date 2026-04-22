@@ -226,24 +226,6 @@ export async function getSessionCompanyUser() {
     return null; // Return null instead of throwing error
   }
   
-  // EXTRA SECURITY LAYER: Verify Concurrent Session Constraint
-  // This blocks the user globally from all protected backend actions if someone else logged in.
-  let isSessionValid = true;
-  if (!session.user.impersonatedBy && session.user.sessionToken) { // Impersonators bypass session lock
-    const dbUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { sessionToken: true }
-    });
-    if (dbUser && dbUser.sessionToken && dbUser.sessionToken !== session.user.sessionToken) {
-      console.warn(`[Auth Violation] User ${session.user.email} attempted to use invalid session token.`);
-      isSessionValid = false;
-    }
-  }
-
-  if (!isSessionValid) {
-    return null; // Forces API calls to return 401 Unauthorized, prompting UI logout
-  }
-
   return {
     companyId: session.user.companyId,
     userId: session.user.id,

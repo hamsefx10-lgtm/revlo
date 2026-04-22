@@ -54,6 +54,14 @@ export async function POST(request: Request) {
       );
     }
 
+    // SECURE: Prevent creating any new SUPER_ADMIN users
+    if (role === 'SUPER_ADMIN') {
+       return NextResponse.json(
+         { message: 'Lama ogola in la abuuro maamule cusub (SUPER_ADMIN).' },
+         { status: 403 }
+       );
+    }
+
     // Check if email already exists
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {

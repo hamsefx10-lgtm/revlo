@@ -381,11 +381,11 @@ export async function generateShopReceiptPDF(sale: any, company: any): Promise<B
             
             <div class="right-col">
               <div class="brand">
-                ${logoUrl 
-                  ? `<img src="${logoUrl}" style="height: 38px; object-fit: contain;" alt="Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                ${logoUrl
+        ? `<img src="${logoUrl}" style="height: 38px; object-fit: contain;" alt="Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
                      <div class="brand-icon" style="display: none;"></div>`
-                  : `<div class="brand-icon"></div>`
-                }
+        : `<div class="brand-icon"></div>`
+      }
                 <div class="brand-text-wrapper">
                   <span class="brand-name">${companyName}</span>
                   <span class="brand-tagline">Official Receipt Document</span>
@@ -473,10 +473,10 @@ export async function generateShopReceiptPDF(sale: any, company: any): Promise<B
                 <div class="payment-details">
                    <span class="payment-label">Amount Paid</span>
                    <span class="payment-meta">
-                     ${sale.payments && sale.payments.length > 0 
-                        ? sale.payments.map((p: any) => `Via ${p.method}`).join(' & ')
-                        : `Via ${sale.paymentMethod || 'Recorded Payment'}`
-                     }
+                     ${sale.payments && sale.payments.length > 0
+        ? sale.payments.map((p: any) => `Via ${p.method}`).join(' & ')
+        : `Via ${sale.paymentMethod || 'Recorded Payment'}`
+      }
                    </span>
                 </div>
                 <span class="paid-value">${paid.toLocaleString()} ETB</span>
@@ -584,7 +584,7 @@ async function generateAISomaliMessage(sale: any, companyName: string, type: 'SA
     const balance = Math.max(0, total - paidSoFar);
 
     const finalFallback = type === 'SALE'
-      ? `Salaamu Calaykum *${customerName}*.\n\nWaxaan halkaan kuugu soo lifaaqnay rasiidka rasmiga ah ee shirkadda *${companyName}*.\n\n*Invoice:* #${sale.invoiceNumber}\n*Wadarta:* ${total.toLocaleString()} ETB\n*Lacagta:* ${paidSoFar.toLocaleString()} ETB\n*Haraaga:* ${balance.toLocaleString()} ETB\n\nWaad ku mahadsan tahay.`
+      ? `Salaamu Calaykum *${customerName}*.\n\nWaxaan halkaan kuugu soo lifaaqnay rasiidka rasmiga ah ee shirkadda *${companyName}*.\n\n*Invoice:* #${sale.invoiceNumber}\n*Wadarta guud ee alaabta: :* ${total.toLocaleString()} ETB\n*Lacagta aad bixisay :* ${paidSoFar.toLocaleString()} ETB\n*Haraaga:* ${balance.toLocaleString()} ETB\n\nWaad ku mahadsan tahay.`
       : `Salaamu Calaykum *${customerName}*.\n\nWaad ku mahadsan tahay lacag bixintaada shirkadda *${companyName}*.\n\n*Rasiidka:* #${sale.invoiceNumber}\n*Lacag bixinta hadda:* ${Number(paymentAmount).toLocaleString()} ETB\n*Haraaga cusub:* ${balance.toLocaleString()} ETB\n\nWaad ku mahadsan tahay.`;
     return finalFallback;
   }
@@ -628,7 +628,7 @@ export async function sendShopReceiptViaWhatsApp(
     const jid = formattedPhone.endsWith('@c.us') ? formattedPhone : `${formattedPhone}@c.us`;
     logToFile(`[WhatsApp] Final target JID: ${jid}`);
 
-    const baseUrl = process.env.NEXTAUTH_URL || 'https://revlo.me';
+    const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://revlo.me';
     const receiptLink = `${baseUrl}/receipt/shop/${sale.id}`;
     const downloadLink = `${baseUrl}/api/public/shop/receipt/${sale.id}`;
 
@@ -669,9 +669,13 @@ export async function sendShopReceiptViaWhatsApp(
     const fmtPaid = paidSoFar.toLocaleString().replace(/[^\d\.,]/g, '');
     const fmtBalance = balance.toLocaleString().replace(/[^\d\.,]/g, '');
 
+    const balanceWarning = balance > 0 
+      ? `\n\n*⚠️ Fiiro Gaar ah (Deynta):*\n- Haddii aad doonayso inaad Dollar ku bixiso deyntan, waa mid la aqbali karo iyadoo la eegayo sarifka maalinta.\n- Haddii deyntan bixinteeda ay dhaafto muddo *Hal Isbuuc (7 Casho)* ah, haraaga ETB ah waxaa si toos ah loogu bedeli doonaa *Dollar* iyadoo lagu xisaabinayo sarifka maalintaas.`
+      : '';
+
     let fixedMessage = type === 'SALE'
-      ? `Salaamu Calaykum *${customerName}*.\n\nKu soo dhawaada *${companyName}*.\n\n*Faahfaahinta Lacagta:*\n- Wadarta Guud: ${fmtTotal} ETB\n- Lacagta: ${fmtPaid} ETB\n- Haraaga: ${fmtBalance} ETB\n\n*Link-ka:* ${receiptLink}\n*PDF:* ${downloadLink}\n\nMahadsanid.`
-      : `Salaamu Calaykum *${customerName}*.\n\nWaad ku mahadsan tahay lacag bixintaada *${companyName}*.\n\n*Faahfaahinta Lacagta:*\n- Lacagta aad bixisay: ${Number(paymentAmount).toLocaleString()} ETB\n- Haraagaaga cusub: ${fmtBalance} ETB\n\n*Link-ka Rasiidka:* ${receiptLink}\n*PDF:* ${downloadLink}\n\nMahadsanid.`;
+      ? `Salaamu Calaykum *${customerName}*.\n\nKu soo dhawaada dukaanka *${companyName}*.\nHalkan waxaa ah faah-faahinta iibkaaga:\n\n*Wadarta Guud:* ${fmtTotal} ETB\n*Lacagta la bixiyay:* ${fmtPaid} ETB\n*Haraaga (Deynta):* ${fmtBalance} ETB${balanceWarning}\n\n*🔗 Link-ga Rasiidka:* ${receiptLink}\n*📄 Rasiidka PDF-ka:* ${downloadLink}\n\nWaad ku mahadsan tahay macaamilkaaga wacan!`
+      : `Salaamu Calaykum *${customerName}*.\n\nWaan guddoonay lacag bixintaada. Waad ku mahadsan tahay inaad la macaamisho *${companyName}*.\n\n*Faah-faahinta Lacag Bixinta Hadda:*\n*Lacagta shubatay:* ${Number(paymentAmount).toLocaleString()} ETB\n*Haraaga (Deynta kugu hartay):* ${fmtBalance} ETB${balanceWarning}\n\n*🔗 Link-ga Rasiidka:* ${receiptLink}\n*📄 Rasiidka PDF-ka:* ${downloadLink}\n\nMahadsanid!`;
 
     // Explicitly clean message of any potential non-printable characters
     fixedMessage = fixedMessage.replace(/[\u0000-\u0008\u000B-\u000C\u000E-\u001F\u007F-\u009F]/g, "");

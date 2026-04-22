@@ -173,7 +173,7 @@ export default function AccountingPage() {
       setProjectDebtTransactions(projectDebtTransactionsData.transactions || []);
 
       // NEW: Fetch debts report (true aggregation)
-      const debtsReportRes = await fetch('/api/projects/accounting/reports/debts');
+      const debtsReportRes = await fetch('/api/reports/debts');
       const debtsReport = await debtsReportRes.json();
 
       setOverviewStats({

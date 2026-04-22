@@ -226,6 +226,30 @@ export async function POST(request: Request) {
       if (!employee) return NextResponse.json({ message: 'Shaqaalaha la xiriira lama helin.' }, { status: 400 });
     }
 
+    // Enterprise Check: Is the period closed?
+    const { checkFinancialPeriod } = await import('@/lib/accounting');
+    const isPeriodOpen = await checkFinancialPeriod(companyId, new Date(transactionDate));
+    
+    if (!isPeriodOpen) {
+      // Mustaqbalka, halkan waxaad ku abuuri kartaa ApprovalRequest
+      await prisma.approvalRequest.create({
+         data: {
+             type: 'CREATE_TRANSACTION',
+             entityType: 'Transaction',
+             entityId: 'NEW',
+             requestData: { description, amount, type, transactionDate, note, accountId, projectId, expenseId, customerId, vendorId, employeeId },
+             reason: 'Isku day in la geliyo xisaab bil xiran.',
+             requestedById: userId,
+             companyId: companyId,
+         }
+      }).catch(e => console.error("Failed to create approval request", e));
+
+      return NextResponse.json(
+        { message: 'Gelinta waa la diiday: Xisaabta bishan waa la xiray. Fadlan u gudbi codsi Maamulaha (Admin).' },
+        { status: 403 }
+      );
+    }
+
     // Abuur dhaqdhaqaaq cusub
     const newTransaction = await prisma.transaction.create({
       data: {

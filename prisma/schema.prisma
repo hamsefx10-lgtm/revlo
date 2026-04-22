@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -69,6 +70,10 @@ model User {
   wallet            Wallet?
   projects          Project[]          @relation("ProjectMembers")
   pageVisits        PageVisit[]
+
+  closedPeriods     FinancialPeriod[]  @relation("UserClosedPeriods")
+  approvalRequests  ApprovalRequest[]  @relation("UserApprovalRequests")
+  approvalsGiven    ApprovalRequest[]  @relation("UserApprovals")
 
   @@map("users")
 }
@@ -175,6 +180,8 @@ model Company {
 
   shopShareholders        ShopShareholder[]
   shopDividends           ShopDividend[]
+  financialPeriods        FinancialPeriod[]
+  approvalRequests        ApprovalRequest[]
 
   @@map("companies")
 }
@@ -1393,4 +1400,44 @@ model ShopDividend {
   company       Company         @relation(fields: [companyId], references: [id])
 
   @@map("shop_dividends")
+}
+
+model FinancialPeriod {
+  id          String   @id @default(uuid()) @map("_id")
+  name        String   // e.g. "March 2026"
+  startDate   DateTime
+  endDate     DateTime
+  isClosed    Boolean  @default(false)
+  closedAt    DateTime?
+  closedById  String?
+  companyId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company     Company  @relation(fields: [companyId], references: [id])
+  closedBy    User?    @relation("UserClosedPeriods", fields: [closedById], references: [id])
+
+  @@unique([name, companyId])
+  @@map("financial_periods")
+}
+
+model ApprovalRequest {
+  id           String   @id @default(uuid()) @map("_id")
+  type         String   // e.g. "DELETE_TRANSACTION", "EDIT_TRANSACTION"
+  entityType   String   // e.g. "Transaction"
+  entityId     String
+  requestData  Json     // The payload to be executed upon approval
+  reason       String?
+  status       String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  requestedById String
+  approvedById  String?
+  companyId    String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  company      Company  @relation(fields: [companyId], references: [id])
+  requestedBy  User     @relation("UserApprovalRequests", fields: [requestedById], references: [id])
+  approvedBy   User?    @relation("UserApprovals", fields: [approvedById], references: [id])
+
+  @@map("approval_requests")
 }
