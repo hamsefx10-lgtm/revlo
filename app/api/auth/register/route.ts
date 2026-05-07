@@ -11,7 +11,11 @@ import { authRateLimiter, getClientIP } from '@/lib/rate-limiter';
 const registerSchema = z.object({
   fullName: z.string().min(2, "Magacu waa inuu ka badnaadaa 2 xaraf"),
   email: z.string().email("Email-ku sax maaha"),
-  password: z.string().min(6, "Password-ku waa inuu ugu yaraan 6 xaraf ka koobnaadaa"),
+  phone: z.string().min(8, "Lambarka taleefanku waa inuu ugu yaraan ka koobnaadaa 8 lambar"),
+  password: z.string()
+    .min(8, "Password-ku waa inuu ugu yaraan 8 xaraf ka koobnaadaa")
+    .regex(/[A-Z]/, "Password-ku waa inuu ku jiraa ugu yaraan hal xaraf oo weyn")
+    .regex(/[0-9]/, "Password-ku waa inuu ku jiraa ugu yaraan hal lambar"),
   companyName: z.string().min(2, "Magaca shirkaddu waa inuu ka badnaadaa 2 xaraf"),
   planType: z.enum(['PROJECTS_ONLY', 'FACTORIES_ONLY', 'SHOPS_ONLY', 'COMBINED']).optional(),
 });
@@ -39,7 +43,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { fullName, email, password, companyName, planType } = result.data;
+    const { fullName, email, phone, password, companyName, planType } = result.data;
 
     // 2. Hubi haddii user-ku horey u jiray (Check if user already exists)
     const existingUser = await prisma.user.findUnique({
@@ -77,6 +81,7 @@ export async function POST(request: NextRequest) {
       data: {
         fullName,
         email,
+        phone,
         password: hashedPassword, // Include the hashed password
         role: 'ADMIN', // Cast to Role enum string
         companyId: company.id,
@@ -188,7 +193,53 @@ export async function POST(request: NextRequest) {
        // We DON'T block the registration if the alert agent breaks!
     }
 
-    // 8. Jawaab Guul ah (Success Response)
+    // 8. ✉️ WELCOME MESSAGES (NEW) ✉️
+    try {
+        const { sendEmail } = require('@/lib/email');
+        const { sendWelcomeWhatsApp } = require('@/lib/whatsapp/send-welcome');
+
+        const welcomeHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                <div style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; padding: 40px 20px; text-align: center;">
+                    <h1 style="margin: 0; font-size: 28px;">Ku soo dhawaaw Revlo!</h1>
+                    <p style="margin: 10px 0 0; opacity: 0.9;">Waan ku faraxsanahay inaad nagu soo biirtay.</p>
+                </div>
+                <div style="padding: 40px; background-color: white;">
+                    <p style="font-size: 18px; color: #1f2937; margin-bottom: 20px;">Salaamu Calaykum <b>${fullName}</b>,</p>
+                    <p style="color: #4b5563; line-height: 1.6; margin-bottom: 24px;">
+                        Ku soo dhawaaw <b>Revlo Business Solutions</b>! Waan ku faraxsanahay inaad nagu soo biirtay. 
+                        Akoonkaaga shirkadda <b>${companyName}</b> si guul leh ayaa loo abuuray.
+                    </p>
+                    <p style="color: #4b5563; line-height: 1.6; margin-bottom: 24px;">
+                        Hadda waxaad diyaar u tahay inaad si casri ah u maamusho ganacsigaaga, kharashaadkaaga, iyo mashaariicdaada meel kasta oo aad joogto.
+                    </p>
+                    <div style="text-align: center; margin: 35px 0;">
+                        <a href="${process.env.NEXTAUTH_URL}/login" style="background-color: #16a34a; color: white; padding: 16px 32px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px rgba(22, 163, 74, 0.2);">Gasho System-ka</a>
+                    </div>
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+                    <p style="color: #9ca3af; font-size: 14px; text-align: center; margin: 0;">
+                        Guul ayaan kuu rajaynaynaa!<br>
+                        <b>Revlo Team</b>
+                    </p>
+                </div>
+            </div>
+        `;
+
+        // A. Send Welcome Email
+        await sendEmail({
+            to: email,
+            subject: 'Ku soo dhawaaw Revlo Business Solutions!',
+            html: welcomeHtml
+        });
+
+        // B. Send Welcome WhatsApp
+        await sendWelcomeWhatsApp(phone, fullName, companyName);
+
+    } catch (msgError) {
+        console.error('Welcome Messages Failed:', msgError);
+    }
+
+    // 9. Jawaab Guul ah (Success Response)
     return NextResponse.json(
       {
         message: 'User-ka si guul leh ayaa loo diiwaan geliyay!',

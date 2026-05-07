@@ -12,11 +12,13 @@ import {
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
+import { useShopLang } from '@/contexts/ShopLanguageContext';
 
 export default function EditProductPage() {
     const params = useParams();
     const router = useRouter();
     const { toast } = useToast();
+    const { t } = useShopLang();
     const [isLoading, setIsLoading] = useState(false);
     const [isFetching, setIsFetching] = useState(true);
 
@@ -170,16 +172,16 @@ export default function EditProductPage() {
                 <div>
                     <div className="flex items-center gap-2 mb-2">
                         <Link href={`/shop/inventory/${params.id}`} className="text-gray-400 hover:text-[#3498DB] transition-colors flex items-center gap-1 text-xs font-bold uppercase tracking-wider">
-                            <ArrowLeft size={14} /> Back to Product
+                            <ArrowLeft size={14} /> {t('back')}
                         </Link>
                     </div>
                     <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
                         <div className="p-3 bg-gradient-to-br from-[#F39C12] to-[#E67E22] rounded-xl shadow-lg shadow-orange-500/20 text-white">
                             <Package size={28} />
                         </div>
-                        Edit Product
+                        {t('edit_product')}
                     </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-2 ml-1 text-sm">Update product information and pricing.</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-2 ml-1 text-sm">{t('update_product_info')}</p>
                 </div>
             </div>
 
@@ -190,11 +192,11 @@ export default function EditProductPage() {
                     {/* LEFT COLUMN */}
                     <div className="space-y-6">
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2 border-b border-gray-100 dark:border-gray-700 pb-3">
-                            <Package size={18} className="text-[#3498DB]" /> Basic Information
+                            <Package size={18} className="text-[#3498DB]" /> {t('basic_information')}
                         </h3>
 
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Product Name</label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t('name')}</label>
                             <input
                                 type="text"
                                 value={formData.name}
@@ -207,13 +209,13 @@ export default function EditProductPage() {
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="flex justify-between items-center text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                                    Category
+                                    {t('category')}
                                     <button
                                         type="button"
                                         onClick={() => setIsCategoryModalOpen(true)}
                                         className="text-[#3498DB] hover:text-[#2980B9] text-[10px] flex items-center gap-1"
                                     >
-                                        + New
+                                        + {t('add_new')}
                                     </button>
                                 </label>
                                 <select
@@ -226,13 +228,13 @@ export default function EditProductPage() {
                             </div>
                             <div>
                                 <label className="flex justify-between items-center text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                                    Supplier
+                                    {t('supplier')}
                                     <button
                                         type="button"
                                         onClick={() => setIsSupplierModalOpen(true)}
                                         className="text-[#3498DB] hover:text-[#2980B9] text-[10px] flex items-center gap-1"
                                     >
-                                        + New
+                                        + {t('add_new')}
                                     </button>
                                 </label>
                                 <select
@@ -240,14 +242,14 @@ export default function EditProductPage() {
                                     onChange={(e) => handleChange('supplierId', e.target.value)}
                                     className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all appearance-none cursor-pointer text-gray-700 dark:text-gray-300"
                                 >
-                                    <option value="">Select Supplier</option>
+                                    <option value="">{t('supplier')}</option>
                                     {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                                 </select>
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Description</label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t('description')}</label>
                             <textarea
                                 rows={4}
                                 value={formData.description}
@@ -260,12 +262,12 @@ export default function EditProductPage() {
                     {/* RIGHT COLUMN */}
                     <div className="space-y-6">
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2 border-b border-gray-100 dark:border-gray-700 pb-3">
-                            <AlertCircle size={18} className="text-[#2ECC71]" /> Pricing & Stock
+                            <AlertCircle size={18} className="text-[#2ECC71]" /> {t('pricing_and_stock')}
                         </h3>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Cost Price</label>
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t('price')}</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 font-bold">ETB</div>
                                     <input
@@ -278,7 +280,7 @@ export default function EditProductPage() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Selling Price</label>
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t('price')}</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 font-bold">ETB</div>
                                     <input
@@ -294,18 +296,18 @@ export default function EditProductPage() {
 
                         {/* Profit Preview */}
                         <div className="p-4 rounded-xl bg-[#2ECC71]/10 border border-[#2ECC71]/20">
-                            <p className="text-xs font-bold text-gray-500 uppercase mb-2">Profit Margin</p>
+                            <p className="text-xs font-bold text-gray-500 uppercase mb-2">{t('profit_margin_label')}</p>
                             <p className="text-2xl font-black text-[#2ECC71]">
                                 {((((formData.sellingPrice - formData.costPrice) / formData.sellingPrice) * 100) || 0).toFixed(1)}%
                             </p>
                             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                Profit per unit: <span className="font-bold">ETB {(formData.sellingPrice - formData.costPrice).toLocaleString()}</span>
+                                {t('profit_per_unit')} <span className="font-bold">ETB {(formData.sellingPrice - formData.costPrice).toLocaleString()}</span>
                             </p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Current Stock</label>
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t('stock_intelligence')}</label>
                                 <input
                                     type="number"
                                     value={formData.stock}
@@ -315,7 +317,7 @@ export default function EditProductPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Min. Stock Alert</label>
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t('min_stock_alert')}</label>
                                 <input
                                     type="number"
                                     value={formData.minStock}
@@ -331,14 +333,14 @@ export default function EditProductPage() {
                 {/* Footer Actions */}
                 <div className="bg-gray-50 dark:bg-gray-800/50 p-6 border-t border-gray-100 dark:border-gray-800 flex justify-end gap-3">
                     <Link href={`/shop/inventory/${params.id}`} className="px-6 py-3 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
-                        Cancel
+                        {t('cancel')}
                     </Link>
                     <button
                         type="submit"
                         disabled={isLoading}
                         className="px-8 py-3 rounded-xl bg-[#2ECC71] hover:bg-[#27AE60] text-white font-bold shadow-lg shadow-green-500/20 hover:shadow-green-500/30 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                        {isLoading ? 'Updating...' : <><CheckCircle2 size={18} /> Update Product</>}
+                        {isLoading ? t('saving') : <><CheckCircle2 size={18} /> {t('update_product')}</>}
                     </button>
                 </div>
 
@@ -348,11 +350,11 @@ export default function EditProductPage() {
             {isCategoryModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
                     <form onSubmit={handleCreateCategory} className="bg-white dark:bg-[#1f2937] rounded-2xl w-full max-w-sm p-6 shadow-2xl">
-                        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Add New Category</h3>
+                        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">{t('add_new_category')}</h3>
                         <input
                             autoFocus
                             type="text"
-                            placeholder="Category Name"
+                            placeholder={t('category_name')}
                             value={newCategoryName}
                             onChange={e => setNewCategoryName(e.target.value)}
                             className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none mb-4 font-medium"
@@ -363,14 +365,14 @@ export default function EditProductPage() {
                                 onClick={() => setIsCategoryModalOpen(false)}
                                 className="px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 font-bold text-sm"
                             >
-                                Cancel
+                                {t('cancel')}
                             </button>
                             <button
                                 type="submit"
                                 disabled={!newCategoryName}
                                 className="px-6 py-2 rounded-lg bg-[#3498DB] text-white font-bold text-sm hover:bg-blue-600 disabled:opacity-50"
                             >
-                                Add Category
+                                {t('add_category')}
                             </button>
                         </div>
                     </form>
@@ -380,18 +382,18 @@ export default function EditProductPage() {
             {isSupplierModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
                     <form onSubmit={handleCreateSupplier} className="bg-white dark:bg-[#1f2937] rounded-2xl w-full max-w-sm p-6 shadow-2xl">
-                        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Add New Supplier</h3>
+                        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">{t('add_new_supplier')}</h3>
                         <input
                             autoFocus
                             type="text"
-                            placeholder="Supplier Name"
+                            placeholder={t('supplier_name')}
                             value={newSupplierData.name}
                             onChange={e => setNewSupplierData(prev => ({ ...prev, name: e.target.value }))}
                             className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none mb-3 font-medium"
                         />
                         <input
                             type="text"
-                            placeholder="Contact Info (Optional)"
+                            placeholder={t('contact_info_optional')}
                             value={newSupplierData.contact}
                             onChange={e => setNewSupplierData(prev => ({ ...prev, contact: e.target.value }))}
                             className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none mb-4 font-medium"
@@ -402,14 +404,14 @@ export default function EditProductPage() {
                                 onClick={() => setIsSupplierModalOpen(false)}
                                 className="px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 font-bold text-sm"
                             >
-                                Cancel
+                                {t('cancel')}
                             </button>
                             <button
                                 type="submit"
                                 disabled={!newSupplierData.name}
                                 className="px-6 py-2 rounded-lg bg-[#3498DB] text-white font-bold text-sm hover:bg-blue-600 disabled:opacity-50"
                             >
-                                Add Supplier
+                                {t('add_category')}
                             </button>
                         </div>
                     </form>

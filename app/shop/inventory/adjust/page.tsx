@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/use-toast';
+import { useShopLang } from '@/contexts/ShopLanguageContext';
 
 interface Product {
     id: string;
@@ -25,6 +26,7 @@ interface Product {
 export default function StockAdjustmentPage() {
     const router = useRouter();
     const { toast } = useToast();
+    const { t, lang } = useShopLang();
 
     // States
     const [search, setSearch] = useState('');
@@ -108,8 +110,8 @@ export default function StockAdjustmentPage() {
                     <ArrowLeft size={24} className="text-gray-500" />
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Stock Adjustment</h1>
-                    <p className="text-sm text-gray-500">Correct inventory levels for damages, loss, or differences.</p>
+                    <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">{t('stock_adjustment')}</h1>
+                    <p className="text-sm text-gray-500">{t('correct_inventory_msg')}</p>
                 </div>
             </div>
 
@@ -118,14 +120,14 @@ export default function StockAdjustmentPage() {
                 <div className="bg-white dark:bg-[#1f2937] border border-gray-100 dark:border-gray-800 rounded-[2rem] p-6 shadow-sm">
                     <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                         <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-black">1</span>
-                        Select Product
+                        {t('select_product')}
                     </h2>
 
                     <div className="relative mb-4">
                         <Search className="absolute left-4 top-3.5 text-gray-400" size={20} />
                         <input
                             type="text"
-                            placeholder="Search by name or SKU..."
+                            placeholder={t('search_name_sku')}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
@@ -136,7 +138,7 @@ export default function StockAdjustmentPage() {
                     {search.length > 1 && (
                         <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
                             {loading && <div className="text-center py-4 text-gray-400"><Loader2 className="w-6 h-6 animate-spin mx-auto" /></div>}
-                            {!loading && products.length === 0 && <div className="text-center py-4 text-gray-400">No products found</div>}
+                            {!loading && products.length === 0 && <div className="text-center py-4 text-gray-400">{t('no_data')}</div>}
 
                             {products.map(p => (
                                 <button
@@ -154,7 +156,7 @@ export default function StockAdjustmentPage() {
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-sm font-bold text-gray-900 dark:text-white">{p.stock} in stock</p>
+                                        <p className="text-sm font-bold text-gray-900 dark:text-white">{p.stock} {lang === 'so' ? 'kaydka ku jira' : 'in stock'}</p>
                                         <p className="text-xs text-gray-500">{p.category}</p>
                                     </div>
                                 </button>
@@ -171,11 +173,11 @@ export default function StockAdjustmentPage() {
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-gray-900 dark:text-white text-lg">{selectedProduct.name}</h3>
-                                    <p className="text-sm text-gray-500">Current Stock: <span className="font-bold text-blue-600">{selectedProduct.stock}</span></p>
+                                    <p className="text-sm text-gray-500">{t('current_stock_label')} <span className="font-bold text-blue-600">{selectedProduct.stock}</span></p>
                                 </div>
                             </div>
                             <button onClick={() => setSelectedProduct(null)} className="text-sm font-bold text-red-500 hover:underline">
-                                Change
+                                {t('change_label')}
                             </button>
                         </div>
                     )}
@@ -186,7 +188,7 @@ export default function StockAdjustmentPage() {
                     <div className="bg-white dark:bg-[#1f2937] border border-gray-100 dark:border-gray-800 rounded-[2rem] p-6 shadow-sm animate-in fade-in slide-in-from-bottom-4">
                         <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
                             <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-black">2</span>
-                            Adjustment Details
+                            {t('adjustment_details')}
                         </h2>
 
                         <form onSubmit={handleSubmit} className="space-y-6">
@@ -198,7 +200,7 @@ export default function StockAdjustmentPage() {
                                     className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${action === 'remove' ? 'border-red-500 bg-red-50 dark:bg-red-900/10 text-red-600' : 'border-gray-100 dark:border-gray-800 hover:border-red-200 text-gray-500'}`}
                                 >
                                     <div className="p-2 rounded-full bg-red-100 dark:bg-red-900/30 text-red-500"><AlertTriangle size={20} /></div>
-                                    <span className="font-bold">Remove Stock</span>
+                                    <span className="font-bold">{t('remove_stock')}</span>
                                 </button>
                                 <button
                                     type="button"
@@ -206,13 +208,13 @@ export default function StockAdjustmentPage() {
                                     className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${action === 'add' ? 'border-green-500 bg-green-50 dark:bg-green-900/10 text-green-600' : 'border-gray-100 dark:border-gray-800 hover:border-green-200 text-gray-500'}`}
                                 >
                                     <div className="p-2 rounded-full bg-green-100 dark:bg-green-900/30 text-green-500"><Check size={20} /></div>
-                                    <span className="font-bold">Add Stock</span>
+                                    <span className="font-bold">{lang === 'so' ? 'Ku Dar Kaydka' : 'Add Stock'}</span>
                                 </button>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Reason</label>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{t('reason')}</label>
                                     <select
                                         value={reason}
                                         onChange={e => setReason(e.target.value)}
@@ -220,22 +222,22 @@ export default function StockAdjustmentPage() {
                                     >
                                         {action === 'remove' ? (
                                             <>
-                                                <option value="Damage">Damage</option>
-                                                <option value="Loss">Loss / Theft</option>
-                                                <option value="Expired">Expired</option>
-                                                <option value="Correction">Inventory Correction</option>
+                                                <option value="Damage">{t('reason_damage')}</option>
+                                                <option value="Loss">{t('reason_loss')}</option>
+                                                <option value="Expired">{t('reason_expired')}</option>
+                                                <option value="Correction">{t('reason_correction')}</option>
                                             </>
                                         ) : (
                                             <>
-                                                <option value="Correction">Inventory Correction</option>
-                                                <option value="Found">Found Item</option>
-                                                <option value="Return">Customer Return</option>
+                                                <option value="Correction">{t('reason_correction')}</option>
+                                                <option value="Found">{t('reason_found')}</option>
+                                                <option value="Return">{t('reason_return')}</option>
                                             </>
                                         )}
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Quantity</label>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{t('quantity')}</label>
                                     <input
                                         type="number"
                                         min="1"
@@ -247,12 +249,12 @@ export default function StockAdjustmentPage() {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Notes</label>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{t('notes')}</label>
                                 <textarea
                                     rows={2}
                                     value={notes}
                                     onChange={e => setNotes(e.target.value)}
-                                    placeholder="Optional details..."
+                                    placeholder={lang === 'so' ? 'Faahfaahin dheeri ah...' : 'Optional details...'}
                                     className="w-full p-3 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 font-medium outline-none"
                                 />
                             </div>
@@ -264,7 +266,7 @@ export default function StockAdjustmentPage() {
                             >
                                 {submitting ? <Loader2 className="animate-spin" /> : (
                                     <>
-                                        Confirm {action === 'remove' ? 'Removal' : 'Addition'}
+                                        {action === 'remove' ? t('confirm_removal') : t('confirm_addition')}
                                         <ArrowRight size={18} />
                                     </>
                                 )}

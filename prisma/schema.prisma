@@ -136,6 +136,10 @@ model Company {
   requireReceiptNumber    Boolean                  @default(false)
   whatsappSessionStatus   String?                  @default("DISCONNECTED")
   whatsappNumber          String?
+  fiscalYearStartMonth    Int                      @default(1)
+  scanCredits             Int                      @default(10)
+  scanCreditsUsed         Int                      @default(0)
+  scanPlan                String?                  @default("FREE_TRIAL")
   accounts                Account[]
   auditLogs               AuditLog[]
   billOfMaterials         BillOfMaterial[]
@@ -182,6 +186,10 @@ model Company {
   shopDividends           ShopDividend[]
   financialPeriods        FinancialPeriod[]
   approvalRequests        ApprovalRequest[]
+  scanLogs                ScanLog[]
+  aiConversations         AiConversation[]
+  aiInsights              AiInsight[]
+  aiProfile               Json?
 
   @@map("companies")
 }
@@ -1079,6 +1087,7 @@ model Sale {
   realCustomer         Customer?   @relation(fields: [realCustomerId], references: [id])
   user                 User        @relation("UserSales", fields: [userId], references: [id])
   employee             Employee?   @relation(fields: [employeeId], references: [id])
+  receiptUrl           String?
 
   @@map("sales")
 }
@@ -1130,6 +1139,7 @@ model PurchaseOrder {
   project          Project?            @relation(fields: [projectId], references: [id])
   user             User                @relation("UserPurchaseOrders", fields: [userId], references: [id])
   vendor           ShopVendor          @relation(fields: [vendorId], references: [id])
+  receiptUrl       String?
 
   @@unique([poNumber, companyId])
   @@map("purchase_orders")
@@ -1441,3 +1451,59 @@ model ApprovalRequest {
 
   @@map("approval_requests")
 }
+
+model ScanLog {
+  id         String   @id @default(uuid()) @map("_id")
+  companyId  String
+  userId     String
+  itemsFound Int      @default(0)
+  success    Boolean  @default(true)
+  errorMsg   String?
+  createdAt  DateTime @default(now())
+  company    Company  @relation(fields: [companyId], references: [id])
+
+  @@map("scan_logs")
+}
+
+model AiConversation {
+  id        String      @id @default(uuid()) @map("_id")
+  companyId String
+  userId    String
+  title     String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  messages  AiMessage[]
+  company   Company     @relation(fields: [companyId], references: [id])
+
+  @@map("ai_conversations")
+}
+
+model AiMessage {
+  id             String         @id @default(uuid()) @map("_id")
+  conversationId String
+  role           String         // user, model
+  content        String
+  imagePath      String?
+  metadata       Json?          // For storing structured data like table items
+  createdAt      DateTime       @default(now())
+  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("ai_messages")
+}
+
+model AiInsight {
+  id          String   @id @default(uuid()) @map("_id")
+  companyId   String
+  type        String   // WARNING, ADVICE, PROFIT, REMINDER
+  title       String
+  content     String
+  isRead      Boolean  @default(false)
+  priority    String   @default("MEDIUM") // LOW, MEDIUM, HIGH
+  metadata    Json?    // Contextual data (e.g. productId)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  company     Company  @relation(fields: [companyId], references: [id])
+
+  @@map("ai_insights")
+}
+

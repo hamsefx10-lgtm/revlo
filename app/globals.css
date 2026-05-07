@@ -10,7 +10,6 @@ html {
 
 body {
   @apply bg-lightGray text-darkGray selection:bg-primary/30 selection:text-primary;
-  font-family: 'Inter', sans-serif;
   margin: 0;
   padding: 0;
   box-sizing: border-box;

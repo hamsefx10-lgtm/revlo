@@ -406,8 +406,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   // is allowed to see Period Locking and Approvals
   const isExclusiveAdmin = role === 'SUPER_ADMIN' && currentUser?.companyId === '6789dbe7-1d48-4775-a722-2f7fa8cbae38';
   
-  if (!isExclusiveAdmin && menuStructure.admin) {
-     menuStructure.admin = menuStructure.admin.filter(
+  if (!isExclusiveAdmin && 'admin' in menuStructure && Array.isArray((menuStructure as any).admin)) {
+     (menuStructure as any).admin = (menuStructure as any).admin.filter(
         (item: any) => item.name !== 'Period Locking' && item.name !== 'Approvals'
      );
   }

@@ -4,8 +4,6 @@ import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 import { startOfDay, endOfDay, format, eachDayOfInterval } from 'date-fns';
 
-
-
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
@@ -34,14 +32,11 @@ export async function GET(req: NextRequest) {
         const sales = await prisma.sale.findMany({
             where: {
                 companyId: currentUser.companyId,
-                createdAt: {
-                    gte: from,
-                    lte: to
-                }
+                createdAt: { gte: from, lte: to }
             }
         });
 
-        // Calculate Stats
+        // Calculate Stats (all in ETB)
         const totalRevenue = sales.reduce((sum, s) => {
             const saleTotalInETB = s.currency === 'USD' ? (s.total * (s.exchangeRate || 1)) : s.total;
             return sum + saleTotalInETB;
@@ -56,11 +51,9 @@ export async function GET(req: NextRequest) {
         const avgTransaction = transactionCount > 0 ? totalRevenue / transactionCount : 0;
 
         // Chart Data (Aggregated by Day)
-        // Ensure all days in range are represented
         const days = eachDayOfInterval({ start: from, end: to });
         const chartData = days.map(day => {
             const dayStr = format(day, 'yyyy-MM-dd');
-            // Filter sales for this day
             const daySales = sales.filter(s => format(new Date(s.createdAt), 'yyyy-MM-dd') === dayStr);
             const dailyTotal = daySales.reduce((sum, s) => {
                 const saleTotalInETB = s.currency === 'USD' ? (s.total * (s.exchangeRate || 1)) : s.total;
@@ -73,12 +66,39 @@ export async function GET(req: NextRequest) {
             };
         });
 
+        // ── Previous period comparison (dynamic trend %) ──
+        const durationMs = to.getTime() - from.getTime();
+        const prevFrom = new Date(from.getTime() - durationMs);
+        const prevTo = new Date(from.getTime() - 1);
+
+        const prevSales = await prisma.sale.findMany({
+            where: {
+                companyId: currentUser.companyId,
+                createdAt: { gte: prevFrom, lte: prevTo }
+            },
+            select: { total: true, currency: true, exchangeRate: true }
+        });
+
+        const prevRevenue = prevSales.reduce((sum, s) => {
+            const v = s.currency === 'USD' ? (s.total * (s.exchangeRate || 1)) : s.total;
+            return sum + v;
+        }, 0);
+        const prevTransactions = prevSales.length;
+        const prevAvg = prevTransactions > 0 ? prevRevenue / prevTransactions : 0;
+
+        const revenueGrowth = prevRevenue > 0 ? ((totalRevenue - prevRevenue) / prevRevenue) * 100 : 0;
+        const transactionGrowth = prevTransactions > 0 ? ((transactionCount - prevTransactions) / prevTransactions) * 100 : 0;
+        const avgGrowth = prevAvg > 0 ? ((avgTransaction - prevAvg) / prevAvg) * 100 : 0;
+
         return NextResponse.json({
             stats: {
                 revenue: totalRevenue,
                 tax: totalTax,
                 transactions: transactionCount,
-                avgValue: avgTransaction
+                avgValue: avgTransaction,
+                revenueGrowth: Math.round(revenueGrowth * 10) / 10,
+                transactionGrowth: Math.round(transactionGrowth * 10) / 10,
+                avgGrowth: Math.round(avgGrowth * 10) / 10,
             },
             chartData
         });

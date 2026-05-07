@@ -5,11 +5,13 @@ import {
     Save, Plus, Minus, Trash2, User, FileText, ArrowLeft, CheckCircle2, Package,
     ChevronDown, ScanLine, Loader2, X, UserPlus, Receipt, Wallet, PauseCircle,
     Library, ShoppingCart, Clock, AlertCircle, Calendar, Smartphone, Banknote,
-    Globe, Briefcase, UploadCloud, Search, Sparkles, Printer, ArrowLeftCircle
+    Globe, Briefcase, UploadCloud, Search, Sparkles, Printer, ArrowLeftCircle,
+    Zap, Lock, TrendingUp, CreditCard
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import UpgradeCreditsModal from '@/components/shop/UpgradeCreditsModal';
 
 // --- TYPES ---
 interface LineItem { id: number; productId: string; description: string; qty: number; price: number; discount: number; stock?: number; matched?: boolean; }
@@ -20,6 +22,40 @@ interface Employee { id: string; fullName: string; }
 interface PaymentRow { id: number; accountId: string; amount: string; method: string; }
 
 const defaultItems = (): LineItem[] => [{ id: Date.now(), productId: '', description: '', qty: 1, price: 0, discount: 0 }];
+
+const findBestMatch = (itemName: string, products: Product[]) => {
+    const query = itemName.toLowerCase().trim();
+    if (!query) return null;
+    
+    let bestMatch = null;
+    let maxScore = 0;
+    const searchWords = query.split(/\s+/).filter(w => w.length > 2);
+    
+    for (const p of products) {
+        const pName = p.name.toLowerCase();
+        if (pName === query) return p; // perfect match
+        
+        if (pName.includes(query) || query.includes(pName)) {
+            if (maxScore < 80) { bestMatch = p; maxScore = 80; }
+            continue;
+        }
+        
+        let score = 0;
+        for (const w of searchWords) {
+            if (pName.includes(w)) score += 10;
+        }
+        
+        // penalize if lengths are vastly different
+        const lengthDiff = Math.abs(pName.length - query.length);
+        score -= (lengthDiff * 0.5);
+        
+        if (score > maxScore && score >= 5) {
+            bestMatch = p;
+            maxScore = score;
+        }
+    }
+    return bestMatch;
+};
 
 export default function ManualEntryPage() {
     const router = useRouter();
@@ -55,6 +91,10 @@ export default function ManualEntryPage() {
     const [quickAddName, setQuickAddName] = useState('');
     const [quickAddPhone, setQuickAddPhone] = useState('');
     const [companySettings, setCompanySettings] = useState<any>(null);
+    const [scanCredits, setScanCredits] = useState<number | null>(null);
+    const [scanPlan, setScanPlan] = useState<string>('FREE_TRIAL');
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+    const [creditPackages, setCreditPackages] = useState<any[]>([]);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const productsRef = useRef<Product[]>([]);
@@ -65,7 +105,20 @@ export default function ManualEntryPage() {
         const saved = localStorage.getItem('revlo_manual_held_sales');
         if (saved) setHeldSales(JSON.parse(saved));
         fetchInitialData();
+        fetchCredits();
     }, []);
+
+    const fetchCredits = async () => {
+        try {
+            const res = await fetch('/api/shop/scan-credits');
+            if (res.ok) {
+                const data = await res.json();
+                setScanCredits(data.credits);
+                setScanPlan(data.plan || 'FREE_TRIAL');
+                setCreditPackages(data.packages || []);
+            }
+        } catch { }
+    };
 
     const fetchInitialData = async () => {
         try {
@@ -80,8 +133,14 @@ export default function ManualEntryPage() {
             }
             if (empRes.ok) setEmployees((await empRes.json()).employees || []);
             if (compRes.ok) {
-                const c = (await compRes.json()).company; setCompanySettings(c);
-                if (c?.taxRate) setCompanyTaxRate(Number(c.taxRate));
+                const compData = await compRes.json();
+                setCompanySettings(compData.company);
+                if (compData.company?.taxRate) setCompanyTaxRate(Number(compData.company.taxRate));
+                // Load scan credits from company API
+                if (compData.scanCredits !== undefined) {
+                    setScanCredits(compData.scanCredits);
+                    setScanPlan(compData.scanPlan || 'FREE_TRIAL');
+                }
                 const rateRes = await fetch('/api/settings/exchange-rate');
                 if (rateRes.ok) { const r = await rateRes.json(); setExchangeRate(String(r.rate?.rate || 1)); }
             }
@@ -123,21 +182,58 @@ export default function ManualEntryPage() {
     // --- AI SMART SCAN ---
     const handleScan = async (file: File) => {
         if (!file) return;
+
+        // Credit check (client-side)
+        if (scanCredits !== null && scanCredits <= 0) {
+            setShowUpgradeModal(true);
+            toast.error('Scan credits dhammaadeen! Upgrade samee.');
+            return;
+        }
+
         setIsScanning(true);
-        const toastId = toast.loading('AI analyzing receipt...');
+        const toastId = toast.loading('AI sawirka akhriyaa... (ilaa 60s qaadan kartaa)');
         const fd = new FormData(); fd.append('image', file);
         try {
             const res = await fetch('/api/analyze-receipt', { method: 'POST', body: fd });
-            if (!res.ok) throw new Error('Scan failed');
             const data = await res.json();
+
+            // Handle no credits response from server
+            if (data.error === 'NO_CREDITS') {
+                setShowUpgradeModal(true);
+                setScanCredits(0);
+                toast.error('Credits dhammaadeen! Upgrade samee.', { id: toastId });
+                return;
+            }
+
+            // Handle rate limiting
+            if (data.error === 'RATE_LIMITED') {
+                toast.error('AI busy — 30 ilbiriqsi sug oo mar kale isku day.', { id: toastId });
+                return;
+            }
+
+            if (!res.ok) {
+                console.error("Scan error response:", data);
+                throw new Error(data.message || data.error || data.details || 'Scan failed');
+            }
+
             if (data.date) setDate(data.date);
             if (data.receiptNumber) setSupplierReceiptNumber(data.receiptNumber);
             const scannedItems = (data.items || []).map((si: any) => {
-                const match = productsRef.current.find(p => p.name.toLowerCase().includes(si.name.toLowerCase()) || si.name.toLowerCase().includes(p.name.toLowerCase()));
-                return { id: Date.now() + Math.random(), productId: match?.id || '', description: si.name, qty: si.qty || 1, price: si.price || 0, discount: 0, matched: !!match };
+                const itemName = si.name || 'Unknown Item';
+                const match = findBestMatch(itemName, productsRef.current);
+                return { id: Date.now() + Math.random(), productId: match?.id || '', description: itemName, qty: si.qty || 1, price: si.price || si.total || 0, discount: 0, matched: !!match };
             });
             setItems(prev => [...prev.filter(p => p.productId || p.description), ...scannedItems]);
-            toast.success('Smart scan complete!', { id: toastId });
+
+            // Update credits from response
+            if (data._meta?.creditsRemaining !== undefined) {
+                setScanCredits(data._meta.creditsRemaining);
+            } else {
+                fetchCredits(); // Refresh
+            }
+
+            const remaining = data._meta?.creditsRemaining;
+            toast.success(`✅ Scan complete! ${scannedItems.length} items.${remaining !== undefined ? ` (${remaining} scans left)` : ''}`, { id: toastId });
         } catch (e: any) { toast.error(e.message, { id: toastId }); }
         finally { setIsScanning(false); }
     };
@@ -216,30 +312,70 @@ export default function ManualEntryPage() {
                         </div>
                     </div>
                     <div className="flex gap-2">
+                         <Link href="/shop/manual-entry/print-blank" target="_blank" className="px-4 py-2 bg-[#8E44AD]/10 border border-[#8E44AD]/20 rounded-lg text-[10px] font-black text-[#8E44AD] hover:bg-[#8E44AD]/20 transition-all flex items-center gap-2 uppercase tracking-widest">
+                             <Printer size={14}/> Print Booklets
+                         </Link>
                          <button onClick={handleHoldSale} className="px-4 py-2 bg-white border border-gray-100 rounded-lg text-[10px] font-black text-orange-500 hover:bg-orange-50 transition-all flex items-center gap-2 uppercase tracking-widest"><PauseCircle size={14}/> Pause</button>
                          <button onClick={()=>setIsHeldModalOpen(true)} className="px-4 py-2 bg-white border border-gray-100 rounded-lg text-[10px] font-black text-[#3498DB] hover:bg-blue-50 transition-all flex items-center gap-2 relative uppercase tracking-widest"><Clock size={14}/> Drafts {heldSales.length > 0 && <span className="ml-1 bg-red-500 text-white w-4 h-4 rounded-full flex items-center justify-center text-[8px]">{heldSales.length}</span>}</button>
                     </div>
                 </div>
 
-                {/* --- SLIM AI SCAN BANNER --- */}
-                <div 
-                    onClick={() => fileInputRef.current?.click()}
-                    className="p-4 bg-white border border-gray-100 rounded-2xl flex items-center justify-between shadow-sm hover:border-[#3498DB]/30 transition-all cursor-pointer group"
-                >
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-[#3498DB]">
-                             <ScanLine size={20}/>
-                        </div>
-                        <div>
-                            <h4 className="text-[11px] font-black text-gray-900 uppercase tracking-widest">Smart Receipt Scan (AI)</h4>
-                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Auto-fill form from image</p>
+                {/* --- AI SCAN BANNER WITH CREDITS --- */}
+                {scanCredits !== null && scanCredits <= 0 ? (
+                    /* PAYWALL — No Credits */
+                    <div className="p-5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 rounded-2xl shadow-sm">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
+                                    <Lock size={22}/>
+                                </div>
+                                <div>
+                                    <h4 className="text-[12px] font-black text-amber-800 uppercase tracking-widest">Scan Credits Exhausted</h4>
+                                    <p className="text-[10px] font-bold text-amber-500 mt-0.5">Free trial dhammaatay. Upgrade si aad u sii scan-garayso.</p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setShowUpgradeModal(true)}
+                                className="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-[10px] font-black shadow-lg shadow-amber-500/20 active:scale-95 transition-all flex items-center gap-2 uppercase tracking-widest hover:shadow-xl"
+                            >
+                                <Zap size={14}/> Upgrade Now
+                            </button>
                         </div>
                     </div>
-                    <button className="px-5 py-2 bg-[#3498DB] text-white rounded-lg text-[10px] font-black shadow-sm active:scale-95 transition-all flex items-center gap-2 uppercase tracking-widest">
-                         <UploadCloud size={14}/> Upload Receipt
-                    </button>
-                    <input type="file" ref={fileInputRef} onChange={e=>e.target.files?.[0]&&handleScan(e.target.files[0])} className="hidden" accept="image/*" />
-                </div>
+                ) : (
+                    /* ACTIVE — Has Credits */
+                    <div 
+                        onClick={() => fileInputRef.current?.click()}
+                        className="p-4 bg-white border border-gray-100 rounded-2xl flex items-center justify-between shadow-sm hover:border-[#3498DB]/30 transition-all cursor-pointer group"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-[#3498DB]">
+                                 <ScanLine size={20}/>
+                            </div>
+                            <div>
+                                <h4 className="text-[11px] font-black text-gray-900 uppercase tracking-widest">Smart Receipt Scan (AI)</h4>
+                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Auto-fill form from image</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            {/* Credit Badge */}
+                            {scanCredits !== null && (
+                                <div className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest border ${
+                                    scanCredits <= 3 
+                                        ? 'bg-amber-50 text-amber-600 border-amber-200' 
+                                        : 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                                }`}>
+                                    <Sparkles size={10}/>
+                                    {scanCredits} {scanCredits === 1 ? 'Scan' : 'Scans'} Left
+                                </div>
+                            )}
+                            <button className="px-5 py-2 bg-[#3498DB] text-white rounded-lg text-[10px] font-black shadow-sm active:scale-95 transition-all flex items-center gap-2 uppercase tracking-widest">
+                                 <UploadCloud size={14}/> Upload
+                            </button>
+                        </div>
+                        <input type="file" ref={fileInputRef} onChange={e=>e.target.files?.[0]&&handleScan(e.target.files[0])} className="hidden" accept="image/*" />
+                    </div>
+                )}
 
                 {/* --- MAIN FORM (FULL WIDTH) --- */}
                 <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm space-y-6">
@@ -365,7 +501,15 @@ export default function ManualEntryPage() {
                                              {products.map(p => <option key={p.id} value={p.id}>{p.name.toUpperCase()} (STK: {p.stock})</option>)}
                                          </select>
                                          <ChevronDown size={10} className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none" />
-                                         {!item.matched && item.description && <p className="text-[8px] text-orange-500 font-bold mt-0.5 uppercase flex items-center gap-1"><Sparkles size={8}/> AI: {item.description}</p>}
+                                         {!item.matched && item.description && (
+                                             <div className="mt-2 p-2 bg-red-50 border border-red-100 rounded-lg flex items-center justify-between animate-in fade-in">
+                                                 <p className="text-[9px] text-red-600 font-black flex items-center gap-1.5"><AlertCircle size={12} className="text-red-500"/> Alaabta "{item.description}" majirto. Dooro ama diiwaan gali.</p>
+                                                 <a href={`/shop/inventory/add?name=${encodeURIComponent(item.description)}`} target="_blank" className="px-3 py-1.5 bg-red-500 text-white rounded-md text-[8px] font-black uppercase hover:bg-red-600 active:scale-95 transition-all flex items-center gap-1 shadow-sm"><Plus size={10}/> Add New</a>
+                                             </div>
+                                         )}
+                                         {item.matched && item.description && (
+                                             <p className="text-[8px] text-emerald-500 font-bold mt-1 uppercase flex items-center gap-1"><CheckCircle2 size={10}/> AI Matched: {item.description}</p>
+                                         )}
                                     </div>
                                     <div className="col-span-2 px-6">
                                          <input type="number" value={item.qty} onChange={e=>updateItem(item.id, 'qty', parseInt(e.target.value)||0)} className="w-full bg-transparent font-black text-xs text-center outline-none" />
@@ -453,6 +597,15 @@ export default function ManualEntryPage() {
             {isHeldModalOpen && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/30 backdrop-blur-sm p-4"><div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl relative"><button onClick={()=>setIsHeldModalOpen(false)} className="absolute right-6 top-6 text-gray-300"><X size={20}/></button><h3 className="text-sm font-black mb-6 text-[#3498DB] uppercase tracking-widest">Active Drafts</h3><div className="space-y-3 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar">{heldSales.map(h=>(<div key={h.id} className="p-4 bg-gray-50 rounded-2xl border flex justify-between items-center"><div className="flex-1"><p className="font-black text-sm text-gray-800">{h.invoiceNumber}</p><p className="text-[8px] text-gray-400 uppercase font-black">{new Date(h.timestamp).toLocaleString()}</p></div><div className="flex gap-2"><button onClick={()=>{setItems(h.items);setCustomerId(h.customerId);setHeldSales(heldSales.filter(x=>x.id!==h.id));setIsHeldModalOpen(false);}} className="px-4 py-2 bg-[#3498DB] text-white rounded-lg font-black text-[9px] uppercase">Restore</button></div></div>))}</div></div></div>
             )}
+
+            {/* UPGRADE MODAL */}
+            <UpgradeCreditsModal 
+                isOpen={showUpgradeModal} 
+                onClose={() => setShowUpgradeModal(false)} 
+                scanCredits={scanCredits} 
+                scanPlan={scanPlan} 
+                creditPackages={creditPackages} 
+            />
         </div>
     );
 }

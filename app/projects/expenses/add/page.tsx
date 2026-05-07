@@ -678,19 +678,75 @@ function AddExpenseContent() {
   };
 
   // --- Handlers ---
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setReceiptImage(file);
-      setToastMessage({ message: 'Rasiidka waxaanu u baaraynaa si aanu u buuxino foomka...', type: 'info' });
-      setTimeout(() => {
-        setAmount(Math.floor(Math.random() * 500) + 50);
-        setNote('Alaabta xafiiska');
-        setExpenseDate('2025-07-24');
-        setCategory('Company Expense');
-        setCompanyExpenseType('Office Rent');
-        setToastMessage({ message: 'Rasiidka waa la baaray foomkuna waa la buuxiyay!', type: 'success' });
-      }, 1500);
+
+      // AI Receipt Scan
+      setToastMessage({ message: 'AI rasiidka akhriyaa... (ilaa 30s qaadan kartaa)', type: 'info' });
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const res = await fetch('/api/analyze-receipt', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        // Handle errors
+        if (data.error === 'NO_CREDITS') {
+          setToastMessage({ message: 'Scan credits dhammaadeen! Upgrade samee.', type: 'error' });
+          return;
+        }
+        if (data.error === 'RATE_LIMITED') {
+          setToastMessage({ message: 'AI busy — 30 ilbiriqsi sug oo mar kale isku day.', type: 'error' });
+          return;
+        }
+        if (!res.ok) {
+          setToastMessage({ message: `Scan fashilmay: ${data.message || data.error || res.status}`, type: 'error' });
+          return;
+        }
+
+        // Auto-fill form with AI results
+        if (data.totalAmount) setAmount(data.totalAmount);
+        if (data.date) setExpenseDate(data.date);
+        if (data.receiptNumber) {
+          setInvoiceNumber(data.receiptNumber);
+        }
+        if (data.vendorName) {
+          setNote(prev => prev ? prev : `Vendor: ${data.vendorName}`);
+        }
+
+        // If items found, auto-fill materials
+        if (data.items && Array.isArray(data.items) && data.items.length > 0) {
+          // Auto-switch to Material category
+          setCategory('Material');
+          if (expenseType === 'company') {
+            setCompanyExpenseType('Material');
+          }
+          if (data.date) setMaterialDate(data.date);
+
+          const newMaterials = data.items.map((item: any, idx: number) => ({
+            id: idx + 1,
+            name: item.name || 'Unknown Item',
+            qty: String(item.qty || 1),
+            price: String(item.price || item.total || 0),
+            unit: item.unit || 'pcs',
+          }));
+          setMaterials(newMaterials);
+
+          setToastMessage({
+            message: `✅ Rasiidka waa la baaray! ${newMaterials.length} alaab la helay. Wadarta: ${data.totalAmount?.toLocaleString() || '—'}`,
+            type: 'success'
+          });
+        } else {
+          setToastMessage({ message: 'Rasiidka waa la baaray laakiin alaab lagama helin.', type: 'info' });
+        }
+
+      } catch (err: any) {
+        console.error('Receipt scan error:', err);
+        setToastMessage({ message: `Scan fashilmay: ${err.message}`, type: 'error' });
+      }
     }
   };
 

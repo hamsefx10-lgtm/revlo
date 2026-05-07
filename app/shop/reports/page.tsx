@@ -7,6 +7,7 @@ import {
     PieChart,
     LineChart,
     TrendingUp,
+    TrendingDown,
     Package,
     Users,
     Wallet,
@@ -17,7 +18,9 @@ import {
     Download,
     Filter,
     Loader2,
-    Scale
+    Scale,
+    Receipt,
+    Truck
 } from 'lucide-react';
 import UltraIcon from '@/components/shop/ui/UltraIcon';
 import { subDays } from 'date-fns';
@@ -62,6 +65,18 @@ const ReportCard = ({ title, desc, icon: Icon, color, href }: ReportCardProps) =
     );
 };
 
+// Dynamic trend badge component
+function TrendBadge({ value, colorClass }: { value: number; colorClass: string }) {
+    const isPositive = value >= 0;
+    const Icon = isPositive ? TrendingUp : TrendingDown;
+    const display = `${isPositive ? '+' : ''}${value.toFixed(1)}%`;
+    return (
+        <div className={`flex items-center gap-2 ${colorClass} text-sm font-bold w-fit px-3 py-1 rounded-full`}>
+            <Icon size={16} /> {display}
+        </div>
+    );
+}
+
 export default function ReportsPage() {
     const { t } = useShopLang();
     const [loading, setLoading] = useState(true);
@@ -83,7 +98,6 @@ export default function ReportsPage() {
             else if (dateRange === '90days') from = subDays(new Date(), 90);
 
             const query = `?from=${from.toISOString()}&to=${to.toISOString()}`;
-            // Reusing the sales report API for the high-level stats
             const response = await fetch(`/api/shop/reports/sales${query}`);
             const result = await response.json();
             setStats(result?.stats || null);
@@ -121,7 +135,7 @@ export default function ReportsPage() {
                 </div>
             </div>
 
-            {/* QUICK STATS (NEW SECTION) */}
+            {/* QUICK STATS */}
             <div className="px-4 md:px-0 mb-12 animate-fade-in-up">
                 {loading ? (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -136,9 +150,7 @@ export default function ReportsPage() {
                             <div className="relative z-10">
                                 <p className="text-blue-100 text-xs font-black uppercase tracking-wider mb-2">{t('total_revenue_label')}</p>
                                 <h3 className="text-4xl font-black mb-4">ETB {stats?.revenue?.toLocaleString() || '0'}</h3>
-                                <div className="flex items-center gap-2 text-blue-100 text-sm font-bold bg-white/10 w-fit px-3 py-1 rounded-full backdrop-blur-md">
-                                    <TrendingUp size={16} /> +12.5%
-                                </div>
+                                <TrendBadge value={stats?.revenueGrowth || 0} colorClass="text-blue-100 bg-white/10 backdrop-blur-md" />
                             </div>
                             <div className="absolute top-0 right-0 p-20 bg-white/10 rounded-bl-[150px] transition-transform group-hover:scale-110 duration-500"></div>
                             <Wallet className="absolute bottom-6 right-6 text-white/20 transform -rotate-12" size={64} />
@@ -149,9 +161,10 @@ export default function ReportsPage() {
                             <div className="relative z-10">
                                 <p className="text-mediumGray text-xs font-black uppercase tracking-wider mb-2">{t('orders')}</p>
                                 <h3 className="text-4xl font-black text-darkGray dark:text-white mb-4">{stats?.transactions?.toLocaleString() || '0'}</h3>
-                                <div className="flex items-center gap-2 text-green-500 text-sm font-bold bg-green-50 w-fit px-3 py-1 rounded-full dark:bg-green-900/20">
-                                    <TrendingUp size={16} /> +5.2%
-                                </div>
+                                <TrendBadge
+                                    value={stats?.transactionGrowth || 0}
+                                    colorClass={`${(stats?.transactionGrowth || 0) >= 0 ? 'text-green-500 bg-green-50 dark:bg-green-900/20' : 'text-rose-500 bg-rose-50 dark:bg-rose-900/20'}`}
+                                />
                             </div>
                             <Package className="absolute bottom-6 right-6 text-lightGray dark:text-gray-800 transform rotate-12 group-hover:text-primary/10 transition-colors" size={64} />
                         </div>
@@ -161,9 +174,10 @@ export default function ReportsPage() {
                             <div className="relative z-10">
                                 <p className="text-mediumGray text-xs font-black uppercase tracking-wider mb-2">Avg. {t('amount')}</p>
                                 <h3 className="text-4xl font-black text-darkGray dark:text-white mb-4">ETB {Math.round(stats?.avgValue || 0).toLocaleString()}</h3>
-                                <div className="flex items-center gap-2 text-orange-500 text-sm font-bold bg-orange-50 w-fit px-3 py-1 rounded-full dark:bg-orange-900/20">
-                                    <Users size={16} /> stable
-                                </div>
+                                <TrendBadge
+                                    value={stats?.avgGrowth || 0}
+                                    colorClass={`${(stats?.avgGrowth || 0) >= 0 ? 'text-orange-500 bg-orange-50 dark:bg-orange-900/20' : 'text-rose-500 bg-rose-50 dark:bg-rose-900/20'}`}
+                                />
                             </div>
                             <PieChart className="absolute bottom-6 right-6 text-lightGray dark:text-gray-800 transform -rotate-6 group-hover:text-orange-500/10 transition-colors" size={64} />
                         </div>
@@ -186,7 +200,24 @@ export default function ReportsPage() {
                         <ReportCard title={t('sales_report')} desc={t('sales_desc')} icon={Calendar} color="blue" href="/shop/reports/sales" />
                         <ReportCard title={t('top_products_report')} desc={t('top_products_desc')} icon={TrendingUp} color="green" href="/shop/reports/top-products" />
                         <ReportCard title={t('categories_report')} desc={t('categories_desc')} icon={PieChart} color="purple" href="/shop/reports/categories" />
-                        <ReportCard title={t('customers_title')} desc={t('customers_desc')} icon={Users} color="orange" href="/shop/customers" />
+                        <ReportCard title={t('customers_title')} desc={t('customers_desc')} icon={Users} color="orange" href="/shop/reports/top-customers" />
+                    </div>
+                </div>
+
+                {/* BALANCES & EXPENSE REPORTS */}
+                <div className="animate-fade-in-up delay-150">
+                    <div className="flex items-center justify-between mb-8">
+                        <h2 className="text-xl font-black text-darkGray dark:text-white flex items-center gap-3">
+                            <div className="w-1.5 h-6 bg-green-500 rounded-full"></div>
+                            Deymaha & Kharashaadka
+                        </h2>
+                        <div className="h-px bg-lightGray dark:bg-gray-800 flex-1 ml-6"></div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <ReportCard title="Kharashaadka (Expenses)" desc="Kharashaadka oo kala saaran category-ga — Kirada, Korontada, iwm" icon={Receipt} color="red" href="/shop/reports/expense-report" />
+                        <ReportCard title="Deymaha Macaamiisha" desc="Customer Balances — Macaamiisha aan daynta ku leenahay (Receivables)" icon={Users} color="blue" href="/shop/reports/customer-balances" />
+                        <ReportCard title="Deymaha Jumladleyda" desc="Vendor Balances — Suplayerska/Vendorska daynta inagu leh (Payables)" icon={Truck} color="purple" href="/shop/reports/vendor-balances" />
                     </div>
                 </div>
 
@@ -200,11 +231,16 @@ export default function ReportsPage() {
                         <div className="h-px bg-lightGray dark:bg-gray-800 flex-1 ml-6"></div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <ReportCard title={t('inventory_report')} desc={t('inventory_desc')} icon={Package} color="orange" href="/shop/inventory" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <ReportCard title="Warbixinta Kaydka" desc="Stock Value, Low Stock Alerts, Category Breakdown — Xisaabta alaabta" icon={Package} color="orange" href="/shop/reports/inventory-report" />
                         <ReportCard title={t('low_stock_report')} desc={t('low_stock_desc')} icon={FileText} color="blue" href="/shop/reports/low-stock" />
-                        <ReportCard title={t('profit_loss')} desc={t('reports_desc')} icon={LineChart} color="green" href="/shop/reports/finance" />
                         <ReportCard title={t('balance_sheet')} desc={t('balance_sheet_desc')} icon={Scale} color="purple" href="/shop/reports/balance-sheet" />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+                        <ReportCard title="Profit & Loss" desc="Dakhliga, Kharashaadka & Faa'iidada — Income Statement" icon={LineChart} color="green" href="/shop/reports/profit-loss" />
+                        <ReportCard title="Cash Flow" desc="Socodka Lacagta — Operating, Investing, Financing" icon={Wallet} color="blue" href="/shop/reports/cash-flow" />
+                        <ReportCard title={t('profit_loss')} desc={t('reports_desc')} icon={BarChart3} color="red" href="/shop/reports/finance" />
                     </div>
                 </div>
 

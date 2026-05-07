@@ -37,6 +37,16 @@ interface InventoryItem {
 
 export default function InventoryPage() {
     const { t } = useShopLang();
+
+    // Translate status values from API
+    const translateStatus = (status: string) => {
+        const map: Record<string, string> = {
+            'In Stock': t('in_stock_status'),
+            'Low Stock': t('low_stock_status'),
+            'Out of Stock': t('out_of_stock_status'),
+        };
+        return map[status] || status;
+    };
     const [filter, setFilter] = useState<'All' | 'Low Stock' | 'Out of Stock'>('All');
     const [search, setSearch] = useState('');
     const [products, setProducts] = useState<InventoryItem[]>([]);
@@ -130,7 +140,7 @@ export default function InventoryPage() {
                         <div className="p-3 bg-gradient-to-br from-[#F39C12] to-[#E67E22] rounded-2xl shadow-lg shadow-orange-500/20 text-white">
                             <Package size={32} />
                         </div>
-                        Inventory <span className="text-[#3498DB]">Hub</span>
+                        {t('inventory_hub')} <span className="text-[#3498DB]">{t('inventory_hub_highlight')}</span>
                     </h1>
                     <p className="text-gray-500 dark:text-gray-400 mt-2 ml-1 text-base font-medium">{t('inventory_desc')}</p>
                 </div>
@@ -159,7 +169,7 @@ export default function InventoryPage() {
                         <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-2xl group-hover:scale-110 transition-transform">
                             <Archive size={24} />
                         </div>
-                        <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Total SKU</span>
+                        <span className="text-xs font-black text-gray-400 uppercase tracking-widest">{t('total_sku_label')}</span>
                     </div>
                     <h3 className="text-3xl font-black text-gray-900 dark:text-white">{products.length}</h3>
                     <p className="text-sm text-gray-500 mt-1">{t('in_stock')}</p>
@@ -171,7 +181,7 @@ export default function InventoryPage() {
                         <div className="p-3 bg-green-50 dark:bg-green-900/20 text-green-600 rounded-2xl group-hover:scale-110 transition-transform">
                             <DollarSign size={24} />
                         </div>
-                        <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Stock Value</span>
+                        <span className="text-xs font-black text-gray-400 uppercase tracking-widest">{t('stock_value_label')}</span>
                     </div>
                     <h3 className="text-3xl font-black text-gray-900 dark:text-white">
                         {viewCurrency === 'USD' ? '$' : ''}
@@ -192,7 +202,7 @@ export default function InventoryPage() {
                         <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 rounded-2xl group-hover:scale-110 transition-transform">
                             <TrendingUp size={24} />
                         </div>
-                        <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Low Stock</span>
+                        <span className="text-xs font-black text-gray-400 uppercase tracking-widest">{t('low_stock_stat')}</span>
                     </div>
                     <h3 className="text-3xl font-black text-gray-900 dark:text-white">
                         {products.filter(p => p.status === 'Low Stock').length}
@@ -206,7 +216,7 @@ export default function InventoryPage() {
                         <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-2xl group-hover:scale-110 transition-transform">
                             <AlertTriangle size={24} />
                         </div>
-                        <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Out of Stock</span>
+                        <span className="text-xs font-black text-gray-400 uppercase tracking-widest">{t('out_of_stock_stat')}</span>
                     </div>
                     <h3 className="text-3xl font-black text-gray-900 dark:text-white text-red-500">
                         {products.filter(p => p.status === 'Out of Stock').length}
@@ -247,7 +257,7 @@ export default function InventoryPage() {
                                 : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                                 }`}
                         >
-                            ETB View
+                            {t('etb_view')}
                         </button>
                         <button
                             onClick={() => setViewCurrency('USD')}
@@ -256,7 +266,7 @@ export default function InventoryPage() {
                                 : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                                 }`}
                         >
-                            USD View
+                            {t('usd_view')}
                         </button>
                     </div>
                 </div>
@@ -313,6 +323,9 @@ export default function InventoryPage() {
                                                 <span className="text-xs text-gray-400 font-mono">SKU: {item.sku}</span>
                                             </Link>
                                         </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-600 dark:text-gray-400">
+                                            {item.category || '-'}
+                                        </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900 dark:text-white">
                                             <div className="font-bold">
                                                 {viewCurrency === 'ETB' ? (
@@ -344,20 +357,20 @@ export default function InventoryPage() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap flex justify-center">
-                                            <StatusBadge status={item.status} />
+                                            <StatusBadge status={translateStatus(item.status)} />
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right">
                                             <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Link href={`/shop/inventory/${item.id}`} className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all" title="View Details">
+                                                <Link href={`/shop/inventory/${item.id}`} className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all" title={t('view_details')}>
                                                     <Eye size={18} />
                                                 </Link>
-                                                <Link href={`/shop/inventory/${item.id}/edit`} className="p-2 text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-xl transition-all" title="Edit Product">
+                                                <Link href={`/shop/inventory/${item.id}/edit`} className="p-2 text-gray-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-xl transition-all" title={t('edit_product_action')}>
                                                     <Edit size={18} />
                                                 </Link>
                                                 <button
                                                     onClick={() => handleDelete(item.id, item.name)}
                                                     className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
-                                                    title="Delete Product"
+                                                    title={t('delete_product_action')}
                                                 >
                                                     <Trash2 size={18} />
                                                 </button>

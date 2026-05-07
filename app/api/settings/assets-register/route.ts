@@ -25,11 +25,16 @@ export async function GET() {
     const assetsWithDepreciation = assets.map((asset: any) => {
       const depreciationRate = 0.15; // Default 15% annual depreciation
       const yearsSincePurchase = (new Date().getFullYear() - new Date(asset.purchaseDate).getFullYear());
-      const depreciationAmount = asset.value * depreciationRate * yearsSincePurchase;
-      const currentBookValue = Math.max(0, asset.value - depreciationAmount);
+      const assetValue = typeof asset.value === 'object' && asset.value !== null && 'toNumber' in asset.value 
+         ? asset.value.toNumber() 
+         : Number(asset.value) || 0;
+
+      const depreciationAmount = assetValue * depreciationRate * yearsSincePurchase;
+      const currentBookValue = Math.max(0, assetValue - depreciationAmount);
 
       return {
         ...asset,
+        value: assetValue,
         depreciationRate,
         currentBookValue,
       };

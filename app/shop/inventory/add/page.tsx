@@ -15,10 +15,12 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
+import { useShopLang } from '@/contexts/ShopLanguageContext';
 
 export default function AddProductPage() {
     const router = useRouter();
     const { toast } = useToast();
+    const { t, lang } = useShopLang();
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
@@ -238,16 +240,16 @@ export default function AddProductPage() {
                 <div>
                     <div className="flex items-center gap-2 mb-2">
                         <Link href="/shop/inventory" className="text-gray-400 hover:text-[#3498DB] transition-colors flex items-center gap-1 text-xs font-bold uppercase tracking-wider">
-                            <ArrowLeft size={14} /> Back to Inventory
+                            <ArrowLeft size={14} /> {t('back_to_inventory')}
                         </Link>
                     </div>
                     <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
                         <div className="p-3 bg-gradient-to-br from-[#2ECC71] to-[#27AE60] rounded-xl shadow-lg shadow-green-500/20 text-white">
                             <Package size={28} />
                         </div>
-                        Add New Product
+                        {t('add_new_product')}
                     </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-2 ml-1 text-sm">Create a new item in your inventory catalog.</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-2 ml-1 text-sm">{t('create_new_item_msg')}</p>
                 </div>
             </div>
 
@@ -258,14 +260,14 @@ export default function AddProductPage() {
                     {/* LEFT COLUMN: Basic Info */}
                     <div className="space-y-6">
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2 border-b border-gray-100 dark:border-gray-700 pb-3">
-                            <Layers size={18} className="text-[#3498DB]" /> Basic Information
+                            <Layers size={18} className="text-[#3498DB]" /> {t('basic_information')}
                         </h3>
 
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Product Name *</label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t('name')} *</label>
                             <input
                                 type="text"
-                                placeholder="e.g. Wireless Headphones"
+                                placeholder={lang === 'so' ? 'Tusaale: Koofiyad' : 'e.g. Wireless Headphones'}
                                 value={formData.name}
                                 onChange={(e) => handleChange('name', e.target.value)}
                                 className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all"
@@ -276,13 +278,13 @@ export default function AddProductPage() {
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="flex justify-between items-center text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                                    Category *
+                                    {t('category')} *
                                     <button
                                         type="button"
                                         onClick={() => setIsCategoryModalOpen(true)}
                                         className="text-[#3498DB] hover:text-[#2980B9] text-[10px] flex items-center gap-1"
                                     >
-                                        + New
+                                        + {t('add_new')}
                                     </button>
                                 </label>
                                 <select
@@ -291,18 +293,18 @@ export default function AddProductPage() {
                                     className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all appearance-none cursor-pointer text-gray-700 dark:text-gray-300"
                                     required
                                 >
-                                    <option value="">Select...</option>
+                                    <option value="">{lang === 'so' ? 'Dooro...' : 'Select...'}</option>
                                     {categories.map(c => <option key={c} value={c}>{c}</option>)}
                                 </select>
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">SKU (Stock Keeping Unit) *</label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t('sku_label')} *</label>
                             <input
                                 ref={skuInputRef}
                                 type="text"
-                                placeholder="e.g. BAR-001"
+                                placeholder={lang === 'so' ? 'Tusaale: BAR-001' : 'e.g. BAR-001'}
                                 value={formData.sku}
                                 onChange={(e) => handleChange('sku', e.target.value)}
                                 className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all"
@@ -313,13 +315,13 @@ export default function AddProductPage() {
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="flex justify-between items-center text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                                    Supplier
+                                    {t('supplier')}
                                     <button
                                         type="button"
                                         onClick={() => setIsSupplierModalOpen(true)}
                                         className="text-[#3498DB] hover:text-[#2980B9] text-[10px] flex items-center gap-1"
                                     >
-                                        + New
+                                        + {t('add_new')}
                                     </button>
                                 </label>
                                 <select
@@ -327,17 +329,17 @@ export default function AddProductPage() {
                                     onChange={(e) => handleChange('supplier', e.target.value)}
                                     className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all appearance-none cursor-pointer text-gray-700 dark:text-gray-300"
                                 >
-                                    <option value="">Select...</option>
+                                    <option value="">{lang === 'so' ? 'Dooro...' : 'Select...'}</option>
                                     {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                                 </select>
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Description</label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t('description')}</label>
                             <textarea
                                 rows={4}
-                                placeholder="Enter product details..."
+                                placeholder={lang === 'so' ? 'Geli faahfaahinta...' : 'Enter product details...'}
                                 value={formData.description}
                                 onChange={(e) => handleChange('description', e.target.value)}
                                 className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-[#3498DB] focus:ring-0 outline-none font-medium transition-all resize-none"
@@ -348,12 +350,12 @@ export default function AddProductPage() {
                     {/* RIGHT COLUMN: Price & Stock */}
                     <div className="space-y-6">
                         <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2 border-b border-gray-100 dark:border-gray-700 pb-3">
-                            <DollarSign size={18} className="text-[#2ECC71]" /> Pricing & Stock
+                            <DollarSign size={18} className="text-[#2ECC71]" /> {t('pricing_and_stock')}
                         </h3>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Cost Price *</label>
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t('price')} (Cost) *</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 font-bold text-sm">ETB</div>
                                     <input
@@ -367,7 +369,7 @@ export default function AddProductPage() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Selling Price *</label>
+                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t('price')} (Selling) *</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 font-bold text-sm">ETB</div>
                                     <input
@@ -383,7 +385,7 @@ export default function AddProductPage() {
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Initial Stock Quantity <span className="text-gray-300 font-normal lowercase">(optional for opening stock)</span></label>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{t('initial_stock')}</label>
                             <input
                                 type="number"
                                 placeholder="0"
@@ -397,14 +399,14 @@ export default function AddProductPage() {
                             <div className="flex items-start gap-3">
                                 <AlertCircle size={20} className="text-[#F39C12] mt-0.5" />
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider mb-2">Low Stock Alert Level</label>
+                                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider mb-2">{t('low_stock_alert_level')}</label>
                                     <input
                                         type="number"
                                         value={formData.minStock}
                                         onChange={(e) => handleChange('minStock', e.target.value)}
                                         className="w-24 px-3 py-2 rounded-lg bg-white dark:bg-gray-800 border border-orange-200 dark:border-orange-800 focus:border-[#F39C12] outline-none font-bold text-center"
                                     />
-                                    <p className="text-xs text-gray-500 mt-2">We'll notify you when stock falls below this number.</p>
+                                    <p className="text-xs text-gray-500 mt-2">{t('notify_stock_falls')}</p>
                                 </div>
                             </div>
                         </div>
@@ -415,7 +417,7 @@ export default function AddProductPage() {
                 {/* Footer Actions */}
                 <div className="bg-gray-50 dark:bg-gray-800/50 p-6 border-t border-gray-100 dark:border-gray-800 flex justify-end gap-3">
                     <Link href="/shop/inventory" className="px-6 py-3 rounded-xl border border-gray-200 dark:border-gray-700 font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
-                        Cancel
+                        {t('cancel')}
                     </Link>
                     <button
                         type="submit"
@@ -425,10 +427,10 @@ export default function AddProductPage() {
                         {isLoading ? (
                             <>
                                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                Saving...
+                                {t('saving')}
                             </>
                         ) : (
-                            <><CheckCircle2 size={18} /> Save Product</>
+                            <><CheckCircle2 size={18} /> {t('save_product')}</>
                         )}
                     </button>
                 </div>
@@ -439,11 +441,11 @@ export default function AddProductPage() {
             {isCategoryModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
                     <form onSubmit={handleCreateCategory} className="bg-white dark:bg-[#1f2937] rounded-2xl w-full max-w-sm p-6 shadow-2xl">
-                        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Add New Category</h3>
+                        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">{t('add_new_category')}</h3>
                         <input
                             autoFocus
                             type="text"
-                            placeholder="Category Name"
+                            placeholder={t('category_name')}
                             value={newCategoryName}
                             onChange={e => setNewCategoryName(e.target.value)}
                             className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none mb-4 font-medium"
@@ -454,14 +456,14 @@ export default function AddProductPage() {
                                 onClick={() => setIsCategoryModalOpen(false)}
                                 className="px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 font-bold text-sm"
                             >
-                                Cancel
+                                {t('cancel')}
                             </button>
                             <button
                                 type="submit"
                                 disabled={!newCategoryName}
                                 className="px-6 py-2 rounded-lg bg-[#3498DB] text-white font-bold text-sm hover:bg-blue-600 disabled:opacity-50"
                             >
-                                Add Category
+                                {t('add_category')}
                             </button>
                         </div>
                     </form>
@@ -471,18 +473,18 @@ export default function AddProductPage() {
             {isSupplierModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
                     <form onSubmit={handleCreateSupplier} className="bg-white dark:bg-[#1f2937] rounded-2xl w-full max-w-sm p-6 shadow-2xl">
-                        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Add New Supplier</h3>
+                        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">{t('add_new_supplier')}</h3>
                         <input
                             autoFocus
                             type="text"
-                            placeholder="Supplier Name"
+                            placeholder={t('supplier_name')}
                             value={newSupplierData.name}
                             onChange={e => setNewSupplierData(prev => ({ ...prev, name: e.target.value }))}
                             className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none mb-3 font-medium"
                         />
                         <input
                             type="text"
-                            placeholder="Contact Info (Optional)"
+                            placeholder={t('contact_info_optional')}
                             value={newSupplierData.contact}
                             onChange={e => setNewSupplierData(prev => ({ ...prev, contact: e.target.value }))}
                             className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 outline-none mb-4 font-medium"
@@ -493,14 +495,14 @@ export default function AddProductPage() {
                                 onClick={() => setIsSupplierModalOpen(false)}
                                 className="px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 font-bold text-sm"
                             >
-                                Cancel
+                                {t('cancel')}
                             </button>
                             <button
                                 type="submit"
                                 disabled={!newSupplierData.name}
                                 className="px-6 py-2 rounded-lg bg-[#3498DB] text-white font-bold text-sm hover:bg-blue-600 disabled:opacity-50"
                             >
-                                Add Supplier
+                                {t('add_category')}
                             </button>
                         </div>
                     </form>

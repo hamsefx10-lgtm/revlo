@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
     Search,
     ShoppingCart,
@@ -17,7 +17,9 @@ import {
     Clock,
     PlayCircle,
     AlertCircle,
-    Globe
+    Globe,
+    Camera,
+    X
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useShopLang } from '@/contexts/ShopLanguageContext';
@@ -342,6 +344,67 @@ export default function POSPage() {
     // ------------------------------
     // ------------------------------
 
+    // --- CAMERA BARCODE SCANNER ---
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const streamRef = useRef<MediaStream | null>(null);
+    const scanIntervalRef = useRef<any>(null);
+
+    const startCameraScanner = useCallback(async () => {
+        setIsScannerOpen(true);
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+            });
+            streamRef.current = stream;
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+                await videoRef.current.play();
+            }
+
+            // Use BarcodeDetector API if available
+            if ('BarcodeDetector' in window) {
+                const detector = new (window as any).BarcodeDetector({
+                    formats: ['ean_13', 'ean_8', 'code_128', 'code_39', 'upc_a', 'upc_e', 'qr_code']
+                });
+
+                scanIntervalRef.current = setInterval(async () => {
+                    if (!videoRef.current || videoRef.current.readyState !== 4) return;
+                    try {
+                        const barcodes = await detector.detect(videoRef.current);
+                        if (barcodes.length > 0) {
+                            const code = barcodes[0].rawValue;
+                            handleScan(code);
+                            stopCameraScanner();
+                        }
+                    } catch (e) { /* scan frame error, ignore */ }
+                }, 300);
+            } else {
+                toast.error('Browser-kaagu ma taageero BarcodeDetector. Isticmaal Chrome 83+');
+            }
+        } catch (err: any) {
+            toast.error('Camera-da lama furi karo: ' + (err.message || ''));
+            setIsScannerOpen(false);
+        }
+    }, []);
+
+    const stopCameraScanner = useCallback(() => {
+        if (scanIntervalRef.current) {
+            clearInterval(scanIntervalRef.current);
+            scanIntervalRef.current = null;
+        }
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(t => t.stop());
+            streamRef.current = null;
+        }
+        setIsScannerOpen(false);
+    }, []);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => { stopCameraScanner(); };
+    }, [stopCameraScanner]);
+
     // Company Settings
     const [companySettings, setCompanySettings] = useState<any>(null);
 
@@ -592,17 +655,27 @@ export default function POSPage() {
                             <h1 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Revlo<span className="text-[#3498DB]">POS</span></h1>
                             <p className="text-sm text-gray-500">{t('pos_desc')}</p>
                         </div>
-                        <div className="relative group w-64">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Search className="h-5 w-5 text-gray-400 group-focus-within:text-[#3498DB] transition-colors" />
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={startCameraScanner}
+                                className="p-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2"
+                                title="Camera Barcode Scanner"
+                            >
+                                <Camera size={18} />
+                                <span className="text-xs font-bold hidden lg:inline">Scan</span>
+                            </button>
+                            <div className="relative group w-56">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Search className="h-5 w-5 text-gray-400 group-focus-within:text-[#3498DB] transition-colors" />
+                                </div>
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB] transition duration-200 sm:text-sm shadow-sm"
+                                    placeholder={t('search_products')}
+                                />
                             </div>
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-[#3498DB]/20 focus:border-[#3498DB] transition duration-200 sm:text-sm shadow-sm"
-                                placeholder={t('search_products')}
-                            />
                         </div>
                     </div>
 
@@ -986,6 +1059,63 @@ export default function POSPage() {
                             </button>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* CAMERA BARCODE SCANNER MODAL */}
+            {isScannerOpen && (
+                <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center animate-in fade-in duration-200">
+                    <div className="relative w-full max-w-lg mx-4">
+                        {/* Close button */}
+                        <button
+                            onClick={stopCameraScanner}
+                            className="absolute -top-12 right-0 p-3 rounded-xl bg-white/10 text-white hover:bg-white/20 transition-all z-10"
+                        >
+                            <X size={24} />
+                        </button>
+
+                        {/* Scanner Frame */}
+                        <div className="relative rounded-[2rem] overflow-hidden bg-black shadow-2xl">
+                            <video
+                                ref={videoRef}
+                                className="w-full h-auto rounded-[2rem]"
+                                playsInline
+                                muted
+                                autoPlay
+                            />
+
+                            {/* Scanning overlay */}
+                            <div className="absolute inset-0 pointer-events-none">
+                                {/* Corners */}
+                                <div className="absolute top-6 left-6 w-12 h-12 border-t-4 border-l-4 border-emerald-400 rounded-tl-xl"></div>
+                                <div className="absolute top-6 right-6 w-12 h-12 border-t-4 border-r-4 border-emerald-400 rounded-tr-xl"></div>
+                                <div className="absolute bottom-6 left-6 w-12 h-12 border-b-4 border-l-4 border-emerald-400 rounded-bl-xl"></div>
+                                <div className="absolute bottom-6 right-6 w-12 h-12 border-b-4 border-r-4 border-emerald-400 rounded-br-xl"></div>
+
+                                {/* Scanning line animation */}
+                                <div className="absolute left-8 right-8 h-0.5 bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.8)] animate-scan-line"></div>
+                            </div>
+                        </div>
+
+                        {/* Info */}
+                        <div className="text-center mt-6">
+                            <p className="text-white font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2">
+                                <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+                                Barcode-ka alaabta camera-da u soo dhagsii
+                            </p>
+                            <p className="text-white/40 text-xs mt-1">Supports: EAN-13, EAN-8, Code 128, UPC-A, QR Code</p>
+                        </div>
+                    </div>
+
+                    <style jsx>{`
+                        @keyframes scanLine {
+                            0%, 100% { top: 15%; }
+                            50% { top: 80%; }
+                        }
+                        .animate-scan-line {
+                            animation: scanLine 2.5s ease-in-out infinite;
+                        }
+                    `}</style>
                 </div>
             )}
         </div>

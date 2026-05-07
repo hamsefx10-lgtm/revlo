@@ -23,7 +23,7 @@ interface Transaction {
 
 interface MobileTransactionCardProps {
     transaction: Transaction;
-    onEdit?: (id: string) => void;
+    onEdit?: (trx: any) => void;
     onDelete?: (id: string) => void;
 }
 
@@ -83,7 +83,7 @@ const MobileTransactionCard: React.FC<MobileTransactionCardProps> = ({ transacti
                         <Eye size={14} />
                     </Link>
                     {onEdit && (
-                        <button onClick={() => onEdit(transaction.id)} className="p-1.5 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit">
+                        <button onClick={() => onEdit(transaction)} className="p-1.5 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit">
                             <Edit size={14} />
                         </button>
                     )}

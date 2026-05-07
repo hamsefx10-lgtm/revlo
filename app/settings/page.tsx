@@ -28,7 +28,7 @@ export default function SettingsOverviewPage() {
           <Settings size={56} className="text-primary mb-3 animate-pulse-subtle" />
           <h3 className="text-xl md:text-2xl font-bold text-darkGray dark:text-gray-100 mb-1">Maamul Dejinta App-kaaga</h3>
           <p className="text-sm md:text-base text-mediumGray dark:text-gray-400 max-w-xl mx-auto leading-relaxed mb-5">
-            Halkan waxaad ka heli kartaa dhammaan dejinta iyo habaynta app-kaaga Revlo.
+            Halkan waxaad ka heli kartaa dhammaan dejinta iyo habaynta app-kaaga Revlo
             Ka dhig Revlo mid ku habboon ganacsigaaga gaarka ah, oo hubi in xogtaadu ay ammaan tahay.
           </p>
           {/* Suggestion/Tip Box */}

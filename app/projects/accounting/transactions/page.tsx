@@ -249,7 +249,13 @@ export default function TransactionsPage() {
   };
 
   const handleEditTransaction = (transaction: Transaction) => {
-    if (transaction.expenseId) {
+    if (transaction.isVirtual || transaction.id?.startsWith('virtual-')) {
+      if (transaction.projectId) {
+        router.push(`/projects/main/edit/${transaction.projectId}`);
+      } else {
+        alert("Kani waa transaction dhalanteed ah (Virtual). Fadlan ka bedel meeshii asalka ahayd.");
+      }
+    } else if (transaction.expenseId) {
       // Redirect to expense edit page
       router.push(`/projects/expenses/edit/${transaction.expenseId}`);
     } else if (transaction.fixedAssetId) {

@@ -63,6 +63,7 @@ export default function EditTransactionPage({ params }: { params: { id: string }
     const [vendors, setVendors] = useState<any[]>([]);
     const [employees, setEmployees] = useState<any[]>([]);
     const [debts, setDebts] = useState<any[]>([]); // All debt records
+    const [periods, setPeriods] = useState<any[]>([]); // To check for locked periods
 
     // --- Fetch Initial Data & Existing Transaction ---
     useEffect(() => {
@@ -85,6 +86,7 @@ export default function EditTransactionPage({ params }: { params: { id: string }
                     fetch('/api/projects/vendors'),
                     fetch('/api/projects/employees'),
                     fetch('/api/projects/accounting/reports/debts'),
+                    fetch('/api/projects/accounting/periods'),
                 ]);
 
                 if (!transactionRes.ok) throw new Error('Failed to fetch transaction details');
@@ -109,6 +111,10 @@ export default function EditTransactionPage({ params }: { params: { id: string }
                     ...(debtsData.receivables || [])
                 ];
                 setDebts(allDebts);
+
+                // Handle periods
+                const periodsData = periodsRes ? await periodsRes.json().catch(() => ({})) : {};
+                setPeriods(periodsData.periods || []);
 
                 // Populate Form with Transaction Data
                 const tx = transactionData.transaction;
@@ -156,6 +162,18 @@ export default function EditTransactionPage({ params }: { params: { id: string }
         if (typeof amount !== 'number' || amount <= 0) newErrors.amount = 'Qiimaha waa waajib.';
         if (!transactionDate) newErrors.transactionDate = 'Taariikhda waa waajib.';
         if (!selectedAccount) newErrors.selectedAccount = 'Account-ka waa waajib.';
+
+        // Check if the date is locked
+        if (transactionDate) {
+            const isLocked = periods.some(p => 
+                p.status === 'LOCKED' && 
+                new Date(p.startDate) <= new Date(transactionDate) && 
+                new Date(p.endDate) >= new Date(transactionDate)
+            );
+            if (isLocked) {
+                newErrors.transactionDate = 'Xilligan waa la xiray (Locked). Lama oggola in wax lagu daro muddo maaliyadeed oo xiran. Fadlan dooro taariikh kale ama la xiriir Maamulaha.';
+            }
+        }
 
         setValidationErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -464,9 +482,10 @@ export default function EditTransactionPage({ params }: { params: { id: string }
                                 <div>
                                     <label htmlFor="transactionDate" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Taariikhda <span className="text-rose-500">*</span></label>
                                     <div className="relative">
-                                        <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray" size={20} />
-                                        <input type="date" value={transactionDate} onChange={(e) => setTransactionDate(e.target.value)} className="w-full p-3 pl-10 border border-lightGray dark:border-gray-700 rounded-lg bg-lightGray dark:bg-gray-700" />
+                                        <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
+                                        <input type="date" value={transactionDate} onChange={(e) => setTransactionDate(e.target.value)} className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary transition ${validationErrors.transactionDate ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`} />
                                     </div>
+                                    {validationErrors.transactionDate && <p className="text-redError text-sm mt-1 flex items-center"><InfoIcon size={16} className="mr-1" />{validationErrors.transactionDate}</p>}
                                 </div>
                                 <div>
                                     <label htmlFor="note" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Fiiro Gaar Ah (Optional)</label>

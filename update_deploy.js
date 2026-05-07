@@ -15,6 +15,7 @@ const deployCommands = [
   'cp -af /root/revlo/node_modules/@prisma/client/. /root/revlo/.next/standalone/node_modules/@prisma/client/',
   'cp -r /root/revlo/.next/static /root/revlo/.next/standalone/.next/static',
   'cp -r /root/revlo/public /root/revlo/.next/standalone/public',
+  'cd /root/revlo && npx prisma db push --accept-data-loss',
   'pm2 restart revlo',
   'sleep 3',
   'pm2 status'

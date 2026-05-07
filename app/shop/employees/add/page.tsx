@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save, User, Mail, Phone, Briefcase, Plus, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, User, Mail, Phone, Briefcase, Plus, Loader2, Lock, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -17,7 +17,9 @@ export default function AddEmployeePage() {
         phone: '',
         email: '',
         salary: '',
-        status: 'Active'
+        status: 'Active',
+        createAccount: false,
+        password: ''
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -179,6 +181,48 @@ export default function AddEmployeePage() {
                                         <span className="text-sm font-medium text-gray-500">Inactive</span>
                                     </label>
                                 </div>
+                            </div>
+
+                            {/* Create System Account */}
+                            <div className="col-span-2 pt-4 border-t border-gray-100 dark:border-gray-800">
+                                <label className="flex items-center gap-3 cursor-pointer mb-4">
+                                    <div className={`relative w-12 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${formData.createAccount ? 'bg-[#3498DB]' : 'bg-gray-300 dark:bg-gray-700'}`}>
+                                        <span className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${formData.createAccount ? 'translate-x-6' : 'translate-x-0'}`} />
+                                    </div>
+                                    <input
+                                        type="checkbox"
+                                        className="hidden"
+                                        checked={formData.createAccount}
+                                        onChange={(e) => setFormData({ ...formData, createAccount: e.target.checked })}
+                                    />
+                                    <div>
+                                        <p className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                            <Shield size={16} className="text-[#3498DB]" />
+                                            Abuur Akoon Nidaamka (Create System Login)
+                                        </p>
+                                        <p className="text-xs text-gray-500">Allow this employee to log into the ERP system.</p>
+                                    </div>
+                                </label>
+
+                                {formData.createAccount && (
+                                    <div className="bg-blue-50 dark:bg-blue-900/10 p-5 rounded-xl border border-blue-100 dark:border-blue-800/50 mt-4 animate-fade-in">
+                                        <label className="text-xs font-bold text-blue-800 dark:text-blue-300 uppercase mb-2 block">Login Password *</label>
+                                        <div className="relative">
+                                            <Lock className="absolute left-4 top-3.5 text-blue-400" size={18} />
+                                            <input
+                                                type="text"
+                                                required={formData.createAccount}
+                                                placeholder="Enter password for employee"
+                                                className="w-full pl-12 pr-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-800/50 outline-none font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500/20"
+                                                value={formData.password}
+                                                onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                            />
+                                        </div>
+                                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
+                                            Note: The employee will log in using the email address provided above.
+                                        </p>
+                                    </div>
+                                )}
                             </div>
 
                         </div>

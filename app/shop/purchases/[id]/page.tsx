@@ -28,7 +28,8 @@ import {
     Plus,
     X,
     MoreVertical,
-    AlertTriangle
+    AlertTriangle,
+    Receipt
 } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -451,6 +452,28 @@ export default function PurchaseOrderDetails({ params }: { params: { id: string 
                             </div>
                         </div>
 
+                        {/* RECEIPT IMAGE CARD */}
+                        {po.receiptUrl && (
+                            <div className="rounded-[2.5rem] bg-white dark:bg-[#151C2C] p-10 border border-gray-100 dark:border-gray-800 shadow-xl shadow-gray-200/40 dark:shadow-none">
+                                <div className="flex items-center gap-4 mb-8">
+                                    <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-2xl">
+                                        <Receipt size={24} />
+                                    </div>
+                                    <h3 className="text-xl font-black text-gray-900 dark:text-white">Document Reference</h3>
+                                </div>
+                                <div className="rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-800 group relative">
+                                    <img 
+                                        src={po.receiptUrl} 
+                                        alt="Receipt" 
+                                        className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-110 cursor-pointer" 
+                                        onClick={() => window.open(po.receiptUrl, '_blank')}
+                                    />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                                        <span className="text-white text-[10px] font-black uppercase tracking-widest bg-black/50 px-4 py-2 rounded-full">Open Original File</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

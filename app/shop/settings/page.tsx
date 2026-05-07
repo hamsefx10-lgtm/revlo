@@ -26,7 +26,8 @@ import {
     RefreshCcw,
     History,
     Info,
-    PieChart
+    PieChart,
+    Activity
 } from 'lucide-react';
 import UltraIcon from '@/components/shop/ui/UltraIcon';
 import { toast } from 'sonner';
@@ -91,6 +92,12 @@ export default function SettingsPage() {
     const [rate, setRate] = useState<string>('');
     const [currentRate, setCurrentRate] = useState<any>(null);
 
+    const [securitySettings, setSecuritySettings] = useState({
+        requirePasswordOnRefunds: false,
+        autoLogout: false,
+        require2FA: false
+    });
+
     useEffect(() => { fetchCompany(); }, []);
 
     const fetchCompany = async () => {
@@ -104,6 +111,16 @@ export default function SettingsPage() {
             if (rateData.rate) {
                 setCurrentRate(rateData.rate);
                 setRate(rateData.rate.rate.toString());
+            }
+
+            const secRes = await fetch('/api/settings/security');
+            const secData = await secRes.json();
+            if (secData.success && secData.features) {
+                setSecuritySettings({
+                    requirePasswordOnRefunds: secData.features.requirePasswordOnRefunds || false,
+                    autoLogout: secData.features.autoLogout || false,
+                    require2FA: secData.features.require2FA || false
+                });
             }
 
             if (data.company) {
@@ -141,6 +158,17 @@ export default function SettingsPage() {
                 throw new Error(err.error || 'Failed to save settings');
             }
 
+            // Always save security settings
+            const secRes = await fetch('/api/settings/security', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    companyId: 'UNKNOWN',
+                    ...securitySettings
+                }),
+            });
+            if (!secRes.ok) throw new Error('Failed to save security settings');
+
             toast.success('Settings saved successfully!');
         } catch (err: any) {
             toast.error(err.message || 'Failed to save settings');
@@ -158,6 +186,8 @@ export default function SettingsPage() {
         { id: 'Receipt', icon: Printer, label: t('receipt_header'), href: null },
         { id: 'WhatsApp', icon: MessageCircle, label: t('whatsapp'), href: null },
         { id: 'Users', icon: Users, label: t('employees_title'), href: null },
+        { id: 'Approvals', icon: ShieldCheck, label: 'Ansixinta (Approvals)', href: '/shop/settings/approvals' },
+        { id: 'AuditLogs', icon: Activity, label: 'Diiwaanka (Audit Logs)', href: '/shop/settings/audit-logs' },
         { id: 'Security', icon: Lock, label: 'Security', href: null },
         { id: 'Shareholders', icon: PieChart, label: 'Saamileyda', href: '/shop/settings/shareholders' },
     ];
@@ -456,29 +486,29 @@ export default function SettingsPage() {
                                     <SettingRow
                                         label="Require Password on Refunds"
                                         description="Staff must enter manager password to process a refund."
-                                        value={false}
-                                        onChange={() => toast.info('This feature is coming soon')}
+                                        value={securitySettings.requirePasswordOnRefunds}
+                                        onChange={() => setSecuritySettings(s => ({ ...s, requirePasswordOnRefunds: !s.requirePasswordOnRefunds }))}
                                     />
                                     <SettingRow
                                         label="Auto-logout after inactivity"
                                         description="Automatically log out cashier sessions after 30 minutes of inactivity."
-                                        value={false}
-                                        onChange={() => toast.info('This feature is coming soon')}
+                                        value={securitySettings.autoLogout}
+                                        onChange={() => setSecuritySettings(s => ({ ...s, autoLogout: !s.autoLogout }))}
                                     />
                                     <SettingRow
                                         label="Two-Factor Authentication (2FA)"
                                         description="Require OTP for all admin logins."
-                                        value={false}
-                                        onChange={() => toast.info('This feature is coming soon')}
+                                        value={securitySettings.require2FA}
+                                        onChange={() => setSecuritySettings(s => ({ ...s, require2FA: !s.require2FA }))}
                                     />
                                 </div>
                             </div>
 
-                            <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-2xl p-5 flex items-start gap-3">
-                                <AlertTriangle size={20} className="text-amber-500 flex-shrink-0 mt-0.5" />
+                            <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-2xl p-5 flex items-start gap-3">
+                                <ShieldCheck size={20} className="text-blue-500 flex-shrink-0 mt-0.5" />
                                 <div>
-                                    <p className="font-bold text-amber-800 dark:text-amber-300 text-sm">Security features are under development</p>
-                                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">Password policies and full 2FA will be available in the next release.</p>
+                                    <p className="font-bold text-blue-800 dark:text-blue-300 text-sm">Security settings are active</p>
+                                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">These policies will be enforced across all branches and devices. Click Save to apply.</p>
                                 </div>
                             </div>
                         </div>

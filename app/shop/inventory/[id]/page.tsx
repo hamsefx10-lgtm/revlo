@@ -24,11 +24,13 @@ import { useReactToPrint } from 'react-to-print';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import StatusBadge from '@/components/shop/ui/StatusBadge';
+import { useShopLang } from '@/contexts/ShopLanguageContext';
 
 // Data fetched from API now
 
 export default function ProductDetailsPage() {
     const params = useParams();
+    const { t } = useShopLang();
     const [isEditing, setIsEditing] = useState(false);
     const [product, setProduct] = useState<any>(null);
     const [history, setHistory] = useState<any[]>([]);
@@ -87,9 +89,9 @@ export default function ProductDetailsPage() {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center gap-4">
                 <AlertCircle size={48} className="text-red-500" />
-                <h2 className="text-xl font-bold">Product not found</h2>
+                <h2 className="text-xl font-bold">{t('product_not_found')}</h2>
                 <Link href="/shop/inventory" className="text-[#3498DB] hover:underline">
-                    Back to Inventory
+                    {t('back_to_inventory')}
                 </Link>
             </div>
         );
@@ -112,7 +114,7 @@ export default function ProductDetailsPage() {
                 <div>
                     <div className="flex items-center gap-2 mb-3">
                         <Link href="/shop/inventory" className="group flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-gray-400 hover:text-[#3498DB] transition-all">
-                            <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> Back to Inventory
+                            <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> {t('back_to_inventory')}
                         </Link>
                     </div>
                     <div className="flex items-center gap-4">
@@ -129,13 +131,13 @@ export default function ProductDetailsPage() {
                         onClick={handlePrint}
                         className="px-6 py-3 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-black text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center gap-2 group shadow-sm"
                     >
-                        <Printer size={20} className="group-hover:-translate-y-0.5 transition-transform" /> Print Label
+                        <Printer size={20} className="group-hover:-translate-y-0.5 transition-transform" /> {t('print_label')}
                     </button>
                     <Link href={`/shop/inventory/${params.id}/edit`} className="px-6 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 font-black text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center gap-2 group shadow-sm">
-                        <Edit size={20} className="group-hover:rotate-12 transition-transform" /> Edit
+                        <Edit size={20} className="group-hover:rotate-12 transition-transform" /> {t('edit')}
                     </Link>
                     <button className="px-6 py-3 rounded-2xl bg-red-500 hover:bg-red-600 text-white font-black shadow-xl shadow-red-500/20 transition-all flex items-center gap-2 transform active:scale-95">
-                        <Trash2 size={20} /> Delete
+                        <Trash2 size={20} /> {t('delete')}
                     </button>
                 </div>
             </div>
@@ -156,15 +158,15 @@ export default function ProductDetailsPage() {
 
                             <div className="flex-1 space-y-6">
                                 <div>
-                                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Product Overview</h3>
+                                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-4">{t('product_overview')}</h3>
                                     <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed font-medium">
-                                        {product.description || 'No detailed description provided for this catalog item. High-quality stock item maintained by Revlo Inventory System.'}
+                                        {product.description || t('no_description')}
                                     </p>
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-6 border-t border-gray-50 dark:border-gray-800">
-                                    <InfoItem label="Catalog Category" value={product.category} icon={Layers} color="blue" />
-                                    <InfoItem label="Primary Supplier" value={product.supplier?.name || 'Direct Import'} icon={Package} color="orange" />
+                                    <InfoItem label={t('catalog_category')} value={product.category} icon={Layers} color="blue" />
+                                    <InfoItem label={t('primary_supplier')} value={product.supplier?.name || t('direct_import')} icon={Package} color="orange" />
                                 </div>
                             </div>
                         </div>
@@ -177,13 +179,13 @@ export default function ProductDetailsPage() {
                                 <div className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl">
                                     <Barcode size={24} />
                                 </div>
-                                Barcode Label & Assets
+                                {t('barcode_label_assets')}
                             </h3>
                             <button
                                 onClick={handlePrint}
                                 className="text-sm font-black text-blue-600 hover:text-blue-700 flex items-center gap-2 px-4 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/10 rounded-xl transition-all"
                             >
-                                <Printer size={16} /> Print Label Template
+                                <Printer size={16} /> {t('print_label_template')}
                             </button>
                         </div>
 
@@ -212,10 +214,10 @@ export default function ProductDetailsPage() {
 
                             <div className="max-w-xs space-y-4">
                                 <p className="text-sm text-gray-500 font-medium">
-                                    Use this barcode for POS scanning and inventory tracking. Labels are formatted for standard 50x30mm thermal printers.
+                                    {t('barcode_usage_msg')}
                                 </p>
                                 <div className="flex items-center gap-2 text-xs font-black text-orange-600 bg-orange-50 dark:bg-orange-900/20 px-3 py-1.5 rounded-lg w-fit">
-                                    <AlertCircle size={14} /> Unique SKU Required
+                                    <AlertCircle size={14} /> {t('unique_sku_required')}
                                 </div>
                             </div>
                         </div>
@@ -228,7 +230,7 @@ export default function ProductDetailsPage() {
                                 <div className="p-2 bg-orange-50 dark:bg-orange-900/20 text-orange-600 rounded-xl">
                                     <History size={24} />
                                 </div>
-                                Operational History
+                                {t('operational_history')}
                             </h3>
                         </div>
 
@@ -239,7 +241,7 @@ export default function ProductDetailsPage() {
                             {history.length === 0 ? (
                                 <div className="text-center py-10 opacity-30">
                                     <Package size={48} className="mx-auto mb-2" />
-                                    <p className="font-bold">No historical data recorded</p>
+                                    <p className="font-bold">{t('no_history_recorded')}</p>
                                 </div>
                             ) : (
                                 history.map((entry, idx) => (
@@ -275,7 +277,7 @@ export default function ProductDetailsPage() {
                         <div className="absolute -right-16 -top-16 w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
                         <div className="relative z-10 space-y-8">
                             <div>
-                                <h4 className="text-green-100 text-xs font-black uppercase tracking-[0.2em] mb-4">Market Valuation</h4>
+                                <h4 className="text-green-100 text-xs font-black uppercase tracking-[0.2em] mb-4">{t('market_valuation')}</h4>
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-xl font-bold opacity-80 uppercase">ETB</span>
                                     <h2 className="text-5xl font-black tracking-tighter">{product.sellingPrice.toLocaleString()}</h2>
@@ -284,12 +286,12 @@ export default function ProductDetailsPage() {
 
                             <div className="pt-8 border-t border-white/20 grid grid-cols-2 gap-4">
                                 <div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-green-100 mb-1">Stock Value</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-green-100 mb-1">{t('stock_value')}</p>
                                     <p className="text-xl font-black">ETB {(product.sellingPrice * product.stock).toLocaleString()}</p>
                                 </div>
                                 <div className="text-right">
                                     <p className={`text-[10px] font-black uppercase tracking-widest mb-1 ${profit >= 0 ? 'text-green-100' : 'text-red-100'}`}>
-                                        Est. Profit
+                                        {t('est_profit')}
                                     </p>
                                     <p className="text-xl font-black">ETB {(profit * product.stock).toLocaleString()}</p>
                                 </div>
@@ -299,7 +301,7 @@ export default function ProductDetailsPage() {
 
                     {/* Profit Margin Analysis */}
                     <div className="bg-white dark:bg-[#151C2C] border border-gray-100 dark:border-gray-800 rounded-[2.5rem] p-8 shadow-sm">
-                        <h4 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Financial Performance</h4>
+                        <h4 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6">{t('financial_performance')}</h4>
 
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
@@ -307,14 +309,14 @@ export default function ProductDetailsPage() {
                                     <div className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl">
                                         <TrendingUp size={18} />
                                     </div>
-                                    <span className="text-sm font-bold text-gray-600 dark:text-gray-400">Unit Profit</span>
+                                    <span className="text-sm font-bold text-gray-600 dark:text-gray-400">{t('unit_profit')}</span>
                                 </div>
                                 <span className="font-black text-gray-900 dark:text-white">ETB {profit.toLocaleString()}</span>
                             </div>
 
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between text-sm">
-                                    <span className="font-bold text-gray-500 uppercase text-[10px] tracking-widest">ROI Efficiency</span>
+                                    <span className="font-bold text-gray-500 uppercase text-[10px] tracking-widest">{t('roi_efficiency')}</span>
                                     <span className={`font-black ${parseFloat(profitMargin) > 30 ? 'text-green-500' : 'text-orange-500'}`}>{profitMargin}%</span>
                                 </div>
                                 <div className="h-3 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
@@ -323,14 +325,14 @@ export default function ProductDetailsPage() {
                                         style={{ width: `${Math.min(parseFloat(profitMargin), 100)}%` }}
                                     ></div>
                                 </div>
-                                <p className="text-[10px] text-gray-400 font-medium italic">Calculated based on unit acquisition cost vs current listing price.</p>
+                                <p className="text-[10px] text-gray-400 font-medium italic">{t('calc_based_msg')}</p>
                             </div>
                         </div>
                     </div>
 
                     {/* Stock & Availability */}
                     <div className="bg-white dark:bg-[#151C2C] border border-gray-100 dark:border-gray-800 rounded-[2.5rem] p-8 shadow-sm">
-                        <h4 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Stock Intelligence</h4>
+                        <h4 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6">{t('stock_intelligence')}</h4>
 
                         <div className="space-y-6">
                             <div className="flex items-center gap-4">
@@ -353,14 +355,14 @@ export default function ProductDetailsPage() {
                                     <span className="absolute text-sm font-black text-gray-900 dark:text-white">{product.stock}</span>
                                 </div>
                                 <div>
-                                    <p className="font-black text-gray-900 dark:text-white text-lg">Current Count</p>
-                                    <p className="text-xs text-gray-500 font-medium">System reports active units</p>
+                                    <p className="font-black text-gray-900 dark:text-white text-lg">{t('current_count')}</p>
+                                    <p className="text-xs text-gray-500 font-medium">{t('system_reports_units')}</p>
                                 </div>
                             </div>
 
                             <div className="p-4 bg-gray-50 dark:bg-gray-800/20 rounded-2xl flex items-center justify-between">
-                                <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Reorder Point</span>
-                                <span className="font-black text-gray-900 dark:text-white">{product.minStock} Units</span>
+                                <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">{t('reorder_point')}</span>
+                                <span className="font-black text-gray-900 dark:text-white">{product.minStock} {t('unit')}s</span>
                             </div>
                         </div>
                     </div>

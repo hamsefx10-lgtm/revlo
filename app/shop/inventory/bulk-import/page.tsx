@@ -5,6 +5,7 @@ import { Upload, FileUp, CheckCircle, AlertCircle, X, Loader2, Download, Table, 
 import { useToast } from '@/components/ui/use-toast';
 import { useRouter } from 'next/navigation';
 import * as XLSX from 'xlsx';
+import { useShopLang } from '@/contexts/ShopLanguageContext';
 
 // Types for Imported Data
 interface ImportedProduct {
@@ -23,6 +24,7 @@ interface ImportedProduct {
 export default function BulkImportPage() {
     const router = useRouter();
     const { toast } = useToast();
+    const { t, lang } = useShopLang();
     const [step, setStep] = useState<'upload' | 'preview' | 'importing' | 'success'>('upload');
     const [file, setFile] = useState<File | null>(null);
     const [previewData, setPreviewData] = useState<ImportedProduct[]>([]);
@@ -193,13 +195,13 @@ export default function BulkImportPage() {
                 {/* Header */}
                 <div className="mb-8">
                     <button onClick={() => router.back()} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 flex items-center gap-1 mb-4 text-sm font-bold">
-                        <X size={16} /> Cancel Import
+                        <X size={16} /> {t('cancel')}
                     </button>
                     <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
                         <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-500">
                             <FileUp size={32} />
                         </div>
-                        Bulk Import Inventory
+                        {t('bulk_import_inventory')}
                     </h1>
                     {/* Shop-specific import, no cross-module target selection here */}
 
@@ -216,15 +218,15 @@ export default function BulkImportPage() {
                             <Upload className="text-white" size={32} />
                         </div>
                         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                            Drag & Drop your file here
+                            {lang === 'so' ? 'Halkan ku soo rido faylka' : 'Drag & Drop your file here'}
                         </h3>
-                        <p className="text-gray-400 mb-8">Supports CSV, XLSX, XLS. Max 5MB.</p>
+                        <p className="text-gray-400 mb-8">{lang === 'so' ? 'Wuxuu taageeraa CSV, XLSX, XLS. Ugu badnaan 5MB.' : 'Supports CSV, XLSX, XLS. Max 5MB.'}</p>
 
                         <button
                             onClick={() => fileInputRef.current?.click()}
                             className="px-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-bold hover:shadow-xl transition-all hover:scale-105"
                         >
-                            Browse Files
+                            {lang === 'so' ? 'Dooro Fayl' : 'Browse Files'}
                         </button>
                         <input
                             ref={fileInputRef}
@@ -242,12 +244,12 @@ export default function BulkImportPage() {
                                 <Table className="text-green-600 dark:text-green-400" size={24} />
                             </div>
                             <div>
-                                <h4 className="font-bold text-gray-900 dark:text-white">Need a template?</h4>
-                                <p className="text-sm text-gray-500">Download our pre-formatted Excel template to ensure smooth import.</p>
+                                <h4 className="font-bold text-gray-900 dark:text-white">{lang === 'so' ? 'Ma u baahantahay Tusaale?' : 'Need a template?'}</h4>
+                                <p className="text-sm text-gray-500">{lang === 'so' ? 'Soo degso tusaalaha Excel si aad u hubiso soo dejinta saxda ah.' : 'Download our pre-formatted Excel template to ensure smooth import.'}</p>
                             </div>
                         </div>
                         <a href="/api/shop/inventory/template" download className="px-5 py-2.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all flex items-center gap-2">
-                            <Download size={18} /> Download
+                            <Download size={18} /> {lang === 'so' ? 'Soo deji' : 'Download'}
                         </a>
                     </div>
                 </div>
@@ -265,19 +267,19 @@ export default function BulkImportPage() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                     <div>
-                        <h1 className="text-2xl font-black text-gray-900 dark:text-white">Preview Data</h1>
-                        <p className="text-gray-500 text-sm mt-1">Review your data before importing. <span className="font-bold text-green-500">{validCount} Valid</span>, <span className="font-bold text-red-500">{invalidCount} Invalid</span></p>
+                        <h1 className="text-2xl font-black text-gray-900 dark:text-white">{lang === 'so' ? 'Hubinta Xogta' : 'Preview Data'}</h1>
+                        <p className="text-gray-500 text-sm mt-1">{lang === 'so' ? 'Hubi xogta inta aadan soo dejin.' : 'Review your data before importing.'} <span className="font-bold text-green-500">{validCount} {lang === 'so' ? 'Sax ah' : 'Valid'}</span>, <span className="font-bold text-red-500">{invalidCount} {lang === 'so' ? 'Qaldan' : 'Invalid'}</span></p>
                     </div>
                     <div className="flex gap-3">
                         <button onClick={() => setStep('upload')} className="px-6 py-2.5 rounded-xl font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800">
-                            Back
+                            {t('back')}
                         </button>
                         <button
                             onClick={handleImport}
                             disabled={validCount === 0}
                             className="px-6 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         >
-                            Import {validCount} Items
+                            {lang === 'so' ? `Soo Daji ${validCount}` : `Import ${validCount} Items`}
                         </button>
                     </div>
                 </div>
@@ -288,12 +290,12 @@ export default function BulkImportPage() {
                         <table className="w-full text-sm">
                             <thead className="bg-gray-50 dark:bg-gray-800 text-gray-500 font-bold uppercase text-xs">
                                 <tr>
-                                    <th className="px-6 py-4 text-center">Status</th>
-                                    <th className="px-6 py-4 text-left">Product Name</th>
-                                    <th className="px-6 py-4 text-left">Category</th>
-                                    <th className="px-6 py-4 text-right">Price</th>
-                                    <th className="px-6 py-4 text-right">Stock</th>
-                                    <th className="px-6 py-4 text-left">Issues</th>
+                                    <th className="px-6 py-4 text-center">{t('status')}</th>
+                                    <th className="px-6 py-4 text-left">{t('name')}</th>
+                                    <th className="px-6 py-4 text-left">{t('category')}</th>
+                                    <th className="px-6 py-4 text-right">{t('price')}</th>
+                                    <th className="px-6 py-4 text-right">{lang === 'so' ? 'Kayd' : 'Stock'}</th>
+                                    <th className="px-6 py-4 text-left">{lang === 'so' ? 'Khaladaad' : 'Issues'}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -325,8 +327,8 @@ export default function BulkImportPage() {
             <div className="min-h-screen flex flex-col items-center justify-center p-4">
                 <div className="bg-white dark:bg-gray-900 p-8 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 text-center max-w-sm w-full">
                     <Loader2 className="animate-spin text-blue-500 mx-auto mb-6" size={48} />
-                    <h2 className="text-xl font-black text-gray-900 dark:text-white mb-2">Importing Products...</h2>
-                    <p className="text-gray-500">Please wait while we process your inventory.</p>
+                    <h2 className="text-xl font-black text-gray-900 dark:text-white mb-2">{lang === 'so' ? 'Waa La Soo Dajinayaa...' : 'Importing Products...'}</h2>
+                    <p className="text-gray-500">{lang === 'so' ? 'Fadlan sug inta aynu habaynayno alaabtaada.' : 'Please wait while we process your inventory.'}</p>
                 </div>
             </div>
         );
@@ -347,19 +349,19 @@ export default function BulkImportPage() {
                                     <AlertCircle className="text-orange-500" size={32} />
                                 </div>
                                 <div>
-                                    <h2 className="text-2xl font-black text-gray-900 dark:text-white">Import Completed with Errors</h2>
-                                    <p className="text-gray-500 text-sm mt-1">Some products couldn't be imported. Review the issues below to fix your Excel file.</p>
+                                    <h2 className="text-2xl font-black text-gray-900 dark:text-white">{lang === 'so' ? 'Soo Dejinta Waa Dhamaatay balse Khaladaad Baa Jira' : 'Import Completed with Errors'}</h2>
+                                    <p className="text-gray-500 text-sm mt-1">{lang === 'so' ? 'Qaar ka mid ah alaabta lama soo dejin karo. Hoos eeg si aad u saxdo Excel-ka.' : 'Some products couldn\'t be imported. Review the issues below to fix your Excel file.'}</p>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 mb-6">
                                 <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl text-center border border-gray-100 dark:border-gray-700">
                                     <span className="block text-3xl font-black text-green-500">{importStats.success}</span>
-                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Successful</span>
+                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{lang === 'so' ? 'Guulaystay' : 'Successful'}</span>
                                 </div>
                                 <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl text-center border border-gray-100 dark:border-gray-700">
                                     <span className="block text-3xl font-black text-red-500">{importStats.failed}</span>
-                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Failed</span>
+                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{lang === 'so' ? 'Fashilmay' : 'Failed'}</span>
                                 </div>
                             </div>
 
@@ -367,15 +369,15 @@ export default function BulkImportPage() {
                                 <div className="mb-8 bg-red-50 dark:bg-red-900/10 rounded-2xl overflow-hidden border border-red-100 dark:border-red-900/30">
                                     <div className="bg-red-100/50 dark:bg-red-900/20 px-5 py-3 border-b border-red-100 dark:border-red-900/30 flex items-center gap-2">
                                         <AlertCircle className="text-red-600 dark:text-red-400" size={18} />
-                                        <h3 className="font-bold text-red-800 dark:text-red-300">Failure Details & Recommendations</h3>
+                                        <h3 className="font-bold text-red-800 dark:text-red-300">{lang === 'so' ? 'Faahfaahinta & Talooyinka' : 'Failure Details & Recommendations'}</h3>
                                     </div>
                                     <div className="max-h-72 overflow-y-auto p-0">
                                         <table className="w-full text-sm text-left">
                                             <thead className="bg-red-50/50 dark:bg-red-900/10 text-red-800 dark:text-red-300 font-semibold text-xs uppercase sticky top-0">
                                                 <tr>
                                                     <th className="px-5 py-3 border-b border-red-100 dark:border-red-900/30">SKU</th>
-                                                    <th className="px-5 py-3 border-b border-red-100 dark:border-red-900/30">Reason</th>
-                                                    <th className="px-5 py-3 border-b border-red-100 dark:border-red-900/30">How to Fix</th>
+                                                    <th className="px-5 py-3 border-b border-red-100 dark:border-red-900/30">{t('reason')}</th>
+                                                    <th className="px-5 py-3 border-b border-red-100 dark:border-red-900/30">{lang === 'so' ? 'Sida Loo Saxo' : 'How to Fix'}</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-red-100 dark:divide-red-900/30">
@@ -412,13 +414,13 @@ export default function BulkImportPage() {
                                     onClick={() => router.push('/shop/inventory')}
                                     className="flex-1 py-4 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-700"
                                 >
-                                    Proceed to Inventory
+                                    {lang === 'so' ? 'Aad Kaydka' : 'Proceed to Inventory'}
                                 </button>
                                 <button
                                     onClick={() => { setStep('upload'); setFile(null); setPreviewData([]); }}
                                     className="flex-1 py-4 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 transition-all shadow-lg shadow-blue-500/20"
                                 >
-                                    Re-upload Fixed File
+                                    {lang === 'so' ? 'Dib u Soo Geli' : 'Re-upload Fixed File'}
                                 </button>
                             </div>
                         </>
@@ -427,16 +429,16 @@ export default function BulkImportPage() {
                             <div className="bg-green-100 dark:bg-green-900/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
                                 <CheckCircle className="text-green-500" size={40} />
                             </div>
-                            <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-4">Import Successful!</h2>
+                            <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-4">{lang === 'so' ? 'Soo Dejinta Waa Guulaystay!' : 'Import Successful!'}</h2>
 
                             <div className="grid grid-cols-2 gap-4 mb-8">
                                 <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
                                     <span className="block text-3xl font-black text-green-500">{importStats.success}</span>
-                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Success</span>
+                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{lang === 'so' ? 'Guulaystay' : 'Success'}</span>
                                 </div>
                                 <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
                                     <span className="block text-3xl font-black text-red-500">{importStats.failed}</span>
-                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Failed</span>
+                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{lang === 'so' ? 'Fashilmay' : 'Failed'}</span>
                                 </div>
                             </div>
 
@@ -444,13 +446,13 @@ export default function BulkImportPage() {
                                 onClick={() => router.push('/shop/inventory')}
                                 className="w-full py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-bold hover:opacity-90 transition-all mb-3"
                             >
-                                View Inventory
+                                {lang === 'so' ? 'Arag Kaydka' : 'View Inventory'}
                             </button>
                             <button
                                 onClick={() => { setStep('upload'); setFile(null); setPreviewData([]); }}
                                 className="w-full py-4 text-gray-500 font-bold hover:text-gray-700 transition-colors"
                             >
-                                Import More
+                                {lang === 'so' ? 'Wax Kale Soo Daji' : 'Import More'}
                             </button>
                         </>
                     )}

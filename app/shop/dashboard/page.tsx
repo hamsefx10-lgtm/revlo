@@ -16,8 +16,14 @@ import {
     MessageSquare,
     Send,
     AlertCircle,
-    CheckCircle2
+    CheckCircle2,
+    Headphones,
+    Bot,
+    ArrowRight,
+    HelpCircle,
+    BrainCircuit
 } from 'lucide-react';
+import AiInsightsFeed from '@/components/shop/AiInsightsFeed';
 import Link from 'next/link';
 import { format } from 'date-fns';
 
@@ -31,6 +37,7 @@ export default function ShopDashboard() {
     const [query, setQuery] = useState('');
     const [messages, setMessages] = useState<{ role: 'user' | 'ai', content: string }[]>([]);
     const [isTyping, setIsTyping] = useState(false);
+
     const [stats, setStats] = useState({
         metrics: {
             revenue: 0,
@@ -56,6 +63,7 @@ export default function ShopDashboard() {
 
     useEffect(() => {
         fetchDashboardData();
+
         const interval = setInterval(() => {
             fetchDashboardData(true);
         }, 30000);
@@ -88,17 +96,64 @@ export default function ShopDashboard() {
         setIsTyping(true);
 
         try {
-            const response = await fetch('/api/ai/chat', {
+            const response = await fetch('/api/shop/ai/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: userMsg, history: messages })
+                body: JSON.stringify({ 
+                    message: userMsg, 
+                    sessionId: 'dashboard-expert'
+                })
             });
-            const data = await response.json();
-            if (data.content) {
-                setMessages(prev => [...prev, { role: 'ai', content: data.content }]);
+
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({ error: 'AI server error' }));
+                setMessages(prev => [...prev, { role: 'ai', content: '⚠️ ' + (err.error || 'Khalad ayaa dhacay.') }]);
+                setIsTyping(false);
+                return;
+            }
+
+            const reader = response.body?.getReader();
+            const decoder = new TextDecoder();
+            let fullText = '';
+
+            if (reader) {
+                // Add placeholder message for streaming
+                const aiIdx = messages.length + 1; // approximate index
+                setMessages(prev => [...prev, { role: 'ai', content: '' }]);
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    const chunk = decoder.decode(value, { stream: true });
+                    const lines = chunk.split('\n');
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                if (data.error) fullText = '⚠️ ' + data.error;
+                                else if (data.text) fullText += data.text;
+                                
+                                if (data.done) {
+                                    setMessages(prev => {
+                                        const updated = [...prev];
+                                        updated[updated.length - 1] = { role: 'ai', content: fullText };
+                                        return updated;
+                                    });
+                                } else {
+                                    setMessages(prev => {
+                                        const updated = [...prev];
+                                        updated[updated.length - 1] = { role: 'ai', content: fullText };
+                                        return updated;
+                                    });
+                                }
+                            } catch {}
+                        }
+                    }
+                }
             }
         } catch (error) {
             console.error('AI Chat Error:', error);
+            setMessages(prev => [...prev, { role: 'ai', content: 'AI server-ka ma shaqaynayo. Dib u isku day.' }]);
         } finally {
             setIsTyping(false);
         }
@@ -480,118 +535,93 @@ export default function ShopDashboard() {
                     {/* AI INTELLIGENCE SECTION */}
                     <div className="pt-8 border-t border-gray-100 dark:border-white/5">
                         <div className="flex items-center gap-2 mb-6">
-                            <Sparkles className="text-[#3498DB]" size={20} />
-                            <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tighter">{t('ai_intelligence')}</h3>
+                            <BrainCircuit className="text-[#3498DB]" size={20} />
+                            <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tighter">AI Business Strategy</h3>
                         </div>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            {/* Smart Insights */}
-                            <div className="bg-gradient-to-br from-[#3498DB]/5 to-[#8E44AD]/5 dark:from-[#3498DB]/10 dark:to-[#8E44AD]/10 backdrop-blur-md rounded-[32px] p-8 border border-[#3498DB]/20 relative overflow-hidden group">
-                                <div className="relative z-10 h-full flex flex-col">
-                                    <div className="flex items-center justify-between mb-8">
-                                        <div>
-                                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">{t('ai_proactive_guard')}</p>
-                                            <h4 className="text-2xl font-black text-gray-900 dark:text-white">{t('smart_insights')}</h4>
-                                        </div>
-                                        <AlertCircle className="text-[#3498DB] animate-pulse" size={24} />
-                                    </div>
-
-                                    <div className="space-y-4 flex-1">
-                                        {stats.metrics.lowStock > 0 && (
-                                            <div className="p-4 rounded-2xl bg-white/40 dark:bg-[#0f172a]/40 border border-[#3498DB]/20 backdrop-blur-sm flex items-start gap-3">
-                                                <AlertCircle className="text-orange-500 mt-1" size={16} />
-                                                <div>
-                                                    <p className="text-xs font-bold text-gray-900 dark:text-white">{t('inventory_risk')}</p>
-                                                    <p className="text-[11px] text-gray-500 mt-0.5">{stats.metrics.lowStock} {t('inventory_risk_msg')}</p>
-                                                </div>
-                                            </div>
-                                        )}
-                                        {stats.metrics.accountsReceivable > 10000 && (
-                                            <div className="p-4 rounded-2xl bg-white/40 dark:bg-[#0f172a]/40 border border-[#3498DB]/20 backdrop-blur-sm flex items-start gap-3">
-                                                <Wallet className="text-red-500 mt-1" size={16} />
-                                                <div>
-                                                    <p className="text-xs font-bold text-gray-900 dark:text-white">{t('cash_flow_alert')}</p>
-                                                    <p className="text-[11px] text-gray-500 mt-0.5">ETB {Math.round(stats.metrics.accountsReceivable).toLocaleString()} {t('cash_flow_msg')}</p>
-                                                </div>
-                                            </div>
-                                        )}
-                                        {Number(stats.metrics.trends.revenue) < 0 && (
-                                            <div className="p-4 rounded-2xl bg-white/40 dark:bg-[#0f172a]/40 border border-[#3498DB]/20 backdrop-blur-sm flex items-start gap-3">
-                                                <BarChart3 className="text-blue-500 mt-1" size={16} />
-                                                <div>
-                                                    <p className="text-xs font-bold text-gray-900 dark:text-white">{t('sales_dip')}</p>
-                                                    <p className="text-[11px] text-gray-500 mt-0.5">{t('sales_dip_msg')}</p>
-                                                </div>
-                                            </div>
-                                        )}
-                                        <div className="p-4 rounded-2xl bg-[#2ECC71]/10 border border-[#2ECC71]/20 flex items-start gap-3">
-                                            <CheckCircle2 className="text-[#2ECC71] mt-1" size={16} />
-                                            <p className="text-[11px] text-[#2ECC71] font-bold uppercase tracking-tight">{t('system_optimized')}</p>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                            <div className="lg:col-span-7">
+                                <AiInsightsFeed />
                             </div>
-
-                            {/* AI Chat */}
-                            <div className="bg-white/50 dark:bg-[#1f2937]/30 backdrop-blur-md rounded-[32px] p-8 border border-gray-100 dark:border-white/5 flex flex-col h-[500px]">
-                                <div className="flex items-center justify-between mb-6">
-                                    <div>
-                                        <h4 className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-2">
-                                            <MessageSquare className="text-[#3498DB]" size={20} />
-                                            {t('revlo_expert')}
-                                        </h4>
-                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">{t('talk_to_data')}</p>
+                            <div className="lg:col-span-5">
+                            <div className="bg-white/50 dark:bg-[#1f2937]/30 backdrop-blur-md rounded-[24px] p-1 border border-gray-100 dark:border-white/5 shadow-sm flex flex-col h-[560px] relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-40 h-40 bg-[#3498DB]/5 dark:bg-[#3498DB]/10 rounded-full blur-[80px]" />
+                                <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#2ECC71]/5 dark:bg-[#2ECC71]/10 rounded-full blur-[60px]" />
+                                <div className="flex items-center justify-between p-5 pb-4 relative z-10 bg-white dark:bg-[#0f172a] rounded-t-[20px]">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#3498DB] to-[#2ECC71] flex items-center justify-center shadow-lg shadow-[#3498DB]/20">
+                                            <Bot size={20} className="text-white" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-base font-black text-gray-900 dark:text-white flex items-center gap-1.5">
+                                                REVL<span className="text-[#2ECC71]">O</span>
+                                                <span className="text-gray-400 dark:text-gray-500 font-medium text-sm">AI</span>
+                                            </h4>
+                                            <p className="text-[10px] text-[#3498DB] font-bold uppercase tracking-widest">{t('talk_to_data')}</p>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-1">
-                                        <span className="h-2 w-2 rounded-full bg-[#2ECC71] animate-pulse"></span>
-                                        <span className="text-[10px] font-black text-[#2ECC71]">ONLINE</span>
+                                    <div className="flex items-center gap-1.5 bg-[#2ECC71]/10 px-2.5 py-1 rounded-full border border-[#2ECC71]/20">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-[#2ECC71] animate-pulse" />
+                                        <span className="text-[9px] font-black text-[#2ECC71] uppercase">Online</span>
                                     </div>
                                 </div>
-
-                                {/* Chat Messages */}
-                                <div className="flex-1 overflow-y-auto mb-6 space-y-4 pr-2 custom-scrollbar">
+                                <div className="flex-1 overflow-y-auto px-5 space-y-3 custom-scrollbar relative z-10 bg-gray-50/50 dark:bg-[#0b1120]">
                                     {messages.length === 0 ? (
-                                        <div className="h-full flex flex-col items-center justify-center opacity-40 text-center">
-                                            <Sparkles size={48} className="text-[#3498DB] mb-4" />
-                                            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest leading-loose whitespace-pre-line">
+                                        <div className="h-full flex flex-col items-center justify-center text-center">
+                                            <div className="w-16 h-16 rounded-3xl bg-[#3498DB]/10 flex items-center justify-center mb-4 border border-[#3498DB]/20">
+                                                <Sparkles size={28} className="text-[#3498DB]" />
+                                            </div>
+                                            <p className="text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest leading-loose whitespace-pre-line">
                                                 {t('ask_anything')}
                                             </p>
+                                            <div className="mt-4 grid grid-cols-2 gap-2">
+                                                {["Imisa ayaan maanta iibiyay?", "Stock-ka sidee u yahay?", "Faa'iidada bishaan?", "Macaamiishayda?"].map((q, i) => (
+                                                    <button key={i} onClick={() => { setQuery(q); }} className="text-[10px] px-3 py-2 rounded-xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:text-[#3498DB] hover:bg-[#3498DB]/5 hover:border-[#3498DB]/30 transition-all font-medium text-left">
+                                                        {q}
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
                                     ) : (
                                         messages.map((m, i) => (
                                             <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                                <div className={`max-w-[85%] p-4 rounded-3xl ${m.role === 'user'
-                                                    ? 'bg-[#3498DB] text-white rounded-tr-none'
-                                                    : 'bg-gray-100 dark:bg-[#151C2C] text-gray-800 dark:text-gray-200 rounded-tl-none border border-gray-200 dark:border-gray-800 shadow-sm'
-                                                    }`}>
-                                                    <p className="text-sm font-medium leading-relaxed whitespace-pre-wrap">{m.content}</p>
+                                                {m.role !== 'user' && (
+                                                    <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#3498DB]/15 to-[#2ECC71]/15 flex items-center justify-center flex-shrink-0 mr-2 mt-1 border border-[#3498DB]/10">
+                                                        <Bot size={14} className="text-[#3498DB]" />
+                                                    </div>
+                                                )}
+                                                <div className={`max-w-[80%] p-3.5 rounded-2xl ${m.role === 'user' ? 'bg-[#3498DB] text-white rounded-tr-sm' : 'bg-white dark:bg-[#1a2236] text-gray-800 dark:text-gray-200 rounded-tl-sm border border-gray-200/80 dark:border-gray-800/50 shadow-sm'}`}>
+                                                    <p className="text-[13px] font-medium leading-relaxed whitespace-pre-wrap">{m.content}</p>
                                                 </div>
                                             </div>
                                         ))
                                     )}
                                     {isTyping && (
-                                        <div className="flex justify-start">
-                                            <div className="bg-gray-100 dark:bg-[#151C2C] p-4 rounded-3xl rounded-tl-none border border-gray-200 dark:border-gray-800">
-                                                <Loader2 size={16} className="animate-spin text-[#3498DB]" />
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-7 h-7 rounded-xl bg-[#3498DB]/10 flex items-center justify-center"><Bot size={14} className="text-[#3498DB]" /></div>
+                                            <div className="bg-white dark:bg-[#1a2236] p-3 rounded-2xl rounded-tl-sm border border-gray-200/80 dark:border-gray-800/50 shadow-sm">
+                                                <div className="flex gap-1">
+                                                    <span className="w-2 h-2 bg-[#3498DB] rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
+                                                    <span className="w-2 h-2 bg-[#3498DB] rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
+                                                    <span className="w-2 h-2 bg-[#3498DB] rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
+                                                </div>
                                             </div>
                                         </div>
                                     )}
                                 </div>
-
-                                <form onSubmit={handleAskAI} className="relative mt-auto">
-                                    <input
-                                        type="text"
-                                        value={query}
-                                        onChange={(e) => setQuery(e.target.value)}
-                                        placeholder={t('ask_placeholder')}
-                                        className="w-full bg-gray-50 dark:bg-[#0f172a] border-2 border-gray-100 dark:border-gray-800 rounded-2xl pl-6 pr-14 py-4 text-sm font-medium focus:outline-none focus:border-[#3498DB] transition-all"
-                                    />
-                                    <button disabled={isTyping} type="submit" className="absolute right-2 top-2 bottom-2 px-4 bg-[#3498DB] text-white rounded-xl font-bold hover:bg-[#2980B9] transition-all shadow-lg shadow-[#3498DB]/30 flex items-center justify-center disabled:opacity-50">
-                                        <Send size={18} />
-                                    </button>
+                                <form onSubmit={handleAskAI} className="p-4 relative z-10 bg-white dark:bg-[#0f172a] rounded-b-[20px]">
+                                    <div className="relative">
+                                        <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t('ask_placeholder')} className="w-full bg-gray-50 dark:bg-[#1a2236] border border-gray-200 dark:border-gray-800/50 rounded-2xl pl-5 pr-14 py-3.5 text-sm font-medium text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:border-[#3498DB]/50 transition-all" />
+                                        <button disabled={isTyping} type="submit" className="absolute right-1.5 top-1.5 bottom-1.5 px-3.5 bg-[#3498DB] hover:bg-[#2980B9] text-white rounded-xl font-bold hover:shadow-lg hover:shadow-[#3498DB]/20 transition-all flex items-center justify-center disabled:opacity-40">
+                                            <Send size={16} />
+                                        </button>
+                                    </div>
                                 </form>
+                            </div>
                             </div>
                         </div>
                     </div>
+
+
                 </>
             )}
         </div>

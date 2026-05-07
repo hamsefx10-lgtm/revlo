@@ -19,8 +19,13 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     });
 
+    const processedShareholders = shareholders.map((sh: any) => ({
+      ...sh,
+      profitSplit: sh.profitSplit ? Number(sh.profitSplit) : 0,
+    }));
+
     return NextResponse.json({
-      shareholders,
+      shareholders: processedShareholders,
       message: 'Shareholders retrieved successfully'
     });
   } catch (error) {

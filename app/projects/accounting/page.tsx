@@ -244,8 +244,32 @@ export default function AccountingPage() {
     }
   };
 
-  const handleEditTransaction = (id: string) => {
-    router.push(`/projects/accounting/transactions/edit/${id}`); // Navigate to edit transaction page
+  const handleEditTransaction = (transaction: any) => {
+    // Handle both string IDs and transaction objects
+    const trx = typeof transaction === 'string' 
+      ? recentTransactions.find((t: any) => t.id === transaction) || debtTransactions.find((t: any) => t.id === transaction) 
+      : transaction;
+      
+    if (!trx) {
+      if (typeof transaction === 'string') {
+        router.push(`/projects/accounting/transactions/edit/${transaction}`);
+      }
+      return;
+    }
+
+    if (trx.isVirtual || trx.id?.startsWith('virtual-')) {
+      if (trx.projectId) {
+        router.push(`/projects/main/edit/${trx.projectId}`);
+      } else {
+        alert("Kani waa transaction dhalanteed ah (Virtual). Fadlan ka bedel meeshii asalka ahayd.");
+      }
+    } else if (trx.expenseId) {
+      router.push(`/projects/expenses/edit/${trx.expenseId}`);
+    } else if (trx.fixedAssetId) {
+      router.push(`/projects/accounting/fixed-assets`);
+    } else {
+      router.push(`/projects/accounting/transactions/edit/${trx.id}`);
+    }
   };
 
   const handleDeleteTransaction = async (id: string) => {

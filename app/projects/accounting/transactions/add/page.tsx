@@ -62,6 +62,7 @@ export default function AddTransactionPage() {
   const [vendors, setVendors] = useState<any[]>([]);
   const [employees, setEmployees] = useState<any[]>([]);
   const [debts, setDebts] = useState<any[]>([]); // Customers with outstanding debt
+  const [periods, setPeriods] = useState<any[]>([]); // To check for locked periods
 
   // --- Fetch Initial Data (Accounts, Projects, etc.) ---
   useEffect(() => {
@@ -75,6 +76,7 @@ export default function AddTransactionPage() {
           fetch('/api/projects/vendors'),
           fetch('/api/projects/employees'),
           fetch('/api/projects/accounting/reports/debts'),
+          fetch('/api/projects/accounting/periods'),
         ]);
         if (!accountsRes.ok) throw new Error('Accounts fetch failed');
         if (!projectsRes.ok) throw new Error('Projects fetch failed');
@@ -103,6 +105,10 @@ export default function AddTransactionPage() {
           ...(debtsData.receivables || [])
         ];
         setDebts(allDebts);
+        
+        // Handle periods
+        const periodsData = periodsRes ? await periodsRes.json().catch(() => ({})) : {};
+        setPeriods(periodsData.periods || []);
       } catch (error: any) {
         setToastMessage({ message: error.message || 'Cilad ayaa dhacday marka xogta la soo gelinayay.', type: 'error' });
       } finally {
@@ -131,6 +137,18 @@ export default function AddTransactionPage() {
     }
     if (transactionType === 'DEBT_REPAID' || transactionType === 'PAY_VENDOR_DEBT' || transactionType === 'COLLECT_CUSTOMER_DEBT' || transactionType === 'REPAY_PROJECT_DEBT') {
       if (!selectedDebtToRepay) newErrors.selectedDebtToRepay = 'Deynta la bixinayo waa waajib.';
+    }
+
+    // Check if the date is locked
+    if (transactionDate) {
+      const isLocked = periods.some(p => 
+        p.status === 'LOCKED' && 
+        new Date(p.startDate) <= new Date(transactionDate) && 
+        new Date(p.endDate) >= new Date(transactionDate)
+      );
+      if (isLocked) {
+        newErrors.transactionDate = 'Xilligan waa la xiray (Locked). Lama oggola in wax lagu daro muddo maaliyadeed oo xiran. Fadlan dooro taariikh kale ama la xiriir Maamulaha.';
+      }
     }
 
     setValidationErrors(newErrors);

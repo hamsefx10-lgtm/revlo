@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import React from 'react';
+import { ChevronDown, ChevronUp, HardHat, Layers, DollarSign, TrendingUp, TrendingDown, Package, Wallet } from 'lucide-react';
 import { ProjectReport } from './types';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -12,331 +12,278 @@ interface ProjectsListProps {
     loading: boolean;
 }
 
-const getStatusColor = (status: string) => {
+const getStatusStyle = (status: string) => {
     switch (status) {
-        case 'Completed': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
-        case 'Active': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800';
-        default: return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800';
+        case 'Completed': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200';
+        case 'Active': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200';
+        case 'On Hold': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200';
+        default: return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 border-gray-200';
     }
 };
 
-const cleanDescription = (desc: string) => {
-    // Remove " - YYYY-MM-DD" from description if present
-    return desc.replace(/\s-\s\d{4}-\d{2}-\d{2}$/, '');
+const cleanDesc = (d: string) => d.replace(/\s-\s\d{4}-\d{2}-\d{2}$/, '');
+
+const WRow = ({ label, amount, type }: { label: string; amount: number; type: 'in' | 'out' | 'total' }) => {
+    if (amount === 0) return null;
+    const color = type === 'in' ? 'text-green-600 dark:text-green-400' : type === 'out' ? 'text-red-500 dark:text-red-400' : (amount >= 0 ? 'text-blue-700 dark:text-blue-300' : 'text-red-600');
+    const sign = type === 'in' ? '+' : type === 'out' ? '−' : '';
+    const bold = type === 'total' ? 'font-black text-base' : 'font-semibold text-sm';
+    return (
+        <div className={`flex justify-between items-center py-1.5 ${type === 'total' ? 'border-t-2 border-gray-800 dark:border-gray-300 mt-2 pt-3' : ''}`}>
+            <span className={`text-gray-600 dark:text-gray-300 ${type === 'total' ? 'font-bold text-sm' : 'text-xs'}`}>{label}</span>
+            <span className={`${bold} ${color} tabular-nums`}>{sign} {Math.abs(amount).toLocaleString()}</span>
+        </div>
+    );
 };
 
-const ProjectRow: React.FC<{
-    project: ProjectReport;
-    isExpanded: boolean;
-    onToggle: () => void;
-    showDetails: boolean;
-}> = ({ project, isExpanded, onToggle, showDetails }) => {
-    const [activeTab, setActiveTab] = useState<'expenses' | 'transactions' | 'payments'>('expenses');
+const ProjectCard: React.FC<{ project: ProjectReport; isExpanded: boolean; onToggle: () => void; showDetails: boolean }> = ({ project, isExpanded, onToggle, showDetails }) => {
+    const p = project;
+    const catOrder = ['Material', 'Transport', 'Equipment', 'Utilities', 'Consultancy', 'Subcontractor', 'Debt Repayment', 'Other'];
+    // Filter out 'Labor' from categories — laborBreakdown section shows it grouped by employee instead
+    const sortedCats = Object.keys(p.expensesByCategory || {}).filter(cat => cat !== 'Labor').sort((a, b) => {
+        const ia = catOrder.indexOf(a); const ib = catOrder.indexOf(b);
+        return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+    });
 
     return (
-        <div className="group transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/30">
-            <div
-                className="grid grid-cols-[repeat(13,minmax(0,1fr))] gap-4 p-4 items-center cursor-pointer"
-                onClick={onToggle}
-            >
-                {/* Project Name & Date */}
-                <div className="col-span-2">
-                    <div className="flex items-center gap-2">
-                        <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm truncate" title={project.name}>{project.name}</div>
-                        {project.receivables > 5000 && (
-                            <span className="px-1.5 py-0.5 bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 text-[10px] font-bold rounded uppercase tracking-wider animate-pulse">
-                                Priority
-                            </span>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-shadow hover:shadow-md">
+            {/* Project Header — Always visible */}
+            <div className="cursor-pointer" onClick={onToggle}>
+                {/* Top color bar */}
+                <div className={`h-1 ${p.status === 'Active' ? 'bg-blue-500' : p.status === 'Completed' ? 'bg-emerald-500' : 'bg-amber-400'}`} />
+
+                <div className="p-4 md:p-5">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">{p.name}</h3>
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border flex-shrink-0 ${getStatusStyle(p.status)}`}>{p.status}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{p.customer}</span>
+                            <button className={`p-1.5 rounded-full transition ${isExpanded ? 'bg-primary/10 text-primary' : 'text-gray-400 hover:text-gray-600'}`}>
+                                {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Financial Waterfall Summary */}
+                    <div className="bg-gray-50/80 dark:bg-gray-900/40 rounded-xl p-4 space-y-0.5">
+                        <div className="flex justify-between items-center py-1.5 border-b border-gray-200 dark:border-gray-700 mb-1">
+                            <span className="font-bold text-gray-800 dark:text-gray-100 text-xs">Qiimaha Heshiiska (Agreement)</span>
+                            <span className="font-bold text-gray-900 dark:text-white tabular-nums text-sm">{p.projectValue.toLocaleString()}</span>
+                        </div>
+                        <WRow label="+ Lacagta la helay (Collected)" amount={p.totalRevenue} type="in" />
+                        <WRow label="− Kharashyada (Expenses)" amount={p.totalExpenses} type="out" />
+                        {p.remainingRevenue > 0 && <WRow label="− Haraaga (Remaining Debt)" amount={p.remainingRevenue} type="out" />}
+                        <WRow label="Faa'iidada (Cash Profit)" amount={p.grossProfit} type="total" />
+                        {p.projectedProfit !== p.grossProfit && (
+                            <div className="flex justify-between items-center pt-1">
+                                <span className="text-[10px] text-gray-400">Faa'iido Heshiis (Projected)</span>
+                                <span className={`text-xs font-semibold tabular-nums ${p.projectedProfit >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>{p.projectedProfit.toLocaleString()}</span>
+                            </div>
                         )}
                     </div>
-                    <div className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
-                        <Clock size={10} />
-                        {project.startDate ? new Date(project.startDate).toLocaleDateString('so-SO') : '-'}
-                    </div>
-                </div>
-
-                {/* Customer */}
-                <div className="col-span-1 text-sm text-gray-600 dark:text-gray-300 font-medium truncate">
-                    {project.customer}
-                </div>
-
-                {/* Status */}
-                <div className="col-span-1">
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border ${getStatusColor(project.status)}`}>
-                        {project.status}
-                    </span>
-                </div>
-
-                {/* Value */}
-                <div className="col-span-2 text-right">
-                    <div className="text-sm font-bold text-gray-900 dark:text-gray-100">
-                        {project.projectValue.toLocaleString()} <span className="text-[10px] text-gray-500 font-normal">ETB</span>
-                    </div>
-                </div>
-
-                {/* Expenses */}
-                <div className="col-span-1 text-right">
-                    <div className="text-sm font-bold text-gray-700 dark:text-gray-300">
-                        {project.totalExpenses.toLocaleString()}
-                    </div>
-                </div>
-
-                {/* Paid (Revenue Collected) */}
-                <div className="col-span-1 text-right">
-                    <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                        {project.totalRevenue.toLocaleString()}
-                    </div>
-                </div>
-
-                {/* Debt (Outstanding Balance) */}
-                <div className="col-span-1 text-right">
-                    <div className={`text-sm font-bold ${project.remainingRevenue > 0 ? 'text-rose-600 dark:text-rose-400' : project.remainingRevenue < 0 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'}`}>
-                        {project.remainingRevenue.toLocaleString()}
-                        {project.remainingRevenue < 0 && <span className="text-[10px] ml-1 uppercase opacity-70">(Credit)</span>}
-                    </div>
-                </div>
-
-                {/* Profit (Actual Cash & Projected) */}
-                <div className="col-span-2 text-right text-sm font-bold">
-                    <span className={project.grossProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}>
-                        {project.grossProfit.toLocaleString()}
-                        {project.grossProfit < 0 && <span className="text-[10px] ml-1 uppercase opacity-70">(Maqan)</span>}
-                    </span>
-                    <div className="text-[9px] text-gray-400 font-normal">
-                        Faa'ido: {project.projectedProfit.toLocaleString()} (H)
-                    </div>
-                </div>
-
-                {/* Receivables (Cash missing) */}
-                <div className="col-span-1 text-right">
-                    <div className={`text-sm font-bold ${project.receivables > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-gray-300'}`}>
-                        {project.receivables > 0 ? project.receivables.toLocaleString() : '-'}
-                        {project.receivables > 0 && <span className="text-[10px] ml-1 uppercase opacity-70">(Maqan)</span>}
-                    </div>
-                </div>
-
-                {/* Margin & Action */}
-                <div className="col-span-1 flex items-center justify-end gap-2">
-                    <span className="text-sm text-gray-500 font-medium">{project.profitMargin.toFixed(1)}%</span>
-                    <button className={`p-1 rounded-full transition-colors ${isExpanded
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300'
-                        }`}>
-                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                    </button>
                 </div>
             </div>
 
             {/* Expanded Details */}
             <AnimatePresence>
                 {showDetails && isExpanded && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 overflow-hidden"
-                    >
-                        <div className="p-4 sm:p-6">
-                            {/* Custom Tabs */}
-                            <div className="flex space-x-1 rounded-xl bg-white dark:bg-gray-800 p-1 border border-gray-200 dark:border-gray-700 w-fit mb-4">
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); setActiveTab('expenses'); }}
-                                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${activeTab === 'expenses'
-                                        ? 'bg-primary/10 text-primary shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                                        }`}
-                                >
-                                    Kharashyada ({project.expenses?.length || 0})
-                                </button>
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); setActiveTab('transactions'); }}
-                                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${activeTab === 'transactions'
-                                        ? 'bg-primary/10 text-primary shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                                        }`}
-                                >
-                                    Dhaqdhaqaaqa ({project.transactions?.length || 0})
-                                </button>
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); setActiveTab('payments'); }}
-                                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${activeTab === 'payments'
-                                        ? 'bg-primary/10 text-primary shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
-                                        }`}
-                                >
-                                    Lacagaha ({project.payments?.length || 0})
-                                </button>
-                            </div>
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
+                        <div className="border-t border-gray-100 dark:border-gray-700">
 
-                            {/* Expenses Tab */}
-                            {activeTab === 'expenses' && (
-                                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden animate-in fade-in duration-200">
-                                    <table className="w-full text-sm text-left">
-                                        <thead className="bg-gray-50 dark:bg-gray-700/50 text-xs text-gray-500 uppercase font-semibold">
-                                            <tr>
-                                                <th className="px-4 py-3 w-32">Taariikh</th>
-                                                <th className="px-4 py-3">Nooca</th>
-                                                <th className="px-4 py-3">Sharaxaad</th>
-                                                <th className="px-4 py-3">Faahfaahin</th>
-                                                <th className="px-4 py-3 text-right">Qiimaha</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                                            {(project.expenses || []).map(expense => (
-                                                <tr key={expense.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                                                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
-                                                        {expense.date}
-                                                    </td>
-                                                    <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
-                                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
-                                                            {expense.category}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-4 py-3 text-gray-900 dark:text-gray-100">
-                                                        {cleanDescription(expense.description)}
-                                                    </td>
-                                                    <td className="px-4 py-3 text-xs text-gray-500">
-                                                        {expense.category === 'Material' ? (
-                                                            <div className="flex flex-col gap-2 p-1">
-                                                                <table className="w-full text-[10px] border-collapse">
-                                                                    <thead>
-                                                                        <tr className="border-b border-gray-100 dark:border-gray-700 text-gray-400">
-                                                                            <th className="text-left font-medium pb-1">Agabka</th>
-                                                                            <th className="text-right font-medium pb-1">Tirada</th>
-                                                                            <th className="text-right font-medium pb-1">Qiimaha</th>
-                                                                            <th className="text-right font-medium pb-1">Total</th>
+                            {/* ====== EXPENSES BY CATEGORY ====== */}
+                            {sortedCats.length > 0 && sortedCats.map(cat => {
+                                const items = p.expensesByCategory[cat] || [];
+                                if (!items.length) return null;
+                                const catTotal = items.reduce((s, e) => s + e.amount, 0);
+                                const catColor = cat === 'Material' ? 'purple' : cat === 'Labor' ? 'blue' : cat === 'Transport' ? 'teal' : cat === 'Equipment' ? 'indigo' : 'gray';
+
+                                return (
+                                    <div key={cat} className="border-b border-gray-50 dark:border-gray-700/50 last:border-0">
+                                        <div className={`px-5 py-3 flex justify-between items-center bg-${catColor}-50/30 dark:bg-${catColor}-900/10`}>
+                                            <h4 className="font-bold text-sm text-gray-800 dark:text-white flex items-center gap-2">
+                                                {cat === 'Material' && <Package size={15} className="text-purple-500" />}
+                                                {cat === 'Labor' && <HardHat size={15} className="text-blue-500" />}
+                                                {cat !== 'Material' && cat !== 'Labor' && <Wallet size={15} className="text-gray-500" />}
+                                                {cat}
+                                            </h4>
+                                            <span className="text-xs font-bold text-red-600 dark:text-red-400">−{catTotal.toLocaleString()}</span>
+                                        </div>
+
+                                        {/* Material with breakdown */}
+                                        {cat === 'Material' ? (
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-xs text-left">
+                                                    <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-500 font-medium">
+                                                        <tr>
+                                                            <th className="px-5 py-2">Taariikh</th>
+                                                            <th className="px-3 py-2">Sharaxaad</th>
+                                                            <th className="px-3 py-2">Agabka</th>
+                                                            <th className="px-3 py-2 text-right">Qty</th>
+                                                            <th className="px-3 py-2 text-right">Qiimaha</th>
+                                                            <th className="px-5 py-2 text-right">Total</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
+                                                        {items.map((e, idx) => {
+                                                            if (e.materials && Array.isArray(e.materials) && e.materials.length > 0) {
+                                                                return e.materials.map((m: any, mi: number) => {
+                                                                    const qty = Number(m.qty ?? m.quantity ?? 0);
+                                                                    const price = Number(m.price ?? 0);
+                                                                    return (
+                                                                        <tr key={`${e.id}-${mi}`} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                                                                            <td className="px-5 py-2.5 text-gray-600 whitespace-nowrap">{mi === 0 ? e.date : ''}</td>
+                                                                            <td className="px-3 py-2.5 text-gray-700 dark:text-gray-300">{mi === 0 ? cleanDesc(e.description) : ''}</td>
+                                                                            <td className="px-3 py-2.5 font-medium text-gray-900 dark:text-white">{m.name}</td>
+                                                                            <td className="px-3 py-2.5 text-right text-gray-600 font-mono">{qty} {m.unit || ''}</td>
+                                                                            <td className="px-3 py-2.5 text-right text-gray-600 font-mono">{price.toLocaleString()}</td>
+                                                                            <td className="px-5 py-2.5 text-right font-bold text-gray-900 dark:text-white">{(qty * price).toLocaleString()}</td>
                                                                         </tr>
-                                                                    </thead>
-                                                                    <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
-                                                                        {expense.materials && Array.isArray(expense.materials) && expense.materials.length > 0 ? (
-                                                                            expense.materials.map((m: any, idx: number) => {
-                                                                                const qty = Number((m.qty ?? m.quantity) || 0);
-                                                                                const price = Number(m.price || 0);
-                                                                                const total = qty * price;
-                                                                                return (
-                                                                                    <tr key={idx} className="text-gray-600 dark:text-gray-300">
-                                                                                        <td className="py-1.5 font-medium">{m.name}</td>
-                                                                                        <td className="py-1.5 text-right font-mono">{qty.toLocaleString()} {m.unit}</td>
-                                                                                        <td className="py-1.5 text-right font-mono">{price.toLocaleString()}</td>
-                                                                                        <td className="py-1.5 text-right font-bold text-gray-900 dark:text-gray-100">{total.toLocaleString()}</td>
-                                                                                    </tr>
-                                                                                );
-                                                                            })
-                                                                        ) : (
-                                                                            <tr className="text-gray-600 dark:text-gray-300">
-                                                                                <td className="py-1.5 font-medium">{expense.description}</td>
-                                                                                <td className="py-1.5 text-right font-mono">1</td>
-                                                                                <td className="py-1.5 text-right font-mono">{Number(expense.amount).toLocaleString()}</td>
-                                                                                <td className="py-1.5 text-right font-bold text-gray-900 dark:text-gray-100">{Number(expense.amount).toLocaleString()}</td>
-                                                                            </tr>
-                                                                        )}
-                                                                    </tbody>
-                                                                </table>
+                                                                    );
+                                                                });
+                                                            }
+                                                            return (
+                                                                <tr key={e.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                                                                    <td className="px-5 py-2.5 text-gray-600 whitespace-nowrap">{e.date}</td>
+                                                                    <td className="px-3 py-2.5 text-gray-700 dark:text-gray-300" colSpan={3}>{cleanDesc(e.description)}</td>
+                                                                    <td className="px-3 py-2.5" />
+                                                                    <td className="px-5 py-2.5 text-right font-bold text-gray-900 dark:text-white">{e.amount.toLocaleString()}</td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        ) : (
+                                            <div className="divide-y divide-gray-50 dark:divide-gray-700/50">
+                                                {items.map(e => (
+                                                    <div key={e.id} className="px-5 py-3 flex justify-between items-start hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
+                                                        <div className="min-w-0 flex-1">
+                                                            <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{cleanDesc(e.description)}</p>
+                                                            <div className="flex flex-wrap gap-1 mt-1">
+                                                                <span className="text-[10px] text-gray-400">{e.date}</span>
+                                                                {e.employeeName && <span className="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded font-medium">👤 {e.employeeName}</span>}
+                                                                {e.accountName && <span className="text-[10px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded">{e.accountName}</span>}
                                                             </div>
-                                                        ) : (
-                                                            <div className="flex flex-wrap gap-1">
-                                                                {expense.subCategory && <span className="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded border border-blue-100 dark:border-blue-800">{expense.subCategory}</span>}
-                                                                {expense.employeeName && <span className="bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded border border-purple-100 dark:border-purple-800">Shaqaale: {expense.employeeName}</span>}
-                                                                {expense.supplierName && <span className="bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 rounded border border-orange-100 dark:border-orange-800">Supplier: {expense.supplierName}</span>}
+                                                        </div>
+                                                        <span className="font-bold text-sm text-gray-900 dark:text-white ml-3 flex-shrink-0">−{e.amount.toLocaleString()}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+
+                            {/* ====== LABOR BREAKDOWN (by employee) ====== */}
+                            {p.laborBreakdown && p.laborBreakdown.length > 0 && (
+                                <div className="border-t border-gray-100 dark:border-gray-700">
+                                    <div className="px-5 py-3 flex justify-between items-center bg-blue-50/40 dark:bg-blue-900/10">
+                                        <h4 className="font-bold text-sm text-gray-800 dark:text-white flex items-center gap-2">
+                                            <HardHat size={15} className="text-blue-500" />
+                                            Shaqaalaha — Kala Saar
+                                        </h4>
+                                        <span className="text-xs font-bold text-blue-600">
+                                            {p.laborBreakdown.length} Shaqaale
+                                        </span>
+                                    </div>
+                                    <div className="divide-y divide-gray-50 dark:divide-gray-700/50">
+                                        {p.laborBreakdown.map((emp, idx) => (
+                                            <div key={idx} className="px-5 py-3">
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xs font-bold text-blue-700 dark:text-blue-400">
+                                                            {emp.employeeName.charAt(0).toUpperCase()}
+                                                        </div>
+                                                        <span className="font-bold text-sm text-gray-900 dark:text-white">{emp.employeeName}</span>
+                                                    </div>
+                                                    <span className="font-bold text-sm text-red-600">−{emp.totalPaid.toLocaleString()}</span>
+                                                </div>
+                                                {emp.items.length > 0 && (
+                                                    <div className="ml-9 space-y-1">
+                                                        {emp.items.map((item, ii) => (
+                                                            <div key={ii} className="flex justify-between text-xs text-gray-500">
+                                                                <span>{item.date} — {cleanDesc(item.description)}</span>
+                                                                <span className="font-medium text-gray-700 dark:text-gray-300">{item.amount.toLocaleString()}</span>
                                                             </div>
-                                                        )}
-                                                    </td>
-                                                    <td className="px-4 py-3 text-right font-semibold text-gray-900 dark:text-gray-100">
-                                                        {expense.amount.toLocaleString()}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                            {(project.expenses || []).length === 0 && (
-                                                <tr>
-                                                    <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
-                                                        Wax kharash ah lagama diiwaangelin mashruucan
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
 
-                            {/* Transactions Tab */}
-                            {activeTab === 'transactions' && (
-                                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden animate-in fade-in duration-200">
-                                    <table className="w-full text-sm text-left">
-                                        <thead className="bg-gray-50 dark:bg-gray-700/50 text-xs text-gray-500 uppercase font-semibold">
-                                            <tr>
-                                                <th className="px-4 py-3 w-32">Taariikh</th>
-                                                <th className="px-4 py-3">Nooca</th>
-                                                <th className="px-4 py-3">Sharaxaad</th>
-                                                <th className="px-4 py-3 text-right">Qiimaha</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                                            {(project.transactions || []).map(tx => (
-                                                <tr key={tx.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                                                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
-                                                        {tx.date}
-                                                    </td>
-                                                    <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
-                                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
-                                                            {tx.type}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-4 py-3 text-gray-900 dark:text-gray-100">
-                                                        {cleanDescription(tx.description)}
-                                                    </td>
-                                                    <td className="px-4 py-3 text-right font-semibold text-gray-900 dark:text-gray-100">
-                                                        {tx.amount.toLocaleString()}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                            {(project.transactions || []).length === 0 && (
+                            {/* ====== MATERIALS USED ====== */}
+                            {p.materialsUsed && p.materialsUsed.length > 0 && (
+                                <div className="border-t border-gray-100 dark:border-gray-700">
+                                    <div className="px-5 py-3 flex justify-between items-center bg-cyan-50/40 dark:bg-cyan-900/10">
+                                        <h4 className="font-bold text-sm text-gray-800 dark:text-white flex items-center gap-2">
+                                            <Layers size={15} className="text-cyan-500" />
+                                            Agabka La Isticmaalay
+                                        </h4>
+                                        <span className="text-xs font-bold text-cyan-600">{p.materialsUsed.length} Agab</span>
+                                    </div>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-xs text-left">
+                                            <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-500 font-medium">
                                                 <tr>
-                                                    <td colSpan={4} className="px-4 py-8 text-center text-gray-400">
-                                                        Wax dhaqdhaqaaq ah lagama diiwaangelin
-                                                    </td>
+                                                    <th className="px-5 py-2">Magaca</th>
+                                                    <th className="px-3 py-2 text-right">Tirada</th>
+                                                    <th className="px-3 py-2 text-right">Qiimaha/Unit</th>
+                                                    <th className="px-3 py-2 text-right">Hadhay</th>
+                                                    <th className="px-5 py-2 text-right">Wadarta</th>
                                                 </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
+                                                {p.materialsUsed.map(m => (
+                                                    <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                                                        <td className="px-5 py-2.5 font-medium text-gray-900 dark:text-white">{m.name}</td>
+                                                        <td className="px-3 py-2.5 text-right font-mono text-gray-600">{m.quantityUsed} {m.unit}</td>
+                                                        <td className="px-3 py-2.5 text-right font-mono text-gray-600">{m.costPerUnit.toLocaleString()}</td>
+                                                        <td className="px-3 py-2.5 text-right text-gray-500">{m.leftoverQty} {m.unit}</td>
+                                                        <td className="px-5 py-2.5 text-right font-bold text-gray-900 dark:text-white">{m.totalCost.toLocaleString()}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             )}
 
-                            {/* Payments Tab */}
-                            {activeTab === 'payments' && (
-                                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden animate-in fade-in duration-200">
-                                    <table className="w-full text-sm text-left">
-                                        <thead className="bg-gray-50 dark:bg-gray-700/50 text-xs text-gray-500 uppercase font-semibold">
-                                            <tr>
-                                                <th className="px-4 py-3 w-32">Taariikh</th>
-                                                <th className="px-4 py-3">Sharaxaad</th>
-                                                <th className="px-4 py-3 text-right">Qiimaha</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                                            {(project.payments || []).map(pay => (
-                                                <tr key={pay.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                                                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
-                                                        {pay.date}
-                                                    </td>
-                                                    <td className="px-4 py-3 text-gray-900 dark:text-gray-100">
-                                                        {cleanDescription(pay.description || '-')}
-                                                    </td>
-                                                    <td className="px-4 py-3 text-right font-semibold text-gray-900 dark:text-gray-100">
-                                                        {pay.amount.toLocaleString()}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                            {(project.payments || []).length === 0 && (
-                                                <tr>
-                                                    <td colSpan={3} className="px-4 py-8 text-center text-gray-400">
-                                                        Wax lacag bixin ah lagama diiwaangelin
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
+                            {/* ====== PAYMENTS ====== */}
+                            {p.payments && p.payments.length > 0 && (
+                                <div className="border-t border-gray-100 dark:border-gray-700">
+                                    <div className="px-5 py-3 flex justify-between items-center bg-green-50/40 dark:bg-green-900/10">
+                                        <h4 className="font-bold text-sm text-gray-800 dark:text-white flex items-center gap-2">
+                                            <DollarSign size={15} className="text-green-500" />
+                                            Lacagaha La Helay
+                                        </h4>
+                                        <span className="text-xs font-bold text-green-600">+{p.totalRevenue.toLocaleString()}</span>
+                                    </div>
+                                    <div className="divide-y divide-gray-50 dark:divide-gray-700/50">
+                                        {p.payments.map(pay => (
+                                            <div key={pay.id} className="px-5 py-3 flex justify-between items-start hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
+                                                <div>
+                                                    <p className="font-medium text-sm text-gray-900 dark:text-white">{cleanDesc(pay.description)}</p>
+                                                    <div className="flex gap-2 mt-1">
+                                                        <span className="text-[10px] text-gray-400">{pay.date}</span>
+                                                        {pay.customerName && <span className="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded font-medium">{pay.customerName}</span>}
+                                                        {pay.accountName && <span className="text-[10px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded">{pay.accountName}</span>}
+                                                    </div>
+                                                </div>
+                                                <span className="font-bold text-sm text-green-600 ml-3 flex-shrink-0">+{pay.amount.toLocaleString()}</span>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
+                            )}
+
+                            {/* Empty state */}
+                            {sortedCats.length === 0 && (!p.payments || p.payments.length === 0) && (
+                                <div className="p-8 text-center text-gray-400 italic">Wax dhaqdhaqaaq ah lagama diiwaangelin mashruucan.</div>
                             )}
                         </div>
                     </motion.div>
@@ -346,75 +293,47 @@ const ProjectRow: React.FC<{
     );
 };
 
-export const ProjectsList: React.FC<ProjectsListProps> = ({
-    visibleProjects,
-    showDetails,
-    expandedProjects,
-    toggleProjectExpansion,
-}) => {
+export const ProjectsList: React.FC<ProjectsListProps> = ({ visibleProjects, showDetails, expandedProjects, toggleProjectExpansion }) => {
+    if (visibleProjects.length === 0) {
+        return (
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-12 text-center">
+                <p className="text-gray-400 text-lg">Wax mashruuc ah lama helin.</p>
+            </div>
+        );
+    }
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-            {/* Table Header */}
-            <div className="grid grid-cols-[repeat(13,minmax(0,1fr))] gap-4 p-4 bg-gray-50/50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                <div className="col-span-2">Mashruuc</div>
-                <div className="col-span-1">Macmiil</div>
-                <div className="col-span-1">Xaalad</div>
-                <div className="col-span-2 text-right">Qiimaha</div>
-                <div className="col-span-1 text-right">Kharashka</div>
-                <div className="col-span-1 text-right text-emerald-600 dark:text-emerald-400">La Bixiyay</div>
-                <div className="col-span-1 text-right text-rose-600 dark:text-rose-400">Haraaga</div>
-                <div className="col-span-2 text-right">Faa'iidada (Cash)</div>
-                <div className="col-span-1 text-right text-orange-600 dark:text-orange-400">Maqan</div>
-                <div className="col-span-1 text-right">%</div>
-            </div>
+        <div className="space-y-4">
+            {visibleProjects.map(project => (
+                <ProjectCard
+                    key={project.id}
+                    project={project}
+                    isExpanded={expandedProjects.has(project.id)}
+                    onToggle={() => toggleProjectExpansion(project.id)}
+                    showDetails={showDetails}
+                />
+            ))}
 
-            {/* Project Rows */}
-            <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                {visibleProjects.map((project) => (
-                    <ProjectRow
-                        key={project.id}
-                        project={project}
-                        isExpanded={expandedProjects.has(project.id)}
-                        onToggle={() => toggleProjectExpansion(project.id)}
-                        showDetails={showDetails}
-                    />
-                ))}
-
-                {/* Summary Footer */}
-                {visibleProjects.length > 0 && (
-                    <div className="bg-gray-50 dark:bg-gray-800/80 p-4 border-t border-gray-200 dark:border-gray-700">
-                        <div className="grid grid-cols-[repeat(13,minmax(0,1fr))] gap-4 items-center">
-                            <div className="col-span-4 font-bold text-gray-700 dark:text-gray-200 uppercase text-xs tracking-wider">
-                                Wadarta Guud
+            {/* Grand Total Footer */}
+            {visibleProjects.length > 1 && (
+                <div className="bg-gradient-to-r from-slate-900 to-slate-700 rounded-2xl p-5 shadow-lg">
+                    <h3 className="font-black text-white text-sm tracking-wide mb-3">WADARTA GUUD — {visibleProjects.length} MASHRUUC</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        {[
+                            { label: 'Qiimaha', value: visibleProjects.reduce((s, p) => s + p.projectValue, 0), color: 'text-white' },
+                            { label: 'La Helay', value: visibleProjects.reduce((s, p) => s + p.totalRevenue, 0), color: 'text-green-400' },
+                            { label: 'Kharashka', value: visibleProjects.reduce((s, p) => s + p.totalExpenses, 0), color: 'text-red-400' },
+                            { label: "Faa'iida", value: visibleProjects.reduce((s, p) => s + p.grossProfit, 0), color: visibleProjects.reduce((s, p) => s + p.grossProfit, 0) >= 0 ? 'text-green-300' : 'text-red-400' },
+                            { label: 'Maqan', value: visibleProjects.reduce((s, p) => s + p.receivables, 0), color: 'text-orange-400' },
+                        ].map((item, i) => (
+                            <div key={i}>
+                                <p className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">{item.label}</p>
+                                <p className={`text-lg font-bold tabular-nums ${item.color}`}>{item.value.toLocaleString()}</p>
                             </div>
-                            <div className="col-span-2 text-right font-bold text-gray-900 dark:text-white text-sm">
-                                {visibleProjects.reduce((sum, p) => sum + p.projectValue, 0).toLocaleString()} <span className="text-[10px] text-gray-500 font-normal">ETB</span>
-                            </div>
-                            <div className="col-span-1 text-right font-bold text-gray-700 dark:text-gray-300 text-sm">
-                                {visibleProjects.reduce((sum, p) => sum + p.totalExpenses, 0).toLocaleString()}
-                            </div>
-                            <div className="col-span-1 text-right font-bold text-emerald-600 dark:text-emerald-400 text-sm">
-                                {visibleProjects.reduce((sum, p) => sum + p.totalRevenue, 0).toLocaleString()}
-                            </div>
-                            <div className="col-span-1 text-right font-bold text-sm">
-                                <span className={visibleProjects.reduce((sum, p) => sum + p.remainingRevenue, 0) > 0 ? 'text-rose-600' : visibleProjects.reduce((sum, p) => sum + p.remainingRevenue, 0) < 0 ? 'text-blue-600' : 'text-gray-400'}>
-                                    {visibleProjects.reduce((sum, p) => sum + p.remainingRevenue, 0).toLocaleString()}
-                                </span>
-                            </div>
-                            <div className="col-span-2 text-right font-bold text-gray-900 dark:text-white text-sm">
-                                <span className={visibleProjects.reduce((sum, p) => sum + p.grossProfit, 0) >= 0 ? 'text-emerald-700' : 'text-rose-700'}>
-                                    {visibleProjects.reduce((sum, p) => sum + p.grossProfit, 0).toLocaleString()}
-                                </span>
-                            </div>
-                            <div className="col-span-1 text-right font-bold text-orange-600 dark:text-orange-400 text-sm">
-                                {visibleProjects.reduce((sum, p) => sum + p.receivables, 0).toLocaleString()}
-                            </div>
-                            <div className="col-span-1"></div>
-                        </div>
+                        ))}
                     </div>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -30,45 +30,43 @@ export async function GET() {
         const startOfCurrentPeriod = startOfDay(subDays(today, 6)); // Last 7 days
         const startOfLastPeriod = startOfDay(subDays(today, 13)); // Period before that
 
-        // 1. Total Revenue, COGS & Orders (All time & Period cases)
-        const [salesAggregate, prevSalesAggregate, cogsAggregate, expenseAggregate] = await Promise.all([
-            // All-time Sales
-            prisma.sale.aggregate({
+        // Helper: convert sale total to ETB
+        const toETB = (s: { total: number; currency: string | null; exchangeRate: number | null }) =>
+            s.currency === 'USD' ? s.total * (s.exchangeRate || 1) : s.total;
+
+        // 1. Total Revenue, COGS & Orders (currency-aware)
+        const [allSales, prevPeriodSales, cogsAggregate, expenseAggregate] = await Promise.all([
+            prisma.sale.findMany({
                 where: { companyId },
-                _sum: { total: true },
-                _count: { id: true },
+                select: { id: true, total: true, currency: true, exchangeRate: true, createdAt: true }
             }),
-            // Prev Period Sales (for trends)
-            prisma.sale.aggregate({
+            prisma.sale.findMany({
                 where: { companyId, createdAt: { gte: startOfLastPeriod, lt: startOfCurrentPeriod } },
-                _sum: { total: true },
-                _count: { id: true }
+                select: { total: true, currency: true, exchangeRate: true }
             }),
-            // All-time COGS from SaleItems
             prisma.saleItem.aggregate({
                 where: { sale: { companyId } },
                 _sum: { totalCost: true }
             }),
-            // All-time Expenses
             prisma.expense.aggregate({
                 where: { companyId },
                 _sum: { amount: true }
             })
         ]);
 
-        const totalRevenue = salesAggregate._sum.total || 0;
+        const totalRevenue = allSales.reduce((s, sale) => s + toETB(sale), 0);
+        const totalOrders = allSales.length;
         const totalCOGS = cogsAggregate._sum.totalCost || 0;
         const totalExpenses = Number(expenseAggregate._sum.amount || 0);
-        const grossProfit = totalRevenue - totalCOGS;
+        const grossProfit = totalRevenue - Number(totalCOGS);
         const netProfit = grossProfit - totalExpenses;
 
-        // Trends (Week-over-Week)
-        const currentPeriodRevenue = (await prisma.sale.aggregate({
-            where: { companyId, createdAt: { gte: startOfCurrentPeriod } },
-            _sum: { total: true }
-        }))._sum.total || 0;
+        // Trends (Week-over-Week) — currency-aware
+        const currentPeriodRevenue = allSales
+            .filter(s => new Date(s.createdAt) >= startOfCurrentPeriod)
+            .reduce((sum, s) => sum + toETB(s), 0);
 
-        const prevPeriodRevenue = prevSalesAggregate._sum.total || 0;
+        const prevPeriodRevenue = prevPeriodSales.reduce((sum, s) => sum + toETB(s), 0);
         const revenueTrend = prevPeriodRevenue > 0 ? ((currentPeriodRevenue - prevPeriodRevenue) / prevPeriodRevenue) * 100 : 0;
 
         // 2. Active Products & Stock Intelligence
@@ -114,13 +112,13 @@ export async function GET() {
 
         const recentSales = await prisma.sale.findMany({
             where: { companyId, createdAt: { gte: startOfCurrentPeriod } },
-            select: { createdAt: true, total: true }
+            select: { createdAt: true, total: true, currency: true, exchangeRate: true }
         });
 
         recentSales.forEach(sale => {
             const dayName = dayNames[new Date(sale.createdAt).getDay()];
             const day = last7Days.find(d => d.name === dayName);
-            if (day) day.sales += sale.total;
+            if (day) day.sales += toETB(sale);
         });
 
         // 5. Financial Health (AR/AP & Aging)
@@ -251,7 +249,7 @@ export async function GET() {
                 revenue: totalRevenue,
                 netProfit: netProfit,
                 grossProfit: grossProfit,
-                orders: salesAggregate._count.id || 0,
+                orders: totalOrders,
                 products: productsCount,
                 lowStock: lowStockCount,
                 accountsPayable: apAmount,

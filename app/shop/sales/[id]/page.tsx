@@ -49,10 +49,12 @@ export default function SaleDetailsPage({ params }: { params: { id: string } }) 
     };
 
     const handleExport = async (type: 'download' | 'print') => {
-        const url = `/api/public/shop/receipt/${params.id}${type === 'print' ? '?action=view' : ''}`;
         if (type === 'print') {
-            window.open(url, '_blank');
+            // Use the new fast client-side print page
+            window.open(`/shop/sales/${params.id}/print?auto=1`, '_blank');
         } else {
+            // Download PDF via server-side Puppeteer
+            const url = `/api/public/shop/receipt/${params.id}`;
             window.location.href = url;
         }
     };
@@ -107,6 +109,7 @@ export default function SaleDetailsPage({ params }: { params: { id: string } }) 
     const revenueETB = revenueBase * rate;
     const profitETB = revenueETB - totalCostETB;
     const margin = revenueETB > 0 ? (profitETB / revenueETB) * 100 : 0;
+    const isRefunded = sale.status === 'Refunded' || sale.status === 'PartialRefund';
 
     const currencySymbol = sale.currency === 'USD' ? '$' : 'ETB';
 
@@ -221,11 +224,13 @@ export default function SaleDetailsPage({ params }: { params: { id: string } }) 
                     {/* STATUS & CUSTOMER CARD */}
                     <div className="bg-white/80 dark:bg-[#161B2E]/80 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 rounded-[2rem] shadow-sm p-5 hover:shadow-md transition-all">
                         <div className="flex items-start justify-between mb-4">
-                            <div className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${sale.paymentStatus === 'Paid' || sale.status === 'Completed'
+                            <div className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                                isRefunded ? 'bg-rose-50 text-rose-600 border border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20'
+                                : sale.paymentStatus === 'Paid' || sale.status === 'Completed'
                                 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
                                 : 'bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20'
                                 }`}>
-                                {sale.paymentStatus || (sale.status === 'Completed' ? 'PAID' : 'PARTIAL')}
+                                {isRefunded ? (sale.status === 'PartialRefund' ? 'PARTIAL REFUND' : 'REFUNDED') : (sale.paymentStatus || (sale.status === 'Completed' ? 'PAID' : 'PARTIAL'))}
                             </div>
                             <div className="text-right">
                                 <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Process By</p>
@@ -322,7 +327,7 @@ export default function SaleDetailsPage({ params }: { params: { id: string } }) 
                     </div>
 
                     {/* RECENT SETTLEMENTS (Modern Timeline) */}
-                    <div className="bg-white/80 dark:bg-[#161B2E]/80 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 rounded-[2rem] p-5 shadow-sm overflow-hidden min-h-[200px]">
+                    <div className="bg-white/80 dark:bg-[#161B2E]/80 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 rounded-[2rem] p-5 shadow-sm overflow-hidden min-h-[150px]">
                         <div className="flex items-center justify-between mb-4">
                             <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
                                 <History size={12} /> Settlement Journey
@@ -372,6 +377,25 @@ export default function SaleDetailsPage({ params }: { params: { id: string } }) 
                         </div>
                     </div>
 
+                    {/* RECEIPT IMAGE CARD */}
+                    {sale.receiptUrl && (
+                        <div className="bg-white/80 dark:bg-[#161B2E]/80 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 rounded-[2rem] p-5 shadow-sm overflow-hidden">
+                            <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-1.5 mb-4">
+                                <Receipt size={12} /> Original Receipt
+                            </h4>
+                            <div className="rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800 group relative">
+                                <img 
+                                    src={sale.receiptUrl} 
+                                    alt="Receipt" 
+                                    className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-110 cursor-pointer" 
+                                    onClick={() => window.open(sale.receiptUrl, '_blank')}
+                                />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                                    <span className="text-white text-[10px] font-black uppercase tracking-widest bg-black/50 px-3 py-1.5 rounded-full">View Full Image</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 

@@ -3160,3 +3160,11 @@
 [2026-04-20T15:06:23.911Z] [API] GET /api/settings/whatsapp
 [2026-04-20T15:06:23.912Z] [API] Company ID: 22505fc4-6e8e-45e3-af22-6ad3037239f7
 [2026-04-20T15:06:23.913Z] [API] Session Status: CONNECTING, QR: YES, Phone: null
+[2026-04-25T08:27:22.531Z] [API] GET /api/settings/whatsapp
+[2026-04-25T08:27:22.540Z] [API] Company ID: 22505fc4-6e8e-45e3-af22-6ad3037239f7
+[2026-04-25T08:27:22.547Z] [API] Session Status: CONNECTING, QR: NO, Phone: null
+[2026-04-25T08:27:23.156Z] [API] DB shows CONNECTED with number 251920732666, returning DB state
+[2026-04-25T08:27:23.216Z] [API] GET /api/settings/whatsapp
+[2026-04-25T08:27:23.221Z] [API] Company ID: 22505fc4-6e8e-45e3-af22-6ad3037239f7
+[2026-04-25T08:27:23.222Z] [API] Session Status: CONNECTING, QR: NO, Phone: null
+[2026-04-25T08:27:23.422Z] [API] DB shows CONNECTED with number 251920732666, returning DB state

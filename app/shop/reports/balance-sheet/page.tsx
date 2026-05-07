@@ -22,7 +22,7 @@ interface BalanceData {
             accountsReceivable: { value: number; count: number };
             inventory: { value: number; skuCount: number; breakdown: any[] };
         };
-        fixed: { value: number; count: number };
+        fixed: { value: number; count: number; originalCost?: number; accumulatedDepreciation?: number };
         totalCurrent: number;
         totalFixed: number;
         total: number;
@@ -30,7 +30,7 @@ interface BalanceData {
     liabilities: {
         current: {
             accountsPayable: { value: number; count: number };
-            taxPayable: { value: number };
+            taxPayable: { value: number; breakdown?: { taxCollected: number; inputVAT: number; remitted: number } };
             pendingDividends: { value: number };
         };
         longTerm: { value: number };
@@ -40,6 +40,7 @@ interface BalanceData {
     };
     equity: {
         shareholdersCapital: { value: number; shareholders: any[] };
+        openingCapital?: { value: number };
         dividendsPaid: { value: number };
         retainedEarnings: { value: number; breakdown: any };
         total: number;
@@ -295,11 +296,23 @@ export default function BalanceSheetPage() {
                             <span className="h-px flex-1 bg-slate-100 dark:bg-slate-800" /> Fixed Assets <span className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
                         </p>
                         <LineItem
-                            label="Property, Plant & Equipment"
+                            label="Hantida Taagan (Book Value)"
                             value={data.assets.fixed.value}
                             indent
                             badge={data.assets.fixed.count > 0 ? `${data.assets.fixed.count} assets` : undefined}
                         />
+                        {data.assets.fixed.originalCost && data.assets.fixed.originalCost > 0 && (
+                            <div className="ml-8 mt-1 p-3 rounded-xl bg-slate-50/70 dark:bg-slate-800/20 border border-slate-100 dark:border-slate-800/30 space-y-1 mb-2">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-[9px] text-slate-400">Qiimaha Asalka (Original Cost)</span>
+                                    <span className="text-[10px] font-black tabular-nums text-slate-600 dark:text-slate-300">{fmt(data.assets.fixed.originalCost)}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-[9px] text-slate-400">Qiime-dhac (Depreciation)</span>
+                                    <span className="text-[10px] font-black tabular-nums text-rose-500">-{fmt(data.assets.fixed.accumulatedDepreciation || 0)}</span>
+                                </div>
+                            </div>
+                        )}
                         <LineItem label="Total Fixed Assets" value={data.assets.totalFixed} bold />
                     </div>
 
@@ -319,18 +332,35 @@ export default function BalanceSheetPage() {
                                 <span className="h-px flex-1 bg-slate-100 dark:bg-slate-800" /> Current Liabilities <span className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
                             </p>
                             <LineItem
-                                label="Accounts Payable (Unpaid Expenses)"
+                                label="Lacagaha La Qabo (Vendor Bills)"
                                 value={data.liabilities.current.accountsPayable.value}
                                 indent
-                                badge={data.liabilities.current.accountsPayable.count > 0 ? `${data.liabilities.current.accountsPayable.count} items` : undefined}
+                                badge={data.liabilities.current.accountsPayable.count > 0 ? `${data.liabilities.current.accountsPayable.count} POs` : undefined}
                             />
                             <LineItem
-                                label="Tax Payable (VAT Collected)"
+                                label="Canshuur La Qabo (Tax Payable)"
                                 value={data.liabilities.current.taxPayable.value}
                                 indent
                             />
+                            {/* Tax Breakdown */}
+                            {data.liabilities.current.taxPayable.breakdown && (
+                                <div className="ml-8 mt-1 p-3 rounded-xl bg-rose-50/70 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/20 space-y-1 mb-2">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-[9px] text-slate-400">La ururiyay (Collected)</span>
+                                        <span className="text-[10px] font-black tabular-nums text-slate-600 dark:text-slate-300">{fmt(data.liabilities.current.taxPayable.breakdown.taxCollected)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-[9px] text-slate-400">- Input VAT (Iibsashada)</span>
+                                        <span className="text-[10px] font-black tabular-nums text-green-500">-{fmt(data.liabilities.current.taxPayable.breakdown.inputVAT)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-[9px] text-slate-400">- La bixiyay (Remitted)</span>
+                                        <span className="text-[10px] font-black tabular-nums text-green-500">-{fmt(data.liabilities.current.taxPayable.breakdown.remitted)}</span>
+                                    </div>
+                                </div>
+                            )}
                             <LineItem
-                                label="Pending Dividends (Saamileyda)"
+                                label="Dividends La Sugayo (Pending)"
                                 value={data.liabilities.current.pendingDividends.value}
                                 indent
                             />
@@ -377,6 +407,16 @@ export default function BalanceSheetPage() {
                             indent
                             negative
                         />
+
+                        {/* Opening Capital — unclassified initial capital */}
+                        {data.equity.openingCapital && data.equity.openingCapital.value !== 0 && (
+                            <LineItem
+                                label="Opening Capital (Raasamaal Bilowga)"
+                                value={data.equity.openingCapital.value}
+                                indent
+                                badge="Migration"
+                            />
+                        )}
 
                         {/* Retained Earnings with breakdown */}
                         <LineItem label="Retained Earnings (Net Profit/Loss)" value={data.equity.retainedEarnings.value} indent />

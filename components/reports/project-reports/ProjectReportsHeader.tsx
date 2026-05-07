@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Download, Printer } from 'lucide-react';
+import { FileText, Download, Printer } from 'lucide-react';
 import { ProjectReportsData } from './types';
 
 interface ProjectReportsHeaderProps {
@@ -18,38 +18,41 @@ export const ProjectReportsHeader: React.FC<ProjectReportsHeaderProps> = ({
     onPrint,
 }) => {
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6 print:shadow-none print:border-none">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight mb-2">
-                        {data.companyName}
-                    </h1>
-                    <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
-                        <span className="font-medium text-lg text-primary">Warbixinta Mashaariicda</span>
-                        <span className="w-1.5 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600" />
-                        <div className="flex items-center gap-1.5 text-sm">
-                            <Calendar size={14} />
-                            <span>{dateRangeText}</span>
-                        </div>
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-3 py-4 md:px-8 shadow-sm rounded-2xl mb-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                {/* Title */}
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className="bg-blue-600 text-white p-2.5 rounded-xl shadow-lg shadow-blue-500/30">
+                        <FileText size={22} />
+                    </div>
+                    <div>
+                        <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-none">
+                            {data.companyName}
+                        </h1>
+                        <p className="text-sm text-primary font-semibold mt-1">
+                            Warbixinta Mashaariicda
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                            {dateRangeText}
+                        </p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3 print:hidden">
+                {/* Actions */}
+                <div className="flex items-center gap-2 print:hidden">
                     <button
                         onClick={onExportPDF}
                         disabled={loading}
-                        className="group flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-xl transition-all duration-200 border border-gray-200 dark:border-gray-600 font-medium text-sm disabled:opacity-50"
+                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wide transition shadow-lg shadow-blue-500/20 disabled:opacity-50"
                     >
-                        <Download size={18} className="text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors" />
-                        PDF
+                        <Download size={14} /> PDF
                     </button>
                     <button
                         onClick={onPrint}
                         disabled={loading}
-                        className="group flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-xl transition-all duration-200 border border-gray-200 dark:border-gray-600 font-medium text-sm disabled:opacity-50"
+                        className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wide transition disabled:opacity-50"
                     >
-                        <Printer size={18} className="text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors" />
-                        Print
+                        <Printer size={14} /> Print
                     </button>
                 </div>
             </div>

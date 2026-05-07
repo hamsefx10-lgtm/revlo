@@ -26,7 +26,7 @@ import {
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import MetricCard from '@/components/shop/ui/MetricCard';
-import { format, subDays, startOfMonth, startOfYear } from 'date-fns';
+import { format, subDays, startOfMonth, startOfYear, subMonths, startOfWeek } from 'date-fns';
 import { useToast } from '@/components/ui/use-toast';
 import { useShopLang } from '@/contexts/ShopLanguageContext';
 
@@ -109,9 +109,14 @@ export default function AccountingPage() {
 
         switch (range) {
             case 'Today': start = now; break;
-            case 'Last 7 Days': start = subDays(now, 7); break;
+            case 'This Week': start = startOfWeek(now); break;
             case 'This Month': start = startOfMonth(now); break;
+            case 'Last 2 Months': start = subMonths(now, 2); break;
+            case 'Last 3 Months': start = subMonths(now, 3); break;
+            case 'Last 6 Months': start = subMonths(now, 6); break;
             case 'This Year': start = startOfYear(now); break;
+            case 'All Time': start = new Date('2000-01-01'); break;
+            default: start = startOfMonth(now); break;
         }
 
         setStartDate(start.toISOString());
@@ -237,22 +242,36 @@ export default function AccountingPage() {
                     <p className="text-gray-500 dark:text-gray-400 mt-2 ml-1 text-sm">{t('accounting_desc')}</p>
                 </div>
 
-                <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl border border-gray-200 dark:border-gray-700">
-                    {[t('today'), t('this_month'), t('this_year')].map((label, idx) => {
-                        const rangeKeys = ['Today', 'This Month', 'This Year'];
-                        return (
-                        <button
-                            key={rangeKeys[idx]}
-                            onClick={() => handleRangeChange(rangeKeys[idx])}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${dateRange === rangeKeys[idx]
-                                ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white'
-                                : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
-                                }`}
-                        >
-                            {label}
-                        </button>
-                        );
-                    })}
+                <div className="flex items-center gap-2">
+                    <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl border border-gray-200 dark:border-gray-700">
+                        {[t('today'), t('this_month'), t('this_year'), 'All'].map((label, idx) => {
+                            const rangeKeys = ['Today', 'This Month', 'This Year', 'All Time'];
+                            return (
+                            <button
+                                key={rangeKeys[idx]}
+                                onClick={() => handleRangeChange(rangeKeys[idx])}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${dateRange === rangeKeys[idx]
+                                    ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white'
+                                    : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+                                    }`}
+                            >
+                                {label}
+                            </button>
+                            );
+                        })}
+                    </div>
+                    
+                    <select
+                        value={['Today', 'This Month', 'This Year', 'All Time'].includes(dateRange) ? "" : dateRange}
+                        onChange={(e) => handleRangeChange(e.target.value)}
+                        className="bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-300 outline-none cursor-pointer hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
+                    >
+                        <option value="" disabled>Kuwo kale...</option>
+                        <option value="This Week">Isbuucan</option>
+                        <option value="Last 2 Months">2-dii Bilood</option>
+                        <option value="Last 3 Months">3-dii Bilood</option>
+                        <option value="Last 6 Months">6-dii Bilood</option>
+                    </select>
                 </div>
             </div>
 

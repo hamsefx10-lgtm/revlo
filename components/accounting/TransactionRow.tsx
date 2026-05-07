@@ -23,7 +23,7 @@ interface Transaction {
 
 interface TransactionRowProps {
     transaction: Transaction;
-    onEdit?: (id: string) => void;
+    onEdit?: (trx: any) => void;
     onDelete?: (id: string) => void;
 }
 
@@ -156,7 +156,7 @@ const TransactionRow: React.FC<TransactionRowProps> = ({ transaction, onEdit, on
                         <Eye size={18} />
                     </Link>
                     {onEdit && (
-                        <button onClick={() => onEdit(transaction.id)} className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit Transaction">
+                        <button onClick={() => onEdit(transaction)} className="p-2 rounded-full bg-accent/10 text-accent hover:bg-accent hover:text-white transition-colors duration-200" title="Edit Transaction">
                             <Edit size={18} />
                         </button>
                     )}

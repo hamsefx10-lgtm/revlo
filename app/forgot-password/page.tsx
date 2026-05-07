@@ -1,247 +1,188 @@
-// app/forgot-password/page.tsx - Forgot Password Page (10000% Design)
+// app/forgot-password/page.tsx
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import {
-  Mail, Lock, Loader2, Info, CheckCircle, XCircle, ArrowLeft, Send
-} from 'lucide-react';
-import Toast from '@/components/common/Toast'; // Reuse Toast component
+import { Mail, Lock, Loader2, CheckCircle, ArrowLeft, Send, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import Auth3DBackground from '@/components/Auth3DBackground';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
+  const { addNotification } = useNotifications();
   const [email, setEmail] = useState('');
   const [token, setToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
-  const [step, setStep] = useState(1); // 1: Enter Email, 2: Enter New Password (simulated)
+  const [step, setStep] = useState(1);
+  const [mounted, setMounted] = useState(false);
 
-  const validateEmailForm = () => {
-    const newErrors: { [key: string]: string } = {};
-    if (!email.trim()) newErrors.email = 'Email-ka waa waajib.';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = 'Fadlan geli email sax ah.';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const validatePasswordForm = () => {
-    const newErrors: { [key: string]: string } = {};
-    if (!token.trim()) newErrors.token = 'Lambar-ka xaqiijinta waa waajib.';
-    if (!newPassword || newPassword.length < 6) newErrors.newPassword = 'Password-ka cusub waa inuu ugu yaraan 6 xaraf ka koobnaadaa.';
-    if (newPassword !== confirmNewPassword) newErrors.confirmNewPassword = 'Password-ka cusub iyo xaqiijinta password-ka isku mid maaha.';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  useEffect(() => { setMounted(true); }, []);
 
   const handleSendResetLink = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      addNotification({ type: 'error', message: 'Fadlan geli email sax ah.' }); return;
+    }
     setLoading(true);
-    setErrors({});
-    setToastMessage(null);
-
-    if (!validateEmailForm()) {
-      setLoading(false);
-      setToastMessage({ message: 'Fadlan geli email sax ah.', type: 'error' });
-      return;
-    }
-
     try {
-      const response = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setToastMessage({ message: data.message || 'Lambarkii xaqiijinta ayaa laguu soo diray.', type: 'info' });
-        setStep(2);
-      } else {
-        setToastMessage({ message: data.message || 'Cilad ayaa dhacday.', type: 'error' });
-      }
-    } catch (error: any) {
-      console.error('Send Reset Link error:', error);
-      setToastMessage({ message: 'Cilad shabakadeed ayaa dhacday.', type: 'error' });
-    } finally {
-      setLoading(false);
-    }
+      const res = await fetch('/api/auth/forgot-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+      const data = await res.json();
+      if (res.ok) { addNotification({ type: 'success', message: data.message || 'Lambarka xaqiijinta ayaa laguu soo diray.' }); setStep(2); }
+      else addNotification({ type: 'error', message: data.message || 'Cilad ayaa dhacday.' });
+    } catch { addNotification({ type: 'error', message: 'Cilad shabakadeed ayaa dhacday.' }); }
+    finally { setLoading(false); }
   };
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!token.trim()) { addNotification({ type: 'error', message: 'Geli lambarka xaqiijinta.' }); return; }
+    if (newPassword.length < 6) { addNotification({ type: 'error', message: 'Password-ku waa inuu ugu yaraan 6 xaraf ka koobnaadaa.' }); return; }
+    if (newPassword !== confirmNewPassword) { addNotification({ type: 'error', message: 'Password-yadu isku mid maaha.' }); return; }
     setLoading(true);
-    setErrors({});
-    setToastMessage(null);
-
-    if (!validatePasswordForm()) {
-      setLoading(false);
-      setToastMessage({ message: 'Fadlan sax khaladaadka password-ka.', type: 'error' });
-      return;
-    }
-
     try {
-      const response = await fetch('/api/auth/password-reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, token, newPassword, confirmNewPassword }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setToastMessage({ message: data.message || 'Password-kaaga si guul leh ayaa dib loogu dejiyay!', type: 'success' });
-        router.push('/login'); // Redirect to login page
-      } else {
-        setToastMessage({ message: data.message || 'Cilad ayaa dhacday marka password-ka la dejinayay.', type: 'error' });
-      }
-    } catch (error: any) {
-      console.error('Password Reset API error:', error);
-      setToastMessage({ message: 'Cilad shabakadeed ayaa dhacday. Fadlan isku day mar kale.', type: 'error' });
-    } finally {
-      setLoading(false);
-    }
+      const res = await fetch('/api/auth/password-reset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, token, newPassword, confirmNewPassword }) });
+      const data = await res.json();
+      if (res.ok) { addNotification({ type: 'success', message: 'Password-kaaga si guul leh ayaa dib loogu dejiyay!' }); setTimeout(() => router.push('/login'), 1500); }
+      else addNotification({ type: 'error', message: data.message || 'Cilad ayaa dhacday.' });
+    } catch { addNotification({ type: 'error', message: 'Cilad shabakadeed ayaa dhacday.' }); }
+    finally { setLoading(false); }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-lightGray dark:bg-gray-900 p-4">
-      <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-md animate-fade-in-up">
-        <div className="text-center mb-8">
-          <h1 className="text-5xl font-extrabold text-darkGray dark:text-gray-100 mb-2">Revl<span className="text-primary">o</span></h1>
-          <p className="text-mediumGray dark:text-gray-400 text-lg">Password Dib U Dejin</p>
+    <div className="min-h-screen flex font-sans">
+      {/* Left Side */}
+      <div className={`w-full lg:w-1/2 xl:w-[45%] min-h-screen flex flex-col justify-center bg-white dark:bg-gray-950 relative z-10 transition-opacity duration-700 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="w-full max-w-lg mx-auto px-8 sm:px-12 lg:px-16 py-12">
+
+          {/* Logo */}
+          <Link href="/" className="inline-flex items-baseline mb-14">
+            <span className="text-4xl font-black tracking-tight text-gray-900 dark:text-white">Rev</span>
+            <span className="text-4xl font-black tracking-tight text-secondary">lo</span>
+          </Link>
+
+          {/* Step indicator */}
+          <div className="flex items-center gap-3 mb-10">
+            <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${step === 1 ? 'bg-primary/10 text-primary' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'}`}>
+              <Mail className="h-4 w-4" /> Email
+            </div>
+            <div className={`h-px flex-1 transition-all duration-500 ${step === 2 ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-800'}`} />
+            <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${step === 2 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'}`}>
+              <ShieldCheck className="h-4 w-4" /> Password
+            </div>
+          </div>
+
+          {/* STEP 1 */}
+          {step === 1 && (
+            <>
+              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">Password Dib U Dejin</h1>
+              <p className="mt-3 mb-12 text-base text-gray-400 dark:text-gray-500">Geli email-kaaga, waxaan kuu dirnaa lambar xaqiijin</p>
+
+              <form onSubmit={handleSendResetLink} className="space-y-7">
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2.5">Email-ka</label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300 dark:text-gray-600" />
+                    <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="name@company.com"
+                      className="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl text-gray-900 dark:text-white text-base placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200" />
+                  </div>
+                </div>
+
+                <button type="submit" disabled={loading}
+                  className="w-full py-4 rounded-2xl text-base font-bold text-white transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30"
+                  style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%)' }}>
+                  {loading ? <Loader2 className="animate-spin h-5 w-5" /> : <><Send className="h-5 w-5" /><span>Dir Lambarka Xaqiijinta</span></>}
+                </button>
+
+                <Link href="/login" className="flex items-center justify-center gap-2 text-sm text-gray-400 dark:text-gray-500 hover:text-primary transition-colors mt-8">
+                  <ArrowLeft className="h-4 w-4" /> Ku Noqo Login
+                </Link>
+              </form>
+            </>
+          )}
+
+          {/* STEP 2 */}
+          {step === 2 && (
+            <>
+              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">Password Cusub</h1>
+              <p className="mt-2 text-base text-gray-400 dark:text-gray-500">Geli lambarka iyo password cusub</p>
+              <div className="mt-2 mb-10 inline-flex items-center gap-2 text-sm text-primary font-medium">
+                <Mail className="h-4 w-4" /> {email}
+              </div>
+
+              <form onSubmit={handlePasswordReset} className="space-y-6">
+                {/* Token */}
+                <div>
+                  <label htmlFor="token" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2.5">Lambarka Xaqiijinta</label>
+                  <div className="relative">
+                    <CheckCircle className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300 dark:text-gray-600" />
+                    <input type="text" id="token" value={token} onChange={(e) => setToken(e.target.value)} required placeholder="123456"
+                      className="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl text-gray-900 dark:text-white text-xl font-mono tracking-[0.3em] text-center placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all duration-200" />
+                  </div>
+                </div>
+
+                {/* New Password */}
+                <div>
+                  <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2.5">Password Cusub</label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300 dark:text-gray-600" />
+                    <input type={showNewPassword ? 'text' : 'password'} id="newPassword" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required placeholder="••••••••"
+                      className="w-full pl-12 pr-12 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl text-gray-900 dark:text-white text-base placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200" />
+                    <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} tabIndex={-1}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 dark:text-gray-600 hover:text-gray-500 transition-colors">
+                      {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Confirm */}
+                <div>
+                  <label htmlFor="confirmNewPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2.5">Xaqiiji Password</label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300 dark:text-gray-600" />
+                    <input type={showConfirmPassword ? 'text' : 'password'} id="confirmNewPassword" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} required placeholder="••••••••"
+                      className="w-full pl-12 pr-12 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl text-gray-900 dark:text-white text-base placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200" />
+                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} tabIndex={-1}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 dark:text-gray-600 hover:text-gray-500 transition-colors">
+                      {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Hints */}
+                {newPassword.length > 0 && (
+                  <div className="flex gap-5 text-xs">
+                    <span className={newPassword.length >= 6 ? 'text-emerald-500' : 'text-gray-400'}>{newPassword.length >= 6 ? '✓' : '○'} 6+ xaraf</span>
+                    {confirmNewPassword.length > 0 && <span className={newPassword === confirmNewPassword ? 'text-emerald-500' : 'text-red-400'}>{newPassword === confirmNewPassword ? '✓' : '✗'} Isku mid</span>}
+                  </div>
+                )}
+
+                <button type="submit" disabled={loading}
+                  className="w-full py-4 rounded-2xl text-base font-bold text-white transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-500/20 hover:shadow-xl hover:shadow-emerald-500/30"
+                  style={{ background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #15803d 100%)' }}>
+                  {loading ? <Loader2 className="animate-spin h-5 w-5" /> : <><ShieldCheck className="h-5 w-5" /><span>Deji Password Cusub</span></>}
+                </button>
+
+                <div className="flex items-center justify-between mt-4">
+                  <button type="button" onClick={() => setStep(1)} className="text-sm text-gray-400 hover:text-primary transition-colors flex items-center gap-2">
+                    <ArrowLeft className="h-4 w-4" /> Email kale
+                  </button>
+                  <Link href="/login" className="text-sm text-gray-400 hover:text-primary transition-colors">Ku Noqo Login</Link>
+                </div>
+              </form>
+            </>
+          )}
         </div>
-
-        {step === 1 && (
-          <form onSubmit={handleSendResetLink} className="space-y-6 animate-fade-in">
-            <p className="text-mediumGray dark:text-gray-400 text-sm text-center mb-4">
-              Fadlan geli email-ka akoonkaaga. Waxaanu kuu soo diri doonaa email dib u dejinta password-ka.
-            </p>
-            {/* Email Field */}
-            <div>
-              <label htmlFor="email" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Email</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
-                <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="tusaale@ganacsi.com"
-                  className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${errors.email ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                />
-              </div>
-              {errors.email && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.email}</p>}
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              className="w-full bg-primary text-white py-3 px-4 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md transform hover:scale-105 flex items-center justify-center"
-              disabled={loading}
-            >
-              {loading ? (
-                <Loader2 className="animate-spin mr-2" size={20} />
-              ) : (
-                <Send className="mr-2" size={20} />
-              )}
-              {loading ? 'Diraya Link-ga...' : 'Dir Link-ga Dib U Dejinta'}
-            </button>
-
-            {/* Back to Login */}
-            <p className="text-center text-mediumGray dark:text-gray-400 text-sm mt-6">
-              <Link href="/login" className="text-secondary font-semibold hover:underline flex items-center justify-center">
-                <ArrowLeft size={18} className="mr-1" /> Ku Noqo Soo Galitaanka
-              </Link>
-            </p>
-          </form>
-        )}
-
-        {step === 2 && (
-          <form onSubmit={handlePasswordReset} className="space-y-6 animate-fade-in">
-            <p className="text-mediumGray dark:text-gray-400 text-sm text-center mb-4">
-              Fadlan geli lambarka xaqiijinta ee laguu soo diray iyo password-kaaga cusub.
-            </p>
-            {/* Token/Code Field */}
-            <div>
-              <label htmlFor="token" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Lambar-ka Xaqiijinta</label>
-              <div className="relative">
-                <CheckCircle className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
-                <input
-                  type="text"
-                  id="token"
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  placeholder="123456"
-                  className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${errors.token ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                />
-              </div>
-              {errors.token && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.token}</p>}
-            </div>
-            {/* New Password Field */}
-            <div>
-              <label htmlFor="newPassword" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Password Cusub</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
-                <input
-                  type="password"
-                  id="newPassword"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="********"
-                  className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${errors.newPassword ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                />
-              </div>
-              {errors.newPassword && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.newPassword}</p>}
-            </div>
-
-            {/* Confirm New Password Field */}
-            <div>
-              <label htmlFor="confirmNewPassword" className="block text-md font-medium text-darkGray dark:text-gray-300 mb-2">Xaqiiji Password Cusub</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mediumGray dark:text-gray-400" size={20} />
-                <input
-                  type="password"
-                  id="confirmNewPassword"
-                  value={confirmNewPassword}
-                  onChange={(e) => setConfirmNewPassword(e.target.value)}
-                  placeholder="********"
-                  className={`w-full p-3 pl-10 border rounded-lg bg-lightGray dark:bg-gray-700 text-darkGray dark:text-gray-100 placeholder-mediumGray focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200 ${errors.confirmNewPassword ? 'border-redError' : 'border-lightGray dark:border-gray-700'}`}
-                />
-              </div>
-              {errors.confirmNewPassword && <p className="text-redError text-sm mt-1 flex items-center"><Info size={16} className="mr-1" />{errors.confirmNewPassword}</p>}
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              className="w-full bg-primary text-white py-3 px-4 rounded-lg font-bold text-lg hover:bg-blue-700 transition duration-200 shadow-md transform hover:scale-105 flex items-center justify-center"
-              disabled={loading}
-            >
-              {loading ? (
-                <Loader2 className="animate-spin mr-2" size={20} />
-              ) : (
-                <Lock className="mr-2" size={20} />
-              )}
-              {loading ? 'Dejinaya Password...' : 'Deji Password'}
-            </button>
-
-            {/* Back to Login */}
-            <p className="text-center text-mediumGray dark:text-gray-400 text-sm mt-6">
-              <Link href="/login" className="text-secondary font-semibold hover:underline flex items-center justify-center">
-                <ArrowLeft size={18} className="mr-1" /> Ku Noqo Soo Galitaanka
-              </Link>
-            </p>
-          </form>
-        )}
       </div>
 
-      {toastMessage && (
-        <Toast message={toastMessage.message} type={toastMessage.type} onClose={() => setToastMessage(null)} />
-      )}
+      {/* Right Side */}
+      <div className="hidden lg:block lg:w-1/2 xl:w-[55%] relative bg-gray-900 overflow-hidden">
+        <Auth3DBackground />
+      </div>
     </div>
   );
 }

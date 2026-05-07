@@ -27,6 +27,12 @@ export async function GET(req: NextRequest) {
         // Date Range: Last 7 Days
         const startDate = startOfDay(subDays(new Date(), 6));
 
+        const latestRateObj = await prisma.exchangeRate.findFirst({
+            where: { companyId: user.companyId },
+            orderBy: { date: 'desc' }
+        });
+        const exchangeRate = latestRateObj?.rate || 1;
+
         // Fetch Transactions
         const transactions = await prisma.transaction.findMany({
             where: {
@@ -37,7 +43,10 @@ export async function GET(req: NextRequest) {
             select: {
                 transactionDate: true,
                 amount: true,
-                type: true
+                type: true,
+                account: { select: { currency: true } },
+                fromAccount: { select: { currency: true } },
+                toAccount: { select: { currency: true } }
             }
         });
 
@@ -53,14 +62,15 @@ export async function GET(req: NextRequest) {
         });
 
         // Aggregate
-
-
         transactions.forEach(t => {
             const dateStr = format(t.transactionDate, 'yyyy-MM-dd');
             const day = chartData.find(d => d.date === dateStr);
             if (day) {
-                if (t.type === 'INCOME') day.income += Number(t.amount);
-                else if (t.type === 'EXPENSE') day.expense += Number(t.amount);
+                const accCurrency = t.account?.currency || t.fromAccount?.currency || t.toAccount?.currency || 'ETB';
+                const finalAmount = accCurrency === 'USD' ? Math.abs(Number(t.amount)) * exchangeRate : Math.abs(Number(t.amount));
+
+                if (t.type === 'INCOME') day.income += finalAmount;
+                else if (t.type === 'EXPENSE') day.expense += finalAmount;
             }
         });
 

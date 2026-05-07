@@ -5,8 +5,44 @@ export interface ProjectMaterial {
     unit: string;
     costPerUnit: number;
     leftoverQty: number;
-    dateUsed?: string | Date;
-    projectId: string;
+    totalCost: number;
+    dateUsed?: string | null;
+}
+
+export interface LaborItem {
+    date: string;
+    description: string;
+    amount: number;
+    accountName?: string | null;
+}
+
+export interface LaborBreakdown {
+    employeeName: string;
+    totalPaid: number;
+    items: LaborItem[];
+}
+
+export interface ProjectExpense {
+    id: string;
+    category: string;
+    description: string;
+    amount: number;
+    date: string;
+    subCategory?: string | null;
+    note?: string | null;
+    employeeName?: string | null;
+    supplierName?: string | null;
+    materials?: any;
+    accountName?: string | null;
+}
+
+export interface ProjectPayment {
+    id: string;
+    amount: number;
+    date: string;
+    description: string;
+    customerName?: string | null;
+    accountName?: string | null;
 }
 
 export interface ProjectReport {
@@ -32,36 +68,14 @@ export interface ProjectReport {
     profitMargin: number;
     completionPercentage: number;
     expenseCount: number;
-    transactionCount: number;
     paymentCount: number;
     receivables: number;
     projectedProfit: number;
-    expenses: Array<{
-        id: string;
-        category: string;
-        description: string;
-        amount: number;
-        date: string;
-        subCategory?: string | null;
-        note?: string | null;
-        employeeName?: string | null;
-        supplierName?: string | null;
-        materials?: any;
-    }>;
-    transactions: Array<{
-        id: string;
-        type: string;
-        description: string;
-        amount: number;
-        date: string;
-    }>;
-    payments: Array<{
-        id: string;
-        amount: number;
-        date: string;
-        description: string;
-    }>;
-    materialsUsed?: ProjectMaterial[];
+    expenses: ProjectExpense[];
+    expensesByCategory: Record<string, ProjectExpense[]>;
+    laborBreakdown: LaborBreakdown[];
+    payments: ProjectPayment[];
+    materialsUsed: ProjectMaterial[];
 }
 
 export interface ProjectReportsData {

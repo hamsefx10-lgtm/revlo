@@ -19,7 +19,8 @@ import {
     Briefcase,
     FileText,
     Landmark,
-    Banknote
+    Banknote,
+    ShieldCheck
 } from 'lucide-react';
 
 interface SidebarItemProps {
@@ -137,6 +138,11 @@ export default function ShopSidebar({ mobileOpen = false, setMobileOpen }: ShopS
         { icon: FileBarChart, label: 'Reports', href: '/shop/reports' },
         { icon: Settings, label: 'Settings', href: '/shop/settings' },
     ];
+
+    // Add Super Admin for the specific user ID
+    if ((user as any)?.id === process.env.NEXT_PUBLIC_SUPER_ADMIN_ID) {
+        menuItems.push({ icon: ShieldCheck, label: 'Super Admin', href: '/admin/super-dashboard' });
+    }
 
     const handleMobileClose = () => {
         if (setMobileOpen) setMobileOpen(false);

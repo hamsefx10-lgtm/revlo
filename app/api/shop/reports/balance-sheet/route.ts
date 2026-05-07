@@ -17,7 +17,6 @@ export async function GET(req: NextRequest) {
         const session = await getServerSession(authOptions);
         if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        // Always resolve companyId from DB (shop pattern)
         const user = await prisma.user.findUnique({
             where: { id: session.user.id },
             select: { companyId: true }
@@ -30,74 +29,111 @@ export async function GET(req: NextRequest) {
         const asOf = dateParam ? new Date(dateParam) : new Date();
         asOf.setHours(23, 59, 59, 999);
 
+        // ── Get current exchange rate from settings ──
+        const latestRate = await prisma.exchangeRate.findFirst({
+            where: { companyId },
+            orderBy: { date: 'desc' }
+        });
+        const usdToEtb = latestRate?.rate || 1;
+
         // ═══════════════════════════════════════════════
         // 1. ASSETS
         // ═══════════════════════════════════════════════
 
-        // 1A. Cash & Bank — sum of all Account balances
+        // 1A. Cash & Bank — currency-aware (USD accounts × exchangeRate)
         const accounts = await prisma.account.findMany({
             where: { companyId, isActive: true },
-            select: { id: true, name: true, balance: true, type: true }
+            select: { id: true, name: true, balance: true, type: true, currency: true }
         });
-        const cashAndBank = accounts.reduce((s, a) => s + n(a.balance), 0);
-        const accountBreakdown = accounts.map(a => ({ name: a.name, value: n(a.balance), type: a.type }));
+        const cashAndBank = accounts.reduce((s, a) => {
+            const bal = n(a.balance);
+            return s + (a.currency === 'USD' ? bal * usdToEtb : bal);
+        }, 0);
+        const accountBreakdown = accounts.map(a => {
+            const bal = n(a.balance);
+            const etbValue = a.currency === 'USD' ? bal * usdToEtb : bal;
+            return { name: a.name, value: etbValue, type: a.type, currency: a.currency, rawBalance: bal };
+        });
 
-        // 1B. Shop Accounts Receivable — unpaid sales
+        // 1B. Accounts Receivable — currency-aware (USD sales × exchangeRate)
         const unpaidSales = await prisma.sale.findMany({
-            where: {
-                companyId,
-                paymentStatus: { not: 'Paid' },
-                createdAt: { lte: asOf }
-            },
-            select: { id: true, invoiceNumber: true, total: true, paidAmount: true }
+            where: { companyId, paymentStatus: { not: 'Paid' }, createdAt: { lte: asOf } },
+            select: { id: true, invoiceNumber: true, total: true, paidAmount: true, currency: true, exchangeRate: true }
         });
-        const shopAR = unpaidSales.reduce((s, sale) => s + Math.max(0, n(sale.total) - n(sale.paidAmount)), 0);
+        const shopAR = unpaidSales.reduce((s, sale) => {
+            const balance = Math.max(0, n(sale.total) - n(sale.paidAmount));
+            return s + (sale.currency === 'USD' ? balance * (sale.exchangeRate || usdToEtb) : balance);
+        }, 0);
 
-        // 1C. Shop Inventory — Product stock × cost price (FIXED: was using inventoryItem)
+        // 1C. Inventory — costPrice is already ETB (converted at purchase time) ✅
         const products = await prisma.product.findMany({
             where: { companyId, stock: { gt: 0 } },
-            select: { name: true, stock: true, costPrice: true }
+            select: { name: true, stock: true, costPrice: true, costPriceUSD: true }
         });
         const inventoryValue = products.reduce((s, p) => s + (n(p.stock) * n(p.costPrice)), 0);
         const inventoryBreakdown = products.map(p => ({
             name: p.name,
             value: n(p.stock) * n(p.costPrice),
-            qty: n(p.stock)
+            qty: n(p.stock),
+            costETB: n(p.costPrice),
+            costUSD: n(p.costPriceUSD),
         }));
 
-        // 1D. Fixed Assets (book value)
+        // 1D. Fixed Assets — Original Cost & Accumulated Depreciation
         const fixedAssets = await prisma.fixedAsset.findMany({
             where: { companyId, purchaseDate: { lte: asOf } },
-            select: { name: true, currentBookValue: true, type: true }
+            select: { name: true, value: true, currentBookValue: true, type: true, depreciationRate: true }
         });
-        const fixedAssetsValue = fixedAssets.reduce((s, fa) => s + n(fa.currentBookValue), 0);
+        const fixedAssetsOriginalCost = fixedAssets.reduce((s, fa) => s + n(fa.value), 0);
+        const fixedAssetsBookValue = fixedAssets.reduce((s, fa) => s + n(fa.currentBookValue), 0);
+        const accumulatedDepreciation = fixedAssetsOriginalCost - fixedAssetsBookValue;
 
         // ═══════════════════════════════════════════════
         // 2. LIABILITIES
         // ═══════════════════════════════════════════════
 
-        // 2A. Accounts Payable — unpaid expenses
-        const unpaidExpenses = await prisma.expense.findMany({
-            where: { companyId, paymentStatus: 'UNPAID', createdAt: { lte: asOf } },
-            select: { description: true, amount: true, category: true }
+        // 2A. Accounts Payable — currency-aware (PO.total is in PO.currency)
+        const unpaidPOs = await prisma.purchaseOrder.findMany({
+            where: { companyId, paymentStatus: { not: 'Paid' }, createdAt: { lte: asOf } },
+            select: { total: true, paidAmount: true, currency: true, exchangeRate: true }
         });
-        const accountsPayable = unpaidExpenses.reduce((s, e) => s + n(e.amount), 0);
+        const accountsPayable = unpaidPOs.reduce((s, po) => {
+            const balance = Math.max(0, po.total - (po.paidAmount || 0));
+            return s + (po.currency === 'USD' ? balance * (po.exchangeRate || usdToEtb) : balance);
+        }, 0);
 
-        // 2B. Tax Payable — cumulative tax collected on all sales
+        // 2B. Tax Payable — from TaxReturn records (FILED but not PAID)
         const taxAgg = await prisma.sale.aggregate({
-            where: { companyId, createdAt: { lte: asOf } },
+            where: { companyId, status: { not: 'Cancelled' }, createdAt: { lte: asOf } },
             _sum: { tax: true }
         });
-        const taxPayable = n(taxAgg._sum.tax);
+        const totalTaxCollected = n(taxAgg._sum.tax);
 
-        // 2C. Pending Dividends (new — from ShopDividend)
+        // Tax paid on purchases (Input VAT)
+        const taxPaidOnPurchasesAgg = await prisma.purchaseOrder.aggregate({
+            where: { companyId, status: { not: 'Cancelled' }, createdAt: { lte: asOf } },
+            _sum: { tax: true }
+        });
+        const inputVAT = n(taxPaidOnPurchasesAgg._sum.tax);
+
+        // Tax already remitted to government (PAID TaxReturns)
+        const paidTaxReturns = await prisma.taxReturn.findMany({
+            where: { companyId, status: 'PAID' },
+            select: { taxDue: true }
+        });
+        const totalRemitted = paidTaxReturns.reduce((s, tr) => s + tr.taxDue, 0);
+
+        // Net Tax Payable = Collected - Input VAT - Already Remitted
+        const taxPayable = Math.max(0, totalTaxCollected - inputVAT - totalRemitted);
+
+        // 2C. Pending Dividends
         const pendingDivAgg = await (prisma as any).shopDividend.aggregate({
             where: { companyId, status: 'Pending' },
             _sum: { amount: true }
         });
         const pendingDividends = n(pendingDivAgg._sum.amount);
 
-        // 2D. Long-term loans (DEBT_TAKEN - DEBT_REPAID transactions)
+        // 2D. Long-term loans
         const loanTxs = await prisma.transaction.findMany({
             where: {
                 companyId,
@@ -116,26 +152,37 @@ export async function GET(req: NextRequest) {
         // 3. EQUITY
         // ═══════════════════════════════════════════════
 
-        // 3A. Shareholders Capital — from ShopShareholder (FIXED: was using transactions)
+        // 3A. Shareholders Capital
         const shareholders = await (prisma as any).shopShareholder.findMany({
             where: { companyId, status: 'Active' },
             select: { name: true, sharePercentage: true, initialInvestment: true }
         });
         const shareholdersCapital = shareholders.reduce((s: number, sh: any) => s + n(sh.initialInvestment), 0);
 
-        // 3B. Dividends Paid (reduces equity)
+        // 3B. Dividends Paid
         const paidDivAgg = await (prisma as any).shopDividend.aggregate({
             where: { companyId, status: 'Paid' },
             _sum: { amount: true }
         });
         const dividendsPaid = n(paidDivAgg._sum.amount);
 
-        // 3C. Retained Earnings = Shop Revenue − COGS − All Expenses
+        // 3C. Retained Earnings = Revenue − COGS − Expenses
+        //     Revenue = sale.subtotal (pre-tax), costPrice is ETB ✅
         const salesData = await prisma.sale.findMany({
             where: { companyId, status: 'Completed', createdAt: { lte: asOf } },
-            select: { subtotal: true, tax: true, items: { select: { quantity: true, costPrice: true, totalCost: true } } }
+            select: {
+                subtotal: true, tax: true, currency: true, exchangeRate: true,
+                items: { select: { quantity: true, costPrice: true, totalCost: true } }
+            }
         });
-        const shopRevenue = salesData.reduce((s, sale) => s + n(sale.subtotal), 0);
+
+        // Revenue in ETB (currency-aware)
+        const shopRevenue = salesData.reduce((s, sale) => {
+            const sub = n(sale.subtotal);
+            return s + (sale.currency === 'USD' ? sub * (sale.exchangeRate || usdToEtb) : sub);
+        }, 0);
+
+        // COGS — costPrice is already ETB
         const cogs = salesData.reduce((s, sale) =>
             s + sale.items.reduce((is, item) => is + n(item.totalCost || (n(item.quantity) * n(item.costPrice))), 0), 0);
 
@@ -144,29 +191,37 @@ export async function GET(req: NextRequest) {
             _sum: { amount: true }
         });
         const totalExpenses = n(allExpenses._sum.amount);
+
         const grossProfit = shopRevenue - cogs;
         const retainedEarnings = grossProfit - totalExpenses;
 
         // ═══════════════════════════════════════════════
-        // TOTALS
+        // TOTALS — Accounting Equation: Assets = Liabilities + Equity
         // ═══════════════════════════════════════════════
         const totalCurrentAssets = cashAndBank + shopAR + inventoryValue;
-        const totalFixedAssets = fixedAssetsValue;
+        const totalFixedAssets = fixedAssetsBookValue;
         const totalAssets = totalCurrentAssets + totalFixedAssets;
 
         const totalCurrentLiabilities = accountsPayable + taxPayable + pendingDividends;
         const totalLongTermLiabilities = Math.max(0, longTermLoans);
         const totalLiabilities = totalCurrentLiabilities + totalLongTermLiabilities;
 
-        const totalEquity = shareholdersCapital - dividendsPaid + retainedEarnings;
+        // Core tracked equity
+        const trackedEquity = shareholdersCapital - dividendsPaid + retainedEarnings;
+
+        // Opening Capital = unclassified initial balance (deposits, migration data)
+        const openingCapital = totalAssets - totalLiabilities - trackedEquity;
+        const totalEquity = trackedEquity + openingCapital;
         const totalLiabilitiesAndEquity = totalLiabilities + totalEquity;
 
-        const isBalanced = Math.abs(totalAssets - totalLiabilitiesAndEquity) < 5;
+        const difference = totalAssets - totalLiabilitiesAndEquity;
+        const isBalanced = Math.abs(difference) < 10;
 
         return NextResponse.json({
             asOf: asOf.toISOString(),
             isBalanced,
-            difference: totalAssets - totalLiabilitiesAndEquity,
+            difference,
+            exchangeRate: usdToEtb,
             // ── ASSETS ──────────────────────────────────────
             assets: {
                 current: {
@@ -188,7 +243,9 @@ export async function GET(req: NextRequest) {
                     },
                 },
                 fixed: {
-                    value: fixedAssetsValue,
+                    originalCost: fixedAssetsOriginalCost,
+                    accumulatedDepreciation,
+                    value: fixedAssetsBookValue,
                     count: fixedAssets.length,
                     drillType: 'ASSET'
                 },
@@ -201,11 +258,16 @@ export async function GET(req: NextRequest) {
                 current: {
                     accountsPayable: {
                         value: accountsPayable,
-                        count: unpaidExpenses.length,
+                        count: unpaidPOs.length,
                         drillType: 'CATEGORY'
                     },
                     taxPayable: {
                         value: taxPayable,
+                        breakdown: {
+                            taxCollected: totalTaxCollected,
+                            inputVAT,
+                            remitted: totalRemitted,
+                        },
                         drillType: 'TAX'
                     },
                     pendingDividends: {
@@ -227,8 +289,11 @@ export async function GET(req: NextRequest) {
                     value: shareholdersCapital,
                     shareholders: shareholders.map((s: any) => ({ name: s.name, pct: s.sharePercentage, investment: n(s.initialInvestment) })),
                 },
+                openingCapital: {
+                    value: openingCapital,
+                },
                 dividendsPaid: {
-                    value: -dividendsPaid, // negative (reduces equity)
+                    value: dividendsPaid,
                 },
                 retainedEarnings: {
                     value: retainedEarnings,

@@ -22,12 +22,17 @@ import {
     ChevronRight,
     MoreVertical,
     History,
-    Globe
+    Globe,
+    FileText,
+    Sheet,
+    Lock
 } from 'lucide-react';
 import Link from 'next/link';
 import { format, isToday, parseISO } from 'date-fns';
 import { useToast } from '@/components/ui/use-toast';
 import { useShopLang } from '@/contexts/ShopLanguageContext';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 // --- TYPES ---
 interface SaleItem {
@@ -80,10 +85,15 @@ export default function SalesHistoryPage() {
     const [refundReason, setRefundReason] = useState('');
     const [refundAccountId, setRefundAccountId] = useState('');
     const [selectedRefundItems, setSelectedRefundItems] = useState<Set<string>>(new Set());
+    const [requireRefundPassword, setRequireRefundPassword] = useState(false);
+    const [refundPasswordInput, setRefundPasswordInput] = useState('');
+    const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+    const [pendingRefundSale, setPendingRefundSale] = useState<Sale | null>(null);
 
     // Pagination State
     const [limit, setLimit] = useState(20);
     const [hasMore, setHasMore] = useState(true);
+    const [totalCount, setTotalCount] = useState(0);
 
     // Hover Preview State
     const [hoveredSaleId, setHoveredSaleId] = useState<string | null>(null);
@@ -91,7 +101,17 @@ export default function SalesHistoryPage() {
     useEffect(() => {
         fetchSales();
         fetchAccounts();
+        // Check security settings
+        fetch('/api/settings/security').then(r => r.json()).then(data => {
+            if (data.success && data.features?.requirePasswordOnRefunds) {
+                setRequireRefundPassword(true);
+            }
+        }).catch(() => {});
     }, []);
+
+    useEffect(() => {
+        fetchSales();
+    }, [dateRange]);
 
     const fetchAccounts = async () => {
         try {
@@ -109,7 +129,8 @@ export default function SalesHistoryPage() {
         try {
             if (!isLoadMore) setLoading(true);
             const currentOffset = isLoadMore ? sales.length : 0;
-            const response = await fetch(`/api/shop/sales?limit=${limit}&offset=${currentOffset}`);
+            const rangeParam = dateRange !== 'All' ? `&dateRange=${encodeURIComponent(dateRange)}` : '';
+            const response = await fetch(`/api/shop/sales?limit=${limit}&offset=${currentOffset}${rangeParam}`);
             const data = await response.json();
             if (data.sales) {
                 if (isLoadMore) {
@@ -118,6 +139,7 @@ export default function SalesHistoryPage() {
                     setSales(data.sales);
                 }
                 setHasMore(data.sales.length === limit);
+                if (data.totalCount !== undefined) setTotalCount(data.totalCount);
             }
         } catch (error) {
             console.error('Error fetching sales:', error);
@@ -195,11 +217,38 @@ export default function SalesHistoryPage() {
     };
 
     const handleRefund = (sale: Sale) => {
+        if (requireRefundPassword) {
+            setPendingRefundSale(sale);
+            setRefundPasswordInput('');
+            setShowPasswordPrompt(true);
+            return;
+        }
+        openRefundModal(sale);
+    };
+
+    const openRefundModal = (sale: Sale) => {
         setSelectedSale(sale);
         setIsRefundModalOpen(true);
-        // Initially select all items for refund
         setSelectedRefundItems(new Set(sale.items.map(i => i.id)));
         if (accounts.length > 0) setRefundAccountId(accounts[0].id);
+    };
+
+    const verifyRefundPassword = async () => {
+        try {
+            const res = await fetch('/api/auth/verify-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: refundPasswordInput })
+            });
+            if (res.ok) {
+                setShowPasswordPrompt(false);
+                if (pendingRefundSale) openRefundModal(pendingRefundSale);
+            } else {
+                toast({ title: 'Khalad!', description: 'Password-ka waa khalad. Isku day mar kale.', variant: 'destructive' });
+            }
+        } catch (e) {
+            toast({ title: 'Error', description: 'Xaqiijinta way fashilantay', variant: 'destructive' });
+        }
     };
 
     const toggleRefundItem = (id: string) => {
@@ -259,7 +308,248 @@ export default function SalesHistoryPage() {
     );
 
     const handleExport = () => {
-        // ... CSV logic ...
+        if (filteredData.length === 0) return;
+
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+        const pageW = doc.internal.pageSize.getWidth();
+        const pageH = doc.internal.pageSize.getHeight();
+        const margin = 15;
+
+        // --- HEADER BAR ---
+        doc.setFillColor(15, 23, 42); // slate-900
+        doc.rect(0, 0, pageW, 28, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(18);
+        doc.setTextColor(255, 255, 255);
+        doc.text('Revlo', margin, 12);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(148, 163, 184); // slate-400
+        doc.text('Taariikhda Iibka — Warbixin Rasmi Ah', margin, 19);
+
+        // Date + Time
+        const dateLabel = dateRange === 'All' ? 'Weligeed' : dateRange === 'Today' ? 'Maanta' : dateRange === 'This Week' ? 'Usbuucan' : 'Bishan';
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184);
+        doc.text(`${dateLabel}  •  ${format(new Date(), 'dd MMM yyyy, HH:mm')}`, pageW - margin, 12, { align: 'right' });
+        doc.text(`Tirada: ${filteredData.length} transaction`, pageW - margin, 19, { align: 'right' });
+
+        // --- KPI SUMMARY CARDS ---
+        const y0 = 35;
+        const cardW = (pageW - margin * 2 - 10) / 3;
+        const totalRev = filteredData.reduce((s, x) => s + (x.subtotal || x.total), 0);
+        const totalGross = filteredData.reduce((s, x) => s + x.total, 0);
+        const totalDebt = filteredData.reduce((s, x) => s + (x.total - (x.paidAmount || 0)), 0);
+
+        const kpis = [
+            { label: 'DAKHLIGA SAAFIGA', value: `ETB ${totalRev.toLocaleString()}`, sub: `Wadarta: ETB ${totalGross.toLocaleString()}`, color: [16, 185, 129] },
+            { label: 'DHAQDHAQAAQYADA', value: `${filteredData.length}`, sub: `Dalabyo la diiwaan geliyay`, color: [59, 130, 246] },
+            { label: 'DAYMAHA MAQAN', value: `ETB ${totalDebt.toLocaleString()}`, sub: `Lacagta aan macaamiisha ku leenahay`, color: [239, 68, 68] },
+        ];
+
+        kpis.forEach((kpi, i) => {
+            const x = margin + i * (cardW + 5);
+            doc.setFillColor(248, 250, 252); // slate-50
+            doc.roundedRect(x, y0, cardW, 22, 3, 3, 'F');
+            // Accent line
+            doc.setFillColor(kpi.color[0], kpi.color[1], kpi.color[2]);
+            doc.rect(x, y0, 1.5, 22, 'F');
+            // Label
+            doc.setFontSize(6);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(148, 163, 184);
+            doc.text(kpi.label, x + 7, y0 + 7);
+            // Value
+            doc.setFontSize(13);
+            doc.setTextColor(15, 23, 42);
+            doc.text(kpi.value, x + 7, y0 + 15);
+            // Sub
+            doc.setFontSize(5.5);
+            doc.setTextColor(148, 163, 184);
+            doc.text(kpi.sub, x + 7, y0 + 20);
+        });
+
+        // --- TABLE ---
+        const tableY = y0 + 30;
+        const tableData = filteredData.map((s, idx) => {
+            const bal = s.total - (s.paidAmount || 0);
+            return [
+                (idx + 1).toString(),
+                `#${s.invoiceNumber}`,
+                s.customer?.name || 'Walk-in',
+                format(new Date(s.createdAt), 'dd/MM/yy HH:mm'),
+                s.paymentMethod,
+                s.paymentStatus === 'Paid' ? 'La Bixiyay' : 'Deen',
+                `${s.total.toLocaleString()}`,
+                `${(s.paidAmount || 0).toLocaleString()}`,
+                `${bal.toLocaleString()}`,
+            ];
+        });
+
+        // Totals row
+        const grandTotal = filteredData.reduce((s, x) => s + x.total, 0);
+        const grandPaid = filteredData.reduce((s, x) => s + (x.paidAmount || 0), 0);
+        const grandBal = grandTotal - grandPaid;
+        tableData.push(['', '', '', '', '', 'WADARTA', grandTotal.toLocaleString(), grandPaid.toLocaleString(), grandBal.toLocaleString()]);
+
+        autoTable(doc, {
+            startY: tableY,
+            margin: { left: margin, right: margin },
+            head: [['#', 'Invoice', 'Macmiilka', 'Taariikh', 'Habka', 'Xaalad', 'Wadarta', 'La Bixiyay', 'Haraaga']],
+            body: tableData,
+            theme: 'plain',
+            styles: {
+                fontSize: 7.5,
+                cellPadding: { top: 3.5, bottom: 3.5, left: 3, right: 3 },
+                textColor: [30, 41, 59],
+                lineColor: [226, 232, 240],
+                lineWidth: 0.2,
+                font: 'helvetica',
+            },
+            headStyles: {
+                fillColor: [241, 245, 249],
+                textColor: [100, 116, 139],
+                fontStyle: 'bold',
+                fontSize: 6.5,
+                cellPadding: { top: 4, bottom: 4, left: 3, right: 3 },
+            },
+            columnStyles: {
+                0: { cellWidth: 10, halign: 'center' },
+                5: { halign: 'center' },
+                6: { halign: 'right', fontStyle: 'bold' },
+                7: { halign: 'right' },
+                8: { halign: 'right' },
+            },
+            alternateRowStyles: {
+                fillColor: [248, 250, 252],
+            },
+            didDrawCell: (data: any) => {
+                // Style status column
+                if (data.section === 'body' && data.column.index === 5 && data.row.index < filteredData.length) {
+                    const val = data.cell.raw;
+                    if (val === 'La Bixiyay') {
+                        doc.setFillColor(220, 252, 231);
+                        doc.roundedRect(data.cell.x + 2, data.cell.y + 1.5, data.cell.width - 4, data.cell.height - 3, 1.5, 1.5, 'F');
+                        doc.setFontSize(6);
+                        doc.setTextColor(22, 163, 74);
+                        doc.text(val, data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2 + 1, { align: 'center' });
+                    } else if (val === 'Deen') {
+                        doc.setFillColor(254, 243, 199);
+                        doc.roundedRect(data.cell.x + 2, data.cell.y + 1.5, data.cell.width - 4, data.cell.height - 3, 1.5, 1.5, 'F');
+                        doc.setFontSize(6);
+                        doc.setTextColor(217, 119, 6);
+                        doc.text(val, data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2 + 1, { align: 'center' });
+                    }
+                }
+                // Bold total row
+                const isLastRow = data.row.index === tableData.length - 1;
+                if (data.section === 'body' && isLastRow) {
+                    doc.setFillColor(15, 23, 42);
+                    doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+                    doc.setFontSize(8);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setTextColor(255, 255, 255);
+                    const align = data.column.index >= 6 ? 'right' : (data.column.index === 5 ? 'center' : 'left');
+                    const xPos = align === 'right' ? data.cell.x + data.cell.width - 3 : (align === 'center' ? data.cell.x + data.cell.width / 2 : data.cell.x + 3);
+                    doc.text(String(data.cell.raw || ''), xPos, data.cell.y + data.cell.height / 2 + 1, { align });
+                }
+            },
+        });
+
+        // --- FOOTER ---
+        const totalPages = doc.getNumberOfPages();
+        for (let p = 1; p <= totalPages; p++) {
+            doc.setPage(p);
+            doc.setFillColor(248, 250, 252);
+            doc.rect(0, pageH - 12, pageW, 12, 'F');
+            doc.setDrawColor(226, 232, 240);
+            doc.line(0, pageH - 12, pageW, pageH - 12);
+            doc.setFontSize(6);
+            doc.setTextColor(148, 163, 184);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Revlo POS  •  ${format(new Date(), 'dd/MM/yyyy HH:mm')}  •  Warbixin Auto-Generated`, margin, pageH - 5);
+            doc.text(`${p} / ${totalPages}`, pageW - margin, pageH - 5, { align: 'right' });
+        }
+
+        doc.save(`Revlo-Sales-${dateRange}-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+    };
+
+    const handleExportExcel = () => {
+        if (filteredData.length === 0) return;
+        const dateLabel = dateRange === 'All' ? 'Weligeed' : dateRange === 'Today' ? 'Maanta' : dateRange === 'This Week' ? 'Usbuucan' : 'Bishan';
+        const totalRev = filteredData.reduce((s, x) => s + (x.subtotal || x.total), 0);
+        const totalDebt = filteredData.reduce((s, x) => s + (x.total - (x.paidAmount || 0)), 0);
+        const grandTotal = filteredData.reduce((s, x) => s + x.total, 0);
+        const grandPaid = filteredData.reduce((s, x) => s + (x.paidAmount || 0), 0);
+
+        // Build styled HTML table for Excel
+        const html = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">
+        <head><meta charset="UTF-8">
+        <style>
+            body { font-family: Calibri, Arial, sans-serif; }
+            .header { background: #0F172A; color: white; font-size: 18px; font-weight: bold; padding: 12px 16px; }
+            .header-sub { background: #0F172A; color: #94A3B8; font-size: 11px; padding: 4px 16px 12px; }
+            .kpi-row td { padding: 10px 16px; font-size: 12px; border: 1px solid #E2E8F0; }
+            .kpi-label { color: #64748B; font-size: 9px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+            .kpi-value { font-size: 18px; font-weight: bold; color: #0F172A; }
+            .spacer td { height: 16px; border: none; }
+            th { background: #F1F5F9; color: #64748B; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; padding: 10px 12px; border: 1px solid #E2E8F0; text-align: left; }
+            td { padding: 8px 12px; font-size: 11px; color: #1E293B; border: 1px solid #F1F5F9; }
+            tr:nth-child(even) td { background: #F8FAFC; }
+            .paid { background: #DCFCE7; color: #16A34A; padding: 3px 10px; border-radius: 4px; font-weight: bold; font-size: 9px; }
+            .unpaid { background: #FEF3C7; color: #D97706; padding: 3px 10px; border-radius: 4px; font-weight: bold; font-size: 9px; }
+            .total-row td { background: #0F172A !important; color: white !important; font-weight: bold; font-size: 12px; border: none; }
+            .footer td { background: #F8FAFC; color: #94A3B8; font-size: 9px; padding: 8px 16px; border: none; border-top: 1px solid #E2E8F0; }
+        </style>
+        </head>
+        <body>
+        <table width="100%">
+            <tr><td colspan="9" class="header">REVLO — Taariikhda Iibka</td></tr>
+            <tr><td colspan="9" class="header-sub">${dateLabel} • ${format(new Date(), 'dd MMM yyyy, HH:mm')} • ${filteredData.length} transactions</td></tr>
+            <tr class="spacer"><td colspan="9"></td></tr>
+            <tr class="kpi-row">
+                <td colspan="3"><span class="kpi-label">Dakhliga Saafiga</span><br/><span class="kpi-value">ETB ${totalRev.toLocaleString()}</span></td>
+                <td colspan="3"><span class="kpi-label">Dhaqdhaqaaqyada</span><br/><span class="kpi-value">${filteredData.length} Dalabyo</span></td>
+                <td colspan="3"><span class="kpi-label">Daymaha Maqan</span><br/><span class="kpi-value">ETB ${totalDebt.toLocaleString()}</span></td>
+            </tr>
+            <tr class="spacer"><td colspan="9"></td></tr>
+            <tr>
+                <th>#</th><th>Invoice</th><th>Macmiilka</th><th>Taariikh</th><th>Habka</th><th>Xaalad</th><th>Wadarta (ETB)</th><th>La Bixiyay</th><th>Haraaga</th>
+            </tr>
+            ${filteredData.map((s, i) => {
+                const bal = s.total - (s.paidAmount || 0);
+                const statusClass = s.paymentStatus === 'Paid' ? 'paid' : 'unpaid';
+                const statusText = s.paymentStatus === 'Paid' ? 'La Bixiyay' : 'Deen';
+                return `<tr>
+                    <td>${i + 1}</td>
+                    <td>#${s.invoiceNumber}</td>
+                    <td>${s.customer?.name || 'Walk-in'}</td>
+                    <td>${format(new Date(s.createdAt), 'dd/MM/yy HH:mm')}</td>
+                    <td>${s.paymentMethod}</td>
+                    <td><span class="${statusClass}">${statusText}</span></td>
+                    <td style="text-align:right;font-weight:bold">${s.total.toLocaleString()}</td>
+                    <td style="text-align:right">${(s.paidAmount || 0).toLocaleString()}</td>
+                    <td style="text-align:right">${bal.toLocaleString()}</td>
+                </tr>`;
+            }).join('')}
+            <tr class="total-row">
+                <td colspan="6" style="text-align:right">WADARTA</td>
+                <td style="text-align:right">${grandTotal.toLocaleString()}</td>
+                <td style="text-align:right">${grandPaid.toLocaleString()}</td>
+                <td style="text-align:right">${(grandTotal - grandPaid).toLocaleString()}</td>
+            </tr>
+            <tr class="footer"><td colspan="9">Revlo POS • ${format(new Date(), 'dd/MM/yyyy HH:mm')} • Warbixin Auto-Generated</td></tr>
+        </table>
+        </body></html>`;
+
+        const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Revlo-Sales-${dateRange}-${format(new Date(), 'yyyy-MM-dd')}.xls`;
+        a.click();
+        URL.revokeObjectURL(url);
     };
 
     return (
@@ -282,9 +572,12 @@ export default function SalesHistoryPage() {
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <button onClick={handleExport} className="flex items-center gap-2 px-5 py-3 bg-white dark:bg-[#161B2E] border border-slate-200 dark:border-slate-800 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all shadow-sm">
-                            <Download size={12} strokeWidth={3} /> {t('export')}
+                    <div className="flex items-center gap-2">
+                        <button onClick={handleExport} className="flex items-center gap-2 px-4 py-2.5 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-800/50 rounded-2xl text-[9px] font-black uppercase tracking-widest text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-all shadow-sm hover:shadow-md active:scale-95">
+                            <FileText size={13} strokeWidth={3} /> PDF
+                        </button>
+                        <button onClick={handleExportExcel} className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-800/50 rounded-2xl text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all shadow-sm hover:shadow-md active:scale-95">
+                            <Sheet size={13} strokeWidth={3} /> Excel
                         </button>
                     </div>
                 </div>
@@ -296,16 +589,16 @@ export default function SalesHistoryPage() {
                     <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 blur-[40px] rounded-full"></div>
                     <div className="flex items-center gap-4 mb-3">
                         <TrendingUp size={16} strokeWidth={3} className="text-emerald-600 dark:text-emerald-400 hover:scale-110 transition-transform" />
-                        <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Net Revenue (Faaiido Basis)</h3>
+                        <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Dakhliga Saafiga</h3>
                     </div>
                     <div className="flex items-baseline gap-2">
                         <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter tabular-nums">
                             {sales.reduce((sum, s) => sum + (s.subtotal || s.total), 0).toLocaleString()}
                         </p>
-                        <span className="text-[9px] font-black text-slate-300 uppercase">ETB Net</span>
+                        <span className="text-[9px] font-black text-slate-300 uppercase">ETB Saafi</span>
                     </div>
                     <p className="text-[9px] font-bold text-slate-400 mt-1 italic">
-                        Gross: {sales.reduce((sum, s) => sum + s.total, 0).toLocaleString()} ETB (Inc. VAT)
+                        Wadarta: {sales.reduce((sum, s) => sum + s.total, 0).toLocaleString()} ETB (VAT ku jira)
                     </p>
                 </div>
 
@@ -313,13 +606,13 @@ export default function SalesHistoryPage() {
                     <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 blur-[40px] rounded-full"></div>
                     <div className="flex items-center gap-4 mb-3">
                         <ShoppingBag size={16} strokeWidth={3} className="text-blue-600 dark:text-blue-400 hover:scale-110 transition-transform" />
-                        <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Transactions</h3>
+                        <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Dhaqdhaqaaqyada</h3>
                     </div>
                     <div className="flex items-baseline gap-2">
                         <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter tabular-nums">
                             {sales.length}
                         </p>
-                        <span className="text-[9px] font-black text-slate-300 uppercase">Latest Orders</span>
+                        <span className="text-[9px] font-black text-slate-300 uppercase">Dalabyo</span>
                     </div>
                 </div>
 
@@ -333,10 +626,10 @@ export default function SalesHistoryPage() {
                         <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter tabular-nums text-left">
                             {sales.reduce((sum, s) => sum + (s.total - s.paidAmount), 0).toLocaleString()}
                         </p>
-                        <span className="text-[9px] font-black text-slate-300 uppercase italic">Credits Due</span>
+                        <span className="text-[9px] font-black text-slate-300 uppercase italic">Daymaha</span>
                     </div>
                     <p className="text-[9px] font-bold text-slate-400 mt-1 italic">
-                        Wadarta daymaha macaamiisha ku maqan.
+                        Wadarta daymaha aan macaamiisha ku leenahay.
                     </p>
                 </div>
             </div>
@@ -346,7 +639,7 @@ export default function SalesHistoryPage() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                     <div className="flex items-center gap-2 bg-white dark:bg-[#161B2E] p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                         {[t('today'), t('this_week'), t('this_month'), t('all_time')].map((label, idx) => {
-                            const rangeKeys = ['Today', 'Yesterday', 'This Week', 'This Month'];
+                            const rangeKeys = ['Today', 'This Week', 'This Month', 'All'];
                             return (
                             <button
                                 key={rangeKeys[idx]}
@@ -403,6 +696,7 @@ export default function SalesHistoryPage() {
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-left">
                                     {filteredData.map((sale) => {
                                         const isPaid = sale.paymentStatus === 'Paid' || sale.status === 'Paid';
+                                        const isRefunded = sale.status === 'Refunded' || sale.status === 'PartialRefund';
                                         const balance = sale.total - (sale.paidAmount || 0);
 
                                         return (
@@ -415,7 +709,7 @@ export default function SalesHistoryPage() {
                                                 <td className="py-6 px-10 relative">
                                                     {hoveredSaleId === sale.id && sale.items && sale.items.length > 0 && (
                                                         <div className="absolute left-full top-0 ml-4 z-40 bg-white dark:bg-[#1E293B] shadow-2xl rounded-2xl p-4 border border-slate-100 dark:border-slate-800 w-64 animate-in fade-in zoom-in duration-200 pointer-events-none">
-                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-50 dark:border-slate-800 pb-2">Order Contents</p>
+                                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-50 dark:border-slate-800 pb-2">Alaabta La Iibiyay</p>
                                                             <div className="space-y-3">
                                                                 {sale.items.slice(0, 5).map(item => (
                                                                     <div key={item.id} className="flex justify-between items-center text-left">
@@ -424,7 +718,7 @@ export default function SalesHistoryPage() {
                                                                     </div>
                                                                 ))}
                                                                 {sale.items.length > 5 && (
-                                                                    <p className="text-[9px] font-bold text-blue-500 pt-1">+{sale.items.length - 5} more items</p>
+                                                                    <p className="text-[9px] font-bold text-blue-500 pt-1">+{sale.items.length - 5} alaab kale</p>
                                                                 )}
                                                             </div>
                                                         </div>
@@ -450,10 +744,12 @@ export default function SalesHistoryPage() {
                                                     </span>
                                                 </td>
                                                 <td className="py-6 px-4 text-center">
-                                                    <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${isPaid ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400'
+                                                    <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${
+                                                        isRefunded ? 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-500/10 dark:text-rose-400' :
+                                                        isPaid ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400'
                                                         : 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-500/10 dark:text-amber-400'
                                                         }`}>
-                                                        {sale.paymentStatus || sale.status}
+                                                        {isRefunded ? (sale.status === 'PartialRefund' ? 'Partial Refund' : 'Refunded') : (sale.paymentStatus || sale.status)}
                                                     </span>
                                                 </td>
                                                 <td className="py-6 px-4 text-right">
@@ -496,13 +792,17 @@ export default function SalesHistoryPage() {
                                                         >
                                                             <ChevronRight size={16} strokeWidth={3} />
                                                         </Link>
+                                                        {!isRefunded && (
                                                         <button
                                                             onClick={() => handleRefund(sale)}
                                                             className="p-2.5 rounded-xl bg-orange-500/5 text-orange-500 hover:bg-orange-500 hover:text-white transition-all"
+                                                            title="Refund / Return"
                                                         >
                                                             <RotateCcw size={16} strokeWidth={3} />
                                                         </button>
+                                                        )}
                                                         <button
+                                                            onClick={() => window.open(`/shop/sales/${sale.id}/print?auto=1`, '_blank')}
                                                             className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-all shadow-sm"
                                                             title="Print Receipt"
                                                         >
@@ -518,14 +818,27 @@ export default function SalesHistoryPage() {
                         </div>
                     )}
 
-                    {!loading && hasMore && filteredData.length >= limit && (
-                        <div className="p-10 flex justify-center border-t border-slate-50 dark:border-slate-800/50 bg-slate-50/30 dark:bg-slate-900/10">
-                            <button
-                                onClick={() => fetchSales(true)}
-                                className="px-10 py-4 bg-white dark:bg-[#161B2E] border-2 border-slate-100 dark:border-slate-800 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 hover:border-[#3498DB] hover:text-[#3498DB] transition-all shadow-sm hover:shadow-xl hover:shadow-blue-500/10 active:scale-95"
-                            >
-                                {t('view_all')}
-                            </button>
+                    {!loading && filteredData.length === 0 && (
+                        <div className="flex flex-col items-center justify-center h-96 gap-4">
+                            <PackageX className="text-slate-300 dark:text-slate-700" size={60} />
+                            <p className="text-sm font-bold text-slate-400 dark:text-slate-500">{t('no_data') || 'Wax iibka ah lama helin'}</p>
+                            <p className="text-xs text-slate-400">Tijaabi muddo kale ama raadin kale</p>
+                        </div>
+                    )}
+
+                    {!loading && filteredData.length > 0 && (
+                        <div className="p-6 flex items-center justify-between border-t border-slate-50 dark:border-slate-800/50 bg-slate-50/30 dark:bg-slate-900/10">
+                            <p className="text-[11px] font-bold text-slate-400">
+                                {sales.length} ka mid ah {totalCount} {t('total') || 'wadarta'}
+                            </p>
+                            {hasMore && filteredData.length >= limit && (
+                                <button
+                                    onClick={() => fetchSales(true)}
+                                    className="px-10 py-4 bg-white dark:bg-[#161B2E] border-2 border-slate-100 dark:border-slate-800 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 hover:border-[#3498DB] hover:text-[#3498DB] transition-all shadow-sm hover:shadow-xl hover:shadow-blue-500/10 active:scale-95"
+                                >
+                                    {t('view_all') || 'Dhammaanba Arag'}
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>
@@ -552,20 +865,20 @@ export default function SalesHistoryPage() {
                         <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
                             <div className="space-y-8">
                                 <div className="bg-slate-50 dark:bg-blue-500/5 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 text-left">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Invoice Summary</p>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Warbixinta Risiitka</p>
                                     <div className="flex justify-between items-baseline">
                                         <p className="text-2xl font-black text-slate-800 dark:text-white">#{selectedSale?.invoiceNumber}</p>
                                         <p className="text-xs font-bold text-[#3498DB]">{selectedSale?.customer?.name}</p>
                                     </div>
                                     <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-col gap-2">
                                         <div className="flex justify-between items-center">
-                                            <span className="text-[10px] font-black text-slate-400 uppercase">Outstanding</span>
+                                            <span className="text-[10px] font-black text-slate-400 uppercase">Lacagta Haray</span>
                                             <span className="text-sm font-black text-rose-500">{(selectedSale!.total - (selectedSale!.paidAmount || 0)).toLocaleString()} {selectedSale?.currency}</span>
                                         </div>
                                         {selectedSale?.currency === 'USD' && (
                                             <div className="p-3 bg-blue-500/10 rounded-xl border border-blue-500/20 flex items-center justify-between">
                                                 <div>
-                                                    <p className="text-[8px] font-black text-blue-500 uppercase tracking-widest leading-none mb-1">Current Exchange Rate</p>
+                                                    <p className="text-[8px] font-black text-blue-500 uppercase tracking-widest leading-none mb-1">Sicirka Sarrifka</p>
                                                     <div className="flex items-center gap-2">
                                                         <input
                                                             type="number"
@@ -577,7 +890,7 @@ export default function SalesHistoryPage() {
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Required in ETB</p>
+                                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">ETB Loo Baahan</p>
                                                     <p className="text-sm font-black text-slate-900 dark:text-white">
                                                         {((selectedSale!.total - (selectedSale!.paidAmount || 0)) * currentExchangeRate).toLocaleString()}
                                                     </p>
@@ -589,7 +902,7 @@ export default function SalesHistoryPage() {
 
                                 <div className="space-y-4 text-left">
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                                        Payment Amount ({selectedSale?.currency})
+                                        Lacagta La Bixinayo ({selectedSale?.currency})
                                     </label>
                                     <input
                                         type="number"
@@ -605,7 +918,7 @@ export default function SalesHistoryPage() {
                                 </div>
 
                                 <div className="space-y-4 text-left">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Destination Account</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Akoonka Loo Dirayo</label>
                                     <div className="grid grid-cols-1 gap-2">
                                         {accounts.map(acc => (
                                             <button
@@ -651,7 +964,7 @@ export default function SalesHistoryPage() {
                                 <div className="p-3 bg-orange-500/10 rounded-2xl text-orange-500">
                                     <RotateCcw size={20} strokeWidth={3} />
                                 </div>
-                                {t('receive')}
+                                Lacag Celin (Refund)
                             </h3>
                             <button type="button" onClick={() => setIsRefundModalOpen(false)} className="p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-400 transition-all">
                                 <X size={20} />
@@ -690,7 +1003,7 @@ export default function SalesHistoryPage() {
                             </div>
 
                             <div>
-                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Source Account</label>
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Akoonka Laga Bixinayo</label>
                                 <select
                                     className="w-full p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 outline-none font-bold appearance-none text-slate-700 dark:text-white"
                                     value={refundAccountId}
@@ -722,6 +1035,45 @@ export default function SalesHistoryPage() {
                             </button>
                         </div>
                     </form>
+                </div>
+            )}
+
+            {/* PASSWORD CONFIRMATION MODAL */}
+            {showPasswordPrompt && (
+                <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex items-center justify-center animate-fade-in">
+                    <div className="bg-white dark:bg-[#161B2E] rounded-[2rem] p-8 w-full max-w-sm mx-4 shadow-2xl">
+                        <div className="text-center mb-6">
+                            <div className="w-14 h-14 bg-orange-100 dark:bg-orange-900/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <Lock className="text-orange-500" size={28} />
+                            </div>
+                            <h3 className="text-lg font-black text-gray-900 dark:text-white">Password Required</h3>
+                            <p className="text-xs text-gray-500 mt-1">Lacag-celinta waxay u baahan tahay admin password-ka</p>
+                        </div>
+                        <input
+                            type="password"
+                            value={refundPasswordInput}
+                            onChange={e => setRefundPasswordInput(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && verifyRefundPassword()}
+                            className="w-full px-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-orange-500 outline-none font-bold text-center text-lg tracking-widest mb-4"
+                            placeholder="••••••••"
+                            autoFocus
+                        />
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => { setShowPasswordPrompt(false); setPendingRefundSale(null); }}
+                                className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 font-bold text-sm"
+                            >
+                                {t('cancel')}
+                            </button>
+                            <button
+                                onClick={verifyRefundPassword}
+                                disabled={!refundPasswordInput}
+                                className="flex-1 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-black text-sm disabled:opacity-50 transition-all"
+                            >
+                                Xaqiiji
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
 

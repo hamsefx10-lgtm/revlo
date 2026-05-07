@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
 
 // GET /api/shop/employees - List employees
 
@@ -60,10 +61,21 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { fullName, email, phone, role, salary, shift, status } = body;
+        const { fullName, email, phone, role, salary, shift, status, createAccount, password } = body;
 
         if (!fullName || !role) {
             return NextResponse.json({ error: 'Name and Role are required' }, { status: 400 });
+        }
+
+        if (createAccount) {
+            if (!email || !password) {
+                return NextResponse.json({ error: 'Email and Password are required to create a system account' }, { status: 400 });
+            }
+            // Check if email already exists
+            const existingUser = await prisma.user.findUnique({ where: { email } });
+            if (existingUser) {
+                return NextResponse.json({ error: 'User with this email already exists' }, { status: 400 });
+            }
         }
 
         // Get User Company
@@ -76,23 +88,43 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'User company not found' }, { status: 400 });
         }
 
-        const employee = await prisma.employee.create({
-            data: {
-                fullName,
-                email: email || null,
-                phone: phone || null,
-                role,
-                monthlySalary: salary ? parseFloat(salary) : 0,
-                companyId: user.companyId,
-                isActive: status === 'Active',
-                // Additional fields to store shift/status if needed, but schema might not have them?
-                // Schema has `isActive` (boolean).
-                // Schema doesn't have `shift`. I will check if I can add it or ignore.
-                // For now, I'll store what I can.
+        // Map employee role to system role
+        let systemRole: any = 'MEMBER';
+        if (role === 'Manager') systemRole = 'MANAGER';
+        else if (role === 'Cashier' || role === 'Stock Clerk') systemRole = 'MEMBER';
+        else if (role === 'Security' || role === 'Cleaner') systemRole = 'VIEWER';
 
+        // Transaction to ensure both are created
+        const employee = await prisma.$transaction(async (tx) => {
+            const emp = await tx.employee.create({
+                data: {
+                    fullName,
+                    email: email || null,
+                    phone: phone || null,
+                    role,
+                    monthlySalary: salary ? parseFloat(salary) : 0,
+                    companyId: user.companyId,
+                    isActive: status === 'Active',
+                    category: 'COMPANY',
+                }
+            });
 
-                category: 'COMPANY', // Default
+            if (createAccount) {
+                const hashedPassword = await bcrypt.hash(password, 10);
+                await tx.user.create({
+                    data: {
+                        fullName,
+                        email,
+                        password: hashedPassword,
+                        role: systemRole,
+                        companyId: user.companyId,
+                        phone: phone || '',
+                        status: status === 'Active' ? 'Active' : 'Inactive'
+                    }
+                });
             }
+
+            return emp;
         });
 
         return NextResponse.json({ employee }, { status: 201 });

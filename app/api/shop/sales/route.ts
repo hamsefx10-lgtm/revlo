@@ -26,6 +26,7 @@ interface SaleRequestBody {
     convertDebtAfterDays?: number;
     employeeId?: string;
     sendWhatsApp?: boolean;
+    receiptUrl?: string;
 }
 
 // POST /api/shop/sales - Create new sale (Checkout)
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest) {
             taxAmount, invoiceNumber, dueDate,
             currency, exchangeRate,
             autoConvertDebt, convertDebtAfterDays,
-            employeeId, sendWhatsApp
+            employeeId, sendWhatsApp, receiptUrl
         } = body;
 
         // Fetch user to get accurate Company ID and Name
@@ -171,6 +172,7 @@ export async function POST(req: NextRequest) {
                     autoConvertDebt: autoConvertDebt !== undefined ? autoConvertDebt : true,
                     convertDebtAfterDays: convertDebtAfterDays !== undefined ? Number(convertDebtAfterDays) : 7,
                     employeeId: employeeId || null,
+                    receiptUrl: receiptUrl || null,
                     items: {
                         create: saleItems.map(({ productId, productName, quantity, unitPrice, total, costPrice, totalCost, unitPriceUSD, costPriceUSD }) => ({
                             productId, productName, quantity, unitPrice, total, costPrice, totalCost, unitPriceUSD, costPriceUSD
@@ -276,34 +278,43 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: 'User does not belong to a company' }, { status: 400 });
         }
 
-        // Trigger automatic debt conversion for this company
-
-
-        await autoConvertAgedDebts(currentUser.companyId);
+        try {
+            await autoConvertAgedDebts(currentUser.companyId);
+        } catch (err) {
+            console.error("autoConvertAgedDebts failed:", err);
+        }
 
         const { searchParams } = new URL(req.url);
         const limit = parseInt(searchParams.get('limit') || '50');
         const offset = parseInt(searchParams.get('offset') || '0');
+        const dateRange = searchParams.get('dateRange') || '';
 
-        const sales = await prisma.sale.findMany({
-            where: {
-                companyId: currentUser.companyId,
-            },
-            include: {
-                items: true,
-                customer: true,
-            },
-            orderBy: {
-                createdAt: 'desc',
-            },
-            take: limit,
-            skip: offset,
-        });
+        // Build date filter based on dateRange
+        const now = new Date();
+        const whereClause: any = { companyId: currentUser.companyId };
 
-        return NextResponse.json({ sales });
+        if (dateRange === 'Today') {
+            whereClause.createdAt = { gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()) };
+        } else if (dateRange === 'This Week') {
+            whereClause.createdAt = { gte: new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay()) };
+        } else if (dateRange === 'This Month') {
+            whereClause.createdAt = { gte: new Date(now.getFullYear(), now.getMonth(), 1) };
+        }
+
+        const [sales, totalCount] = await Promise.all([
+            prisma.sale.findMany({
+                where: whereClause,
+                include: { items: true, customer: true },
+                orderBy: { createdAt: 'desc' },
+                take: limit,
+                skip: offset,
+            }),
+            prisma.sale.count({ where: whereClause }),
+        ]);
+
+        return NextResponse.json({ sales, totalCount });
     } catch (error) {
         console.error('Error fetching sales:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
-

@@ -10,12 +10,18 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { companyId: true }
+        });
+        if (!user?.companyId) return NextResponse.json({ error: 'Company not found' }, { status: 400 });
 
         const { searchParams } = new URL(req.url);
         const type = searchParams.get('type');
 
-        const where: any = { companyId: session.user.companyId };
+        const where: any = { companyId: user.companyId };
         if (type && type !== 'All') where.type = type;
 
         const accounts = await prisma.account.findMany({
@@ -23,7 +29,13 @@ export async function GET(req: NextRequest) {
             orderBy: { name: 'asc' }
         });
 
-        return NextResponse.json({ accounts });
+        const latestRate = await prisma.exchangeRate.findFirst({
+            where: { companyId: user.companyId },
+            orderBy: { date: 'desc' }
+        });
+        const exchangeRate = latestRate?.rate || 1;
+
+        return NextResponse.json({ accounts, exchangeRate });
     } catch (error) {
         console.error('Error fetching accounts:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

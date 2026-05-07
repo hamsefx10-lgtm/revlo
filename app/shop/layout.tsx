@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ShopSidebar from '@/components/shop/ShopSidebar';
 import ShopHeader from '@/components/shop/ShopHeader';
 import { Toaster } from 'sonner';
 import { ShopLanguageProvider } from '@/contexts/ShopLanguageContext';
+import ShopAiChat from '@/components/shop/ShopAiChat';
+import AutoLogoutWatcher from '@/components/shop/AutoLogoutWatcher';
 
 export default function ShopLayout({
     children,
@@ -12,6 +14,18 @@ export default function ShopLayout({
     children: React.ReactNode;
 }) {
     const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+    const [autoLogout, setAutoLogout] = useState(false);
+
+    useEffect(() => {
+        fetch('/api/settings/security')
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.features?.autoLogout) {
+                    setAutoLogout(true);
+                }
+            })
+            .catch(() => {});
+    }, []);
 
     return (
         <ShopLanguageProvider>
@@ -44,6 +58,12 @@ export default function ShopLayout({
 
                 {/* Toast Notifications */}
                 <Toaster position="top-right" richColors />
+
+                {/* AI Assistant */}
+                <ShopAiChat />
+
+                {/* Auto-Logout Watcher */}
+                <AutoLogoutWatcher enabled={autoLogout} timeoutMinutes={30} />
             </div>
         </ShopLanguageProvider>
     );

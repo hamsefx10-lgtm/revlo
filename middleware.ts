@@ -94,8 +94,9 @@ export default withAuth(
 
         // --- 4. Admin-Only Protection (Strictly SUPER_ADMIN) ---
         if (path.startsWith('/admin')) {
-            if (role !== 'SUPER_ADMIN') {
-               return NextResponse.redirect(new URL('/dashboard?error=Unauthorized', req.url));
+            const SUPER_ADMIN_ID = process.env.SUPER_ADMIN_ID;
+            if (role !== 'SUPER_ADMIN' && token?.id !== SUPER_ADMIN_ID) {
+               return NextResponse.redirect(new URL('/shop/dashboard?error=Unauthorized', req.url));
             }
         }
 

@@ -7,10 +7,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { useSearchParams } from 'next/navigation';
 
-// Import Types
 import { ProjectReportsData, DateFilterType } from '@/components/reports/project-reports/types';
-
-// Import New Components
 import { ProjectReportsHeader } from '@/components/reports/project-reports/ProjectReportsHeader';
 import { ReportsSummaryStats } from '@/components/reports/project-reports/ReportsSummaryStats';
 import { ReportsFilterBar } from '@/components/reports/project-reports/ReportsFilterBar';
@@ -18,7 +15,10 @@ import { ProjectsList } from '@/components/reports/project-reports/ProjectsList'
 
 async function exportPDF(data: ProjectReportsData, showDetails: boolean) {
   const doc = new jsPDF('landscape', 'mm', 'a4');
-  const formatCurrency = (value: number) => `${value.toLocaleString()}`;
+  const formatCurrency = (value: number) => `${value.toLocaleString()} ETB`;
+  const pageW = 297;
+  const marginL = 14;
+  const marginR = 283;
 
   const loadLogoAsDataUrl = async (logoUrl?: string | null) => {
     if (!logoUrl) return null;
@@ -38,368 +38,380 @@ async function exportPDF(data: ProjectReportsData, showDetails: boolean) {
     }
   };
 
-  const renderDocument = (logoDataUrl?: string) => {
-    // === Page 1: Executive Summary ===
+  const renderDocument = (logoDataUrl?: string, watermarkDataUrl?: string) => {
     const companyName = data.companyName || 'MAGACA SHIRKADDA';
-    const reportTitle = 'WARBIXINTA HANTIDA MASHAARIICDA (EXECUTIVE SUMMARY)';
     const dateRange = data.startDate && data.endDate
       ? `${new Date(data.startDate).toLocaleDateString('so-SO')} - ${new Date(data.endDate).toLocaleDateString('so-SO')}`
       : 'Dhammaan Mashaariicda';
-    const printDate = new Date().toLocaleString('so-SO');
 
-    // Branding & Header
-    doc.setFillColor(15, 23, 42); // Navy Dark
-    doc.rect(0, 0, 297, 45, 'F');
+    let yPos = 45;
 
+    // ========== HEADER (Daily Reports Style) ==========
     if (logoDataUrl) {
-      doc.addImage(logoDataUrl, 'PNG', 15, 10, 25, 25, undefined, 'FAST');
+      try { doc.addImage(logoDataUrl, 'PNG', marginL, 12, 28, 28, undefined, 'FAST'); } catch {}
     }
-
-    doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(24);
-    doc.text(companyName.toUpperCase(), 50, 22);
-    
-    doc.setFontSize(10);
+    doc.setFontSize(28);
+    doc.setTextColor(0, 0, 0);
+    doc.text(companyName, 46, 26);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(120, 120, 120);
+    doc.text('Warbixinta Mashaariicda • Project Financial Report', 46, 34);
+
+    // Meta
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text('DATE', 200, 18);
     doc.setFont('helvetica', 'normal');
-    doc.text(reportTitle, 50, 32);
-    doc.text(`Muddo: ${dateRange}`, 282, 22, { align: 'right' });
-    doc.text(`La daabacay: ${printDate}`, 282, 32, { align: 'right' });
-
-    // Summary Cards (Big Row)
-    const drawBigCard = (x: number, y: number, title: string, value: number, color: [number, number, number], label: string) => {
-      doc.setFillColor(255, 255, 255);
-      doc.setDrawColor(226, 232, 240);
-      doc.roundedRect(x, y, 52, 45, 3, 3, 'FD');
-      
-      doc.setFillColor(...color);
-      doc.rect(x + 5, y + 8, 8, 1, 'F'); // Accent line
-
-      doc.setTextColor(100, 116, 139);
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.text(title, x + 5, y + 15);
-
-      doc.setTextColor(15, 23, 42);
-      doc.setFontSize(16);
-      doc.text(formatCurrency(value), x + 5, y + 28);
-
-      doc.setTextColor(color[0], color[1], color[2]);
-      doc.setFontSize(8);
-      doc.text(label, x + 5, y + 38);
-    };
-
-    let cardY = 60;
-    drawBigCard(15, cardY, 'TOTAL REVENUE', data.summary.totalRevenue, [16, 185, 129], 'Dakhliga Guud');
-    drawBigCard(70, cardY, 'TOTAL EXPENSES', data.summary.totalExpenses, [239, 68, 68], 'Kharashyada Guud');
-    drawBigCard(125, cardY, 'CASH PROFIT', data.summary.totalProfit, [59, 130, 246], 'Faa\'iidada Dhabta ah');
-    drawBigCard(180, cardY, 'CONTRACT BALANCE', (data.summary as any).totalRemainingAgreement || 0, [99, 102, 241], 'Daynta Heshiiska');
-    drawBigCard(235, cardY, 'CASH DEFICIT', data.summary.totalReceivables, [245, 158, 11], 'Lacagta Maqan');
-
-    // Secondary Summary (Row 2)
-    doc.setTextColor(15, 23, 42);
+    doc.text(dateRange, 220, 18);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(14);
-    doc.text('SHIRKADDA XAALADDEEDA GUUD (OPERATIONAL OVERVIEW)', 15, 130);
-    
-    doc.setDrawColor(226, 232, 240);
-    doc.line(15, 133, 282, 133);
+    doc.text('GENERATED', 200, 24);
+    doc.setFont('helvetica', 'normal');
+    doc.text(new Date().toLocaleDateString(), 220, 24);
 
-    const drawInfoBit = (x: number, y: number, label: string, value: string) => {
-      doc.setTextColor(100, 116, 139);
-      doc.setFontSize(10);
-      doc.text(label, x, y);
-      doc.setTextColor(15, 23, 42);
-      doc.setFontSize(12);
+    // ========== HELPER: Render Table (Daily Reports Style) ==========
+    const renderTable = (
+      title: string,
+      head: string[][],
+      body: (string | number)[][],
+      options: { totalLabel?: string; totalValue?: string; totalColor?: [number, number, number] } = {}
+    ) => {
+      if (!body.length) return;
+      yPos += 5;
+      if (yPos > doc.internal.pageSize.getHeight() - 40) { doc.addPage(); yPos = 20; }
+
+      // Section title
       doc.setFont('helvetica', 'bold');
-      doc.text(value, x, y + 7);
-      doc.setFont('helvetica', 'normal');
-    };
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.text(title, marginL, yPos);
+      yPos += 5;
+      doc.setLineWidth(0.2);
+      doc.setDrawColor(200, 200, 200);
+      doc.line(marginL, yPos, marginR, yPos);
+      yPos += 2;
 
-    drawInfoBit(15, 145, 'Mashaariicda Guud', data.summary.totalProjects.toString());
-    drawInfoBit(70, 145, 'Mashaariicda Socda', (data.summary as any).activeProjects?.toString() || '0');
-    drawInfoBit(125, 145, 'Completed', (data.summary as any).completedProjects?.toString() || '0');
-    drawInfoBit(180, 145, 'Profit Margin (Avg)', `${data.summary.averageProfitMargin.toFixed(2)}%`);
+      const upperHead = head.map(row => row.map(cell => typeof cell === 'string' ? cell.toUpperCase() : cell));
 
-    // Footer for Page 1
-    doc.setTextColor(148, 163, 184);
-    doc.setFontSize(8);
-    doc.text(`Bogga 1  |  ${companyName} - Warbixinta Mashaariicda`, 148, 200, { align: 'center' });
+      // Detect which rows are TOTAL rows
+      const totalRowIndices = new Set<number>();
+      body.forEach((row, idx) => {
+        const hasTotal = row.some(cell => typeof cell === 'string' && cell.includes('TOTAL'));
+        if (hasTotal) totalRowIndices.add(idx);
+      });
 
-    // === Page 2: Projects Overview Table ===
-    doc.addPage();
-    doc.setFillColor(30, 41, 59); // Slate 800
-    doc.rect(0, 0, 297, 20, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('FAAHFAAHINTA MASHAARIICDA (DETAILED PROJECT INVENTORY)', 15, 13);
+      autoTable(doc, {
+        startY: yPos,
+        head: upperHead,
+        body,
+        theme: 'plain',
+        pageBreak: 'avoid',
+        rowPageBreak: 'avoid',
+        headStyles: {
+          fillColor: [255, 255, 255],
+          textColor: [30, 41, 59],
+          fontStyle: 'bold',
+          fontSize: 8,
+          cellPadding: { top: 3, bottom: 2, left: 1, right: 1 },
+          lineColor: [200, 200, 200],
+          lineWidth: { bottom: 0.5 }
+        },
+        bodyStyles: {
+          textColor: [50, 60, 70],
+          fontSize: 8,
+          cellPadding: { top: 3, bottom: 3, left: 1, right: 1 },
+        },
+        columnStyles: { [head[0].length - 1]: { halign: 'right' } },
+        margin: { left: marginL, right: marginL },
+        didDrawCell: (hookData) => {
+          if (hookData.section === 'body') {
+            const isTotal = totalRowIndices.has(hookData.row.index);
+            if (isTotal) {
+              // Draw strong top border for total rows
+              doc.setDrawColor(30, 41, 59);
+              doc.setLineWidth(0.6);
+              doc.line(hookData.cell.x, hookData.cell.y, hookData.cell.x + hookData.cell.width, hookData.cell.y);
+              // Draw bottom border
+              doc.setLineWidth(0.3);
+              doc.line(hookData.cell.x, hookData.cell.y + hookData.cell.height, hookData.cell.x + hookData.cell.width, hookData.cell.y + hookData.cell.height);
+            } else {
+              // Light separator for normal rows
+              doc.setDrawColor(235, 235, 235);
+              doc.setLineWidth(0.1);
+              doc.line(hookData.cell.x, hookData.cell.y + hookData.cell.height, hookData.cell.x + hookData.cell.width, hookData.cell.y + hookData.cell.height);
+            }
+          }
+        },
+        didParseCell: (hookData) => {
+          if (hookData.section === 'body') {
+            const isTotal = totalRowIndices.has(hookData.row.index);
+            if (isTotal) {
+              // TOTAL rows: bold, bigger font, dark background
+              hookData.cell.styles.fontStyle = 'bold';
+              hookData.cell.styles.fontSize = 9.5;
+              hookData.cell.styles.textColor = [15, 23, 42];
+              hookData.cell.styles.fillColor = [243, 244, 246]; // gray-100
+              hookData.cell.styles.cellPadding = { top: 4, bottom: 4, left: 1, right: 1 };
+            }
+            // Right-align currency values
+            if (typeof hookData.cell.raw === 'string') {
+              const val = hookData.cell.raw.trim();
+              if (/[\d,.]+\s*ETB$/.test(val)) hookData.cell.styles.halign = 'right';
+            }
+          }
+        }
+      });
 
-    const projectHeaders = [['Mashruuc', 'Macmiil', 'Xaalad', 'Qiimaha', 'Kharashyada', 'La Bixiyay', 'Haraaga', 'Maqan', 'Margin', '%']];
-    const projectRows = data.projects.map(p => [
-      p.name,
-      p.customer,
-      p.status,
-      formatCurrency(p.projectValue),
-      formatCurrency(p.totalExpenses),
-      formatCurrency(p.totalRevenue),
-      formatCurrency(p.remainingRevenue),
-      p.receivables > 0 ? formatCurrency(p.receivables) : '-',
-      formatCurrency(p.grossProfit),
-      `${p.profitMargin.toFixed(1)}%`
-    ]);
-
-    autoTable(doc, {
-      head: projectHeaders,
-      body: projectRows,
-      startY: 25,
-      styles: { fontSize: 8, cellPadding: 3, textColor: 40, lineColor: [226, 232, 240], lineWidth: 0.1 },
-      headStyles: { fillColor: [248, 250, 252], textColor: [15, 23, 42], fontStyle: 'bold' },
-      alternateRowStyles: { fillColor: [255, 255, 255] },
-      columnStyles: {
-        3: { halign: 'right', fontStyle: 'bold' },
-        4: { halign: 'right' },
-        5: { halign: 'right', textColor: [22, 163, 74] },
-        6: { halign: 'right', textColor: [225, 29, 72] },
-        7: { halign: 'right', textColor: [245, 158, 11], fontStyle: 'bold' },
-        8: { halign: 'right' },
-        9: { halign: 'right' },
-      },
-      didDrawPage: (data) => {
-        doc.setTextColor(148, 163, 184);
-        doc.setFontSize(8);
-        doc.text(`Bogga ${(doc as any).internal.getNumberOfPages()}  |  Confidential Financial Report`, 148, 205, { align: 'center' });
+      if (options.totalLabel && options.totalValue) {
+        const finalY = (doc as any).lastAutoTable.finalY + 2;
+        // Draw double line above grand total
+        doc.setDrawColor(15, 23, 42);
+        doc.setLineWidth(0.8);
+        doc.line(marginL, finalY, marginR, finalY);
+        doc.setLineWidth(0.3);
+        doc.line(marginL, finalY + 1.5, marginR, finalY + 1.5);
+        // Grand total background
+        const totalY = finalY + 5;
+        doc.setFillColor(15, 23, 42);
+        doc.roundedRect(marginL, totalY - 5, marginR - marginL, 9, 1, 1, 'F');
+        // Label
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(200, 200, 200);
+        doc.text(options.totalLabel.toUpperCase(), marginL + 4, totalY);
+        // Value
+        if (options.totalColor) doc.setTextColor(255, 255, 255);
+        doc.setFontSize(11);
+        doc.text(options.totalValue, marginR - 4, totalY, { align: 'right' });
+        yPos = totalY + 14;
+      } else {
+        yPos = (doc as any).lastAutoTable.finalY + 10;
       }
-    });
+    };
 
-    // === Detailed Breakdown if requested ===
+
+    // ========== PAGE 1: FINANCIAL SUMMARY (Waterfall) ==========
+    const s = data.summary;
+    doc.setDrawColor(22, 163, 74);
+    doc.setLineWidth(0.5);
+    doc.line(marginL, yPos, marginR, yPos);
+    yPos += 7;
+
+    // Summary header
+    doc.setFillColor(15, 23, 42);
+    doc.roundedRect(marginL - 2, yPos - 2, marginR - marginL + 4, 10, 2, 2, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(255, 255, 255);
+    doc.text('XAALADDA DHAQAALE EE MASHAARIICDA (PROJECT FINANCIAL OVERVIEW)', marginL + 2, yPos + 4.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(180, 180, 180);
+    doc.text(`${data.projects.length} Mashruuc`, marginR, yPos + 4.5, { align: 'right' });
+    yPos += 18;
+
+    const drawSummaryRow = (label: string, value: number, type: 'in' | 'out' | 'neutral' | 'total') => {
+      if (type === 'total') {
+        doc.setDrawColor(15, 23, 42);
+        doc.setLineWidth(0.8);
+        doc.line(marginL, yPos - 3, marginR, yPos - 3);
+        doc.setLineWidth(0.3);
+        doc.line(marginL, yPos - 1, marginR, yPos - 1);
+      }
+      const isTotal = type === 'total';
+      doc.setFont('helvetica', isTotal ? 'bold' : 'normal');
+      doc.setFontSize(isTotal ? 10 : 9);
+      const color: [number, number, number] = type === 'in' ? [22, 163, 74] : type === 'out' ? [220, 38, 38] : type === 'total' ? (value >= 0 ? [22, 163, 74] : [220, 38, 38]) : [50, 50, 50];
+      doc.setTextColor(...color);
+      doc.text(label, type === 'neutral' || type === 'total' ? marginL : marginL + 6, yPos);
+      const sign = type === 'in' ? '+ ' : type === 'out' ? '- ' : '';
+      doc.text(`${sign}${formatCurrency(Math.abs(value))}`, marginR, yPos, { align: 'right' });
+      yPos += isTotal ? 8 : 7;
+    };
+
+    doc.setTextColor(15, 23, 42);
+    drawSummaryRow(`Wadarta Qiimaha Heshiisyada (Total Agreement Value)`, s.totalProjectValue, 'neutral');
+    yPos += 1;
+    if (s.totalRevenue > 0) drawSummaryRow('  Dakhliga La Helay (Revenue Collected)', s.totalRevenue, 'in');
+    if (s.totalExpenses > 0) drawSummaryRow('  Kharashyada Guud (Total Expenses)', s.totalExpenses, 'out');
+    yPos += 1;
+    drawSummaryRow(`Faa'iidada Dhabta ah (Net Profit)`, s.totalProfit, 'total');
+
+    if ((s.totalRemainingAgreement || 0) > 0 || (s.totalReceivables || 0) > 0) {
+      yPos += 2;
+      doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 116, 139);
+      doc.text(`Daynta Macmiilka (Wali La Haysto): ${formatCurrency(s.totalReceivables)}`, marginL, yPos);
+    }
+    yPos += 12;
+
+    // ========== PROJECTS OVERVIEW TABLE ==========
+    renderTable(
+      'Mashaariicda Oo Dhan',
+      [['Mashruuc', 'Macmiil', 'Xaalad', 'Qiimaha', 'Kharashka', 'La Helay', 'Haraaga', "Faa'iida", '%']],
+      data.projects.map(p => [
+        p.name, p.customer, p.status,
+        formatCurrency(p.projectValue), formatCurrency(p.totalExpenses),
+        formatCurrency(p.totalRevenue), formatCurrency(p.remainingRevenue),
+        formatCurrency(p.grossProfit), `${p.profitMargin.toFixed(1)}%`
+      ])
+    );
+
+    // ========== DETAILED BREAKDOWN PER PROJECT ==========
     if (showDetails && data.projects.length > 0) {
       data.projects.forEach((project) => {
         doc.addPage();
+        yPos = 20;
 
-        // Project Health Header
+        // Project Header
         doc.setFillColor(15, 23, 42);
-        doc.rect(0, 0, 297, 25, 'F');
-        
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(14);
+        doc.roundedRect(marginL - 2, 8, marginR - marginL + 4, 10, 2, 2, 'F');
         doc.setFont('helvetica', 'bold');
-        doc.text(project.name.toUpperCase(), 15, 12);
-        
+        doc.setFontSize(12);
+        doc.setTextColor(255, 255, 255);
+        doc.text(project.name.toUpperCase(), marginL + 2, 14.5);
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Macmiil: ${project.customer}  |  Xaalad: ${project.status}  |  Bilowga: ${project.startDate}`, 15, 18);
+        doc.text(`Macmiil: ${project.customer}  |  Xaalad: ${project.status}  |  Bilowga: ${project.startDate}`, marginR, 14.5, { align: 'right' });
 
-        // Circular Progress / Health Indicator (Top Right)
-        const marginColor: [number, number, number] = project.profitMargin >= 20 ? [22, 163, 74] : project.profitMargin >= 0 ? [59, 130, 246] : [225, 29, 72];
-        doc.setFillColor(...marginColor);
-        doc.roundedRect(240, 5, 42, 15, 2, 2, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(7);
-        doc.text('MARGIN', 245, 10);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`${project.profitMargin.toFixed(1)}%`, 245, 16);
-
-        let detailY = 40;
-
-        // Key Financial Metrics Grid
-        const drawMiniStat = (x: number, y: number, label: string, value: number, isCurrency = true) => {
-          doc.setTextColor(100, 116, 139);
-          doc.setFontSize(7);
-          doc.setFont('helvetica', 'bold');
-          doc.text(label.toUpperCase(), x, y);
-          doc.setTextColor(15, 23, 42);
-          doc.setFontSize(10);
-          doc.text(isCurrency ? formatCurrency(value) : value.toString(), x, y + 6);
+        // Project Waterfall
+        yPos += 5;
+        const drawPRow = (label: string, value: number, type: 'in' | 'out' | 'neutral' | 'total') => {
+          if (type === 'total') {
+            doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.2); doc.line(marginL, yPos - 2, marginR, yPos - 2);
+          }
+          const isTotal = type === 'total';
+          doc.setFont('helvetica', isTotal ? 'bold' : 'normal');
+          doc.setFontSize(isTotal ? 10 : 9);
+          const c: [number, number, number] = type === 'in' ? [22, 163, 74] : type === 'out' ? [220, 38, 38] : type === 'total' ? (value >= 0 ? [22, 163, 74] : [220, 38, 38]) : [50, 50, 50];
+          doc.setTextColor(...c);
+          doc.text(label, marginL + (type === 'neutral' || type === 'total' ? 0 : 4), yPos);
+          const sign = type === 'in' ? '+ ' : type === 'out' ? '- ' : '';
+          doc.text(`${sign}${formatCurrency(Math.abs(value))}`, marginR, yPos, { align: 'right' });
+          yPos += isTotal ? 8 : 6;
         };
 
-        drawMiniStat(15, detailY, 'Agreement', project.projectValue);
-        drawMiniStat(65, detailY, 'Collected', project.totalRevenue);
-        drawMiniStat(115, detailY, 'Spent', project.totalExpenses);
-        drawMiniStat(165, detailY, 'Remaining', project.remainingRevenue);
-        drawMiniStat(215, detailY, 'Receivables', project.receivables);
-        drawMiniStat(255, detailY, 'Current Profit', project.grossProfit);
+        drawPRow('Qiimaha Heshiiska (Agreement)', project.projectValue, 'neutral');
+        if (project.totalRevenue > 0) drawPRow('Lacagta la helay (Collected)', project.totalRevenue, 'in');
+        if (project.totalExpenses > 0) drawPRow('Kharashyada (Expenses)', project.totalExpenses, 'out');
+        if (project.remainingRevenue > 0) drawPRow('Haraaga (Remaining)', project.remainingRevenue, 'out');
+        drawPRow("Faa'iidada (Cash Profit)", project.grossProfit, 'total');
+        yPos += 4;
 
-        doc.setDrawColor(226, 232, 240);
-        doc.line(15, detailY + 10, 282, detailY + 10);
-        detailY += 20;
+        // Expenses by category (exclude Labor — shown separately in labor breakdown)
+        const cats = Object.keys(project.expensesByCategory || {}).filter(c => c !== 'Labor');
+        cats.forEach(cat => {
+          const items = project.expensesByCategory[cat];
+          if (!items || !items.length) return;
+          const catTotal = items.reduce((s, e) => s + e.amount, 0);
 
-        // 1. Group Expenses by Category
-        const expensesByCategory: { [key: string]: typeof project.expenses } = {};
-        const categoryTotals: { [key: string]: number } = {};
-
-        project.expenses.forEach(e => {
-          const cat = e.category || 'Uncategorized';
-          if (!expensesByCategory[cat]) expensesByCategory[cat] = [];
-          expensesByCategory[cat].push(e);
-
-          categoryTotals[cat] = (categoryTotals[cat] || 0) + Number(e.amount);
-        });
-
-        const sortedCategories = Object.keys(categoryTotals).sort((a, b) => categoryTotals[b] - categoryTotals[a]);
-
-        sortedCategories.forEach(category => {
-          if (detailY > 180) {
-            doc.addPage();
-            detailY = 20;
-          }
-
-          doc.setFontSize(10);
-          doc.setTextColor(15, 23, 42);
-          doc.setFont('helvetica', 'bold');
-          doc.text(`${category.toUpperCase()}`, 15, detailY);
-          doc.setFontSize(8);
-          doc.setTextColor(100, 116, 139);
-          doc.text(`Sub-total: ${formatCurrency(categoryTotals[category])}`, 282, detailY, { align: 'right' });
-          detailY += 4;
-
-          const categoryExpenses = expensesByCategory[category];
-          let tableHeaders = [['Taariikh', 'Sharaxaad', 'Qiimaha']];
-          let tableRows = categoryExpenses.map(e => [
-            e.date,
-            e.description + (e.materials && Array.isArray(e.materials) ?
-              '\n' + e.materials.map((m: any) => `- ${m.name} (${m.quantity} ${m.unit} x ${formatCurrency(m.price)})`).join('\n')
-              : ''),
-            formatCurrency(e.amount)
-          ]);
-
-          if (category === 'Labor') {
-            tableHeaders = [['Taariikh', 'Sharaxaad', 'Qofka', 'Qiimaha']];
-            tableRows = categoryExpenses.map(e => [
-              e.date,
-              e.description,
-              e.employeeName || e.supplierName || '-',
-              formatCurrency(e.amount)
-            ]);
-          }
-
-          if (category === 'Material') {
-            tableHeaders = [['Taariikh', 'Sharaxaad', 'Agabka', 'Qty', 'Unit Price', 'Total']];
-            tableRows = [];
-            
-            // 1. Add Expenses (with potential breakdown)
-            categoryExpenses.forEach(e => {
-              const description = e.description.replace(/\s-\s\d{4}-\d{2}-\d{2}$/, '');
+          if (cat === 'Material') {
+            // Material with full breakdown
+            const materialRows: (string | number)[][] = [];
+            items.forEach(e => {
+              const desc = e.description.replace(/\s-\s\d{4}-\d{2}-\d{2}$/, '');
               if (e.materials && Array.isArray(e.materials) && e.materials.length > 0) {
-                e.materials.forEach((m: any, idx: number) => {
-                  const qty = Number((m.qty ?? m.quantity) || 0);
-                  const price = Number(m.price || 0);
-                  const total = qty * price;
-                  
-                  tableRows.push([
-                    idx === 0 ? e.date : '',
-                    idx === 0 ? description : '',
-                    m.name,
-                    `${qty} ${m.unit || ''}`,
-                    formatCurrency(price),
-                    formatCurrency(total)
+                e.materials.forEach((m: any, mi: number) => {
+                  const qty = Number(m.qty ?? m.quantity ?? 0);
+                  const price = Number(m.price ?? 0);
+                  materialRows.push([
+                    mi === 0 ? e.date : '', mi === 0 ? desc : '',
+                    m.name, `${qty} ${m.unit || ''}`, formatCurrency(price), formatCurrency(qty * price)
                   ]);
                 });
               } else {
-                // FALLBACK: Use description as name if no breakdown exists
-                tableRows.push([
-                  e.date,
-                  'Material Expense',
-                  description,
-                  '1',
-                  formatCurrency(Number(e.amount)),
-                  formatCurrency(Number(e.amount))
-                ]);
+                materialRows.push([e.date, desc, '-', '1', formatCurrency(e.amount), formatCurrency(e.amount)]);
               }
             });
-
-            // 2. Add ProjectMaterial records (if any)
-            if (project.materialsUsed && project.materialsUsed.length > 0) {
-              project.materialsUsed.forEach((m: any) => {
-                const qty = Number(m.quantityUsed || 0);
-                const price = Number(m.costPerUnit || 0);
-                const total = qty * price;
-                tableRows.push([
-                  m.dateUsed ? new Date(m.dateUsed).toISOString().split('T')[0] : '-',
-                  'Project Material',
-                  m.name,
-                  `${qty} ${m.unit || ''}`,
-                  formatCurrency(price),
-                  formatCurrency(total)
-                ]);
-              });
-            }
+            renderTable(cat, [['Taariikh', 'Sharaxaad', 'Agabka', 'Qty', 'Unit Price', 'Total']], materialRows,
+              { totalLabel: `Total ${cat}`, totalValue: formatCurrency(catTotal), totalColor: [220, 38, 38] });
+          } else {
+            renderTable(cat, [['Taariikh', 'Sharaxaad', 'Shaqaale/Vendor', 'Qiimaha']],
+              items.map(e => [e.date, e.description.replace(/\s-\s\d{4}-\d{2}-\d{2}$/, ''), e.employeeName || '-', formatCurrency(e.amount)]),
+              { totalLabel: `Total ${cat}`, totalValue: formatCurrency(catTotal), totalColor: [220, 38, 38] });
           }
-
-          autoTable(doc, {
-            startY: detailY,
-            head: tableHeaders,
-            body: tableRows,
-            theme: 'grid',
-            styles: { fontSize: 7, cellPadding: 2, valign: 'middle' },
-            headStyles: { fillColor: [248, 250, 252], textColor: [15, 23, 42] },
-            columnStyles: {
-              ...(category === 'Labor' ? { 3: { halign: 'right' } } : category === 'Material' ? { 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' } } : { 2: { halign: 'right' } })
-            },
-            margin: { left: 15, right: 15 },
-          });
-
-          detailY = (doc as any).lastAutoTable.finalY + 10;
         });
 
-        // 3. Payments Table
-        if (project.payments.length > 0) {
-          if (detailY > 180) {
-            doc.addPage();
-            detailY = 20;
-          }
-
-          doc.setFontSize(10);
-          doc.setTextColor(15, 23, 42);
-          doc.setFont('helvetica', 'bold');
-          doc.text('LACAGAHA & DAKHLIGA', 15, detailY);
-          detailY += 4;
-
-          const paymentRows = project.payments.map(p => [
-            p.date,
-            (p as any).description || 'Invoice Payment',
-            formatCurrency(p.amount)
-          ]);
-
-          autoTable(doc, {
-            startY: detailY,
-            head: [['Taariikh', 'Sharaxaad', 'Qiimaha']],
-            body: paymentRows,
-            theme: 'grid',
-            styles: { fontSize: 7, cellPadding: 2 },
-            headStyles: { fillColor: [248, 250, 252], textColor: [15, 23, 42] },
-            columnStyles: { 2: { halign: 'right' } },
-            margin: { left: 15, right: 15 },
+        // Labor Breakdown (by employee)
+        if (project.laborBreakdown && project.laborBreakdown.length > 0) {
+          const laborRows: (string | number)[][] = [];
+          project.laborBreakdown.forEach(emp => {
+            emp.items.forEach((item, idx) => {
+              laborRows.push([
+                idx === 0 ? emp.employeeName : '',
+                item.date,
+                item.description.replace(/\s-\s\d{4}-\d{2}-\d{2}$/, ''),
+                item.accountName || '-',
+                formatCurrency(item.amount)
+              ]);
+            });
+            // Sub-total row for employee
+            laborRows.push(['', '', '', `${emp.employeeName} TOTAL`, formatCurrency(emp.totalPaid)]);
           });
-
-          detailY = (doc as any).lastAutoTable.finalY + 10;
+          const laborTotal = project.laborBreakdown.reduce((s, e) => s + e.totalPaid, 0);
+          renderTable('Shaqaalaha (Labor)', [['Shaqaale', 'Taariikh', 'Sharaxaad', 'Account', 'Qiimaha']], laborRows,
+            { totalLabel: 'Total Labor', totalValue: formatCurrency(laborTotal), totalColor: [220, 38, 38] });
         }
 
-        // Project Footer
+        // Materials Used
+        if (project.materialsUsed && project.materialsUsed.length > 0) {
+          renderTable('Agabka La Isticmaalay', [['Magaca', 'Tirada', 'Unit Price', 'Hadhay', 'Wadarta']],
+            project.materialsUsed.map(m => [m.name, `${m.quantityUsed} ${m.unit}`, formatCurrency(m.costPerUnit), `${m.leftoverQty} ${m.unit}`, formatCurrency(m.totalCost)])
+          );
+        }
+
+        // Payments
+        if (project.payments.length > 0) {
+          renderTable('Lacagaha La Helay (Income)', [['Taariikh', 'Macmiil', 'Sharaxaad', 'Account', 'Qiimaha']],
+            project.payments.map(p => [p.date, p.customerName || '-', p.description || 'Payment', p.accountName || '-', formatCurrency(p.amount)]),
+            { totalLabel: 'Total Collected', totalValue: formatCurrency(project.totalRevenue), totalColor: [22, 163, 74] }
+          );
+        }
+
+        // Footer per project
         doc.setTextColor(148, 163, 184);
         doc.setFontSize(8);
-        doc.text(`Project: ${project.name}  |  Confidential  |  Page ${(doc as any).internal.getNumberOfPages()}`, 148, 205, { align: 'center' });
+        doc.text(`Project: ${project.name}  |  Confidential`, 148, 200, { align: 'center' });
       });
+    }
+
+    // Page numbers & footer
+    const pageCount = (doc as any).internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      if (watermarkDataUrl) {
+        (doc as any).setGState(new (doc as any).GState({ opacity: 0.04 }));
+        doc.addImage(watermarkDataUrl, 'PNG', 80, 60, 140, 140, undefined, 'FAST');
+        (doc as any).setGState(new (doc as any).GState({ opacity: 1.0 }));
+      }
+      const ph = doc.internal.pageSize.getHeight();
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`Generated on ${new Date().toLocaleString()}`, marginL, ph - 8);
+      doc.text(`Page ${i} of ${pageCount}`, 148, ph - 8, { align: 'center' });
+      doc.text('Powered by Revlo', marginR, ph - 8, { align: 'right' });
     }
 
     doc.save(`Project-Reports-${data.startDate || 'all'}-${data.endDate || 'all'}.pdf`);
   };
 
   const logoDataUrl = await loadLogoAsDataUrl(data.companyLogoUrl);
-  renderDocument(logoDataUrl || undefined);
+  renderDocument(logoDataUrl || undefined, logoDataUrl || undefined);
 }
+
 
 function ProjectReportsContent() {
   const [reportData, setReportData] = useState<ProjectReportsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [dateFilter, setDateFilter] = useState<DateFilterType>('thisYear');
+  const [dateFilter, setDateFilter] = useState<DateFilterType>('all');
   const [customStartDate, setCustomStartDate] = useState<string>('');
   const [customEndDate, setCustomEndDate] = useState<string>('');
-  const [showDetails, setShowDetails] = useState(false);
+  const [showDetails, setShowDetails] = useState(true);
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
   const [showCustomDateInput, setShowCustomDateInput] = useState(false);
+  const [expandAll, setExpandAll] = useState(false);
 
   const searchParams = useSearchParams();
   const initialProjectId = searchParams.get('projectId');
@@ -414,24 +426,20 @@ function ProjectReportsContent() {
       case 'lastWeek': {
         const start = new Date(today);
         start.setDate(start.getDate() - 7);
-        start.setHours(0, 0, 0, 0);
         return { startDate: start.toISOString().split('T')[0], endDate };
       }
       case 'lastMonth': {
         const start = new Date(today);
         start.setMonth(start.getMonth() - 1);
-        start.setHours(0, 0, 0, 0);
         return { startDate: start.toISOString().split('T')[0], endDate };
       }
       case 'lastTwoMonths': {
         const start = new Date(today);
         start.setMonth(start.getMonth() - 2);
-        start.setHours(0, 0, 0, 0);
         return { startDate: start.toISOString().split('T')[0], endDate };
       }
       case 'thisYear': {
         const start = new Date(today.getFullYear(), 0, 1);
-        start.setHours(0, 0, 0, 0);
         return { startDate: start.toISOString().split('T')[0], endDate };
       }
       case 'custom': {
@@ -455,10 +463,7 @@ function ProjectReportsContent() {
 
         const res = await fetch(url, {
           cache: 'no-cache',
-          headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-          }
+          headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
         });
 
         if (!res.ok) throw new Error('Xogta lama helin');
@@ -471,18 +476,25 @@ function ProjectReportsContent() {
         setLoading(false);
       }
     }
-
     fetchReport();
   }, [dateFilter, customStartDate, customEndDate]);
 
   const toggleProjectExpansion = (projectId: string) => {
     const newExpanded = new Set(expandedProjects);
-    if (newExpanded.has(projectId)) {
-      newExpanded.delete(projectId);
-    } else {
-      newExpanded.add(projectId);
-    }
+    if (newExpanded.has(projectId)) newExpanded.delete(projectId);
+    else newExpanded.add(projectId);
     setExpandedProjects(newExpanded);
+  };
+
+  const handleToggleExpandAll = () => {
+    if (!reportData) return;
+    if (expandAll) {
+      setExpandedProjects(new Set());
+      setExpandAll(false);
+    } else {
+      setExpandedProjects(new Set(reportData.projects.map(p => p.id)));
+      setExpandAll(true);
+    }
   };
 
   const visibleProjects = useMemo(() => {
@@ -508,9 +520,7 @@ function ProjectReportsContent() {
         <div className="flex flex-col items-center justify-center min-h-[400px]">
           <XCircle size={48} className="mb-4 text-redError" />
           <div className="text-redError text-xl font-bold mb-4">{error}</div>
-          <button onClick={() => window.location.reload()} className="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
-            Reload
-          </button>
+          <button onClick={() => window.location.reload()} className="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">Reload</button>
         </div>
       </Layout>
     );
@@ -521,27 +531,24 @@ function ProjectReportsContent() {
   const { startDate, endDate } = getDateRange(dateFilter);
   const dateRangeText = startDate && endDate
     ? `${new Date(startDate).toLocaleDateString('so-SO')} - ${new Date(endDate).toLocaleDateString('so-SO')}`
-    : 'Dhammaan Mashaariicda';
+    : 'Dhammaan Wakhtiga';
 
   return (
     <Layout>
-      <div className="max-w-7xl mx-auto pb-8 print:max-w-full pt-6 print:pt-0">
+      <div className="max-w-7xl mx-auto pb-8 print:max-w-full pt-6 print:pt-0 px-4">
 
         <ProjectReportsHeader
           data={reportData}
           dateRangeText={dateRangeText}
           loading={loading}
           onExportPDF={() => {
-            // Recalculate summary if filtered
             const projectsForExport = visibleProjects.length > 0 ? visibleProjects : reportData.projects;
             const exportSummary = projectsForExport.reduce(
               (acc, p) => {
                 acc.totalRevenue += p.totalRevenue;
                 acc.totalExpenses += p.totalExpenses;
-                // Summary Profit remains Cash-based (Collected - Spent) for consistency with cards
-                acc.totalProfit += (p.totalRevenue - p.totalExpenses); 
+                acc.totalProfit += (p.totalRevenue - p.totalExpenses);
                 if (p.remainingRevenue > 0) acc.totalRemainingAgreement += p.remainingRevenue;
-                if ((p.totalRevenue - p.totalExpenses) < 0) acc.totalLosses += Math.abs(p.totalRevenue - p.totalExpenses);
                 acc.totalReceivables += p.receivables;
                 acc.totalProjectValue += p.projectValue;
                 return acc;
@@ -562,13 +569,9 @@ function ProjectReportsContent() {
                 totalLosses: exportSummary.totalLosses,
                 totalReceivables: exportSummary.totalReceivables,
                 totalProjectValue: exportSummary.totalProjectValue,
-                averageProfitMargin:
-                  exportSummary.totalRevenue > 0
-                    ? (exportSummary.totalProfit / exportSummary.totalRevenue) * 100
-                    : 0,
+                averageProfitMargin: exportSummary.totalRevenue > 0 ? (exportSummary.totalProfit / exportSummary.totalRevenue) * 100 : 0,
               },
             };
-
             exportPDF(dataForExport, showDetails);
           }}
           onPrint={() => window.print()}
@@ -590,6 +593,8 @@ function ProjectReportsContent() {
           setCustomEndDate={setCustomEndDate}
           showCustomDateInput={showCustomDateInput}
           setShowCustomDateInput={setShowCustomDateInput}
+          expandAll={expandAll}
+          onToggleExpandAll={handleToggleExpandAll}
         />
 
         <ProjectsList
@@ -600,33 +605,6 @@ function ProjectReportsContent() {
           toggleProjectExpansion={toggleProjectExpansion}
           loading={loading}
         />
-
-        {/* Print styles */}
-        <style jsx global>{`
-          @media print {
-            @page {
-              size: A4 landscape;
-              margin: 0.5cm;
-            }
-            body * {
-              visibility: hidden;
-            }
-            .print\\:max-w-full,
-            .print\\:rounded-none,
-            .print\\:mb-2,
-            .print\\:py-6,
-            .print\\:grid-cols-4 {
-              visibility: visible;
-            }
-            button {
-              display: none !important;
-            }
-            /* Ensure components inside are visible */
-            .print\\:block {
-                display: block !important;
-            }
-          }
-        `}</style>
       </div>
     </Layout>
   );
@@ -639,9 +617,7 @@ export default function ProjectReportsPage() {
         <Layout>
           <div className="flex items-center justify-center min-h-[400px]">
             <Loader2 className="animate-spin mr-3 text-primary" size={32} />
-            <span className="text-xl text-mediumGray">
-              Warbixinta mashaariicda ayaa soo dhacaysa...
-            </span>
+            <span className="text-xl text-mediumGray">Warbixinta mashaariicda ayaa soo dhacaysa...</span>
           </div>
         </Layout>
       }

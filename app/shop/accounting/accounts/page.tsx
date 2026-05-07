@@ -39,6 +39,7 @@ export default function AccountsPage() {
     const [loading, setLoading] = useState(true);
     const [accounts, setAccounts] = useState<Account[]>([]);
     const [filter, setFilter] = useState<'All' | 'Cash' | 'Bank' | 'Mobile Money'>('All');
+    const [exchangeRate, setExchangeRate] = useState(1);
 
     // Modals
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -63,6 +64,7 @@ export default function AccountsPage() {
             if (res.ok) {
                 const data = await res.json();
                 setAccounts(data.accounts || []);
+                setExchangeRate(data.exchangeRate || 1);
             }
         } catch (error) {
             console.error(error);
@@ -172,7 +174,10 @@ export default function AccountsPage() {
     };
 
     const filteredAccounts = accounts.filter(acc => filter === 'All' || acc.type === filter);
-    const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0);
+    const totalBalanceETB = accounts.reduce((sum, acc) => {
+        if (acc.currency === 'USD') return sum + (acc.balance * exchangeRate);
+        return sum + acc.balance;
+    }, 0);
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0B1120] font-sans pb-20">
@@ -203,7 +208,10 @@ export default function AccountsPage() {
                                 <div className="p-2 bg-white/10 backdrop-blur rounded-lg"><TrendingUp size={16} /></div>
                                 <span className="text-blue-100 font-bold uppercase tracking-wider text-sm">Total Liquidity</span>
                             </div>
-                            <h2 className="text-5xl font-black mb-8 tracking-tight">ETB {totalBalance.toLocaleString()}</h2>
+                            <h2 className="text-5xl font-black mb-1 tracking-tight">ETB {totalBalanceETB.toLocaleString()}</h2>
+                            <p className="text-blue-200 text-xs font-bold mb-8 opacity-80 uppercase tracking-widest">
+                                Includes USD Accounts Converted @ {exchangeRate} ETB
+                            </p>
                             <div className="flex flex-wrap gap-4">
                                 <button
                                     onClick={() => setIsCreateModalOpen(true)}
@@ -227,14 +235,14 @@ export default function AccountsPage() {
                             <div className="p-4 rounded-2xl bg-green-50 dark:bg-green-900/10 text-green-500"><Banknote size={24} /></div>
                             <div>
                                 <p className="text-sm font-bold text-gray-400 uppercase">Cash on Hand</p>
-                                <p className="text-2xl font-black text-gray-900 dark:text-white">ETB {accounts.filter(a => a.type === 'Cash').reduce((s, a) => s + a.balance, 0).toLocaleString()}</p>
+                                <p className="text-2xl font-black text-gray-900 dark:text-white">ETB {accounts.filter(a => a.type === 'Cash').reduce((s, a) => s + (a.currency === 'USD' ? a.balance * exchangeRate : a.balance), 0).toLocaleString()}</p>
                             </div>
                         </div>
                         <div className="bg-white dark:bg-[#151C2C] p-6 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-sm flex items-center gap-4">
                             <div className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/10 text-blue-500"><Building2 size={24} /></div>
                             <div>
                                 <p className="text-sm font-bold text-gray-400 uppercase">Bank Balance</p>
-                                <p className="text-2xl font-black text-gray-900 dark:text-white">ETB {accounts.filter(a => a.type === 'Bank').reduce((s, a) => s + a.balance, 0).toLocaleString()}</p>
+                                <p className="text-2xl font-black text-gray-900 dark:text-white">ETB {accounts.filter(a => a.type === 'Bank' || a.type === 'Mobile Money').reduce((s, a) => s + (a.currency === 'USD' ? a.balance * exchangeRate : a.balance), 0).toLocaleString()}</p>
                             </div>
                         </div>
                     </div>

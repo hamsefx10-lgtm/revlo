@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
-
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
@@ -45,6 +44,12 @@ export async function GET(req: Request) {
             };
         }
 
+        const latestRateObj = await prisma.exchangeRate.findFirst({
+            where: { companyId: user.companyId },
+            orderBy: { date: 'desc' }
+        });
+        const exchangeRate = latestRateObj?.rate || 1;
+
         const transactions = await prisma.transaction.findMany({
             where: whereClause,
             include: {
@@ -56,26 +61,46 @@ export async function GET(req: Request) {
             take: 100
         });
 
+        let totalIncome = 0;
+        let totalExpense = 0;
+
         const formatted = transactions.map(t => {
             const accountName = t.account?.name || t.fromAccount?.name || t.toAccount?.name || 'Unknown';
-            // Simple heuristics for type. 
-            // In a real double-entry, we'd check if account matches debit or credit side.
-            // Here we assume if transaction amount is positive for this account filter, it's Debit?
-            // Since we list ALL transactions, lets just show the raw type/amount.
+            const accCurrency = t.account?.currency || t.fromAccount?.currency || t.toAccount?.currency || 'ETB';
+            
+            // Apply exchange rate if USD
+            const finalAmount = accCurrency === 'USD' ? Math.abs(Number(t.amount)) * exchangeRate : Math.abs(Number(t.amount));
+            
+            let finalType = 'Expense';
+            if (t.type === 'INCOME') finalType = 'Income';
+            else if (t.type === 'EXPENSE') finalType = 'Expense';
+            else if (Number(t.amount) >= 0) finalType = 'Income'; // Fallback
+
+            if (finalType === 'Income') totalIncome += finalAmount;
+            if (finalType === 'Expense') totalExpense += finalAmount;
 
             return {
                 id: t.id,
                 date: t.transactionDate,
                 description: t.description,
                 account: accountName,
-                type: Number(t.amount) >= 0 ? 'Debit' : 'Credit', // Simplified
-                amount: Math.abs(Number(t.amount)),
+                type: finalType,
+                amount: finalAmount,
                 reference: t.expenseId ? 'EXP' : t.projectId ? 'PROJ' : '-',
                 category: t.category || 'General'
             };
         });
 
-        return NextResponse.json({ entries: formatted });
+        const netProfit = totalIncome - totalExpense;
+
+        return NextResponse.json({ 
+            transactions: formatted,
+            stats: {
+                totalIncome,
+                totalExpense,
+                netProfit
+            }
+        });
     } catch (error) {
         console.error('Error fetching ledger:', error);
         return NextResponse.json({ error: 'Failed to fetch ledger' }, { status: 500 });

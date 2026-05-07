@@ -555,9 +555,9 @@ const Features = () => {
               <FeatureCard icon={<Briefcase />} title="Maamulka Mashruuca" desc="Jadwalka, Miisaaniyadda, iyo Hawlaha." delay={0} />
               <FeatureCard icon={<Factory />} title="Warshadaha" desc="Production, Raw Materials, iyo Costing." delay={0.1} />
               <FeatureCard icon={<Landmark />} title="Xisaabaadka" desc="Invoicing, Payroll, iyo Warbixino Maaliyadeed." delay={0.2} />
-              <FeatureCard icon={<Users />} title="HR & Shaqaalaha" desc="Mushaharka, Gunnada, iyo Fasaxyada." delay={0.3} />
-              <FeatureCard icon={<Truck />} title="Supply Chain" desc="Iibiyayaasha iyo Kaydka (Inventory)." delay={0.4} />
-              <FeatureCard icon={<Globe />} title="Cloud & Mobile" desc="Ka shaqee meel kasta, waqti kasta." delay={0.5} />
+              <FeatureCard icon={<Zap />} title="Sirdoonka Macmalka (AI)" desc="Scan-garee rasiidadka, helna gorfayn AI ah." delay={0.3} />
+              <FeatureCard icon={<ShieldCheck />} title="Ammaan & Dabagal" desc="Audit Logs, xakamayn adag, iyo difaac." delay={0.4} />
+              <FeatureCard icon={<Globe />} title="Cloud & Luqado Badan" desc="Somali/English, meel kasta ka shaqee." delay={0.5} />
             </div>
 
             <div className="lg:hidden text-center mt-8">
@@ -615,9 +615,9 @@ const Solutions = () => {
                   </div>
                   <h4 className="text-2xl font-bold text-darkGray dark:text-white mb-3">{item.title}</h4>
                   <p className="text-mediumGray dark:text-gray-400 leading-relaxed font-medium">{item.desc}</p>
-                  <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800 flex items-center text-primary font-bold text-sm cursor-pointer hover:underline">
+                  <Link href="/signup" className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800 flex items-center text-primary font-bold text-sm cursor-pointer hover:underline">
                     Baro Sida <ChevronRight size={16} />
-                  </div>
+                  </Link>
                 </div>
               </ScrollReveal>
             ))}
@@ -633,29 +633,29 @@ const Pricing = () => {
 
   const plans = [
     {
-      name: 'Starter (Bilow)',
-      target: 'Ganacsiga Yaryar & Tukaamada',
-      price: billingCycle === 'monthly' ? 'Bilaash' : 'Bilaash',
-      period: billingCycle === 'monthly' ? '/bishii' : '/sanadkii',
-      description: 'Ku bilow nidaamka POS-ka iyo maamulka iibka oo bilaash ah.',
-      buttonText: 'Bilaaw Hadda',
+      name: 'Starter (Tijaabo)',
+      target: 'Ganacsiyada raba inay tijaabiyaan',
+      price: '14',
+      period: ' Cisho',
+      description: 'Tijaabi awooda nidaamka oo dhan muddo 14 cisho ah adiga oo aan wax lacag ah bixin.',
+      buttonText: 'Bilaaw Tijaabada',
       buttonColor: 'bg-white text-darkGray border border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:text-white dark:border-gray-700',
       popular: false,
       features: [
-        { name: 'POS System (Web & Mobile)', included: true },
-        { name: 'Maamulka Iibka & Rasiidka', included: true },
-        { name: '1 User Account', included: true },
-        { name: 'Warbixinta Maalinlaha', included: true },
-        { name: 'Maamulka Macaamiisha', included: true },
-        { name: 'Inventory (Basic)', included: false },
-        { name: 'HR & Payroll', included: false },
-        { name: 'Warshadaynta (Manufacturing)', included: false },
+        { name: 'Dhammaan Astaamaha', included: true },
+        { name: 'AI Scanner & Chat', included: true },
+        { name: 'Luqadaha (Somali/English)', included: true },
+        { name: '14 Cisho oo Tijaabo ah', included: true },
+        { name: 'Xisaabaadka & Warshadaha', included: true },
+        { name: 'Bilaa Credit Card', included: true },
+        { name: 'Dedicated Support', included: false },
+        { name: 'On-premise Installation', included: false },
       ]
     },
     {
       name: 'Professional (Xirfadle)',
       target: 'Shirkadaha Dhexe & Ganacsiga Guud',
-      price: billingCycle === 'monthly' ? '$30' : '$24',
+      price: billingCycle === 'monthly' ? '$30' : '$288',
       period: billingCycle === 'monthly' ? '/bishii' : '/sanadkii',
       description: 'Xalka ugu fiican ee lagu maamulo kaydka, shaqaalaha, iyo xisaabaadka.',
       buttonText: 'Tijaabi 14 Maalmood',
@@ -955,7 +955,7 @@ const Reviews = () => {
           <ScrollReveal width="100%" direction="up" delay={0.1}>
             <div className="text-center mb-16">
               <h3 className="text-3xl font-bold text-darkGray dark:text-white mb-4">Waxa Ay Macaamiishu Dhahaan</h3>
-              <p className="text-mediumGray dark:text-gray-400">Ku biir boqolaal shirkadood oo ku horumaray isticmaalka Revlo.</p>
+              <p className="text-mediumGray dark:text-gray-400">Ku biir boqolaal shirkadood oo ku horumaray isticmaalka Revlo</p>
             </div>
           </ScrollReveal>
 
@@ -1001,8 +1001,8 @@ const Footer = () => {
         <div>
           <h4 className="font-bold text-lg mb-6 text-white border-b border-gray-700 pb-2 inline-block">Bogagga</h4>
           <ul className="space-y-3 text-gray-400">
-            <li><Link href="#features" className="hover:text-primary transition-colors">Astaamaha</Link></li>
-            <li><Link href="#pricing" className="hover:text-primary transition-colors">Qiimaha</Link></li>
+            <li><Link href="/#features" className="hover:text-primary transition-colors">Astaamaha</Link></li>
+            <li><Link href="/#pricing" className="hover:text-primary transition-colors">Qiimaha</Link></li>
             <li><Link href="/login" className="hover:text-primary transition-colors">Gal (Login)</Link></li>
             <li><Link href="/signup" className="hover:text-primary transition-colors">Isdiiwaangeli</Link></li>
           </ul>
@@ -1041,7 +1041,7 @@ const Footer = () => {
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-white dark:bg-gray-900 font-sans selection:bg-primary/30 selection:text-primary overflow-x-hidden select-none cursor-default">
+    <main className="min-h-screen bg-white dark:bg-gray-900 font-sans selection:bg-primary/30 selection:text-primary overflow-x-hidden">
       <ScrollProgressBar />
       {/* Navbar moved inside specific relative container if needing sticky? No, Navbar is fixed. */}
       <Navbar />

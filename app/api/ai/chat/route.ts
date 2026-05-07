@@ -51,15 +51,23 @@ export async function POST(req: Request) {
 
         const [
             salesData,
+            todaySalesData,
             inventoryData,
             debtorData,
             creditorData,
             expenseData,
-            recentActivities
+            recentActivities,
+            topCustomersData
         ] = await Promise.all([
-            // Sales KPI
+            // Sales KPI (All Time)
             prisma.sale.aggregate({
                 where: { companyId },
+                _sum: { total: true },
+                _count: { id: true }
+            }),
+            // Today's Sales
+            prisma.sale.aggregate({
+                where: { companyId, createdAt: { gte: startOfDay(today) } },
                 _sum: { total: true },
                 _count: { id: true }
             }),
@@ -92,27 +100,55 @@ export async function POST(req: Request) {
                 take: 5,
                 orderBy: { createdAt: 'desc' },
                 include: { customer: true }
+            }),
+            // Top Customers by Grouping
+            prisma.sale.groupBy({
+                by: ['customerId'],
+                where: { companyId, customerId: { not: null } },
+                _sum: { total: true },
+                orderBy: { _sum: { total: 'desc' } },
+                take: 5
             })
         ]);
+
+        // Fetch names for top customers
+        const topCustomerIds = topCustomersData.map(t => t.customerId).filter(Boolean) as string[];
+        const topCustomersDetails = topCustomerIds.length > 0 ? await prisma.shopClient.findMany({
+            where: { id: { in: topCustomerIds } },
+            select: { id: true, name: true }
+        }) : [];
+
+        const enrichedTopCustomers = topCustomersData.map(t => {
+            const detail = topCustomersDetails.find(c => c.id === t.customerId);
+            return {
+                name: detail?.name || 'Walk-in',
+                totalSpent: Number(t._sum.total || 0)
+            };
+        });
 
         // Summarize data for LLM
         const context = {
             businessName: "Revlo Managed Shop",
             ownerName: currentUser.fullName,
             kpis: {
-                totalRevenue: salesData._sum.total || 0,
-                orderCount: salesData._count.id,
+                totalRevenueAllTime: Number(salesData._sum.total || 0),
+                totalRevenueToday: Number(todaySalesData._sum.total || 0),
+                ordersToday: todaySalesData._count.id || 0,
                 lowStockCount: inventoryData.filter(i => i.stock <= 10).length,
-                totalReceivables: debtorData.reduce((acc, s) => acc + (s.total - (s.paidAmount || 0)), 0),
-                totalPayables: creditorData.reduce((acc, p) => acc + (p.total - (p.paidAmount || 0)), 0),
+                totalReceivables: debtorData.reduce((acc, s) => acc + (Number(s.total) - Number(s.paidAmount || 0)), 0),
+                totalPayables: creditorData.reduce((acc, p) => acc + (Number(p.total) - Number(p.paidAmount || 0)), 0),
             },
-            inventoryHighlights: inventoryData.slice(0, 10),
-            topExpenses: expenseData,
-            recentSales: recentActivities.map(s => `${s.customer?.name || 'Walk-in'}: ETB ${s.total}`)
+            inventoryHighlights: inventoryData.slice(0, 10).map(i => `${i.name} (${i.stock} left)`),
+            topExpenses: expenseData.map(e => `${e.category}: ETB ${e._sum.amount}`),
+            recentSales: recentActivities.map(s => `${s.customer?.name || 'Walk-in'}: ETB ${s.total}`),
+            topCustomers: enrichedTopCustomers.map(c => `${c.name} (Spent: ETB ${c.totalSpent})`),
+            debtorsList: debtorData
+                .filter(d => (Number(d.total) - Number(d.paidAmount || 0)) > 0)
+                .map(d => `${d.customer?.name || 'Unknown'} owes ETB ${Number(d.total) - Number(d.paidAmount || 0)}`)
         };
 
         // 2. Initialize Gemini
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
         const systemPrompt = `
 You are Revlo AI, an expert business consultant and financial analyst for a retail shop.
@@ -124,9 +160,9 @@ ${JSON.stringify(context, null, 2)}
 GUIDELINES:
 1. Be concise, professional, and data-driven.
 2. Use the provided context to answer questions specifically about this business.
-3. If asked for a forecast, use current sales trends (Revenue: ETB ${context.kpis.totalRevenue}).
-4. If someone owes money, mention the "Receivables" total: ETB ${context.kpis.totalReceivables}.
-5. Focus on increasing profit and decreasing expenses.
+3. If asked about today's sales, use "totalRevenueToday" (ETB ${context.kpis.totalRevenueToday}).
+4. If asked about debtors or people who owe money, list the names from "debtorsList".
+5. If asked about the best/top customers, use the "topCustomers" list.
 6. Provide actionable advice (e.g., "Replenish [Product] soon" or "Follow up with debtors").
 7. Acknowledge the user's name if appropriate.
 8. Language: Respond in the language used by the user (likely Somali or English).
@@ -135,14 +171,31 @@ Current Chat History:
 ${history.map((h: any) => `${h.role}: ${h.content}`).join('\n')}
 `;
 
-        const result = await model.generateContent([systemPrompt, message]);
+        const result = await model.generateContent([systemPrompt, message]).catch(async (err) => {
+            console.log("Primary model failed, trying fallback...", err.message);
+            // Fallback to gemini-1.5-flash if 503 or overload
+            if (err.message?.includes('503') || err.message?.includes('demand')) {
+                const fallbackModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                return await fallbackModel.generateContent([systemPrompt, message]);
+            }
+            throw err;
+        });
+
         const response = await result.response;
         const text = response.text();
 
         return NextResponse.json({ content: text });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('AI Chat Error:', error);
-        return NextResponse.json({ error: 'Failed to generate AI response' }, { status: 500 });
+        
+        let userMessage = 'Cillad ayaa ku timid AI-ga. Fadlan mar kale isku day.';
+        if (error.message?.includes('503') || error.message?.includes('demand') || error.message?.includes('overloaded')) {
+            userMessage = 'Server-yada AI-ga (Google Gemini) ayaa hadda aad mashquul u ah (High Demand). Fadlan waxyar sug oo mar kale isku day.';
+        } else if (error.message?.includes('API_KEY')) {
+            userMessage = 'Cillad xagga API Key-ga ah ayaa jirta. Fadlan hubi settings-kaaga.';
+        }
+        
+        return NextResponse.json({ error: userMessage, details: error.message }, { status: 500 });
     }
 }

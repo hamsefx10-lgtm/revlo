@@ -3,12 +3,13 @@ import { prisma } from '@/lib/prisma';
 
 export async function POST(req: Request) {
   try {
-    let { companyId, registerAlertsEnabled, registerAlertsEmail } = await req.json();
+    const body = await req.json();
+    let { companyId } = body;
 
     if (!companyId || companyId === 'UNKNOWN') {
       const firstCompany = await prisma.company.findFirst();
       if (!firstCompany) {
-         return NextResponse.json({ error: 'Ma jiro shirkad diiwaangashan! Fadlan shirkad samee horta.' }, { status: 400 });
+         return NextResponse.json({ error: 'Ma jiro shirkad diiwaangashan!' }, { status: 400 });
       }
       companyId = firstCompany.id;
     }
@@ -17,20 +18,26 @@ export async function POST(req: Request) {
       where: { companyId }
     });
 
+    // Merge all incoming security fields into enabledFeatures
+    const securityFields = ['requirePasswordOnRefunds', 'autoLogout', 'require2FA', 'registerAlertsEnabled', 'registerAlertsEmail'];
+
     if (!settings) {
+      const features: Record<string, any> = {};
+      securityFields.forEach(field => {
+        if (body[field] !== undefined) features[field] = body[field];
+      });
+
       settings = await prisma.personalizationSettings.create({
         data: {
           companyId,
-          enabledFeatures: { 
-            registerAlertsEnabled: registerAlertsEnabled || false,
-            registerAlertsEmail: registerAlertsEmail || null,
-          }
+          enabledFeatures: features
         }
       });
     } else {
       const features = (settings.enabledFeatures as any) || {};
-      if (registerAlertsEnabled !== undefined) features.registerAlertsEnabled = registerAlertsEnabled;
-      if (registerAlertsEmail !== undefined) features.registerAlertsEmail = registerAlertsEmail;
+      securityFields.forEach(field => {
+        if (body[field] !== undefined) features[field] = body[field];
+      });
       
       settings = await prisma.personalizationSettings.update({
         where: { companyId },
@@ -38,7 +45,7 @@ export async function POST(req: Request) {
       });
     }
 
-    return NextResponse.json({ success: true, settings });
+    return NextResponse.json({ success: true, features: settings.enabledFeatures });
   } catch (error: any) {
     console.error('Save Security Settings Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -68,3 +75,4 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

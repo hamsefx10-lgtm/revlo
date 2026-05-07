@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import { Providers } from './Providers';
 import GoogleTranslate from '../components/GoogleTranslate';
@@ -10,7 +10,7 @@ import ImpersonateBanner from '@/components/ImpersonateBanner';
 import Script from 'next/script';
 import PWAInstallBanner from '@/components/PWAInstallBanner';
 
-const inter = Inter({ subsets: ['latin'] });
+const jakarta = Plus_Jakarta_Sans({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Revlo - The Ultimate ERP & Business Management Solution',
@@ -139,7 +139,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={jakarta.className}>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

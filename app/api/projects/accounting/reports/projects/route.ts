@@ -34,25 +34,35 @@ export async function GET(request: Request) {
             };
         }
 
-        // Fetch all projects for the company
+        // Fetch ALL projects for the company — always include ALL data (no date filter on includes)
+        // Date filter is only used for activity-based inclusion logic, NOT for filtering expenses/transactions
         const allProjects = await prisma.project.findMany({
             where: { companyId },
             include: {
-                expenses: dateFilter ? {
-                    where: { expenseDate: dateFilter },
-                    include: { employee: true }
-                } : {
-                    include: { employee: true }
+                expenses: {
+                    include: {
+                        employee: { select: { id: true, fullName: true } },
+                        account: { select: { id: true, name: true } },
+                    },
+                    orderBy: { expenseDate: 'desc' }
                 },
-                transactions: dateFilter ? { where: { transactionDate: dateFilter } } : true,
-                laborRecords: dateFilter ? { 
-                    where: { dateWorked: dateFilter },
-                    include: { employee: true }
-                } : {
-                    include: { employee: true }
+                transactions: {
+                    include: {
+                        employee: { select: { id: true, fullName: true } },
+                        vendor: { select: { id: true, name: true } },
+                        customer: { select: { id: true, name: true } },
+                        account: { select: { id: true, name: true } },
+                    },
+                    orderBy: { transactionDate: 'desc' }
+                },
+                laborRecords: {
+                    include: { employee: { select: { id: true, fullName: true } } },
+                    orderBy: { dateWorked: 'desc' }
                 },
                 customer: true,
                 materialsUsed: true,
+                payments: true,
+                company: { select: { id: true, name: true, logoUrl: true } },
             },
         });
 
@@ -66,7 +76,6 @@ export async function GET(request: Request) {
         let totalLosses = 0;
         let totalReceivables = 0;
         let totalProjectValue = 0;
-        let totalProfitMarginSum = 0;
         let activeProjectsCount = 0;
         let completedProjectsCount = 0;
         let onHoldProjectsCount = 0;
@@ -78,28 +87,11 @@ export async function GET(request: Request) {
             if (project.status === 'On Hold') onHoldProjectsCount++;
 
             const proj = project as any;
-            // Check if project should be included.
-            // Requirement: "include everything that had income/outflow this month, without excluding active projects"
-            let hasActivity = false;
 
-            // It's active, always include if requested (or we can just always include if no date filter)
-            if (!dateFilter || proj.status === 'Active') {
-                hasActivity = true;
-            } else if (dateFilter) {
-                // If there's a date filter and it's NOT active, only include if it had activity
-                if (proj.expenses.length > 0 || proj.transactions.length > 0) {
-                    hasActivity = true;
-                }
-                // Or if it was created/completed in this window
-                if (proj.createdAt >= startDate! && proj.createdAt <= endDate!) hasActivity = true;
-                if (proj.actualCompletionDate && proj.actualCompletionDate >= startDate! && proj.actualCompletionDate <= endDate!) hasActivity = true;
-            }
-
-            if (!hasActivity) continue; // Skip if no relevant data for this period and not active
-
+            // Include ALL projects — no date-based exclusion anymore
             const projectValue = Number(proj.agreementAmount) || 0;
 
-            // Calculate Expenses
+            // Calculate Expenses — ALL TIME
             let materialCosts = 0;
             let laborCosts = 0;
             let transportCosts = 0;
@@ -109,137 +101,159 @@ export async function GET(request: Request) {
             let totalExpenses = 0;
 
             const mappedExpenses: any[] = [];
-            const processedLaborExpenseIds = new Set();
+            const expensesByCategory: Record<string, any[]> = {};
 
             proj.expenses.forEach((exp: any) => {
                 const amt = Number(exp.amount) || 0;
                 totalExpenses += amt;
 
-                if (exp.category === 'Material') materialCosts += amt;
-                if (exp.category === 'Labor') laborCosts += amt;
-                if (exp.category === 'Transport') transportCosts += amt;
-                if (exp.category === 'Equipment') equipmentCosts += amt;
-                if (exp.category === 'Utilities') utilitiesCosts += amt;
-                if (exp.category === 'Consultancy' || exp.category === 'Subcontractor') consultancyCosts += amt;
+                const cat = exp.category || 'Other';
+                if (cat === 'Material') materialCosts += amt;
+                if (cat === 'Labor') laborCosts += amt;
+                if (cat === 'Transport') transportCosts += amt;
+                if (cat === 'Equipment') equipmentCosts += amt;
+                if (cat === 'Utilities') utilitiesCosts += amt;
+                if (cat === 'Consultancy' || cat === 'Subcontractor') consultancyCosts += amt;
 
-                mappedExpenses.push({
+                const mappedExp = {
                     id: exp.id,
-                    category: exp.category,
+                    category: cat,
                     subCategory: exp.subCategory,
                     description: exp.description,
                     amount: amt,
                     date: exp.expenseDate.toISOString().split('T')[0],
-                    employeeName: exp.employee?.fullName || exp.supplierName || null,
+                    employeeName: exp.employee?.fullName || null,
+                    supplierName: exp.supplierName || null,
                     materials: exp.materials,
-                });
+                    accountName: exp.account?.name || null,
+                };
+
+                mappedExpenses.push(mappedExp);
+
+                if (!expensesByCategory[cat]) expensesByCategory[cat] = [];
+                expensesByCategory[cat].push(mappedExp);
             });
 
             // Add Labor Records ONLY if they are not already counted in expenses
-            // Note: ProjectLabor usually tracks what's agreed/paid to a worker, 
-            // while Expense tracks the actual money leaving the account.
-            // If the user already recorded an Expense for a labor payment, 
-            // adding the LR paidAmount is a double-count.
-            // For now, we prioritize Expenses as the source of truth for 'Total Expenses',
-            // and only add LR paidAmount if the direct labor costs in Expenses are 0
-            // OR if the LR record explicitly represents a DIFFERENT payment.
-            // SIMPLIFIED FIX: In this system, Labor Expenses are the primary record.
-            // We will NOT add LR paidAmount to totalExpenses if laborExpenses already exist,
-            // or we will only add the difference if LR is higher.
-            
-            // Actually, let's treat LR as a record of commitment, and Expenses as truth.
-            // If LR has paidAmount but there's no corresponding Labor expense, then add it.
             for (const lr of (proj.laborRecords || [])) {
                 const amt = Number(lr.paidAmount || 0);
-                
-                // If we already have labor expenses, we assume they cover these payments
-                // UNLESS the labor record description doesn't match any labor expense.
-                // For a safe fix that doesn't miss data: 
-                // We'll ONLY add LR paidAmount if total Labor category expenses are 0
-                // OR if the LR is specifically for an employee who has NO labor expenses.
-                
-                const employeeHasExpense = proj.expenses.some((e: any) => 
-                    e.category === 'Labor' && (e.employeeId === lr.employeeId || e.description.toLowerCase().includes(lr.employee?.fullName?.toLowerCase() || ''))
+                const employeeHasExpense = proj.expenses.some((e: any) =>
+                    e.category === 'Labor' && (e.employeeId === lr.employeeId || (e.description || '').toLowerCase().includes((lr.employee?.fullName || '').toLowerCase()))
                 );
 
                 if (amt > 0 && !employeeHasExpense) {
                     laborCosts += amt;
                     totalExpenses += amt;
-                    mappedExpenses.push({
+                    const mappedExp = {
                         id: lr.id,
                         category: 'Labor',
                         description: `Labor: ${lr.description || 'Shaqo'}`,
                         amount: amt,
-                        date: (lr.dateWorked as Date).toISOString().split('T')[0],
-                        employeeName: lr.employee?.fullName || 'Shaqaale'
+                        date: lr.dateWorked ? (lr.dateWorked as Date).toISOString().split('T')[0] : '-',
+                        employeeName: lr.employee?.fullName || 'Shaqaale',
+                    };
+                    mappedExpenses.push(mappedExp);
+                    if (!expensesByCategory['Labor']) expensesByCategory['Labor'] = [];
+                    expensesByCategory['Labor'].push(mappedExp);
+                }
+            }
+
+            // ====== LABOR BREAKDOWN (grouped by employee) ======
+            const laborMap: Record<string, { employeeName: string; totalPaid: number; items: any[] }> = {};
+
+            // From expenses with category 'Labor'
+            proj.expenses
+                .filter((e: any) => e.category === 'Labor')
+                .forEach((e: any) => {
+                    const key = e.employee?.id || e.employeeId || e.description || e.id;
+                    const name = e.employee?.fullName || e.description || 'Shaqaale';
+                    if (!laborMap[key]) laborMap[key] = { employeeName: name, totalPaid: 0, items: [] };
+                    const amt = Number(e.amount) || 0;
+                    laborMap[key].totalPaid += amt;
+                    laborMap[key].items.push({
+                        date: e.expenseDate.toISOString().split('T')[0],
+                        description: e.description,
+                        amount: amt,
+                        accountName: e.account?.name || null,
+                    });
+                });
+
+            // From labor records NOT covered by expenses
+            for (const lr of (proj.laborRecords || [])) {
+                const amt = Number(lr.paidAmount || 0);
+                if (amt <= 0) continue;
+                const employeeHasExpense = proj.expenses.some((e: any) =>
+                    e.category === 'Labor' && (e.employeeId === lr.employeeId || (e.description || '').toLowerCase().includes((lr.employee?.fullName || '').toLowerCase()))
+                );
+                if (!employeeHasExpense) {
+                    const key = lr.employee?.id || lr.employeeId || lr.id;
+                    const name = lr.employee?.fullName || lr.employeeName || 'Shaqaale';
+                    if (!laborMap[key]) laborMap[key] = { employeeName: name, totalPaid: 0, items: [] };
+                    laborMap[key].totalPaid += amt;
+                    laborMap[key].items.push({
+                        date: lr.dateWorked ? (lr.dateWorked as Date).toISOString().split('T')[0] : '-',
+                        description: lr.description || 'Shaqo',
+                        amount: amt,
                     });
                 }
             }
 
-            // Calculate Revenue / Transactions logic synced with Project ID page
+            const laborBreakdown = Object.values(laborMap).sort((a, b) => b.totalPaid - a.totalPaid);
+
+            // ====== REVENUE / TRANSACTIONS ======
             const advancePaid = Number(proj.advancePaid) || 0;
             let totalRevenueFromTransactions = 0;
-            let mappedTransactions = [];
-            let mappedPayments = [];
+            let mappedPayments: any[] = [];
             let unlinkedVendorRepayments = 0;
 
             for (const trx of (proj.transactions || [])) {
                 const amt = Math.abs(Number(trx.amount) || 0);
 
-                mappedTransactions.push({
-                    id: trx.id,
-                    type: trx.type,
-                    description: trx.description || '',
-                    amount: Number(trx.amount),
-                    date: trx.transactionDate.toISOString().split('T')[0]
-                });
-
-                // Customer Income (REPAID DEBT) - Skip INCOME type to avoid double-counting advance
+                // Customer Income (REPAID DEBT)
                 if (trx.type === 'DEBT_REPAID' && (trx.customerId || !trx.vendorId)) {
                     totalRevenueFromTransactions += amt;
                     mappedPayments.push({
                         id: trx.id,
                         amount: amt,
                         date: trx.transactionDate.toISOString().split('T')[0],
-                        description: trx.description || 'Gidka Daynta (Customer)'
+                        description: trx.description || 'Gidka Daynta (Customer)',
+                        customerName: trx.customer?.name || null,
+                        accountName: trx.account?.name || null,
                     });
                 }
 
-                // Unlinked Vendor Repayments (Expenses)
+                // Unlinked Vendor Repayments (count as expenses)
                 if (trx.type === 'DEBT_REPAID' && trx.vendorId && !trx.expenseId) {
                     unlinkedVendorRepayments += amt;
                     totalExpenses += amt;
-                    mappedExpenses.push({
+                    const mappedExp = {
                         id: trx.id,
                         category: 'Debt Repayment',
                         description: trx.description || 'Gidka Daynta (Vendor)',
                         amount: amt,
                         date: trx.transactionDate.toISOString().split('T')[0],
-                        employeeName: 'Vendor'
-                    });
+                        employeeName: trx.vendor?.name || 'Vendor',
+                    };
+                    mappedExpenses.push(mappedExp);
+                    if (!expensesByCategory['Debt Repayment']) expensesByCategory['Debt Repayment'] = [];
+                    expensesByCategory['Debt Repayment'].push(mappedExp);
                 }
             }
 
             // Total Revenue = Advance (Base) + Customer debt repayments
             const totalRevenue = advancePaid + totalRevenueFromTransactions;
-
-            // Remaining Revenue correctly allows negative for overpayment
             const remainingRevenue = projectValue - totalRevenue;
-            
-            // ACTUAL PROFIT: Cash-based (Revenue Collected - Expenses)
             const grossProfit = totalRevenue - totalExpenses;
-            
-            // PROJECTED PROFIT: Contract-based (Agreement - Expenses)
             const projectedProfit = projectValue - totalExpenses;
-
             const profitMargin = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
             const completionPercentage = projectValue > 0 ? (totalRevenue / projectValue) * 100 : 0;
 
             summaryTotalRevenue += totalRevenue;
             summaryTotalExpenses += totalExpenses;
-            // Summary Profit remains Cash-based (Collected - Spent) for tax/cashflow purposes
             summaryTotalProfit += (totalRevenue - totalExpenses);
 
-            const receivables = Math.max(0, totalExpenses - totalRevenue);
+            // Receivables = daynta macmiilku wali ku leeyahay = qiimaha heshiiska - lacagta la helay
+            const receivables = Math.max(0, remainingRevenue);
             totalReceivables += receivables;
             totalProjectValue += projectValue;
 
@@ -247,6 +261,18 @@ export async function GET(request: Request) {
                 totalRemainingAgreement += remainingRevenue;
             }
             if (grossProfit < 0) totalLosses += Math.abs(grossProfit);
+
+            // ====== MATERIALS USED ======
+            const mappedMaterials = (proj.materialsUsed || []).map((m: any) => ({
+                id: m.id,
+                name: m.name,
+                quantityUsed: Number(m.quantityUsed) || 0,
+                unit: m.unit || '',
+                costPerUnit: Number(m.costPerUnit) || 0,
+                leftoverQty: Number(m.leftoverQty) || 0,
+                totalCost: (Number(m.quantityUsed) || 0) * (Number(m.costPerUnit) || 0),
+                dateUsed: m.dateUsed ? new Date(m.dateUsed).toISOString().split('T')[0] : null,
+            }));
 
             reportProjects.push({
                 id: project.id,
@@ -258,7 +284,7 @@ export async function GET(request: Request) {
                 actualCompletionDate: project.actualCompletionDate ? project.actualCompletionDate.toISOString().split('T')[0] : 'Kama dambayn',
                 projectValue,
                 totalRevenue,
-                totalPayments: totalRevenue, // simplified
+                totalPayments: totalRevenue,
                 remainingRevenue,
                 materialCosts,
                 laborCosts,
@@ -271,14 +297,14 @@ export async function GET(request: Request) {
                 profitMargin,
                 completionPercentage,
                 expenseCount: mappedExpenses.length,
-                transactionCount: mappedTransactions.length,
                 paymentCount: mappedPayments.length,
                 receivables,
                 projectedProfit,
                 expenses: mappedExpenses,
-                transactions: mappedTransactions,
+                expensesByCategory,
+                laborBreakdown,
                 payments: mappedPayments,
-                materialsUsed: proj.materialsUsed || []
+                materialsUsed: mappedMaterials,
             });
         }
 
